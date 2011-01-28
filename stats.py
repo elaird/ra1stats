@@ -94,7 +94,7 @@ def merge(nSlices) :
         outFiles = []
         for iSlice in range(nSlices) :
             tmpList = inList[iSlice::nSlices]
-            tmpFile = "%s%d"outFile.replace(".root","_%d.root"%iSlice)
+            tmpFile = outFile.replace(".root","_%d.root"%iSlice)
             hAdd = getCommandOutput("hadd -f %s %s"%(tmpFile, " ".join(tmpList)))
             #cleanUp(hAdd["stderr"], tmpList)
             outFiles.append(tmpFile)
