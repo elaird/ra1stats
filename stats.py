@@ -54,21 +54,17 @@ def local(nWorkers) :
             q.task_done()
     operateOnListUsingQueue(nWorkers, worker, jobCmds())
 ############################################
-def compile(file) :
-    r.gROOT.LoadMacro("%s+"%file)
+def compile() :
+    r.gROOT.LoadMacro("%s+"%conf.sourceFile())
 ############################################
 def points() :
     return [(1, 1), (1, 2), (2, 1), (2, 2)]
 ############################################
-options = opts()
-
-compile(conf.sourceFile())
-
-if options.batch :
-    batch(int(options.batch))
-
-if options.local :
-    local(int(options.local))
-    
-if options.merge :
+def merge() :
     pass
+############################################    
+options = opts()
+compile()
+if options.batch : batch(int(options.batch))
+if options.local : local(int(options.local))
+if options.merge : merge()
