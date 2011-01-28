@@ -54,12 +54,17 @@ def local(nWorkers) :
             q.task_done()
     operateOnListUsingQueue(nWorkers, worker, jobCmds())
 ############################################
+def compile(file) :
+    r.gROOT.LoadMacro("%s+"%file)
+############################################
 def points() :
     return [(100.0, 50.0), (150.0, 50.0), (100.0, 75.0), (150.0, 75.0)]
 ############################################
 options = opts()
 
-sourceFile = "dummy.C"
+sourceFile = "Lepton.C"
+compile(sourceFile)
+
 if options.batch :
     batch(int(options.batch))
 
