@@ -48,8 +48,6 @@ TH2F* yieldPlot(TString mSuGraFile,TString mSuGraDir, TString mSuGraHist){
   
   TH2F* hnev = (TH2F*)dir->Get(mSuGraHist);
 
- 
-
   return hnev;
 }
 
@@ -123,8 +121,7 @@ TH2F* sysPlot(TString mSuGraFile){
 using namespace RooFit;
 using namespace RooStats;
 
-void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false){
-  
+void Lepton(int m0, int m12, bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false) {
   // let's time this challenging example
   TStopwatch t;
   t.Start();
@@ -384,10 +381,6 @@ void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=fals
   
 
   double upperlimit = 0;
-  double d_s = 0;
-  
-
- 
 
   cout << " Limit " << endl;
   ////////////////////////////////////
@@ -455,70 +448,56 @@ void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=fals
 
   output->cd();
   
- for(int m0 = 0; m0 < yield_signal->GetXaxis()->GetNbins();m0++){
-    mytry = false;
-      
-    for(int m12 = yield_signal->GetYaxis()->GetNbins();m12 > 0; m12--){
-
-    //int m0 = 10;
-    //    int m12 = 10;
-
-   
-      Double_t d_s = yield_signal->GetBinContent(m0+1,m12)/100*lumi;
-      Double_t d_s_sys05 = yield_sys05->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
-      Double_t d_s_sys2 = yield_sys2->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
-      Double_t masterPlus = 0;
-      Double_t masterMinus = 0;
-      Double_t signal_sys = sigma_SigEff_;
-
-      if(d_s > 0){
-	tau_s_muon = yield_muoncontrol->GetBinContent(m0+1,m12)/yield_signal->GetBinContent(m0+1,m12); 
-	
-	masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
-	masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
-	
-	signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  );
-	
-      }
-	
-      //set background contamination
-      wspace->var("tau_s_mu")->setVal(tau_s_muon);
-      wspace->var("sigma_SigEff")->setVal(signal_sys);
+  mytry = false;
+  
+  Double_t d_s = yield_signal->GetBinContent(m0+1,m12)/100*lumi;
+  Double_t d_s_sys05 = yield_sys05->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
+  Double_t d_s_sys2 = yield_sys2->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
+  Double_t masterPlus = 0;
+  Double_t masterMinus = 0;
+  Double_t signal_sys = sigma_SigEff_;
+  
+  if(d_s > 0){
+    tau_s_muon = yield_muoncontrol->GetBinContent(m0+1,m12)/yield_signal->GetBinContent(m0+1,m12); 
     
-   
-      
-     if(d_s > 1 && mytry == false){
-       bool isInInterval = true;
-
-       plInt = (LikelihoodInterval*)plc.GetInterval();
-       
-       RooRealVar* tmp_s = wspace->var("s");
-       
-       cout << " upper limit " << plInt->UpperLimit(*tmp_s) << endl;
-       tmp_s->setVal(d_s);
-       isInInterval = plInt->IsInInterval(*tmp_s);
-       
-       if(isInInterval == false){
-	 mytry = true;//if one point is excluded assume that the points in m12 below this point are also excluded, have been tested to be true and makes the code faster
-	 exclusionLimits->SetBinContent(m0+1,m12,1);//if one point which is excluded is found set the output point to 1	 
-	}
-	else{
-	  exclusionLimits->SetBinContent(m0+1,m12,0);//if not set it to 0	 
-	}
-
-	delete plInt;
-      }
-      if(mytry == true){
-	exclusionLimits->SetBinContent(m0+1,m12,1);
-      }
-
-     
-      
-      }//end m12 loop
-      
- }//end m0 loop
-   
- 
+    masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
+    masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
+    
+    signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  );
+    
+  }
+  
+  //set background contamination
+  wspace->var("tau_s_mu")->setVal(tau_s_muon);
+  wspace->var("sigma_SigEff")->setVal(signal_sys);
+  
+  
+  
+  if(d_s > 1 && mytry == false){
+    bool isInInterval = true;
+    
+    plInt = (LikelihoodInterval*)plc.GetInterval();
+    
+    RooRealVar* tmp_s = wspace->var("s");
+    
+    cout << " upper limit " << plInt->UpperLimit(*tmp_s) << endl;
+    tmp_s->setVal(d_s);
+    isInInterval = plInt->IsInInterval(*tmp_s);
+    
+    if(isInInterval == false){
+      mytry = true;//if one point is excluded assume that the points in m12 below this point are also excluded, have been tested to be true and makes the code faster
+      exclusionLimits->SetBinContent(m0+1,m12,1);//if one point which is excluded is found set the output point to 1	 
+    }
+    else{
+      exclusionLimits->SetBinContent(m0+1,m12,0);//if not set it to 0	 
+    }
+    
+    delete plInt;
+  }
+  if(mytry == true){
+    exclusionLimits->SetBinContent(m0+1,m12,1);
+  }
+  
   t.Print();
 
   exclusionLimits->Write();
