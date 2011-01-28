@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def testPoints() : return True
+def testPointsOnly() : return True
 
 def sourceFile() : return "Lepton.C"
 
@@ -29,7 +29,7 @@ def tag(m0, m12) : return "m0_%d_m12_%d"%(m0, m12)
 def plotStem() : return "%s/Significance_%spb"%(outputDir(), lumi())
 def plotFileName(m0, m12) : return "%s_%s.root"%(plotStem(), tag(m0, m12))
 
-def workspaceStem() : return "Combine"
+def workspaceStem() : return "%s/Combine"%outputDir()
 def workspaceFileName(m0, m12) : return "%s_%s.root"%(workspaceStem(), tag(m0, m12))
 
 def logStem() : return "%s/job"%logDir()
