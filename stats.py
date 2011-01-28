@@ -49,14 +49,14 @@ def jobCmds(nSlices = None) :
     out = []
     for iSlice in range(nSlices) :
         args = [ "%g %g"%point for point in hp.points()[iSlice::nSlices] ]
-        out.append("%s/job.sh %s %s/%s %s >& %s"%(pwd, pwd, pwd, conf.sourceFile(), " ".join(args), conf.logFileName(iSlice)))
+        out.append("%s/job.sh %s %s/%s %s >& %s/%s"%(pwd, pwd, pwd, conf.sourceFile(), " ".join(args), pwd, conf.logFileName(iSlice)))
     return out
 ############################################
 def batch(nSlices) :
     for jobCmd in jobCmds(nSlices) :
         subCmd = "bsub %s"%jobCmd
-        print subCmd
-        #os.system(subCmd)
+        #print subCmd
+        os.system(subCmd)
 ############################################
 def local(nWorkers) :
     def worker(q) :
