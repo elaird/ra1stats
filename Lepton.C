@@ -35,7 +35,7 @@
 #include "RooFitResult.h"
 #include "RooStats/PointSetInterval.h"
 
-#include "../include/ExclusionPlot.hh"
+//#include "../include/ExclusionPlot.hh"
 
 
 #include "TStopwatch.h"
@@ -110,7 +110,7 @@ TH2F* sysPlot(TString mSuGraFile){
 using namespace RooFit;
 using namespace RooStats;
 
-void Combine_old(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false){
+void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false){
   
   // let's time this challenging example
   TStopwatch t;
