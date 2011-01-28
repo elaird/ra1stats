@@ -10,12 +10,12 @@ def fileName() :
     return sys.argv[2]
 
 def funcName() :
-    return fileName().split("/")[-1].replace(".C","")
+    return fileName().split("/")[-1].replace(".C+","").replace(".C","")
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1])) for i in range(3, len(sys.argv), 2)]
 
-r.gROOT.LoadMacro("%s+"%fileName())
+r.gROOT.LoadMacro("%s"%fileName())
 
 for point in points() :
     getattr(r, funcName())(conf.plotFileName(*point),
