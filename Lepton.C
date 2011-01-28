@@ -118,6 +118,7 @@ using namespace RooStats;
 
 void Lepton(TString& outputPlotFileName,
 	    TString& outputWorkspaceFileName,
+	    bool writeWorkspaceFile,
 
 	    TString& mSuGraFile_signal,
 	    TString& mSuGraFile_muoncontrol,
@@ -285,7 +286,7 @@ void Lepton(TString& outputPlotFileName,
   modelConfig->SetNuisanceParameters(*wspace->set("nuis"));
   wspace->import(*modelConfig);
 
-  wspace->writeToFile(outputWorkspaceFileName.Data());
+  if (writeWorkspaceFile) wspace->writeToFile(outputWorkspaceFileName.Data());
 
   //////////////////////////////////////////////////
   // If you want to see the covariance matrix uncomment
@@ -472,16 +473,16 @@ void Lepton(TString& outputPlotFileName,
     
     if(isInInterval == false){
       mytry = true;//if one point is excluded assume that the points in m12 below this point are also excluded, have been tested to be true and makes the code faster
-      exclusionLimits->SetBinContent(m0+1,m12,1);//if one point which is excluded is found set the output point to 1	 
+      exclusionLimits->SetBinContent(m0,m12,1);//if one point which is excluded is found set the output point to 1	 
     }
     else{
-      exclusionLimits->SetBinContent(m0+1,m12,0);//if not set it to 0	 
+      exclusionLimits->SetBinContent(m0,m12,0);//if not set it to 0	 
     }
     
     delete plInt;
   }
   if(mytry == true){
-    exclusionLimits->SetBinContent(m0+1,m12,1);
+    exclusionLimits->SetBinContent(m0,m12,1);
   }
   
   t.Print();
