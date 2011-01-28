@@ -96,11 +96,11 @@ def merge(nSlices) :
             tmpList = inList[iSlice::nSlices]
             tmpFile = outFile.replace(".root","_%d.root"%iSlice)
             hAdd = getCommandOutput("hadd -f %s %s"%(tmpFile, " ".join(tmpList)))
-            #cleanUp(hAdd["stderr"], tmpList)
+            cleanUp(hAdd["stderr"], tmpList)
             outFiles.append(tmpFile)
 
         hAdd = getCommandOutput("hadd -f %s %s"%(outFile, " ".join(outFiles)))
-        #cleanUp(hAdd["stderr"], outFiles)
+        cleanUp(hAdd["stderr"], outFiles)
 
     mergeOneType("plot")
     if conf.writeWorkspaceFile() :
