@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def testPointsOnly() : return False
+def testPointsOnly() : return True
 
 def sourceFile() : return "Lepton.C"
 
