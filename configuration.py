@@ -4,6 +4,10 @@ def testPointsOnly() : return True
 
 def sourceFile() : return "Lepton.C"
 
+def doBayesian() : return False
+def doFeldmanCousins() : return False
+def doMCMC() : return False
+
 #name for m0-m12 plane for event yields in signal-like region
 def mSuGra_FileSignal() : return "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root"
 

@@ -28,5 +28,11 @@ for point in points() :
                            conf.mSuGra_FileSys05(),
                            conf.mSuGra_FileSys2(),
 
+                           point[0],
+                           point[1],
                            conf.lumi(),
-                           *point)
+
+                           conf.doBayesian(),
+                           conf.doFeldmanCousins(),
+                           conf.doMCMC(),
+                           )
