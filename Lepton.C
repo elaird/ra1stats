@@ -56,7 +56,7 @@ TH2F* sysPlot(TString mSuGraFile){
   TH2F* gg = (TH2F*)dir2->Get("m0_m12_gg_0");
   TH2F* gg_noweight = (TH2F*)dir->Get("m0_m12_gg_5");
   TH2F* sb = (TH2F*)dir2->Get("m0_m12_sb_0");
-  TH2F* sb_noweight = (TH2F*)dir->Get("m0_m12_sb_5");
+  //TH2F* sb_noweight = (TH2F*)dir->Get("m0_m12_sb_5");
   TH2F* ss = (TH2F*)dir2->Get("m0_m12_ss_0");
   TH2F* ss_noweight = (TH2F*)dir->Get("m0_m12_ss_5");
   TH2F* sg = (TH2F*)dir2->Get("m0_m12_sg_0");
@@ -67,8 +67,8 @@ TH2F* sysPlot(TString mSuGraFile){
   TH2F* nn_noweight = (TH2F*)dir->Get("m0_m12_nn_5");
   TH2F* ns = (TH2F*)dir2->Get("m0_m12_ns_0");
   TH2F* ns_noweight = (TH2F*)dir->Get("m0_m12_ns_5");
-  TH2F* ng = (TH2F*)dir2->Get("m0_mg12_ng_0");                                                               
-  TH2F* ng_noweight = (TH2F*)dir->Get("m0_m12_ng_5");
+  //TH2F* ng = (TH2F*)dir2->Get("m0_mg12_ng_0");                                                               
+  //TH2F* ng_noweight = (TH2F*)dir->Get("m0_m12_ng_5");
   TH2F* bb = (TH2F*)dir->Get("m0_m12_bb_0");
   TH2F* bb_noweight = (TH2F*)dir->Get("m0_m12_bb_5");
   TH2F* tb = (TH2F*)dir->Get("m0_m12_tb_0");
@@ -149,13 +149,13 @@ void Lepton(TString& outputPlotFileName,
   //set all necessary numbers as obtained from measurements or Monte Carlo studies
   //*******************************************************************************************************
   Double_t n_signal_ = 13; //number of events measured at HT > 350 GeV and alphaT > 0.55
-  Double_t n_bar_signal_ = 336044; //number of events measured at HT > 350 GeV and alphaT < 0.55
-  Double_t n_control_1_ = 11; //number of events measured at 300 < HT < 350 GeV and alphaT > 0.55
-  Double_t n_bar_control_1_ = 332265; //number of events measured at 300 < HT < 350 GeV and alphaT < 0.55
-  Double_t n_control_2_ = 33; //number of events measured at 250 < HT < 300 GeV and alphaT  > 0.55
-  Double_t n_bar_control_2_ = 845157; //number of events measured at 250 < HT < 300 GeV and alphaT < 0.55
+  //Double_t n_bar_signal_ = 336044; //number of events measured at HT > 350 GeV and alphaT < 0.55
+  //Double_t n_control_1_ = 11; //number of events measured at 300 < HT < 350 GeV and alphaT > 0.55
+  //Double_t n_bar_control_1_ = 332265; //number of events measured at 300 < HT < 350 GeV and alphaT < 0.55
+  //Double_t n_control_2_ = 33; //number of events measured at 250 < HT < 300 GeV and alphaT  > 0.55
+  //Double_t n_bar_control_2_ = 845157; //number of events measured at 250 < HT < 300 GeV and alphaT < 0.55
 
-  Double_t sigma_x_ =0.11;//systematic uncertainty on inclusive background estimation (uncertainty on the assumpotion that rhoprime = rho*rho
+  //Double_t sigma_x_ =0.11;//systematic uncertainty on inclusive background estimation (uncertainty on the assumpotion that rhoprime = rho*rho
 
   Double_t n_muoncontrol_ = 7;//number of events measured in muon control sample
   Double_t n_tau_mu_ = 5.9/5.1; //Monte Carlo estimation of the factor tau which relates expected events in muon control sample to expected tt+W background in signal-like region
@@ -476,7 +476,7 @@ void Lepton(TString& outputPlotFileName,
       exclusionLimits->SetBinContent(m0,m12,1);//if one point which is excluded is found set the output point to 1	 
     }
     else{
-      exclusionLimits->SetBinContent(m0,m12,0);//if not set it to 0	 
+      exclusionLimits->SetBinContent(m0,m12,-1);//if not set it to 0	 
     }
     
     delete plInt;
