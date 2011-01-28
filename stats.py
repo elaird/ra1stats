@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os
+import os,subprocess
 from multiprocessing import Process,JoinableQueue
 import ROOT as r
 import configuration as conf
@@ -29,6 +29,11 @@ def operateOnListUsingQueue(nCores, workerFunc, inList) :
     #clean up
     for process in listOfProcesses :
         process.terminate()
+############################################
+def getCommandOutput(command):
+    p = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    stdout,stderr = p.communicate()
+    return {"stdout":stdout, "stderr":stderr, "returncode":p.returncode}
 ############################################
 def jobCmds(nSlices = None) :
     pwd = os.environ["PWD"]
@@ -61,7 +66,19 @@ def points() :
     return [(1, 1), (1, 2), (2, 1), (2, 2)]
 ############################################
 def merge() :
-    pass
+    def cleanUp(stderr, files) :
+        assert not stderr, "hadd had this stderr: %s"%stderr
+        for fileName in files :
+            os.remove(fileName)
+
+    def mergeOneType(attr) :
+        inList = [getattr(conf, "%sFileName"%attr)(*point) for point in points()]
+        outFile = getattr(conf, "%sStem"%attr)()
+        hAdd = getCommandOutput("hadd -f %s.root %s"%(outFile, " ".join(inList)))
+        cleanUp(hAdd["stderr"], inList)
+
+    for item in ["plot", "workspace"] :
+        mergeOneType(item)
 ############################################    
 options = opts()
 compile()
