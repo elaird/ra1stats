@@ -414,18 +414,18 @@ void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=fals
   TH2F* exclusionLimits = new TH2F("ExclusionLimit","ExclusionLimit",100,0,1000,40,100,500);
 
   //name for m0-m12 plane for event yields in signal-like region
-  TString mSuGraFile_signal = "../results/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root";
+  TString mSuGraFile_signal = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root";
  
   //name for m0-m12 plane for event yields in the muon control region
-  TString mSuGraFile_muoncontrol = "../results/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_muon.root";
+  TString mSuGraFile_muoncontrol = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_muon.root";
   TString mSuGraDir_muoncontrol = "mSuGraScan_350";
   TString mSuGraHist_muoncontrol = "m0_m12_0";
   
   //name for m0-m12 plane for event  yields with modified factorization and renormalization scale 0.5 down
-  TString mSuGraFile_sys05 = "../results/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root";
+  TString mSuGraFile_sys05 = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root";
  
   //name for m0-m12 plane for event yields with modified factorization and renormalization scale 2 up
-  TString mSuGraFile_sys2 = "../results/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root";
+  TString mSuGraFile_sys2 = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root";
  
 
   TH2F* yield_signal = sysPlot(mSuGraFile_signal);//event yields in signal like region
@@ -439,12 +439,16 @@ void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=fals
 
  
   double tau_s_muon = 1;
+
+  output->cd();
   
-  for(int m0 = 0; m0 < yield_signal->GetXaxis()->GetNbins();m0++){
+ for(int m0 = 0; m0 < yield_signal->GetXaxis()->GetNbins();m0++){
     mytry = false;
       
     for(int m12 = yield_signal->GetYaxis()->GetNbins();m12 > 0; m12--){
 
+    //int m0 = 10;
+    //    int m12 = 10;
 
    
       Double_t d_s = yield_signal->GetBinContent(m0+1,m12)/100*lumi;
@@ -497,12 +501,14 @@ void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=fals
 
      
       
-    }//end m12 loop
+      }//end m12 loop
       
-  }//end m0 loop
+ }//end m0 loop
    
  
   t.Print();
+
+  exclusionLimits->Write();
 
   output->cd();
   output->Write();
@@ -512,5 +518,18 @@ void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=fals
 
 }
 
+
+
+TH2F* yieldPlot(TString mSuGraFile,TString mSuGraDir, TString mSuGraHist){
+  //read In mSuGra Histo
+  TFile* f = new TFile(mSuGraFile);
+  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir);
+  
+  TH2F* hnev = (TH2F*)dir->Get(mSuGraHist);
+
+ 
+
+  return hnev;
+}
 
 
