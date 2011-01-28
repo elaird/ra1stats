@@ -2,12 +2,14 @@
 import sys
 import ROOT as r
 
-def m0m12() :
-    return (float(sys.argv[2]), float(sys.argv[3]))
-
 def pwd() :
     return sys.argv[1]
 
+def points() :
+    return [(float(sys.argv[i]), float(sys.argv[i+1])) for i in range(2, len(sys.argv), 2)]
+
 r.gROOT.LoadMacro("%s/dummy.C"%pwd())
-h = r.dummy(*m0m12())
-h.Print()
+
+for point in points() :
+    h = r.dummy(*point)
+    h.Print()
