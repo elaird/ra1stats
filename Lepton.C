@@ -121,16 +121,14 @@ TH2F* sysPlot(TString mSuGraFile){
 using namespace RooFit;
 using namespace RooStats;
 
-void Lepton(int m0, int m12, bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false) {
+void Lepton(TString& outputPlotFileName, TString& outputWorkspaceFileName, int m0, int m12,
+	    bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false) {
   // let's time this challenging example
   TStopwatch t;
   t.Start();
 
-  TString outputPlotName = "Significance_35pb.root";
-  
-
   //Define output file 
-  TFile* output = new TFile(outputPlotName,"RECREATE");
+  TFile* output = new TFile(outputPlotFileName,"RECREATE");
   if( !output || output->IsZombie()){
     cout << " zombie alarm output is a zombie " << std::endl; 
     return;
@@ -284,7 +282,8 @@ void Lepton(int m0, int m12, bool doBayesian=false, bool doFeldmanCousins=false,
   modelConfig->SetParametersOfInterest(*wspace->set("poi"));
   modelConfig->SetNuisanceParameters(*wspace->set("nuis"));
   wspace->import(*modelConfig);
-  wspace->writeToFile("Combine.root");
+
+  wspace->writeToFile(outputWorkspaceFileName.Data());
 
   //////////////////////////////////////////////////
   // If you want to see the covariance matrix uncomment
