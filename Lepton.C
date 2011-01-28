@@ -10,6 +10,7 @@
 #include "RooWorkspace.h"
 #include "RooAddition.h"
 #include "RooPoisson.h"
+#include "TFile.h"
 #include "TTree.h"
 #include "TCanvas.h"
 #include "TLine.h"
@@ -39,6 +40,18 @@
 
 
 #include "TStopwatch.h"
+
+TH2F* yieldPlot(TString mSuGraFile,TString mSuGraDir, TString mSuGraHist){
+  //read In mSuGra Histo
+  TFile* f = new TFile(mSuGraFile);
+  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir);
+  
+  TH2F* hnev = (TH2F*)dir->Get(mSuGraHist);
+
+ 
+
+  return hnev;
+}
 
 //a little plotting routine to calculate the NLO cross-section
 TH2F* sysPlot(TString mSuGraFile){
@@ -517,19 +530,3 @@ void Lepton(bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=fals
    
 
 }
-
-
-
-TH2F* yieldPlot(TString mSuGraFile,TString mSuGraDir, TString mSuGraHist){
-  //read In mSuGra Histo
-  TFile* f = new TFile(mSuGraFile);
-  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir);
-  
-  TH2F* hnev = (TH2F*)dir->Get(mSuGraHist);
-
- 
-
-  return hnev;
-}
-
-
