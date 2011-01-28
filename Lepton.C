@@ -121,8 +121,20 @@ TH2F* sysPlot(TString mSuGraFile){
 using namespace RooFit;
 using namespace RooStats;
 
-void Lepton(TString& outputPlotFileName, TString& outputWorkspaceFileName, int m0, int m12,
-	    bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false) {
+void Lepton(TString& outputPlotFileName,
+	    TString& outputWorkspaceFileName,
+
+	    TString& mSuGraFile_signal,
+	    TString& mSuGraFile_muoncontrol,
+	    TString& mSuGraDir_muoncontrol,
+	    TString& mSuGraHist_muoncontrol,
+	    TString& mSuGraFile_sys05,
+	    TString& mSuGraFile_sys2,
+
+	    int m0, int m12, double lumi,
+	    bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false
+	    ) {
+
   // let's time this challenging example
   TStopwatch t;
   t.Start();
@@ -134,11 +146,6 @@ void Lepton(TString& outputPlotFileName, TString& outputWorkspaceFileName, int m
     return;
   }
   
-  
-  //set lumi
-  Double_t lumi = 35;
-
- 
   // set RooFit random seed for reproducible results
   RooRandom::randomGenerator()->SetSeed(4357);
 
@@ -417,21 +424,6 @@ void Lepton(TString& outputPlotFileName, TString& outputWorkspaceFileName, int m
  
     //output root file
   TH2F* exclusionLimits = new TH2F("ExclusionLimit","ExclusionLimit",100,0,1000,40,100,500);
-
-  //name for m0-m12 plane for event yields in signal-like region
-  TString mSuGraFile_signal = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root";
- 
-  //name for m0-m12 plane for event yields in the muon control region
-  TString mSuGraFile_muoncontrol = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_muon.root";
-  TString mSuGraDir_muoncontrol = "mSuGraScan_350";
-  TString mSuGraHist_muoncontrol = "m0_m12_0";
-  
-  //name for m0-m12 plane for event  yields with modified factorization and renormalization scale 0.5 down
-  TString mSuGraFile_sys05 = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root";
- 
-  //name for m0-m12 plane for event yields with modified factorization and renormalization scale 2 up
-  TString mSuGraFile_sys2 = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root";
- 
 
   TH2F* yield_signal = sysPlot(mSuGraFile_signal);//event yields in signal like region
   TH2F* yield_muoncontrol =  yieldPlot(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
