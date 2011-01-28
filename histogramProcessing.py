@@ -17,7 +17,7 @@ def fullPoints() :
 
 def cachedPoints() :
     if conf.testPointsOnly() :
-        return [(1, 1), (1, 2), (2, 1), (2, 2)]
+        return [(10, 10), (10, 20), (20, 10), (20, 20)]
     else :
         return fullPoints()
 
