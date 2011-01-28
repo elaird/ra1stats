@@ -1,4 +1,11 @@
+#include <sstream>
+#include <algorithm>
 #include "TROOT.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TCanvas.h"
+#include "TLine.h"
+#include "TStopwatch.h"
 #include "RooRandom.h"
 #include "RooProfileLL.h"
 #include "RooAbsPdf.h"
@@ -10,13 +17,7 @@
 #include "RooWorkspace.h"
 #include "RooAddition.h"
 #include "RooPoisson.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TCanvas.h"
-#include "TLine.h"
-#include "TStopwatch.h"
-#include <sstream>
-#include <algorithm>
+#include "RooFitResult.h"
 #include "RooStats/ProfileLikelihoodCalculator.h"
 #include "RooStats/MCMCCalculator.h"
 #include "RooStats/UniformProposal.h"
@@ -33,13 +34,7 @@
 #include "RooStats/ProposalFunction.h"
 #include "RooStats/ProposalHelper.h"
 #include "RooStats/BayesianCalculator.h"
-#include "RooFitResult.h"
 #include "RooStats/PointSetInterval.h"
-
-//#include "../include/ExclusionPlot.hh"
-
-
-#include "TStopwatch.h"
 
 TH2F* yieldPlot(TString mSuGraFile,TString mSuGraDir, TString mSuGraHist){
   //read In mSuGra Histo
