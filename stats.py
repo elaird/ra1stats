@@ -32,12 +32,12 @@ def operateOnListUsingQueue(nCores, workerFunc, inList) :
 def jobCmds(nSlices = None) :
     pwd = os.environ["PWD"]
     if nSlices==None :
-        return ["%s/job.sh %s %g %g"%(pwd, pwd, point[0], point[1]) for point in points()]
+        return ["%s/job.sh %s %s/%s %g %g"%(pwd, pwd, pwd, sourceFile, point[0], point[1]) for point in points()]
     else :
         out = []
         for iSlice in range(nSlices) :
             args = [ "%g %g"%point for point in points()[iSlice::nSlices] ]
-            out.append("%s/job.sh %s %s"%(pwd, pwd, " ".join(args)))
+            out.append("%s/job.sh %s %s/%s %s"%(pwd, pwd, pwd, sourceFile, " ".join(args)))
         return out
 ############################################    
 def batch(nSlices) :
@@ -59,6 +59,7 @@ def points() :
 ############################################
 options = opts()
 
+sourceFile = "dummy.C"
 if options.batch :
     batch(int(options.batch))
 
