@@ -42,20 +42,27 @@ def getCommandOutput(command):
     stdout,stderr = p.communicate()
     return {"stdout":stdout, "stderr":stderr, "returncode":p.returncode}
 ############################################
-def jobCmds(nSlices = None) :
+def jobCmds(nSlices = None, useCompiled = True) :
     pwd = os.environ["PWD"]
 
     if nSlices<=0 : nSlices = len(hp.points())
     out = []
     for iSlice in range(nSlices) :
         args = [ "%g %g"%point for point in hp.points()[iSlice::nSlices] ]
-        out.append("%s/job.sh %s %s/%s %s >& %s/%s"%(pwd, pwd, pwd, conf.sourceFile(), " ".join(args), pwd, conf.logFileName(iSlice)))
+        s  = "%s/job.sh"%pwd                             #0
+        s += " %s"%pwd                                   #1
+        s += " %s/%s%s"%(pwd,                            #2
+                         conf.sourceFile(),
+                         "+" if useCompiled else " "
+                         )
+        s += " %s"%(" ".join(args))                      #3
+        s += " >& %s/%s"%(pwd, conf.logFileName(iSlice))
+        out.append(s)
     return out
 ############################################
 def batch(nSlices) :
-    for jobCmd in jobCmds(nSlices) :
+    for jobCmd in jobCmds(nSlices, useCompiled = False) :
         subCmd = "bsub %s"%jobCmd
-        #print subCmd
         os.system(subCmd)
 ############################################
 def local(nWorkers) :
