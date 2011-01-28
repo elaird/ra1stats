@@ -436,15 +436,15 @@ void Lepton(TString& outputPlotFileName,
   
   mytry = false;
   
-  Double_t d_s = yield_signal->GetBinContent(m0+1,m12)/100*lumi;
-  Double_t d_s_sys05 = yield_sys05->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
-  Double_t d_s_sys2 = yield_sys2->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
+  Double_t d_s = yield_signal->GetBinContent(m0,m12)/100*lumi;
+  Double_t d_s_sys05 = yield_sys05->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
+  Double_t d_s_sys2 = yield_sys2->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
   Double_t masterPlus = 0;
   Double_t masterMinus = 0;
   Double_t signal_sys = sigma_SigEff_;
   
   if(d_s > 0){
-    tau_s_muon = yield_muoncontrol->GetBinContent(m0+1,m12)/yield_signal->GetBinContent(m0+1,m12); 
+    tau_s_muon = yield_muoncontrol->GetBinContent(m0,m12)/yield_signal->GetBinContent(m0,m12); 
     
     masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
     masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
