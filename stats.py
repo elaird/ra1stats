@@ -10,10 +10,11 @@ def opts() :
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch", dest = "batch", default = None,  metavar = "N",          help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
     parser.add_option("--local", dest = "local", default = None,  metavar = "N",          help = "loop over events locally using N cores (N>0)")
-    parser.add_option("--merge", dest = "merge", default = False, action  = "store_true", help = "merge job output")
+    parser.add_option("--merge", dest = "merge", default = None,  metavar = "N",          help = "merge job output using N temporary slices (N>0)")
     options,args = parser.parse_args()
     assert options.batch==None or options.local==None,"Choose only one of (batch, local)"
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
+    assert options.merge==None or int(options.merge)>0,"N must be greater than 0"
     return options
 #####################################
 def operateOnListUsingQueue(nCores, workerFunc, inList) :
@@ -80,7 +81,7 @@ def mkdirs() :
     for item in ["logDir", "outputDir"] :
         mkdir(getattr(conf, item)())
 ############################################
-def merge() :
+def merge(nSlices) :
     def cleanUp(stderr, files) :
         assert not stderr, "hadd had this stderr: %s"%stderr
         for fileName in files :
@@ -88,16 +89,26 @@ def merge() :
 
     def mergeOneType(attr) :
         inList = [getattr(conf, "%sFileName"%attr)(*point) for point in hp.points()]
-        outFile = getattr(conf, "%sStem"%attr)()
-        hAdd = getCommandOutput("hadd -f %s.root %s"%(outFile, " ".join(inList)))
-        cleanUp(hAdd["stderr"], inList)
+        outFile = "%s%s"%(getattr(conf, "%sStem"%attr)(), ".root")
 
-    for item in ["plot", "workspace"] :
-        mergeOneType(item)
+        outFiles = []
+        for iSlice in range(nSlices) :
+            tmpList = inList[iSlice::nSlices]
+            tmpFile = "%s%d"outFile.replace(".root","_%d.root"%iSlice)
+            hAdd = getCommandOutput("hadd -f %s %s"%(tmpFile, " ".join(tmpList)))
+            #cleanUp(hAdd["stderr"], tmpList)
+            outFiles.append(tmpFile)
+
+        hAdd = getCommandOutput("hadd -f %s %s"%(outFile, " ".join(outFiles)))
+        #cleanUp(hAdd["stderr"], outFiles)
+
+    mergeOneType("plot")
+    if conf.writeWorkspaceFile() :
+        mergeOneType("workspace")
 ############################################    
 options = opts()
 compile()
 mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
-if options.merge : merge()
+if options.merge : merge(int(options.merge))
