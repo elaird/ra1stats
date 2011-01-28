@@ -20,4 +20,13 @@ r.gROOT.LoadMacro("%s+"%fileName())
 for point in points() :
     getattr(r, funcName())(conf.plotFileName(*point),
                            conf.workspaceFileName(*point),
+
+                           conf.mSuGra_FileSignal(),
+                           conf.mSuGra_FileMuonControl(),
+                           conf.mSuGra_DirMuonControl(),
+                           conf.mSuGra_HistMuonControl(),
+                           conf.mSuGra_FileSys05(),
+                           conf.mSuGra_FileSys2(),
+
+                           conf.lumi(),
                            *point)
