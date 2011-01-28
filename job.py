@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import ROOT as r
+import configuration as conf
 
 def pwd() :
     return sys.argv[1]
@@ -17,5 +18,6 @@ def points() :
 r.gROOT.LoadMacro("%s+"%fileName())
 
 for point in points() :
-    h = getattr(r, funcName())(point[0], point[1])
-    h.Print()
+    getattr(r, funcName())(conf.plotFileName(*point),
+                           conf.workspaceFileName(*point),
+                           *point)

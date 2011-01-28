@@ -2,6 +2,7 @@
 import os
 from multiprocessing import Process,JoinableQueue
 import ROOT as r
+import configuration as conf
 ############################################
 def opts() :
     from optparse import OptionParser
@@ -31,14 +32,13 @@ def operateOnListUsingQueue(nCores, workerFunc, inList) :
 ############################################
 def jobCmds(nSlices = None) :
     pwd = os.environ["PWD"]
-    if nSlices==None :
-        return ["%s/job.sh %s %s/%s %g %g"%(pwd, pwd, pwd, sourceFile, point[0], point[1]) for point in points()]
-    else :
-        out = []
-        for iSlice in range(nSlices) :
-            args = [ "%g %g"%point for point in points()[iSlice::nSlices] ]
-            out.append("%s/job.sh %s %s/%s %s"%(pwd, pwd, pwd, sourceFile, " ".join(args)))
-        return out
+
+    if nSlices==None : nSlices = len(points())
+    out = []
+    for iSlice in range(nSlices) :
+        args = [ "%g %g"%point for point in points()[iSlice::nSlices] ]
+        out.append("%s/job.sh %s %s/%s %s >& %s"%(pwd, pwd, pwd, conf.sourceFile(), " ".join(args), conf.logFileName(iSlice)))
+    return out
 ############################################    
 def batch(nSlices) :
     for jobCmd in jobCmds(nSlices) :
@@ -58,12 +58,11 @@ def compile(file) :
     r.gROOT.LoadMacro("%s+"%file)
 ############################################
 def points() :
-    return [(0, 0), (0, 1), (1, 0), (1, 1)]
+    return [(1, 1), (1, 2), (2, 1), (2, 2)]
 ############################################
 options = opts()
 
-sourceFile = "Lepton.C"
-compile(sourceFile)
+compile(conf.sourceFile())
 
 if options.batch :
     batch(int(options.batch))
