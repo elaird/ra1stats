@@ -338,10 +338,47 @@ void mcmc(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* ws
   //MCMC interval on s = [15.7628, 84.7266]
 }
 
+double setSignalVars(TString& mSuGraFile_signal,
+		     TString& mSuGraFile_muoncontrol, TString& mSuGraDir_muoncontrol, TString& mSuGraHist_muoncontrol,
+		     TString& mSuGraFile_sys05,
+		     TString& mSuGraFile_sys2,
+		     RooWorkspace* wspace,
+		     int m0,
+		     int m12,
+		     double lumi,
+		     Double_t sigma_SigEff_
+		     ) {
+  
+  TH2F* yield_signal = sysPlot(mSuGraFile_signal);//event yields in signal like region
+  TH2F* yield_muoncontrol = yieldPlot(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
+  TH2F* yield_sys05 = sysPlot(mSuGraFile_sys05);//NLO modified 0.5
+  TH2F* yield_sys2 = sysPlot(mSuGraFile_sys2); //NLO modified 2
+
+  double tau_s_muon = 1;
+
+  Double_t d_s = yield_signal->GetBinContent(m0,m12)/100*lumi;
+  Double_t d_s_sys05 = yield_sys05->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
+  Double_t d_s_sys2 = yield_sys2->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
+  Double_t masterPlus = 0;
+  Double_t masterMinus = 0;
+  Double_t signal_sys = sigma_SigEff_;
+  
+  if(d_s > 0){
+    tau_s_muon = yield_muoncontrol->GetBinContent(m0,m12)/yield_signal->GetBinContent(m0,m12); 
+    masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
+    masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
+    signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  );
+  }
+  
+  //set background contamination
+  wspace->var("tau_s_mu")->setVal(tau_s_muon);
+  wspace->var("sigma_SigEff")->setVal(signal_sys);
+
+  return d_s;
+}
+
 TCanvas* canvas(bool doBayesian, bool doMCMC) {
-  TCanvas* c1 = (TCanvas*) gROOT->Get("c1");  
-  if(!c1)
-    c1 = new TCanvas("c1");
+  TCanvas* c1 = new TCanvas("c1");
   
   if(doBayesian && doMCMC){
     c1->Divide(3);
@@ -354,12 +391,15 @@ TCanvas* canvas(bool doBayesian, bool doMCMC) {
   return c1;
 }
 
-void writeExclusionLimitPlot(TString& outputPlotFileName, TH2F* exclusionLimits) {
+void writeExclusionLimitPlot(TString& outputPlotFileName, int m0, int m12, bool isInInterval) {
   TFile output(outputPlotFileName, "RECREATE");
   if (output.IsZombie()) std::cout << " zombie alarm output is a zombie " << std::endl;
-  if (exclusionLimits) exclusionLimits->Write();
+
+  TH2F exclusionLimit("ExclusionLimit","ExclusionLimit",100,0,1000,40,100,500);
+  exclusionLimit.SetBinContent(m0, m12, 2.0*isInInterval - 1.0);
+  exclusionLimit.Write();
+
   output.cd();
-  output.Write();
   output.Close();
 }
 
@@ -409,7 +449,7 @@ void Lepton2(TString& outputPlotFileName,
   //nullParams->addClone(*mu);
   //nullParams->setRealValue("s",0);
   
-  TCanvas* c1 = canvas(doBayesian, doMCMC); //prepare a canvas
+  canvas(doBayesian, doMCMC); //prepare a canvas
   std::cout << " Limit " << std::endl;
 
   profileLikelihood(data, modelConfig, wspace);
@@ -417,43 +457,14 @@ void Lepton2(TString& outputPlotFileName,
   if (doBayesian) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (doMCMC) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
 
-  TH2F* exclusionLimits = new TH2F("ExclusionLimit","ExclusionLimit",100,0,1000,40,100,500);
-
-  TH2F* yield_signal = sysPlot(mSuGraFile_signal);//event yields in signal like region
-  TH2F* yield_muoncontrol = yieldPlot(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
-  TH2F* yield_sys05 = sysPlot(mSuGraFile_sys05);//NLO modified 0.5
-  TH2F* yield_sys2 = sysPlot(mSuGraFile_sys2); //NLO modified 2
-
-  double tau_s_muon = 1;
-
-  Double_t d_s = yield_signal->GetBinContent(m0,m12)/100*lumi;
-  Double_t d_s_sys05 = yield_sys05->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
-  Double_t d_s_sys2 = yield_sys2->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
-  Double_t masterPlus = 0;
-  Double_t masterMinus = 0;
-  Double_t signal_sys = sigma_SigEff_;
-  
-  if(d_s > 0){
-    tau_s_muon = yield_muoncontrol->GetBinContent(m0,m12)/yield_signal->GetBinContent(m0,m12); 
-    
-    masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
-    masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
-    
-    signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  );
-    
-  }
-  
-  //set background contamination
-  wspace->var("tau_s_mu")->setVal(tau_s_muon);
-  wspace->var("sigma_SigEff")->setVal(signal_sys);
+  double d_s = setSignalVars(mSuGraFile_signal,
+			     mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol,
+			     mSuGraFile_sys05, mSuGraFile_sys2,
+			     wspace, m0, m12, lumi, sigma_SigEff_
+			     );
   
   bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
   
-  if(d_s > 1.0) {
-    float content = 2.0*isInInterval - 1.0;
-    exclusionLimits->SetBinContent(m0, m12, content);
-  }
-
-  writeExclusionLimitPlot(outputPlotFileName, exclusionLimits);
+  writeExclusionLimitPlot(outputPlotFileName, m0, m12, isInInterval);
   t.Print();
 }
