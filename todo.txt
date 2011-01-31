@@ -1,0 +1,19 @@
+Correctness
+-----------
+lolargs
+  //RooRealVar* mu = wspace->var("s");
+  //RooArgSet* nullParams = new RooArgSet("nullParams");
+  //nullParams->addClone(*mu);
+  //nullParams->setRealValue("s",0);
+
+Consistency
+-----------
+binning for exclusionLimit
+100
+0.95
+"Combine"
+
+Style
+-----
+RooRandom::randomGenerator()->SetSeed(4357);
+Double_t
