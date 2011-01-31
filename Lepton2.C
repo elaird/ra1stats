@@ -233,78 +233,52 @@ RooStats::ModelConfig* modelConfiguration(RooWorkspace* wspace) {
   return modelConfig;
 }
 
-void Lepton(TString& outputPlotFileName,
-	    TString& outputWorkspaceFileName,
-	    bool writeWorkspaceFile,
+void printCovMat(RooWorkspace* wspace, RooDataSet* data, RooArgSet& constrainedParams) {
+  wspace->pdf("total_model")->fitTo(*data,RooFit::Constrain(constrainedParams));
 
-	    TString& mSuGraFile_signal,
-	    TString& mSuGraFile_muoncontrol,
-	    TString& mSuGraDir_muoncontrol,
-	    TString& mSuGraHist_muoncontrol,
-	    TString& mSuGraFile_sys05,
-	    TString& mSuGraFile_sys2,
-
-	    int m0, int m12, double lumi,
-	    bool doBayesian=false, bool doFeldmanCousins=false, bool doMCMC=false
-	    ) {
-
-  // let's time this challenging example
-  TStopwatch t;
-  t.Start();
-
-  //Define output file 
-  TFile* output = new TFile(outputPlotFileName,"RECREATE");
-  if( !output || output->IsZombie()){
-    cout << " zombie alarm output is a zombie " << std::endl; 
-    return;
-  }
-  
-  // set RooFit random seed for reproducible results
-  RooRandom::randomGenerator()->SetSeed(4357);
-  //make a workspace
-  RooWorkspace* wspace = workspace();
-  //import variables and set up total likelihood function
-  Double_t sigma_SigEff_ = 0.12;//systematic uncertainty on signal acceptance*efficiency*luminosity //added single uncertainties quadratically
-  RooDataSet* data = importVars(wspace, sigma_SigEff_);
- 
-  RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
-  RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
-  RooRealVar* ratioBkgdEff_2 = wspace->var("ratioBkgdEff_2");
-  RooArgSet constrainedParams(*ratioBkgdEff_1,*ratioBkgdEff_2,*ratioSigEff);
-
-  RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
-  if (writeWorkspaceFile) wspace->writeToFile(outputWorkspaceFileName.Data());
-
-  //////////////////////////////////////////////////
-  // If you want to see the covariance matrix uncomment
-  /* wspace->pdf("total_model")->fitTo(*data,RooFit::Constrain(constrainedParams));
-
-   //some limitations good for fitting
-   RooArgList nuispar(*wspace->set("nuis"));
+  //some limitations good for fitting
+  RooArgList nuispar(*wspace->set("nuis"));
   for(int i = 0; i < nuispar.getSize();++i){
     RooRealVar &par = (RooRealVar&) nuispar[i];
     par.setMin(std::max(par.getVal()-10*par.getError(),par.getMin() ) );
     par.setMax(std::min(par.getVal()+10*par.getError(),par.getMax() ) );
-    }
-   RooArgList poipar(*wspace->set("poi"));
+  }
+  RooArgList poipar(*wspace->set("poi"));
   for(int i = 0; i < poipar.getSize();++i){
     RooRealVar &spar = (RooRealVar&) poipar[i];
     spar.setMin(std::max(spar.getVal()-10*spar.getError(),spar.getMin() ) );
     spar.setMax(std::min(spar.getVal()+10*spar.getError(),spar.getMax() ) );
   }
-  */  
+}
 
-  RooRealVar* mu = wspace->var("s");
-  RooArgSet* nullParams = new RooArgSet("nullParams");
-  nullParams->addClone(*mu);
-  nullParams->setRealValue("s",0);
+bool profileLikelihood(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace, double d_s = 0.0) {
+  bool isInInterval = false;
 
-   //setup for ProfileLikelihood
   RooStats::ProfileLikelihoodCalculator plc(*data, *modelConfig);
   plc.SetConfidenceLevel(0.95);
-  
   RooStats::LikelihoodInterval* plInt = plc.GetInterval();
-  
+
+  if (d_s<=1.0) {
+    RooStats::LikelihoodIntervalPlot* lrplot = new RooStats::LikelihoodIntervalPlot(plInt);
+    lrplot->Draw();
+    
+    cout << "Profile Likelihood interval on s = ["
+	 << plInt->LowerLimit( *wspace->var("s") ) << ", "
+	 << plInt->UpperLimit( *wspace->var("s") ) << "]" << endl;
+    plInt->UpperLimit( *wspace->var("s") );
+    //Profile Likelihood interval on s = [12.1902, 88.6871]
+  }
+  else {
+    RooRealVar* tmp_s = wspace->var("s");
+    cout << " upper limit " << plInt->UpperLimit(*tmp_s) << endl;
+    tmp_s->setVal(d_s);
+    isInInterval = plInt->IsInInterval(*tmp_s);
+  }
+
+  return isInInterval;
+}
+
+void feldmanCousins(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace) {
   //setup for Felman Cousins
   RooStats::FeldmanCousins fc(*data, *modelConfig);
   fc.SetConfidenceLevel(0.95);
@@ -312,23 +286,33 @@ void Lepton(TString& outputPlotFileName,
   fc.FluctuateNumDataEntries(false); 
   fc.UseAdaptiveSampling(true);
   fc.SetNBins(50);
-  RooStats::PointSetInterval* fcInt = NULL;
-  if(doFeldmanCousins){ // takes 7 minutes
-    fcInt = (RooStats::PointSetInterval*) fc.GetInterval(); // fix cast
-  }
-  
-  // use BayesianCalculator (only 1-d parameter of interest, slow for this problem)  
+  RooStats::PointSetInterval* fcInt = (RooStats::PointSetInterval*) fc.GetInterval();
+
+  cout << "Feldman Cousins interval on s = ["
+       << fcInt->LowerLimit( *wspace->var("s") ) << ", "
+       << fcInt->UpperLimit( *wspace->var("s") ) << "]" << endl;
+  //Feldman Cousins interval on s = [18.75 +/- 2.45, 83.75 +/- 2.45]
+  fcInt->UpperLimit( *wspace->var("s") );
+}
+
+void bayesian(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace) {
   RooStats::BayesianCalculator bc(*data, *modelConfig);
   bc.SetConfidenceLevel(0.95);
   RooStats::SimpleInterval* bInt = NULL;
-  if(doBayesian && wspace->set("poi")->getSize() == 1)   {
+  if(wspace->set("poi")->getSize() == 1)   {
     bInt = bc.GetInterval();
   } else{
     cout << "Bayesian Calc. only supports on parameter of interest" << endl;
+    return;
   }
-  
-  
-  // use MCMCCalculator  (takes about 1 min)
+
+  cout << "Bayesian interval on s = ["
+       << bInt->LowerLimit( ) << ", "
+       << bInt->UpperLimit( ) << "]" << endl;
+  bInt->UpperLimit( );
+}
+
+void mcmc(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace) {
   // Want an efficient proposal function, so derive it from covariance
   // matrix of fit
   RooFitResult* fit = wspace->pdf("total_model")->fitTo(*data, RooFit::Save());
@@ -345,13 +329,16 @@ void Lepton(TString& outputPlotFileName,
   mc.SetNumBurnInSteps(200); // first N steps to be ignored as burn-in
   mc.SetNumIters(20000000);
   mc.SetLeftSideTailFraction(0.5); // make a central interval
-  RooStats::MCMCInterval* mcInt = NULL;
-  if(doMCMC)
-    mcInt = mc.GetInterval();
-  
+  RooStats::MCMCInterval* mcInt = mc.GetInterval();
 
-  //////////////////////////////////////
-  // Make some  plots
+  cout << "MCMC interval on s = ["
+       << mcInt->LowerLimit(*wspace->var("s") ) << ", "
+       << mcInt->UpperLimit(*wspace->var("s") ) << "]" << endl;
+  mcInt->UpperLimit(*wspace->var("s") );
+  //MCMC interval on s = [15.7628, 84.7266]
+}
+
+TCanvas* canvas(bool doBayesian, bool doMCMC) {
   TCanvas* c1 = (TCanvas*) gROOT->Get("c1");  
   if(!c1)
     c1 = new TCanvas("c1");
@@ -364,66 +351,81 @@ void Lepton(TString& outputPlotFileName,
     c1->Divide(2);
     c1->cd(1);
   }
-  
-  RooStats::LikelihoodIntervalPlot* lrplot = new RooStats::LikelihoodIntervalPlot(plInt);
-  lrplot->Draw();
-  
+  return c1;
+}
 
-  double upperlimit = 0;
+void writeExclusionLimitPlot(TString& outputPlotFileName, TH2F* exclusionLimits) {
+  TFile output(outputPlotFileName, "RECREATE");
+  if (output.IsZombie()) std::cout << " zombie alarm output is a zombie " << std::endl;
+  if (exclusionLimits) exclusionLimits->Write();
+  output.cd();
+  output.Write();
+  output.Close();
+}
 
-  cout << " Limit " << endl;
-  ////////////////////////////////////
-  // querry intervals
-  cout << "Profile Likelihood interval on s = [" << 
-    plInt->LowerLimit( *wspace->var("s") ) << ", " <<
-    plInt->UpperLimit( *wspace->var("s") ) << "]" << endl; 
-  upperlimit = plInt->UpperLimit( *wspace->var("s") );
-  //Profile Likelihood interval on s = [12.1902, 88.6871]
-  
-  if(doBayesian && wspace->set("poi")->getSize() == 1)   {
-    cout << "Bayesian interval on s = [" << 
-      bInt->LowerLimit( ) << ", " <<
-      bInt->UpperLimit( ) << "]" << endl;
-    upperlimit = bInt->UpperLimit( );
-  }  
-  
-  if(doFeldmanCousins){    
-    cout << "Feldman Cousins interval on s = [" << 
-      fcInt->LowerLimit( *wspace->var("s") ) << ", " <<
-      fcInt->UpperLimit( *wspace->var("s") ) << "]" << endl;
-    //Feldman Cousins interval on s = [18.75 +/- 2.45, 83.75 +/- 2.45]
-    upperlimit = 	fcInt->UpperLimit( *wspace->var("s") );
-  }
-  
-  if(doMCMC){
-    cout << "MCMC interval on s = [" << 
-      mcInt->LowerLimit(*wspace->var("s") ) << ", " <<
-      mcInt->UpperLimit(*wspace->var("s") ) << "]" << endl;
-    upperlimit = 	mcInt->UpperLimit(*wspace->var("s") );
-    //MCMC interval on s = [15.7628, 84.7266]
-    
-  }
-  
+void Lepton2(TString& outputPlotFileName,
+	    TString& outputWorkspaceFileName,
+	    bool writeWorkspaceFile,
+	    bool printCovarianceMatrix,
+
+	    TString& mSuGraFile_signal,
+	    TString& mSuGraFile_muoncontrol,
+	    TString& mSuGraDir_muoncontrol,
+	    TString& mSuGraHist_muoncontrol,
+	    TString& mSuGraFile_sys05,
+	    TString& mSuGraFile_sys2,
+
+	    int m0,
+	    int m12,
+	    double lumi,
+
+	    bool doBayesian,
+	    bool doFeldmanCousins,
+	    bool doMCMC
+	    ) {
+
+  TStopwatch t;
+  t.Start();
+
+  //set RooFit random seed for reproducible results
+  RooRandom::randomGenerator()->SetSeed(4357);
+  //make a workspace
+  RooWorkspace* wspace = workspace();
+  //import variables and set up total likelihood function
+  Double_t sigma_SigEff_ = 0.12;//systematic uncertainty on signal acceptance*efficiency*luminosity //added single uncertainties quadratically
+  RooDataSet* data = importVars(wspace, sigma_SigEff_);
  
-    //output root file
+  RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
+  RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
+  RooRealVar* ratioBkgdEff_2 = wspace->var("ratioBkgdEff_2");
+  RooArgSet constrainedParams(*ratioBkgdEff_1,*ratioBkgdEff_2,*ratioSigEff);
+
+  RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
+  if (writeWorkspaceFile) wspace->writeToFile(outputWorkspaceFileName.Data());
+  if (printCovarianceMatrix) printCovMat(wspace, data, constrainedParams);
+
+  //RooRealVar* mu = wspace->var("s");
+  //RooArgSet* nullParams = new RooArgSet("nullParams");
+  //nullParams->addClone(*mu);
+  //nullParams->setRealValue("s",0);
+  
+  TCanvas* c1 = canvas(doBayesian, doMCMC); //prepare a canvas
+  std::cout << " Limit " << std::endl;
+
+  profileLikelihood(data, modelConfig, wspace);
+  if (doFeldmanCousins) feldmanCousins(data, modelConfig, wspace); //takes 7 minutes
+  if (doBayesian) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
+  if (doMCMC) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
+
   TH2F* exclusionLimits = new TH2F("ExclusionLimit","ExclusionLimit",100,0,1000,40,100,500);
 
   TH2F* yield_signal = sysPlot(mSuGraFile_signal);//event yields in signal like region
-  TH2F* yield_muoncontrol =  yieldPlot(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
+  TH2F* yield_muoncontrol = yieldPlot(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
   TH2F* yield_sys05 = sysPlot(mSuGraFile_sys05);//NLO modified 0.5
   TH2F* yield_sys2 = sysPlot(mSuGraFile_sys2); //NLO modified 2
 
-  
-  
-  bool mytry = false;
-
- 
   double tau_s_muon = 1;
 
-  output->cd();
-  
-  mytry = false;
-  
   Double_t d_s = yield_signal->GetBinContent(m0,m12)/100*lumi;
   Double_t d_s_sys05 = yield_sys05->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
   Double_t d_s_sys2 = yield_sys2->GetBinContent(m0,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
@@ -445,41 +447,13 @@ void Lepton(TString& outputPlotFileName,
   wspace->var("tau_s_mu")->setVal(tau_s_muon);
   wspace->var("sigma_SigEff")->setVal(signal_sys);
   
+  bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
   
-  
-  if(d_s > 1 && mytry == false){
-    bool isInInterval = true;
-    
-    plInt = (RooStats::LikelihoodInterval*) plc.GetInterval();
-    
-    RooRealVar* tmp_s = wspace->var("s");
-    
-    cout << " upper limit " << plInt->UpperLimit(*tmp_s) << endl;
-    tmp_s->setVal(d_s);
-    isInInterval = plInt->IsInInterval(*tmp_s);
-    
-    if(isInInterval == false){
-      mytry = true;//if one point is excluded assume that the points in m12 below this point are also excluded, have been tested to be true and makes the code faster
-      exclusionLimits->SetBinContent(m0,m12,1);//if one point which is excluded is found set the output point to 1	 
-    }
-    else{
-      exclusionLimits->SetBinContent(m0,m12,-1);//if not set it to 0	 
-    }
-    
-    delete plInt;
+  if(d_s > 1.0) {
+    float content = 2.0*isInInterval - 1.0;
+    exclusionLimits->SetBinContent(m0, m12, content);
   }
-  if(mytry == true){
-    exclusionLimits->SetBinContent(m0,m12,1);
-  }
-  
+
+  writeExclusionLimitPlot(outputPlotFileName, exclusionLimits);
   t.Print();
-
-  exclusionLimits->Write();
-
-  output->cd();
-  output->Write();
-  output->Close();
-  
-   
-
 }
