@@ -4,7 +4,6 @@ lolargs
 tempfile for output
 NLO XS for muon sample
 include Rob's method
-error message
 
 Consistency
 -----------
