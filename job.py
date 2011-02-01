@@ -24,9 +24,13 @@ for point in points() :
                            conf.printCovarianceMatrix(),
                            
                            conf.mSuGra_FileSignal(),
+                           conf.mSuGra_Dir1Signal(),
+                           conf.mSuGra_Dir2Signal(),
+
                            conf.mSuGra_FileMuonControl(),
                            conf.mSuGra_DirMuonControl(),
                            conf.mSuGra_HistMuonControl(),
+
                            conf.mSuGra_FileSys05(),
                            conf.mSuGra_FileSys2(),
 

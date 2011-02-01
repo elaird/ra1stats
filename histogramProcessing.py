@@ -19,9 +19,9 @@ def checkHistoBinning() :
     
     def handles() :
         return [
-            (conf.mSuGra_FileSignal(),        conf.mSuGra_DirSignal(),      conf.mSuGra_ExampleHistSignal()),
-            (conf.mSuGra_FileSys05(),         conf.mSuGra_DirSignal(),      conf.mSuGra_ExampleHistSignal()),
-            (conf.mSuGra_FileSys2(),          conf.mSuGra_DirSignal(),      conf.mSuGra_ExampleHistSignal()),
+            (conf.mSuGra_FileSignal(),        conf.mSuGra_Dir2Signal(),     conf.mSuGra_ExampleHistSignal()),
+            (conf.mSuGra_FileSys05(),         conf.mSuGra_Dir2Signal(),     conf.mSuGra_ExampleHistSignal()),
+            (conf.mSuGra_FileSys2(),          conf.mSuGra_Dir2Signal(),     conf.mSuGra_ExampleHistSignal()),
             (conf.mSuGra_FileMuonControl(),   conf.mSuGra_DirMuonControl(), conf.mSuGra_HistMuonControl()  ),
             ]
 

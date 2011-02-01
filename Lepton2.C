@@ -36,7 +36,7 @@
 #include "RooStats/BayesianCalculator.h"
 #include "RooStats/PointSetInterval.h"
 
-TH2F* yieldPlot(TString mSuGraFile,TString mSuGraDir, TString mSuGraHist){
+TH2F* yieldPlot(TString& mSuGraFile,TString& mSuGraDir, TString& mSuGraHist) {
   //read In mSuGra Histo
   TFile* f = new TFile(mSuGraFile);
   TDirectory* dir = (TDirectory*)f->Get(mSuGraDir);
@@ -47,11 +47,11 @@ TH2F* yieldPlot(TString mSuGraFile,TString mSuGraDir, TString mSuGraHist){
 }
 
 //a little plotting routine to calculate the NLO cross-section
-TH2F* sysPlot(TString mSuGraFile){
+TH2F* sysPlot(TString& mSuGraFile, TString& mSuGraDir1, TString& mSuGraDir2) {
   //read In mSuGra Histo
   TFile* f = new TFile(mSuGraFile);
-  TDirectory* dir = (TDirectory*)f->Get("mSuGraScan_beforeAll");
-  TDirectory* dir2 = (TDirectory*)f->Get("mSuGraScan_350");
+  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir1);
+  TDirectory* dir2 = (TDirectory*)f->Get(mSuGraDir2);
   
   TH2F* gg = (TH2F*)dir2->Get("m0_m12_gg_0");
   TH2F* gg_noweight = (TH2F*)dir->Get("m0_m12_gg_5");
@@ -338,7 +338,7 @@ void mcmc(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* ws
   //MCMC interval on s = [15.7628, 84.7266]
 }
 
-double setSignalVars(TString& mSuGraFile_signal,
+double setSignalVars(TString& mSuGraFile_signal, TString& mSuGraDir1_signal, TString& mSuGraDir2_signal,
 		     TString& mSuGraFile_muoncontrol, TString& mSuGraDir_muoncontrol, TString& mSuGraHist_muoncontrol,
 		     TString& mSuGraFile_sys05,
 		     TString& mSuGraFile_sys2,
@@ -349,10 +349,10 @@ double setSignalVars(TString& mSuGraFile_signal,
 		     Double_t sigma_SigEff_
 		     ) {
   
-  TH2F* yield_signal = sysPlot(mSuGraFile_signal);//event yields in signal like region
+  TH2F* yield_signal = sysPlot(mSuGraFile_signal, mSuGraDir1_signal, mSuGraDir2_signal);//event yields in signal like region
   TH2F* yield_muoncontrol = yieldPlot(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
-  TH2F* yield_sys05 = sysPlot(mSuGraFile_sys05);//NLO modified 0.5
-  TH2F* yield_sys2 = sysPlot(mSuGraFile_sys2); //NLO modified 2
+  TH2F* yield_sys05 = sysPlot(mSuGraFile_sys05, mSuGraDir1_signal, mSuGraDir2_signal);//NLO modified 0.5
+  TH2F* yield_sys2 = sysPlot(mSuGraFile_sys2, mSuGraDir1_signal, mSuGraDir2_signal); //NLO modified 2
 
   double tau_s_muon = 1;
 
@@ -430,6 +430,9 @@ void Lepton2(TString& outputPlotFileName,
 	    bool printCovarianceMatrix,
 
 	    TString& mSuGraFile_signal,
+	    TString& mSuGraDir1_signal,
+	    TString& mSuGraDir2_signal,
+
 	    TString& mSuGraFile_muoncontrol,
 	    TString& mSuGraDir_muoncontrol,
 	    TString& mSuGraHist_muoncontrol,
@@ -478,7 +481,7 @@ void Lepton2(TString& outputPlotFileName,
   if (doBayesian) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (doMCMC) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
 
-  double d_s = setSignalVars(mSuGraFile_signal,
+  double d_s = setSignalVars(mSuGraFile_signal, mSuGraDir1_signal, mSuGraDir2_signal,
 			     mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol,
 			     mSuGraFile_sys05, mSuGraFile_sys2,
 			     wspace, m0, m12, lumi, sigma_SigEff_
