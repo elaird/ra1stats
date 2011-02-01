@@ -1,19 +1,13 @@
 Correctness
 -----------
 lolargs
-  //RooRealVar* mu = wspace->var("s");
-  //RooArgSet* nullParams = new RooArgSet("nullParams");
-  //nullParams->addClone(*mu);
-  //nullParams->setRealValue("s",0);
 tempfile for output
 NLO XS for muon sample
-check binning
 include Rob's method
 error message
 
 Consistency
 -----------
-binning for exclusionLimit
 100
 0.95
 "Combine"
