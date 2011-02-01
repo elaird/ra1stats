@@ -391,13 +391,34 @@ TCanvas* canvas(bool doBayesian, bool doMCMC) {
   return c1;
 }
 
-void writeExclusionLimitPlot(TString& outputPlotFileName, int m0, int m12, bool isInInterval) {
+TH2F *histoWithBinning(TString& mSuGraFile_muoncontrol,
+		       TString& mSuGraDir_muoncontrol,
+		       TString& mSuGraHist_muoncontrol
+		       ) {
+  TFile f(mSuGraFile_muoncontrol);
+  TH2F *h = (TH2F*)f.Get(mSuGraDir_muoncontrol+"/"+mSuGraHist_muoncontrol);
+  TString name = h->GetName();
+  name += "_clone";
+  TH2F *g = (TH2F*)h->Clone(name);
+  g->SetDirectory(0);
+  f.Close();
+  return g;
+}
+
+void writeExclusionLimitPlot(TH2F *exampleHisto, TString& outputPlotFileName, int m0, int m12, bool isInInterval) {
   TFile output(outputPlotFileName, "RECREATE");
   if (output.IsZombie()) std::cout << " zombie alarm output is a zombie " << std::endl;
 
-  TH2F exclusionLimit("ExclusionLimit","ExclusionLimit",100,0,1000,40,100,500);
-  exclusionLimit.SetBinContent(m0, m12, 2.0*isInInterval - 1.0);
-  exclusionLimit.Write();
+  if (!exampleHisto) {
+    std::cout << "exampleHisto is NULL" << std::endl;
+    return;
+  }
+
+  TH2F *exclusionLimit = (TH2F*)exampleHisto->Clone("ExclusionLimit");
+  exclusionLimit->SetTitle("ExclusionLimit;m_{0} (GeV);m_{1/2} (GeV)");
+  exclusionLimit->Reset();
+  exclusionLimit->SetBinContent(m0, m12, 2.0*isInInterval - 1.0);
+  exclusionLimit->Write();
 
   output.cd();
   output.Close();
@@ -465,6 +486,7 @@ void Lepton2(TString& outputPlotFileName,
   
   bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
   
-  writeExclusionLimitPlot(outputPlotFileName, m0, m12, isInInterval);
+  TH2F *exampleHisto = histoWithBinning(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
+  writeExclusionLimitPlot(exampleHisto, outputPlotFileName, m0, m12, isInInterval);
   t.Print();
 }
