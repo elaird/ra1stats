@@ -95,6 +95,8 @@ def merge(nSlices) :
         for fileName in l :
             if os.path.exists(fileName) :
                 out.append(fileName)
+            else :
+                print "Skipping %s"%fileName
         return out
 
     def go(outFile, inList) :
