@@ -10,6 +10,8 @@ def doMCMC() : return False
 
 #name for m0-m12 plane for event yields in signal-like region
 def mSuGra_FileSignal() : return "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root"
+def mSuGra_DirSignal() : return "mSuGraScan_350"
+def mSuGra_ExampleHistSignal() : return "m0_m12_gg_0"
 
 #name for m0-m12 plane for event yields in the muon control region
 def mSuGra_FileMuonControl() : return "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_muon.root"
