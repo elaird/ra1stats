@@ -4,7 +4,6 @@ from multiprocessing import Process,JoinableQueue
 import os,subprocess
 import ROOT as r
 #####################################
-#r.gInterpreter.GenerateDictionary("pair<string,bool>","string")
 r.gInterpreter.GenerateDictionary("pair<string,string>","string")
 r.gInterpreter.GenerateDictionary("std::map<std::string,std::string>","string;map")
 #####################################
