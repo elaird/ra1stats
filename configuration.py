@@ -2,7 +2,7 @@
 
 def testPointsOnly() : return True
 
-def sourceFile() : return "Lepton.C"
+def sourceFile() : return "Lepton2.C"
 
 def doBayesian() : return False
 def doFeldmanCousins() : return False
@@ -26,6 +26,8 @@ def mSuGra_FileSys2() : return "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1
 def lumi() : return 35
 
 #output name options
+def printCovarianceMatrix() : return False
+
 def outputDir() : return "output"
 def logDir() : return "log"
 def tag(m0, m12) : return "m0_%d_m12_%d"%(m0, m12)
