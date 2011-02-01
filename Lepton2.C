@@ -476,7 +476,8 @@ void Lepton2(TString& outputPlotFileName,
   canvas(doBayesian, doMCMC); //prepare a canvas
   std::cout << " Limit " << std::endl;
 
-  profileLikelihood(data, modelConfig, wspace);
+  //profileLikelihood(data, modelConfig, wspace); //run with no signal contamination
+
   if (doFeldmanCousins) feldmanCousins(data, modelConfig, wspace); //takes 7 minutes
   if (doBayesian) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (doMCMC) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
