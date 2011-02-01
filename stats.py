@@ -54,7 +54,7 @@ def jobCmds(nSlices = None, useCompiled = True) :
         s += " %s"%pwd                                   #1
         s += " %s/%s%s"%(pwd,                            #2
                          conf.sourceFile(),
-                         "+" if useCompiled else " "
+                         "+" if useCompiled else "+"
                          )
         s += " %s"%(" ".join(args))                      #3
         s += " >& %s/%s"%(pwd, conf.logFileName(iSlice))
@@ -83,24 +83,36 @@ def mkdirs() :
 ############################################
 def merge(nSlices) :
     def cleanUp(stderr, files) :
-        assert not stderr, "hadd had this stderr: %s"%stderr
-        for fileName in files :
-            os.remove(fileName)
+        if stderr :
+            print "hadd had this stderr: %s"%stderr
+            return
+        else :
+            for fileName in files :
+                os.remove(fileName)
 
+    def prunedList(l) :
+        out = []
+        for fileName in l :
+            if os.path.exists(fileName) :
+                out.append(fileName)
+        return out
+
+    def go(outFile, inList) :
+        inList2 = prunedList(inList)
+        hAdd = getCommandOutput("hadd -f %s %s"%(outFile, " ".join(prunedList(inList2))))
+        cleanUp(hAdd["stderr"], inList2)
+        return outFile if inList2 else None
+        
     def mergeOneType(attr) :
         inList = [getattr(conf, "%sFileName"%attr)(*point) for point in hp.points()]
         outFile = "%s%s"%(getattr(conf, "%sStem"%attr)(), ".root")
 
         outFiles = []
         for iSlice in range(nSlices) :
-            tmpList = inList[iSlice::nSlices]
             tmpFile = outFile.replace(".root","_%d.root"%iSlice)
-            hAdd = getCommandOutput("hadd -f %s %s"%(tmpFile, " ".join(tmpList)))
-            cleanUp(hAdd["stderr"], tmpList)
-            outFiles.append(tmpFile)
-
-        hAdd = getCommandOutput("hadd -f %s %s"%(outFile, " ".join(outFiles)))
-        cleanUp(hAdd["stderr"], outFiles)
+            addedFile = go(tmpFile, inList[iSlice::nSlices])
+            if addedFile : outFiles.append(addedFile)
+        go(outFile, outFiles)
 
     mergeOneType("plot")
     if conf.writeWorkspaceFile() :
