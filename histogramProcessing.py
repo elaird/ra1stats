@@ -36,6 +36,9 @@ def fullPoints() :
 
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
+            content = h.GetBinContent(iBinX, iBinY)
+            if content==0.0 :
+                continue
             out.append( (iBinX, iBinY) )
 
     f.Close()
