@@ -1,7 +1,33 @@
 #!/usr/bin/env python
+import collections
 import configuration as conf
 import ROOT as r
 
+def checkHistoBinning() :
+    def axisStuff(axis) :
+        return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
+
+    def properties(handles) :
+        out = collections.defaultdict(list)
+        for handle in handles :
+            f = r.TFile(handle[0])
+            h = f.Get("%s/%s"%(handle[1], handle[2]))
+            out["x"].append(axisStuff(h.GetXaxis()))
+            out["y"].append(axisStuff(h.GetYaxis()))
+            f.Close()
+        return out
+    
+    def handles() :
+        return [
+            (conf.mSuGra_FileSignal(),        conf.mSuGra_DirSignal(),      conf.mSuGra_ExampleHistSignal()),
+            (conf.mSuGra_FileSys05(),         conf.mSuGra_DirSignal(),      conf.mSuGra_ExampleHistSignal()),
+            (conf.mSuGra_FileSys2(),          conf.mSuGra_DirSignal(),      conf.mSuGra_ExampleHistSignal()),
+            (conf.mSuGra_FileMuonControl(),   conf.mSuGra_DirMuonControl(), conf.mSuGra_HistMuonControl()  ),
+            ]
+
+    for axis,values in properties(handles()).iteritems() :
+        assert len(set(values))==1,"The %s binnings do not match: %s"%(axis, str(values))
+    
 def fullPoints() :
     #return 
     f = r.TFile(conf.mSuGra_FileMuonControl())
