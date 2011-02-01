@@ -21,7 +21,8 @@ for point in points() :
     getattr(r, funcName())(conf.plotFileName(*point),
                            conf.workspaceFileName(*point),
                            conf.writeWorkspaceFile(),
-
+                           conf.printCovarianceMatrix(),
+                           
                            conf.mSuGra_FileSignal(),
                            conf.mSuGra_FileMuonControl(),
                            conf.mSuGra_DirMuonControl(),
