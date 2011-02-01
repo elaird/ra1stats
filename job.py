@@ -2,7 +2,7 @@
 import sys
 import ROOT as r
 import configuration as conf
-import data
+import data,utils
 
 def pwd() :
     return sys.argv[1]
@@ -16,32 +16,19 @@ def funcName() :
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1])) for i in range(3, len(sys.argv), 2)]
 
+def m0(point) :
+    return point[0]
+
+def m12(point) :
+    return point[1]
+
 r.gROOT.LoadMacro("%s"%fileName())
 
 for point in points() :
-    getattr(r, funcName())(conf.plotFileName(*point),
-                           conf.workspaceFileName(*point),
-                           conf.writeWorkspaceFile(),
-                           conf.printCovarianceMatrix(),
+    getattr(r, funcName())(utils.stdMap(conf.switches(), "string", "int"),
+                           utils.stdMap(conf.strings(m0(point), m12(point)), "string", "string"),
+                           utils.stdMap(data.numbers(), "string", "double"),
                            
-                           conf.mSuGra_FileSignal(),
-                           conf.mSuGra_Dir1Signal(),
-                           conf.mSuGra_Dir2Signal(),
-
-                           conf.mSuGra_FileMuonControl(),
-                           conf.mSuGra_DirMuonControl(),
-                           conf.mSuGra_HistMuonControl(),
-
-                           conf.mSuGra_FileSys05(),
-                           conf.mSuGra_FileSys2(),
-
-                           data.numbers(),
-                           
-                           point[0],
-                           point[1],
-                           conf.lumi(),
-
-                           conf.doBayesian(),
-                           conf.doFeldmanCousins(),
-                           conf.doMCMC(),
+                           m0(point),
+                           m12(point),
                            )

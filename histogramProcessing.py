@@ -18,11 +18,12 @@ def checkHistoBinning() :
         return out
     
     def handles() :
+        s = conf.strings(0, 0)
         return [
-            (conf.mSuGra_FileSignal(),        conf.mSuGra_Dir2Signal(),     conf.mSuGra_ExampleHistSignal()),
-            (conf.mSuGra_FileSys05(),         conf.mSuGra_Dir2Signal(),     conf.mSuGra_ExampleHistSignal()),
-            (conf.mSuGra_FileSys2(),          conf.mSuGra_Dir2Signal(),     conf.mSuGra_ExampleHistSignal()),
-            (conf.mSuGra_FileMuonControl(),   conf.mSuGra_DirMuonControl(), conf.mSuGra_HistMuonControl()  ),
+            (s["signalFile"],        s["signalDir2"],     s["signalHistExample"]),
+            (s["sys05File"],         s["signalDir2"],     s["signalHistExample"]),
+            (s["sys2File"],          s["signalDir2"],     s["signalHistExample"]),
+            (s["muonControlFile"],   s["muonControlDir"], s["muonControlHist"]  ),
             ]
 
     for axis,values in properties(handles()).iteritems() :
@@ -45,7 +46,7 @@ def fullPoints() :
     return out
 
 def cachedPoints() :
-    if conf.testPointsOnly() :
+    if conf.switches()["testPointsOnly"] :
         return [(10, 10), (10, 20), (20, 10), (20, 20)]
     else :
         return fullPoints()

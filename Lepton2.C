@@ -36,22 +36,22 @@
 #include "RooStats/BayesianCalculator.h"
 #include "RooStats/PointSetInterval.h"
 
-TH2F* yieldPlot(TString& mSuGraFile,TString& mSuGraDir, TString& mSuGraHist) {
+TH2F* yieldPlot(std::string& mSuGraFile,std::string& mSuGraDir, std::string& mSuGraHist) {
   //read In mSuGra Histo
-  TFile* f = new TFile(mSuGraFile);
-  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir);
+  TFile* f = new TFile(mSuGraFile.c_str());
+  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir.c_str());
   
-  TH2F* hnev = (TH2F*)dir->Get(mSuGraHist);
+  TH2F* hnev = (TH2F*)dir->Get(mSuGraHist.c_str());
 
   return hnev;
 }
 
 //a little plotting routine to calculate the NLO cross-section
-TH2F* sysPlot(TString& mSuGraFile, TString& mSuGraDir1, TString& mSuGraDir2) {
+TH2F* sysPlot(std::string& mSuGraFile, std::string& mSuGraDir1, std::string& mSuGraDir2) {
   //read In mSuGra Histo
-  TFile* f = new TFile(mSuGraFile);
-  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir1);
-  TDirectory* dir2 = (TDirectory*)f->Get(mSuGraDir2);
+  TFile* f = new TFile(mSuGraFile.c_str());
+  TDirectory* dir = (TDirectory*)f->Get(mSuGraDir1.c_str());
+  TDirectory* dir2 = (TDirectory*)f->Get(mSuGraDir2.c_str());
   
   TH2F* gg = (TH2F*)dir2->Get("m0_m12_gg_0");
   TH2F* gg_noweight = (TH2F*)dir->Get("m0_m12_gg_5");
@@ -142,51 +142,25 @@ void setupLikelihood(RooWorkspace* wspace) {
   wspace->defineSet("nuis","TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff");
 }
 
-RooDataSet* importVars(RooWorkspace* wspace, Double_t sigma_SigEff_) {
-  //*************************************************************************************************************************************************************
-  //set all necessary numbers as obtained from measurements or Monte Carlo studies
-  //*******************************************************************************************************
-  Double_t n_signal_ = 13; //number of events measured at HT > 350 GeV and alphaT > 0.55
-  //Double_t n_bar_signal_ = 336044; //number of events measured at HT > 350 GeV and alphaT < 0.55
-  //Double_t n_control_1_ = 11; //number of events measured at 300 < HT < 350 GeV and alphaT > 0.55
-  //Double_t n_bar_control_1_ = 332265; //number of events measured at 300 < HT < 350 GeV and alphaT < 0.55
-  //Double_t n_control_2_ = 33; //number of events measured at 250 < HT < 300 GeV and alphaT  > 0.55
-  //Double_t n_bar_control_2_ = 845157; //number of events measured at 250 < HT < 300 GeV and alphaT < 0.55
+RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& inputData) {
+  RooRealVar n_signal("n_signal", "n_signal", inputData["n_signal"], inputData["n_signal"]/10, inputData["n_signal"]*10);
+  RooRealVar n_muoncontrol("n_muoncontrol", "n_muoncontrol", inputData["n_muoncontrol"], 0.001, inputData["n_muoncontrol"]*10);
+  RooRealVar n_photoncontrol("n_photoncontrol", "n_photoncontrol", inputData["n_photoncontrol"], 0.001, inputData["n_photoncontrol"]*10);
 
-  //Double_t sigma_x_ =0.11;//systematic uncertainty on inclusive background estimation (uncertainty on the assumpotion that rhoprime = rho*rho
-
-  Double_t n_muoncontrol_ = 7;//number of events measured in muon control sample
-  Double_t n_tau_mu_ = 5.9/5.1; //Monte Carlo estimation of the factor tau which relates expected events in muon control sample to expected tt+W background in signal-like region
-  Double_t sigma_ttW_ = 0.3; //systematic uncertainty on tt+W background estimation
-
-  //numbers for photon contorl sample
-  Double_t n_photoncontrol_ = 7;//number of events measured in photon control sample
-  Double_t n_tau_photon_ = 6.5/4.1;//Monte Carlo estimation of the factor tau which relates expected events in photon control sample to expected Zinv background in signal-like region
-  Double_t sigma_Zinv_ = 0.4;//systematic uncertainty on Zinv background estimation
-
-  //____________________________________________________________________________________________________
-  //Put numbers into RooRealVars
-  //____________________________________________________________________________________________________
-  //number of events measured in signal-like region alphaT > 0.55 ; HT > 350 GeV; and no leptons or photons
-  RooRealVar n_signal("n_signal","n_signal",n_signal_,n_signal_/10,n_signal_*10);
-
-  //number of events measured in muon and photon conrol samples
-  RooRealVar n_muoncontrol("n_muoncontrol","n_muoncontrol",n_muoncontrol_,0.001,n_muoncontrol_*10);//number of measured events in muon control sample
-  RooRealVar n_photoncontrol("n_photoncontrol","n_photoncontrol",n_photoncontrol_,0.001,n_photoncontrol_*10);//number of measured events in photon control sample
   //Parameter of interest; the number of (SUSY) signal events above the Standard Model background
-  RooRealVar s("s","s",2.5,0.0001,n_signal_*3);//expected numer of (SUSY) signal events above background 
+  RooRealVar s("s", "s", 2.5, 0.0001, inputData["n_signal"]*3);//expected numer of (SUSY) signal events above background 
   //Nuisance parameters
-  RooRealVar TTplusW("TTplusW","TTplusW",n_signal_/2,0.01,n_signal_*10); //expected tt+W background in signal-like region
-  RooRealVar ZINV("ZINV","ZINV",n_signal_/2,0.001,n_signal_*10);//expected Zinv background in signal-like region  
+  RooRealVar TTplusW("TTplusW", "TTplusW", inputData["n_signal"]/2, 0.01, inputData["n_signal"]*10); //expected tt+W background in signal-like region
+  RooRealVar ZINV("ZINV", "ZINV", inputData["n_signal"]/2,0.001, inputData["n_signal"]*10);//expected Zinv background in signal-like region  
 
   //Nuisance parameter for tt+W estimation
-  RooRealVar tau_mu("tau_mu","tau_mu",n_tau_mu_);
-  RooRealVar sigma_ttW("sigma_ttW","sigma_ttW",sigma_ttW_);
+  RooRealVar tau_mu("tau_mu", "tau_mu", inputData["tau_mu"]);
+  RooRealVar sigma_ttW("sigma_ttW", "sigma_ttW", inputData["sigma_ttW"]);
   //Nuisance parameter for Zinv estiamtion
-  RooRealVar tau_photon("tau_photon","tau_photon",n_tau_photon_); 
-  RooRealVar sigma_Zinv("sigma_Zinv","sigma_Zinv",sigma_Zinv_);
+  RooRealVar tau_photon("tau_photon", "tau_photon", inputData["tau_photon"]); 
+  RooRealVar sigma_Zinv("sigma_Zinv", "sigma_Zinv", inputData["sigma_Zinv"]);
   //Systematic uncertainty on singal*acceptance*efficiency*luminosity
-  RooRealVar sigma_SigEff("sigma_SigEff","sigma_SigEff",sigma_SigEff_);
+  RooRealVar sigma_SigEff("sigma_SigEff", "sigma_SigEff", inputData["sigma_SigEff"]);
  
   //import RooRealVars
   wspace->import(TTplusW);
@@ -208,11 +182,11 @@ RooDataSet* importVars(RooWorkspace* wspace, Double_t sigma_SigEff_) {
   //set values of observables
   const RooArgSet* lolArgSet=wspace->set("obs");
   RooArgSet* newSet = new RooArgSet(*lolArgSet);
-  newSet->setRealValue("n_signal",n_signal_);
+  newSet->setRealValue("n_signal", inputData["n_signal"]);
   //set observables for muon control method
-  newSet->setRealValue("n_muoncontrol"    ,n_muoncontrol_); 
+  newSet->setRealValue("n_muoncontrol", inputData["n_muoncontrol"]); 
   //set observable for photon control method
-  newSet->setRealValue("n_photoncontrol"    ,n_photoncontrol_);
+  newSet->setRealValue("n_photoncontrol", inputData["n_photoncontrol"]);
   
   RooDataSet *data = new RooDataSet("obsDataSet","title",*lolArgSet);
   data->Print();
@@ -338,15 +312,15 @@ void mcmc(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* ws
   //MCMC interval on s = [15.7628, 84.7266]
 }
 
-double setSignalVars(TString& mSuGraFile_signal, TString& mSuGraDir1_signal, TString& mSuGraDir2_signal,
-		     TString& mSuGraFile_muoncontrol, TString& mSuGraDir_muoncontrol, TString& mSuGraHist_muoncontrol,
-		     TString& mSuGraFile_sys05,
-		     TString& mSuGraFile_sys2,
+double setSignalVars(std::string& mSuGraFile_signal, std::string& mSuGraDir1_signal, std::string& mSuGraDir2_signal,
+		     std::string& mSuGraFile_muoncontrol, std::string& mSuGraDir_muoncontrol, std::string& mSuGraHist_muoncontrol,
+		     std::string& mSuGraFile_sys05,
+		     std::string& mSuGraFile_sys2,
 		     RooWorkspace* wspace,
 		     int m0,
 		     int m12,
 		     double lumi,
-		     Double_t sigma_SigEff_
+		     double sigma_SigEff_
 		     ) {
   
   TH2F* yield_signal = sysPlot(mSuGraFile_signal, mSuGraDir1_signal, mSuGraDir2_signal);//event yields in signal like region
@@ -391,12 +365,12 @@ TCanvas* canvas(bool doBayesian, bool doMCMC) {
   return c1;
 }
 
-TH2F *histoWithBinning(TString& mSuGraFile_muoncontrol,
-		       TString& mSuGraDir_muoncontrol,
-		       TString& mSuGraHist_muoncontrol
+TH2F *histoWithBinning(std::string& mSuGraFile_muoncontrol,
+		       std::string& mSuGraDir_muoncontrol,
+		       std::string& mSuGraHist_muoncontrol
 		       ) {
-  TFile f(mSuGraFile_muoncontrol);
-  TH2F *h = (TH2F*)f.Get(mSuGraDir_muoncontrol+"/"+mSuGraHist_muoncontrol);
+  TFile f(mSuGraFile_muoncontrol.c_str());
+  TH2F *h = (TH2F*)f.Get((mSuGraDir_muoncontrol+"/"+mSuGraHist_muoncontrol).c_str());
   TString name = h->GetName();
   name += "_clone";
   TH2F *g = (TH2F*)h->Clone(name);
@@ -405,8 +379,8 @@ TH2F *histoWithBinning(TString& mSuGraFile_muoncontrol,
   return g;
 }
 
-void writeExclusionLimitPlot(TH2F *exampleHisto, TString& outputPlotFileName, int m0, int m12, bool isInInterval) {
-  TFile output(outputPlotFileName, "RECREATE");
+void writeExclusionLimitPlot(TH2F *exampleHisto, std::string& outputPlotFileName, int m0, int m12, bool isInInterval) {
+  TFile output(outputPlotFileName.c_str(), "RECREATE");
   if (output.IsZombie()) std::cout << " zombie alarm output is a zombie " << std::endl;
 
   if (!exampleHisto) {
@@ -424,31 +398,20 @@ void writeExclusionLimitPlot(TH2F *exampleHisto, TString& outputPlotFileName, in
   output.Close();
 }
 
-void Lepton2(TString& outputPlotFileName,
-	     TString& outputWorkspaceFileName,
-	     bool writeWorkspaceFile,
-	     bool printCovarianceMatrix,
-	     
-	     TString& mSuGraFile_signal,
-	     TString& mSuGraDir1_signal,
-	     TString& mSuGraDir2_signal,
-	     
-	     TString& mSuGraFile_muoncontrol,
-	     TString& mSuGraDir_muoncontrol,
-	     TString& mSuGraHist_muoncontrol,
-	     TString& mSuGraFile_sys05,
-	     TString& mSuGraFile_sys2,
-	     
+void checkMap(int nInitial, int nFinal) {
+  if (nInitial!=nFinal) std::cerr << "ERROR: nInitial = " << nInitial << "; nFinal = " << nFinal << std::endl;  
+}
+
+void Lepton2(std::map<std::string,int>& switches,
+	     std::map<std::string,std::string>& strings,
 	     std::map<std::string,double>& inputData,
-	     
 	     int m0,
-	     int m12,
-	     double lumi,
-	     
-	     bool doBayesian,
-	     bool doFeldmanCousins,
-	     bool doMCMC
+	     int m12
 	     ) {
+
+  const int nSwitches = switches.size();
+  const int nStrings = strings.size();
+  const int nData = inputData.size();
 
   TStopwatch t;
   t.Start();
@@ -458,40 +421,45 @@ void Lepton2(TString& outputPlotFileName,
   //make a workspace
   RooWorkspace* wspace = workspace();
   //import variables and set up total likelihood function
-  RooDataSet* data = importVars(wspace, inputData["sigma_SigEff"]);
- 
+
+  RooDataSet* data = importVars(wspace, inputData);
+
   RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
   RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
   RooRealVar* ratioBkgdEff_2 = wspace->var("ratioBkgdEff_2");
   RooArgSet constrainedParams(*ratioBkgdEff_1,*ratioBkgdEff_2,*ratioSigEff);
 
   RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
-  if (writeWorkspaceFile) wspace->writeToFile(outputWorkspaceFileName.Data());
-  if (printCovarianceMatrix) printCovMat(wspace, data, constrainedParams);
+  if (switches["writeWorkspaceFile"]) wspace->writeToFile(strings["outputWorkspaceFileName"].c_str());
+  if (switches["printCovarianceMatrix"]) printCovMat(wspace, data, constrainedParams);
 
   //RooRealVar* mu = wspace->var("s");
   //RooArgSet* nullParams = new RooArgSet("nullParams");
   //nullParams->addClone(*mu);
   //nullParams->setRealValue("s",0);
   
-  canvas(doBayesian, doMCMC); //prepare a canvas
+  canvas(switches["doBayesian"], switches["doMCMC"]); //prepare a canvas
   std::cout << " Limit " << std::endl;
 
   //profileLikelihood(data, modelConfig, wspace); //run with no signal contamination
 
-  if (doFeldmanCousins) feldmanCousins(data, modelConfig, wspace); //takes 7 minutes
-  if (doBayesian) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
-  if (doMCMC) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
+  if (switches["doFeldmanCousins"]) feldmanCousins(data, modelConfig, wspace); //takes 7 minutes
+  if (switches["doBayesian"]) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
+  if (switches["doMCMC"]) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
 
-  double d_s = setSignalVars(mSuGraFile_signal, mSuGraDir1_signal, mSuGraDir2_signal,
-			     mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol,
-			     mSuGraFile_sys05, mSuGraFile_sys2,
-			     wspace, m0, m12, lumi, inputData["sigma_SigEff"]
+  double d_s = setSignalVars(strings["signalFile"], strings["signalDir1"], strings["signalDir2"],
+			     strings["muonControlFile"], strings["muonControlDir"], strings["muonControlHist"],
+			     strings["sys05File"], strings["sys2File"],
+			     wspace, m0, m12, inputData["lumi"], inputData["sigma_SigEff"]
 			     );
   
   bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
   
-  TH2F *exampleHisto = histoWithBinning(mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol);
-  writeExclusionLimitPlot(exampleHisto, outputPlotFileName, m0, m12, isInInterval);
+  TH2F *exampleHisto = histoWithBinning(strings["muonControlFile"], strings["muonControlDir"], strings["muonControlHist"]);
+  writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, isInInterval);
   t.Print();
+
+  checkMap(nSwitches, switches.size());
+  checkMap(nStrings, strings.size());
+  checkMap(nData, inputData.size());
 }

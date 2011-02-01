@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-import os,subprocess
-from multiprocessing import Process,JoinableQueue
-import ROOT as r
+import os,utils
 import configuration as conf
 import histogramProcessing as hp
 ############################################
@@ -16,48 +14,27 @@ def opts() :
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
     assert options.merge==None or int(options.merge)>0,"N must be greater than 0"
     return options
-#####################################
-def operateOnListUsingQueue(nCores, workerFunc, inList) :
-    q = JoinableQueue()
-    listOfProcesses=[]
-    for i in range(nCores):
-        p = Process(target = workerFunc, args = (q,))
-        p.daemon = True
-        p.start()
-        listOfProcesses.append(p)
-    map(q.put,inList)
-    q.join()# block until all tasks are done
-    #clean up
-    for process in listOfProcesses :
-        process.terminate()
-#####################################
-def mkdir(path) :
-    try:
-        os.makedirs(path)
-    except OSError as e :
-        if e.errno!=17 :
-            raise e
-############################################
-def getCommandOutput(command):
-    p = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-    stdout,stderr = p.communicate()
-    return {"stdout":stdout, "stderr":stderr, "returncode":p.returncode}
 ############################################
 def jobCmds(nSlices = None, useCompiled = True) :
+    def logFileName(iSlice) :
+        return "%s_%d.log"%(conf.strings(0,0)["logStem"], iSlice)
+    
     pwd = os.environ["PWD"]
 
     if nSlices<=0 : nSlices = len(hp.points())
     out = []
+
+    strings = conf.strings(0,0)
     for iSlice in range(nSlices) :
         args = [ "%g %g"%point for point in hp.points()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
         s += " %s/%s%s"%(pwd,                            #2
-                         conf.sourceFile(),
+                         strings["sourceFile"],
                          "+" if useCompiled else "+"
                          )
         s += " %s"%(" ".join(args))                      #3
-        s += " >& %s/%s"%(pwd, conf.logFileName(iSlice))
+        s += " >& %s/%s"%(pwd, logFileName(iSlice))
         out.append(s)
     return out
 ############################################
@@ -72,14 +49,12 @@ def local(nWorkers) :
             item = q.get()
             os.system(item)
             q.task_done()
-    operateOnListUsingQueue(nWorkers, worker, jobCmds())
-############################################
-def compile() :
-    r.gROOT.LoadMacro("%s+"%conf.sourceFile())
+    utils.operateOnListUsingQueue(nWorkers, worker, jobCmds())
 ############################################
 def mkdirs() :
-    for item in ["logDir", "outputDir"] :
-        mkdir(getattr(conf, item)())
+    s = conf.strings(0,0)
+    utils.mkdir(s["logDir"])
+    utils.mkdir(s["outputDir"])
 ############################################
 def merge(nSlices) :
     def cleanUp(stderr, files) :
@@ -101,7 +76,7 @@ def merge(nSlices) :
 
     def go(outFile, inList) :
         inList2 = prunedList(inList)
-        hAdd = getCommandOutput("hadd -f %s %s"%(outFile, " ".join(prunedList(inList2))))
+        hAdd = utils.getCommandOutput("hadd -f %s %s"%(outFile, " ".join(prunedList(inList2))))
         cleanUp(hAdd["stderr"], inList2)
         return outFile if inList2 else None
         
@@ -122,7 +97,7 @@ def merge(nSlices) :
 ############################################    
 options = opts()
 hp.checkHistoBinning()
-compile()
+utils.compile(conf.strings(0,0)["sourceFile"])
 mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))

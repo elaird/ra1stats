@@ -1,15 +1,8 @@
 #!/usr/bin/env python
 
-import ROOT as r
-
-def stdMap(d) :
-    out = r.std.map("string", "double")()
-    for key,value in d.iteritems() :
-        out[key] = value
-    return out
-
 def numbers() :
     d = {}
+    d["lumi"]            =   35.0  #/pb
     d["n_signal"]        =     13  #number of events measured at HT > 350 GeV and alphaT > 0.55
     d["n_bar_signal"]    = 336044  #number of events measured at HT > 350 GeV and alphaT < 0.55
     d["n_control_1"]     =     11  #number of events measured at 300 < HT < 350 GeV and alphaT > 0.55
@@ -28,4 +21,4 @@ def numbers() :
     
     d["sigma_SigEff"]    = 0.12    #systematic uncertainty on signal acceptance*efficiency*luminosity //added single uncertainties quadratically
 
-    return stdMap(d)
+    return d
