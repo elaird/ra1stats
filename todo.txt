@@ -9,6 +9,7 @@ tempfile for output
 NLO XS for muon sample
 check binning
 include Rob's method
+error message
 
 Consistency
 -----------
@@ -23,3 +24,4 @@ RooRandom::randomGenerator()->SetSeed(4357);
 Double_t
 pair-wise merge
 tt etc map
+info level
