@@ -132,12 +132,12 @@ void setupLikelihood(RooWorkspace* wspace) {
   wspace->factory("Poisson::photoncontrol(n_photoncontrol,prod::sideband_photon(tau_photon,ZINV))");
   //combine the three
   wspace->factory("PROD::total_model(signal_model,muoncontrol,photoncontrol)");
-  // to use for bayesian methods
+  //to use for bayesian methods
   wspace->factory("Uniform::prior_poi({s})");
-  wspace->factory("Uniform::prior_nuis({TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff})"); 
+  wspace->factory("Uniform::prior_nuis({TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff})");
   wspace->factory("PROD::prior(prior_poi,prior_nuis)");
   //define some sets to use later (plots)
-  wspace->defineSet("obs","n_signal,n_muoncontrol,n_photoncontrol"); 
+  wspace->defineSet("obs","n_signal,n_muoncontrol,n_photoncontrol");
   wspace->defineSet("poi","s");
   wspace->defineSet("nuis","TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff");
 }
