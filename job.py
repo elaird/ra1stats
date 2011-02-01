@@ -2,6 +2,7 @@
 import sys
 import ROOT as r
 import configuration as conf
+import data
 
 def pwd() :
     return sys.argv[1]
@@ -34,6 +35,8 @@ for point in points() :
                            conf.mSuGra_FileSys05(),
                            conf.mSuGra_FileSys2(),
 
+                           data.numbers(),
+                           
                            point[0],
                            point[1],
                            conf.lumi(),
