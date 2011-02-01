@@ -425,28 +425,30 @@ void writeExclusionLimitPlot(TH2F *exampleHisto, TString& outputPlotFileName, in
 }
 
 void Lepton2(TString& outputPlotFileName,
-	    TString& outputWorkspaceFileName,
-	    bool writeWorkspaceFile,
-	    bool printCovarianceMatrix,
-
-	    TString& mSuGraFile_signal,
-	    TString& mSuGraDir1_signal,
-	    TString& mSuGraDir2_signal,
-
-	    TString& mSuGraFile_muoncontrol,
-	    TString& mSuGraDir_muoncontrol,
-	    TString& mSuGraHist_muoncontrol,
-	    TString& mSuGraFile_sys05,
-	    TString& mSuGraFile_sys2,
-
-	    int m0,
-	    int m12,
-	    double lumi,
-
-	    bool doBayesian,
-	    bool doFeldmanCousins,
-	    bool doMCMC
-	    ) {
+	     TString& outputWorkspaceFileName,
+	     bool writeWorkspaceFile,
+	     bool printCovarianceMatrix,
+	     
+	     TString& mSuGraFile_signal,
+	     TString& mSuGraDir1_signal,
+	     TString& mSuGraDir2_signal,
+	     
+	     TString& mSuGraFile_muoncontrol,
+	     TString& mSuGraDir_muoncontrol,
+	     TString& mSuGraHist_muoncontrol,
+	     TString& mSuGraFile_sys05,
+	     TString& mSuGraFile_sys2,
+	     
+	     std::map<std::string,double>& inputData,
+	     
+	     int m0,
+	     int m12,
+	     double lumi,
+	     
+	     bool doBayesian,
+	     bool doFeldmanCousins,
+	     bool doMCMC
+	     ) {
 
   TStopwatch t;
   t.Start();
@@ -456,8 +458,7 @@ void Lepton2(TString& outputPlotFileName,
   //make a workspace
   RooWorkspace* wspace = workspace();
   //import variables and set up total likelihood function
-  Double_t sigma_SigEff_ = 0.12;//systematic uncertainty on signal acceptance*efficiency*luminosity //added single uncertainties quadratically
-  RooDataSet* data = importVars(wspace, sigma_SigEff_);
+  RooDataSet* data = importVars(wspace, inputData["sigma_SigEff"]);
  
   RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
   RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
@@ -485,7 +486,7 @@ void Lepton2(TString& outputPlotFileName,
   double d_s = setSignalVars(mSuGraFile_signal, mSuGraDir1_signal, mSuGraDir2_signal,
 			     mSuGraFile_muoncontrol, mSuGraDir_muoncontrol, mSuGraHist_muoncontrol,
 			     mSuGraFile_sys05, mSuGraFile_sys2,
-			     wspace, m0, m12, lumi, sigma_SigEff_
+			     wspace, m0, m12, lumi, inputData["sigma_SigEff"]
 			     );
   
   bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
