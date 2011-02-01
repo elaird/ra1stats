@@ -5,6 +5,10 @@ lolargs
   //RooArgSet* nullParams = new RooArgSet("nullParams");
   //nullParams->addClone(*mu);
   //nullParams->setRealValue("s",0);
+tempfile for output
+NLO XS for muon sample
+check binning
+include Rob's method
 
 Consistency
 -----------
@@ -17,3 +21,5 @@ Style
 -----
 RooRandom::randomGenerator()->SetSeed(4357);
 Double_t
+pair-wise merge
+tt etc map
