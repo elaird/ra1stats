@@ -119,6 +119,7 @@ def merge(nSlices) :
         mergeOneType("workspace")
 ############################################    
 options = opts()
+hp.checkHistoBinning()
 compile()
 mkdirs()
 if options.batch : batch(int(options.batch))
