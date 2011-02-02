@@ -20,10 +20,10 @@ def checkHistoBinning() :
     def handles() :
         s = conf.strings(0, 0)
         return [
-            (s["signalFile"],        s["signalDir2"],     s["signalHistExample"]),
-            (s["sys05File"],         s["signalDir2"],     s["signalHistExample"]),
-            (s["sys2File"],          s["signalDir2"],     s["signalHistExample"]),
-            (s["muonControlFile"],   s["muonControlDir"], s["muonControlHist"]  ),
+            (s["signalFile"],        s["signalDir2"],      s["signalLoYield"]),
+            (s["sys05File"],         s["signalDir2"],      s["signalLoYield"]),
+            (s["sys2File"],          s["signalDir2"],      s["signalLoYield"]),
+            (s["muonControlFile"],   s["muonControlDir2"], s["muonControlLoYield"]),
             ]
 
     for axis,values in properties(handles()).iteritems() :
