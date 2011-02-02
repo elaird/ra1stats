@@ -4,6 +4,7 @@ lolargs
 tempfile for output
 NLO XS for muon sample
 include Rob's method
+investigate ng
 
 Consistency
 -----------
