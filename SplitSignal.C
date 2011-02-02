@@ -73,6 +73,11 @@ void SplitSignal(Int_t method = 5){
     f.AddModel_Exp_Combi(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
     f.AddDataSideband_Combi(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
+  if(method == 6) {
+    f.AddModel_Lin_Combi_one(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
+    f.AddDataSideband_Combi_one(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
+  }
+    
 
 
   //Constrain some parameters (only necessary for combination of incl. and EWK)

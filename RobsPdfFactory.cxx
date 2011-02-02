@@ -457,7 +457,7 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   
   RooRealVar* ttW_2 = new RooRealVar("ttW_2","ttW_2",.5,0.,100.);
   RooRealVar* Zinv_2 = new RooRealVar("Zinv_2","Zinv_2",.5,0.,100.);
-  //RooProduct* QCD_2 = new RooProduct("QCD_2","QCD_2",RooArgSet(*QCD_1));
+  RooProduct* QCD_2 = new RooProduct("QCD_2","QCD_2",.5,0.,40.);
   
  
 
