@@ -1,7 +1,3 @@
-#include "RooGlobalFunc.h"
-
-
-
 #include "RooStats/ProfileLikelihoodCalculator.h"
 #include "RooStats/LikelihoodInterval.h"
 #include "RooStats/LikelihoodIntervalPlot.h"
@@ -14,20 +10,12 @@
 #include "RooStats/FeldmanCousins.h"
 #include "RooStats/PointSetInterval.h"
 #include "RooRealVar.h"
+#include "RooGlobalFunc.h"
+#include "RooRandom.h"
 
-
-#include "MyPdfFactory.cxx"
 #include "RobsPdfFactory.cxx"
 
-using namespace RooFit;
-using namespace RooStats;
-
-
 void SplitSignal(Int_t method = 5){
-
-  
- 
-
   //if method == 1 EWK only
   //if method == 2 incl only (linear)
   //if method == 3 incl only (exp)
@@ -36,7 +24,6 @@ void SplitSignal(Int_t method = 5){
 
    // set RooFit random seed for reproducible results
   RooRandom::randomGenerator()->SetSeed(4357);
-
 
   //mSUGRA
   Double_t s[2] = {0.25,0.75};//how signal is split
@@ -120,33 +107,33 @@ void SplitSignal(Int_t method = 5){
   nullParams->addClone(*mu);
   nullParams->setRealValue("masterSignal",0);
 
-   ProfileLikelihoodCalculator plc(*wspace->data("ObservedNumberCountingDataWithSideband"), *wspace->pdf("TopLevelPdf"),*poi,0.05,nullParams);
+  RooStats::ProfileLikelihoodCalculator plc(*wspace->data("ObservedNumberCountingDataWithSideband"), *wspace->pdf("TopLevelPdf"),*poi,0.05,nullParams);
 
 				   // ProfileLikelihoodCalculator plc(*data,				  *wspace->pdf("TopLevelPdf"),*poi,0.05,nullParams);
 
   //wspace->pdf("TopLevelPdf")->fitTo(*wspace->data("ObservedNumberCountingDataWithSideband"));
 
-  //Step 6, Use the calculator to get a HypoTestResult
-  HypoTestResult* htr = plc.GetHypoTest();
-  assert(htr!=0);
-  cout << "++++++++++++++++++++++++++++++++++++++++++++"<< endl;
-  cout << " the p-value for the null is " << htr->NullPValue() << endl;
-  cout << " corresponding to a significance of " << htr->Significance() << endl;
-  cout << "++++++++++++++++++++++++++++++++++++++++++++" << endl;
+  ////Step 6, Use the calculator to get a HypoTestResult
+  //RooStats::HypoTestResult* htr = plc.GetHypoTest();
+  //assert(htr!=0);
+  //cout << "++++++++++++++++++++++++++++++++++++++++++++"<< endl;
+  //cout << " the p-value for the null is " << htr->NullPValue() << endl;
+  //cout << " corresponding to a significance of " << htr->Significance() << endl;
+  //cout << "++++++++++++++++++++++++++++++++++++++++++++" << endl;
   
   ///////////////////////////////////////////////////////////////////////////
   //Step 8 here we reuse the ProfileLikelihoodCalculator to return a confidence interval
   //we need to specify what our parameters of interest are
   RooArgSet* paramsOfInterest = nullParams;//they are the same as before
   plc.SetParameters(*paramsOfInterest);
-  LikelihoodInterval* lrint = (LikelihoodInterval*)plc.GetInterval();
+  RooStats::LikelihoodInterval* lrint = (RooStats::LikelihoodInterval*)plc.GetInterval();
   lrint->SetConfidenceLevel(0.95);
   
   //Step 9 make a plot of the likelihood ratio and the interval obtained 
   double lower = lrint->LowerLimit(*mu);
   double upper = lrint->UpperLimit(*mu);
   
-  LikelihoodIntervalPlot lrPlot(lrint);
+  RooStats::LikelihoodIntervalPlot lrPlot(lrint);
   lrPlot.SetMaximum(3.);
   lrPlot.Draw();
   

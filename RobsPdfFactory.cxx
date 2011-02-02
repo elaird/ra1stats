@@ -1,13 +1,16 @@
-
+#include <sstream>
+#include <algorithm>
 
 #include "TROOT.h"
+#include "TTree.h"
+#include "TMath.h"
+
 #include "RooPlot.h"
 #include "RooAbsPdf.h"
 #include "RooWorkspace.h"
 #include "RooDataSet.h"
 #include "RooGlobalFunc.h"
 #include "RooFitResult.h"
-
 #include "RooRealVar.h"
 #include "RooAddition.h"
 #include "RooDataSet.h"
@@ -16,14 +19,7 @@
 #include "RooGaussian.h"
 #include "RooCmdArg.h"
 #include "RooMsgService.h"
-#include "TTree.h"
-
-#include "RooLognormal"
-
-#include <sstream>
-#include <algorithm>
-
-
+#include "RooLognormal.h"
 #include "RobsPdfFactory.hh"
 
 using namespace RooStats;
@@ -1017,8 +1013,8 @@ void RobsPdfFactory::AddDataSideband_Combi(  Double_t* meas,
     tree->Branch(("muonMeas"+str.str()).c_str(),muonForTree+i,("muonMeas"+str.str()+"/D").c_str());
     tree->Branch(("photMeas"+str.str()).c_str(),photForTree+i,("photMeas"+str.str()+"/D").c_str());
 
-    ws->var(("ttW"+str.str()).c_str())->setMax(1.2*ttW[i]+MaxSigma*(sqrt(ttW)+ttW*ttW_sys) );
-    ws->var(("Zinv"+str.str()).c_str())->setMax(1.2*Zinv[i]+MaxSigma*(sqrt(Zinv)+Zinv*Zinv_sys) );
+    ws->var(("ttW"+str.str()).c_str())->setMax(1.2*ttW+MaxSigma*(sqrt(ttW)+ttW*ttW_sys) );
+    ws->var(("Zinv"+str.str()).c_str())->setMax(1.2*Zinv+MaxSigma*(sqrt(Zinv)+Zinv*Zinv_sys) );
 
     ws->var(("ttW"+str.str()).c_str())->setVal(ttW);
     ws->var(("Zinv"+str.str()).c_str())->setVal(Zinv);
@@ -1113,8 +1109,8 @@ void RobsPdfFactory::AddDataSideband_EWK(Double_t* mainMeas,
     tree->Branch(("muonMeas"+str.str()).c_str(),muonForTree+i,("muonMeas"+str.str()+"/D").c_str());
     tree->Branch(("photMeas"+str.str()).c_str(),photForTree+i,("photMeas"+str.str()+"/D").c_str());
 
-    ws->var(("ttW"+str.str()).c_str())->setMax(1.2*ttW[i]+MaxSigma*(sqrt(ttW)+ttW*ttW_sys) );
-    ws->var(("Zinv"+str.str()).c_str())->setMax(1.2*Zinv[i]+MaxSigma*(sqrt(Zinv)+Zinv*Zinv_sys) );
+    ws->var(("ttW"+str.str()).c_str())->setMax(1.2*ttW+MaxSigma*(sqrt(ttW)+ttW*ttW_sys) );
+    ws->var(("Zinv"+str.str()).c_str())->setMax(1.2*Zinv+MaxSigma*(sqrt(Zinv)+Zinv*Zinv_sys) );
 
     ws->var(("ttW"+str.str()).c_str())->setVal(ttW);
     ws->var(("Zinv"+str.str()).c_str())->setVal(Zinv);
