@@ -9,6 +9,7 @@
 #include "RooStats/SimpleInterval.h"
 #include "RooStats/FeldmanCousins.h"
 #include "RooStats/PointSetInterval.h"
+#include "RooStats/HypoTestResult.h"
 #include "RooRealVar.h"
 #include "RooGlobalFunc.h"
 #include "RooRandom.h"
@@ -113,13 +114,13 @@ void SplitSignal(Int_t method = 5){
 
   //wspace->pdf("TopLevelPdf")->fitTo(*wspace->data("ObservedNumberCountingDataWithSideband"));
 
-  ////Step 6, Use the calculator to get a HypoTestResult
-  //RooStats::HypoTestResult* htr = plc.GetHypoTest();
-  //assert(htr!=0);
-  //cout << "++++++++++++++++++++++++++++++++++++++++++++"<< endl;
-  //cout << " the p-value for the null is " << htr->NullPValue() << endl;
-  //cout << " corresponding to a significance of " << htr->Significance() << endl;
-  //cout << "++++++++++++++++++++++++++++++++++++++++++++" << endl;
+  //Step 6, Use the calculator to get a HypoTestResult
+  RooStats::HypoTestResult* htr = plc.GetHypoTest();
+  assert(htr!=0);
+  cout << "++++++++++++++++++++++++++++++++++++++++++++"<< endl;
+  cout << " the p-value for the null is " << htr->NullPValue() << endl;
+  cout << " corresponding to a significance of " << htr->Significance() << endl;
+  cout << "++++++++++++++++++++++++++++++++++++++++++++" << endl;
   
   ///////////////////////////////////////////////////////////////////////////
   //Step 8 here we reuse the ProfileLikelihoodCalculator to return a confidence interval
