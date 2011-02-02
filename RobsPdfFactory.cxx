@@ -1412,13 +1412,19 @@ void RobsPdfFactory::AddDataSideband_Combi_one(  Double_t* meas,
     //need to be careful
     RooRealVar* bkgdMeas = SafeObservableCreation(ws,("meas"+str.str()).c_str(),meas[i]);
     //need to be careful
-    if(i < 2)RooRealVar* bkgdBarMeas = SafeObservableCreation(ws, ("meas_bar"+str.str()).c_str(),meas_bar[i]);
-    else if(i == 2)RooRealVar* bkgdBarMeas = SafeObservableCreation(ws, ("meas_bar"+str.str()).c_str(),meas_bar[2]+meas_bar[3]);
+    if(i < 2){
+      RooRealVar* bkgdBarMeas = SafeObservableCreation(ws, ("meas_bar"+str.str()).c_str(),meas_bar[i]);
+      observablesCollection.Add(bkgdBarMeas);
+    }
+    else if(i == 2){
+      RooRealVar* bkgdBarMeas = SafeObservableCreation(ws, ("meas_bar"+str.str()).c_str(),meas_bar[2]+meas_bar[3]);
+      observablesCollection.Add(bkgdBarMeas);
+    }
     //need to be careful
    
 
     observablesCollection.Add(bkgdMeas);   
-    if(i < 3)observablesCollection.Add(bkgdBarMeas);
+    
 
     bkgdForTree[i] = meas[i];
     if(i < 2)bkgdbarForTree[i] = meas_bar[i];
