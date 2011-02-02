@@ -54,62 +54,6 @@ TH2F* loYieldHisto(std::string& fileName, std::string& dirName, std::string& his
   return h;
 }
 
-TH2F* nloYieldHistoOld(std::string& fileName, std::string& dirName1, std::string& dirName2, double lumi) {
-  TFile f(fileName.c_str());
-  TDirectory* dir = (TDirectory*)f.Get(dirName1.c_str());
-  TDirectory* dir2 = (TDirectory*)f.Get(dirName2.c_str());
-  
-  TH2F* gg = (TH2F*)dir2->Get("m0_m12_gg_0");
-  TH2F* gg_noweight = (TH2F*)dir->Get("m0_m12_gg_5");
-  TH2F* sb = (TH2F*)dir2->Get("m0_m12_sb_0");
-  //TH2F* sb_noweight = (TH2F*)dir->Get("m0_m12_sb_5");
-  TH2F* ss = (TH2F*)dir2->Get("m0_m12_ss_0");
-  TH2F* ss_noweight = (TH2F*)dir->Get("m0_m12_ss_5");
-  TH2F* sg = (TH2F*)dir2->Get("m0_m12_sg_0");
-  TH2F* sg_noweight = (TH2F*)dir->Get("m0_m12_sg_5");
-  TH2F* ll = (TH2F*)dir2->Get("m0_m12_ll_0");
-  TH2F* ll_noweight = (TH2F*)dir->Get("m0_m12_ll_5");
-  TH2F* nn = (TH2F*)dir2->Get("m0_m12_nn_0");
-  TH2F* nn_noweight = (TH2F*)dir->Get("m0_m12_nn_5");
-  TH2F* ns = (TH2F*)dir2->Get("m0_m12_ns_0");
-  TH2F* ns_noweight = (TH2F*)dir->Get("m0_m12_ns_5");
-  //TH2F* ng = (TH2F*)dir2->Get("m0_mg12_ng_0");                                                               
-  //TH2F* ng_noweight = (TH2F*)dir->Get("m0_m12_ng_5");
-  TH2F* bb = (TH2F*)dir->Get("m0_m12_bb_0");
-  TH2F* bb_noweight = (TH2F*)dir->Get("m0_m12_bb_5");
-  TH2F* tb = (TH2F*)dir->Get("m0_m12_tb_0");
-  TH2F* tb_noweight = (TH2F*)dir->Get("m0_m12_tb_5");
-  
-  gg->Divide(gg_noweight);
-  sb->Divide(sg_noweight);
-  ss->Divide(ss_noweight);
-  sg->Divide(sg_noweight);
-  ll->Divide(ll_noweight);
-  nn->Divide(nn_noweight);
-  //ng->Divide(ng_noweight);
-  bb->Divide(bb_noweight);
-  tb->Divide(tb_noweight);
-  ns->Divide(ns_noweight);
-
-  std::string name = gg->GetName();
-  TH2F* all = (TH2F*)gg->Clone(histoName(fileName, dirName1, dirName2, name));
-  all->SetDirectory(0);
-  all->Add(sb);
-  all->Add(ss);
-  all->Add(sg);
-  all->Add(ll);
-  all->Add(nn);
-  //all->Add(ng);
-  all->Add(bb);
-  all->Add(tb);
-  all->Add(ns);
-
-  all->Scale(lumi);
-  
-  f.Close();
-  return all;
-}
-
 TH2F* nloYieldHisto(std::string& fileName, std::string& dirName1, std::string& dirName2, double lumi) {
   TFile f(fileName.c_str());
   TDirectory* dir = (TDirectory*)f.Get(dirName1.c_str());
@@ -121,36 +65,23 @@ TH2F* nloYieldHisto(std::string& fileName, std::string& dirName1, std::string& d
   all->SetDirectory(0);
   all->Reset();
 
-  //std::vector<std::string> names;
-  //names.push_back("gg");
-  //names.push_back("sb");
-  //names.push_back("ss");
-  //names.push_back("sg");
-  //names.push_back("ll");
-  //names.push_back("nn");
+  std::vector<std::string> names;
+  names.push_back("gg");
+  names.push_back("sb");
+  names.push_back("ss");
+  names.push_back("sg");
+  names.push_back("ll");
+  names.push_back("nn");
   //names.push_back("ng");
-  //names.push_back("bb");
-  //names.push_back("tb");
-  //names.push_back("ns");
-
-  std::vector<std::string> names; std::vector<std::string> dens;
-  names.push_back("gg"); dens.push_back("gg");
-  names.push_back("sb"); dens.push_back("sg");//different!
-  names.push_back("ss"); dens.push_back("ss");
-  names.push_back("sg"); dens.push_back("sg");
-  names.push_back("ll"); dens.push_back("ll");
-  names.push_back("nn"); dens.push_back("nn");
-  //names.push_back("ng"); dens.push_back("ng");
-  names.push_back("bb"); dens.push_back("bb");
-  names.push_back("tb"); dens.push_back("tb");
-  names.push_back("ns"); dens.push_back("ns");
+  names.push_back("bb");
+  names.push_back("tb");
+  names.push_back("ns");
 
   for(unsigned int i=0;i<names.size();++i) {
     std::string numName = "m0_m12_"+names.at(i)+"_0";
-    std::string denName = "m0_m12_"+dens.at(i)+"_5";
+    std::string denName = "m0_m12_"+names.at(i)+"_5";
     TH2F* num = (TH2F*)dir2->Get(numName.c_str());
     TH2F* den = (TH2F*)dir->Get(denName.c_str());
-    if (names.at(i)=="bb" || names.at(i)=="tb") num = (TH2F*)dir->Get(numName.c_str());
 
     if (!num) {
       std::cerr << "ERROR: histo " << numName << " does not exist." << std::endl;
