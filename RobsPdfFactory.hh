@@ -11,6 +11,8 @@ public:
   void AddModel_EWK(Double_t* BR,Double_t signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName);
   
   void AddModel_Lin_Combi(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+   void AddModel_Lin_Combi_one(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+
   void AddModel_Exp_Combi(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
   
   void AddModel_Lin(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
@@ -22,6 +24,7 @@ public:
 			 RooWorkspace* ws, 
 			 const char* dsName);
 
+
   void AddDataSideband_Combi(  Double_t* bkgd_sideband,
 			       Double_t* bkgdbar_sideband,
 			       Int_t nbins_incl,
@@ -32,6 +35,18 @@ public:
 			       Int_t nbins_EWK,
 			       RooWorkspace* ws, 
 			       const char* dsName);
+
+  void AddDataSideband_Combi_one(  Double_t* bkgd_sideband,
+				   Double_t* bkgdbar_sideband,
+				   Int_t nbins_incl,
+				   Double_t* muon_sideband,
+				   Double_t* photon_sideband,
+				   Double_t* tau_ttWForTree,
+				   Double_t* tau_ZinvForTree,
+				   Int_t nbins_EWK,
+				   RooWorkspace* ws, 
+				   const char* dsName);
+  
 
   void AddDataSideband_EWK(Double_t* mainMeas, 
 			       Double_t* muon_sideband,
