@@ -409,13 +409,13 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
 
   RooRealVar* tau_1 = new RooRealVar("tau_1","tau_1",2.5,0.,100);
   RooRealVar* tau_2 = new RooRealVar("tau_2","tau_2",1.0,0.,100);
-  //  RooRealVar* tau_3 = new RooRealVar("tau_3","tau_3",2.1,0.,100);
+  
 
  
   RooProduct* bkgd_bar_1 = new RooProduct("bkgd_bar_1","bkgd_bar_1",RooArgSet(*bbar,*tau_1));
   RooProduct* bkgd_bar_2 = new RooProduct("bkgd_bar_2","bkgd_bar_2",RooArgSet(*bbar,*tau_2));
   RooProduct* bkgd_bar_3 = new RooProduct("bkgd_bar_3","bkgd_bar_3",RooArgSet(*bbar));
-  //RooProduct* bkgd_bar_4 = new RooProduct("bkgd_bar_4","bkgd_bar_4",RooArgSet(*bbar));
+  
 
  
   //The factors Tau_ which related lepton and photon control region to signal region
@@ -451,13 +451,13 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
 
 
   RooRealVar* ttW_1 = new RooRealVar("ttW_1","ttW_1",.5,0.,100.);
-  RooRealVar* Zinv_1 = new RooRealVar("Zinv_1","Zinv_1",.5,0.,100.);
+  RooRealVar* Zinv_1 = new RooRealVar("Zinv_1","Zinv_1",3.5,0.,100.);
   RooRealVar* QCD_1 = new RooRealVar("QCD_1","QCD_1",.5,0.,40.);
   
   
   RooRealVar* ttW_2 = new RooRealVar("ttW_2","ttW_2",.5,0.,100.);
-  RooRealVar* Zinv_2 = new RooRealVar("Zinv_2","Zinv_2",.5,0.,100.);
-  RooProduct* QCD_2 = new RooProduct("QCD_2","QCD_2",.5,0.,40.);
+  RooRealVar* Zinv_2 = new RooRealVar("Zinv_2","Zinv_2",0.7,0.,100.);
+  RooRealVar* QCD_2 = new RooRealVar("QCD_2","QCD_2",.5,0.,40.);
   
  
 
@@ -469,12 +469,12 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   
 
   //Now the awful combination part
-  RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*ttW_tot_2,*Zinv_tot_2,*QCD_1,*QCD_1));
+  RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*ttW_tot_2,*Zinv_tot_2,*QCD_1,*QCD_2));
 
   RooAddition* b_1 = new RooAddition("b_1","b_1",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*QCD_1));
-  RooAddition* b_2 = new RooAddition("b_2","b_2",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_1));
+  RooAddition* b_2 = new RooAddition("b_2","b_2",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
 
-  // RooAddition* splusb = new RooAddition("splusb","splusb",RooArgSet(*sig_exp1,*sig_exp2,*b));
+ 
 
  
   RooProduct* bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
@@ -547,7 +547,7 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   likelihoodFactors.Add(bkgd_poisson_2);
 
   likelihoodFactors.Add(sig_poisson_bar);
-  // likelihoodFactors.Add(sig_poisson_2_bar);
+ 
   likelihoodFactors.Add(bkgd_poisson_1_bar);
   likelihoodFactors.Add(bkgd_poisson_2_bar);
 
@@ -581,7 +581,7 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
 
    ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3");
    ws->defineSet("poi",muName);
-   ws->defineSet("nuis","ttW_1,ttW_2,Zinv_1,Zinv_2,sys_ttW,sys_Zinv,bbar,tau_1,tau_2,QCD_1");
+   ws->defineSet("nuis","ttW_1,ttW_2,Zinv_1,Zinv_2,sys_ttW,sys_Zinv,bbar,tau_1,tau_2,QCD_1,QCD_2");
 
  
 
