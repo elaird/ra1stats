@@ -16,6 +16,100 @@
 
 #include "RobsPdfFactory.cxx"
 
+
+
+RooStats::ModelConfig* modelConfiguration(RooWorkspace* wspace) {
+  /////////////////////////////////////////////////////
+  // model config
+  ModelConfig* modelConfig = new ModelConfig("Combine");
+  modelConfig->SetWorkspace(*wspace);
+  modelConfig->SetPdf( *wspace->pdf("TopLevelPdf"));
+  // modelConfig->SetPriorPdf(*wspace->pdf("prior"));
+  modelConfig->SetParametersOfInterest(*wspace->set("poi"));
+  modelConfig->SetNuisanceParameters(*wspace->set("nuis"));
+  wspace->import(*modelConfig);
+  wspace->writeToFile("Combine.root");
+  ///////////////////////////////////////////////////////
+
+  return modelConfig;
+}
+
+void constrainParameters(RooWorkspace* wspace) {
+  wspace->pdf("TopLevelPdf")->fitTo(*wspace->data("ObservedNumberCountingDataWithSideband"));
+
+  //some limitations good for fitting
+  RooArgList nuispar(*wspace->set("nuis"));
+  for(int i = 0; i < nuispar.getSize();++i){
+    RooRealVar &par = (RooRealVar&) nuispar[i];
+    par.setMin(std::max(par.getVal()-10*par.getError(),par.getMin() ) );
+    par.setMax(std::min(par.getVal()+10*par.getError(),par.getMax() ) );
+  }
+  RooArgList poipar(*wspace->set("poi"));
+  for(int i = 0; i < poipar.getSize();++i){
+    RooRealVar &spar = (RooRealVar&) poipar[i];
+    spar.setMin(std::max(spar.getVal()-10*spar.getError(),spar.getMin() ) );
+    spar.setMax(std::min(spar.getVal()+10*spar.getError(),spar.getMax() ) );
+  }
+}
+
+
+bool profileLikelihood(RooStats::ModelConfig* modelConfig, RooWorkspace* wspace, double d_s = 0.0) {
+
+bool isInInterval = false;
+  
+  RooStats::ProfileLikelihoodCalculator plc(*wspace->data("ObservedNumberCountingDataWithSideband"), *modelConfig);
+  plc.SetConfidenceLevel(0.95);
+  RooStats::LikelihoodInterval* plInt = plc.GetInterval();
+
+  Double_t lowerLimit = plInt->LowerLimit( *wspace->var("masterSignal") );
+  Double_t upperLimit = plInt->UpperLimit( *wspace->var("masterSignal") );
+
+  if (d_s<=1.0) {
+    RooStats::LikelihoodIntervalPlot* lrplot = new RooStats::LikelihoodIntervalPlot(plInt);
+    lrplot->Draw();
+    
+    cout << "Profile Likelihood interval on s = ["
+	 << lowerLimit << ", "
+	 << upperLimit << "]" << endl;
+    
+    //Profile Likelihood interval on s = [12.1902, 88.6871]
+  }
+  else {
+    RooRealVar* tmp_s = wspace->var("poi");
+    cout << " upper limit " << plInt->UpperLimit(*tmp_s) << endl;
+    tmp_s->setVal(d_s);
+    isInInterval = plInt->IsInInterval(*tmp_s);
+  }
+
+  return isInInterval;
+}
+
+
+
+
+void feldmanCousins(RooStats::ModelConfig* modelConfig, RooWorkspace* wspace) {
+  //setup for Felman Cousins
+  RooStats::FeldmanCousins fc(*wspace->data("ObservedNumberCountingDataWithSideband"), *modelConfig);
+  fc.SetConfidenceLevel(0.95);
+  //number counting: dataset always has 1 entry with N events observed
+  fc.FluctuateNumDataEntries(false); 
+  fc.UseAdaptiveSampling(true);
+  fc.AdditionalNToysFactor(4);
+
+  fc.SetNBins(40);
+  RooStats::PointSetInterval* fcInt = (RooStats::PointSetInterval*) fc.GetInterval();
+
+  Double_t lowerLimit = fcInt->LowerLimit( *wspace->var("masterSignal") );
+  Double_t upperLimit = fcInt->UpperLimit( *wspace->var("masterSignal") );
+
+  cout << "Feldman Cousins interval on s = ["
+       << lowerLimit << ", "
+       << upperLimit << "]" << endl;
+  //Feldman Cousins interval on s = [18.75 +/- 2.45, 83.75 +/- 2.45]
+ 
+}
+
+
 void SplitSignal(Int_t method = 5){
   //if method == 1 EWK only
   //if method == 2 incl only (linear)
@@ -30,7 +124,9 @@ void SplitSignal(Int_t method = 5){
   Double_t s[2] = {0.25,0.75};//how signal is split
 
   Double_t signal_sys = 0.12;
- 
+  Double_t muon_sys = 0.3;
+  Double_t phot_sys = 0.4;
+
   Double_t bkgd_sideband[4] = {33,11,8,5};
   Double_t bkgd_bar_sideband[4] = {844459,331948,225649,110034};
 
@@ -54,98 +150,43 @@ void SplitSignal(Int_t method = 5){
   RooWorkspace* wspace = new RooWorkspace();
  
   if(method == 1) {//EWK only
-    f.AddModel_EWK(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
+    f.AddModel_EWK(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
     f.AddDataSideband_EWK(mainMeas,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
   if(method == 2) {//incl linear
-    f.AddModel_Lin(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
+    f.AddModel_Lin(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
     f.AddDataSideband(  bkgd_sideband,bkgd_bar_sideband,4,wspace,"ObservedNumberCountingDataWithSideband"); 
   }
   if(method == 3) {//incl exponential
-    f.AddModel_Exp(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
+    f.AddModel_Exp(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
     f.AddDataSideband(  bkgd_sideband,bkgd_bar_sideband,4,wspace,"ObservedNumberCountingDataWithSideband"); 
   }
   if(method == 4) {//incl + EWK linear
-    f.AddModel_Lin_Combi(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
+    f.AddModel_Lin_Combi(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
     f.AddDataSideband_Combi(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
-  if(method == 5) {//incl. + EWK combi
-    f.AddModel_Exp_Combi(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
+  if(method == 5) {//incl. + EWK exponential
+    f.AddModel_Exp_Combi(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
     f.AddDataSideband_Combi(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
-  if(method == 6) {
-    f.AddModel_Lin_Combi_one(s,signal_sys,2,wspace,"TopLevelPdf","masterSignal");
+  if(method == 6) {//incl.(one bin) + EWK (two bins) linear
+    f.AddModel_Lin_Combi_one(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
     f.AddDataSideband_Combi_one(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
     
 
+   constrainParameters(wspace);
 
-  //Constrain some parameters (only necessary for combination of incl. and EWK)
-  wspace->pdf("TopLevelPdf")->fitTo(*wspace->data("ObservedNumberCountingDataWithSideband"));
+   RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
 
-  RooArgList nuispar(*wspace->set("nuis"));
+   profileLikelihood(modelConfig,wspace);
+
+   feldmanCousins(modelConfig,wspace);
+
+
+   //wspace->Print("v");
   
-
-  for(int i = 0; i < nuispar.getSize();++i){
-  
-    
-    RooRealVar &par = (RooRealVar&) nuispar[i];
-    par.setMin(std::max(par.getVal()-10*par.getError(),par.getMin() ) );
-    par.setMax(std::min(par.getVal()+10*par.getError(),par.getMax() ) );
-  }
-  RooArgList poipar(*wspace->set("poi"));
-
-
-  for(int i = 0; i < poipar.getSize();++i){
-    RooRealVar &spar = (RooRealVar&) poipar[i];
-    spar.setMin(std::max(spar.getVal()-10*spar.getError(),spar.getMin() ) );
-    spar.setMax(std::min(spar.getVal()+10*spar.getError(),spar.getMax() ) );
-  }
-
-
-
-  
-  wspace->Print("v");
-  
-  RooRealVar* mu = wspace->var("masterSignal");
-  RooArgSet* poi = new RooArgSet(*mu);
-  RooArgSet* nullParams = new RooArgSet("nullParams");
-  nullParams->addClone(*mu);
-  nullParams->setRealValue("masterSignal",0);
-
-  RooStats::ProfileLikelihoodCalculator plc(*wspace->data("ObservedNumberCountingDataWithSideband"), *wspace->pdf("TopLevelPdf"),*poi,0.05,nullParams);
-
-				   // ProfileLikelihoodCalculator plc(*data,				  *wspace->pdf("TopLevelPdf"),*poi,0.05,nullParams);
-
-  //wspace->pdf("TopLevelPdf")->fitTo(*wspace->data("ObservedNumberCountingDataWithSideband"));
-
-  //Step 6, Use the calculator to get a HypoTestResult
-  RooStats::HypoTestResult* htr = plc.GetHypoTest();
-  assert(htr!=0);
-  cout << "++++++++++++++++++++++++++++++++++++++++++++"<< endl;
-  cout << " the p-value for the null is " << htr->NullPValue() << endl;
-  cout << " corresponding to a significance of " << htr->Significance() << endl;
-  cout << "++++++++++++++++++++++++++++++++++++++++++++" << endl;
-  
-  ///////////////////////////////////////////////////////////////////////////
-  //Step 8 here we reuse the ProfileLikelihoodCalculator to return a confidence interval
-  //we need to specify what our parameters of interest are
-  RooArgSet* paramsOfInterest = nullParams;//they are the same as before
-  plc.SetParameters(*paramsOfInterest);
-  RooStats::LikelihoodInterval* lrint = (RooStats::LikelihoodInterval*)plc.GetInterval();
-  lrint->SetConfidenceLevel(0.95);
-  
-  //Step 9 make a plot of the likelihood ratio and the interval obtained 
-  double lower = lrint->LowerLimit(*mu);
-  double upper = lrint->UpperLimit(*mu);
-  
-  RooStats::LikelihoodIntervalPlot lrPlot(lrint);
-  lrPlot.SetMaximum(3.);
-  lrPlot.Draw();
-  
-  //Step 10 print upper and lower limits
-  cout << " lower limit on master signal " << lower << endl;
-  cout << " upper limit on master signal " << upper << endl;
+ 
     
 
   

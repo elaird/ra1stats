@@ -29,7 +29,7 @@ RobsPdfFactory::RobsPdfFactory(){}
 
 RobsPdfFactory::~RobsPdfFactory(){}
 
-void RobsPdfFactory::AddModel_EWK(Double_t* BR,Double_t d_signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
+void RobsPdfFactory::AddModel_EWK(Double_t* BR,Double_t d_signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
   
   using namespace RooFit;
   using std::vector;
@@ -41,7 +41,7 @@ void RobsPdfFactory::AddModel_EWK(Double_t* BR,Double_t d_signal_sys,Int_t nbins
 
   
   //signal event yield components
-  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,100.);//POI
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
 
   //signal systematic stuff
   RooRealVar* signal_sys = new RooRealVar("signal_sys","signal_sys",1.,0.,10.);
@@ -132,7 +132,7 @@ void RobsPdfFactory::AddModel_EWK(Double_t* BR,Double_t d_signal_sys,Int_t nbins
 
 }
 
-void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,Double_t d_signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
+void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,Double_t d_signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
   
   using namespace RooFit;
   using std::vector;
@@ -205,8 +205,8 @@ void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,Double_t d_signal_sys,Int_t
   RooRealVar* sys_ttW_nom = new RooRealVar("sys_ttW_nom","sys_ttW_nom",1.);
   RooRealVar* sys_Zinv_nom = new RooRealVar("sys_Zinv_nom","sys_Zinv_nom",1.);
 
-  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(0.3));
-  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(0.4));
+  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(muon_sys));
+  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(phot_sys));
   
  
  
@@ -359,7 +359,7 @@ void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,Double_t d_signal_sys,Int_t
 }
 
 
-void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
+void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
   
   using namespace RooFit;
   using std::vector;
@@ -386,7 +386,7 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   RooRealVar* meas_bar_1 = new RooRealVar("meas_bar_1","meas_bar_1",844459.,20000.,9000000.);
   RooRealVar* meas_bar_2 = new RooRealVar("meas_bar_2","meas_bar_2",331948.,10000.,9000000.);
   RooRealVar* meas_bar_3 = new RooRealVar("meas_bar_3","meas_bar_3",335683.,10000.,9000000.);
-  //RooRealVar* meas_bar_4 = new RooRealVar("meas_bar_4","meas_bar_4",110034.,50000., 9000000.);
+ 
 
   //define common variables
   RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
@@ -404,18 +404,6 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*masterSignal,*BR2,*signal_sys));
    
 
-  //Easy variables for low HT inclusive method
-  RooRealVar* bbar = new RooRealVar("bbar","bbar",335683.,0.,10000000.);
-
-  RooRealVar* tau_1 = new RooRealVar("tau_1","tau_1",2.5,0.,100);
-  RooRealVar* tau_2 = new RooRealVar("tau_2","tau_2",1.0,0.,100);
-  
-
- 
-  RooProduct* bkgd_bar_1 = new RooProduct("bkgd_bar_1","bkgd_bar_1",RooArgSet(*bbar,*tau_1));
-  RooProduct* bkgd_bar_2 = new RooProduct("bkgd_bar_2","bkgd_bar_2",RooArgSet(*bbar,*tau_2));
-  RooProduct* bkgd_bar_3 = new RooProduct("bkgd_bar_3","bkgd_bar_3",RooArgSet(*bbar));
-  
 
  
   //The factors Tau_ which related lepton and photon control region to signal region
@@ -432,8 +420,8 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   RooRealVar* sys_ttW_nom = new RooRealVar("sys_ttW_nom","sys_ttW_nom",1.);
   RooRealVar* sys_Zinv_nom = new RooRealVar("sys_Zinv_nom","sys_Zinv_nom",1.);
 
-  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(0.3));
-  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(0.4));
+  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(muon_sys));
+  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(phot_sys));
   
  
  
@@ -442,14 +430,6 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   //Zinv_tot_1 = Zinv_1 * sys_Zinv
   //ttW_tot_2 = ttW_2 * sys_ttW
   //Zinv_tot_2 = Zinv_2 * sys_Zinv
-  
-
-  // tau_3*b = ttW_tot_1 + Zinv_tot_1 + QCD_1 //1. signal bin
-  // b       = ttW_tot_2 + Zinv_tot_2 + QCD_2 //2. signal bin
-  // --> tau_3 * (ttW_tot_2 + Zinv_tot_2 + QCD_2) = ttW_tot_1 + Zinv_tot_1 + QCD_1
-  // --> QCD_1 = tau_3 * (ttW_tot_2 + Zinv_tot_2 + QCD_2) - ttW_tot_1 - Zinv_tot_1 
-
-
   RooRealVar* ttW_1 = new RooRealVar("ttW_1","ttW_1",.5,0.,100.);
   RooRealVar* Zinv_1 = new RooRealVar("Zinv_1","Zinv_1",3.5,0.,100.);
   RooRealVar* QCD_1 = new RooRealVar("QCD_1","QCD_1",.5,0.,40.);
@@ -459,41 +439,52 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   RooRealVar* Zinv_2 = new RooRealVar("Zinv_2","Zinv_2",0.7,0.,100.);
   RooRealVar* QCD_2 = new RooRealVar("QCD_2","QCD_2",.5,0.,40.);
   
- 
 
   RooProduct* Zinv_tot_1 = new RooProduct("Zinv_tot_1","Zinv_1*sys_Zinv",RooArgSet(*Zinv_1,*sys_Zinv)); 
   RooProduct* ttW_tot_1 = new RooProduct("ttW_tot_1","ttW_1*sys_ttW",RooArgSet(*ttW_1,*sys_ttW)); 
 
   RooProduct* Zinv_tot_2 = new RooProduct("Zinv_tot_2","Zinv_2*sys_Zinv",RooArgSet(*Zinv_2,*sys_Zinv));
   RooProduct* ttW_tot_2 = new RooProduct("ttW_tot_2","ttW_2*sys_ttW",RooArgSet(*ttW_2,*sys_ttW));
-  
 
-  //Now the awful combination part
-  RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*ttW_tot_2,*Zinv_tot_2,*QCD_1,*QCD_2));
-
-  RooAddition* b_1 = new RooAddition("b_1","b_1",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*QCD_1));
-  RooAddition* b_2 = new RooAddition("b_2","b_2",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
-
- 
-
- 
-  RooProduct* bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
-  RooProduct* bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
-  
-
-
-
-  //Do some weird things to allow substractions
-  
-
-
- 
+  //background in muon and photon control samples at two different HT signal bins
   RooProduct* ttWTau_1 = new RooProduct("ttWTau_1","ttW_1*tau_ttW",RooArgSet(*ttW_1,*tau_ttW_1));
   RooProduct* ZinvTau_1 = new RooProduct("ZinvTau_1","Zinv_1*tau_Zinv",RooArgSet(*Zinv_1,*tau_Zinv_1));
 
   RooProduct* ttWTau_2 = new RooProduct("ttWTau_2","ttW_2*tau_ttW",RooArgSet(*ttW_2,*tau_ttW_2));
   RooProduct* ZinvTau_2 = new RooProduct("ZinvTau_2","Zinv_2*tau_Zinv",RooArgSet(*Zinv_2,*tau_Zinv_2));
 
+  
+
+  //variables for low HT inclusive method//////////////////////////////////////////////////////////////////////
+
+  //total background of two signal HT bins
+  RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*ttW_tot_2,*Zinv_tot_2,*QCD_1,*QCD_2));
+
+  //total background at alphaT < 0.55 in signal HT region
+  RooRealVar* bbar = new RooRealVar("bbar","bbar",335683.,0.,10000000.);
+
+  //factors tau which related different HT regions
+  RooRealVar* tau_1 = new RooRealVar("tau_1","tau_1",2.5,0.,100);
+  RooRealVar* tau_2 = new RooRealVar("tau_2","tau_2",1.0,0.,100);
+  
+  //background at alphaT < 0.55 in 3 HT bins
+  RooProduct* bkgd_bar_1 = new RooProduct("bkgd_bar_1","bkgd_bar_1",RooArgSet(*bbar,*tau_1));
+  RooProduct* bkgd_bar_2 = new RooProduct("bkgd_bar_2","bkgd_bar_2",RooArgSet(*bbar,*tau_2));
+  RooProduct* bkgd_bar_3 = new RooProduct("bkgd_bar_3","bkgd_bar_3",RooArgSet(*bbar));
+  
+  
+  //background of first signal HT bin 350 < HT < 450
+  RooAddition* b_1 = new RooAddition("b_1","b_1",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*QCD_1));
+  //background of second signal HT bin HT > 450 
+  RooAddition* b_2 = new RooAddition("b_2","b_2",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
+ 
+  //background of first background HT bin 250 < HT < 300
+  RooProduct* bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
+  //background of second background HT bin HT > 300
+  RooProduct* bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
+  
+
+ 
   RooAddition* splusb_1 = new RooAddition("splusb_1","splusb_1",RooArgSet(*sig_exp1,*b_1));
   RooAddition* splusb_2 = new RooAddition("splusb_2","splusb_2",RooArgSet(*sig_exp2,*b_2));
 
@@ -501,7 +492,7 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
 
 
   //Define all the necessary pdf
-  //Gaussian
+  //LogNormal for savety at 0 (test different functions for comparison)
   RooLognormal *sys_ttW_Cons = new RooLognormal("sys_ttW_Cons","sys_ttW_Cons",*sys_ttW_nom,*sys_ttW,*sys_ttW_sigma);
   RooLognormal *sys_Zinv_Cons = new RooLognormal("sys_Zinv_Cons","sys_Zinv_Cons",*sys_Zinv_nom,*sys_Zinv,*sys_Zinv_sigma);
 
@@ -518,14 +509,16 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
   RooPoisson* bkgd_poisson_1 = new RooPoisson("bkgd_poisson_1","bkgd_poisson_1",*meas_1,*bkgd_1);
   RooPoisson* bkgd_poisson_2 = new RooPoisson("bkgd_poisson_2","bkgd_poisson_2",*meas_2,*bkgd_2);
 
+  RooPoisson* bkgd_poisson_1_bar = new RooPoisson("bkgd_poisson_1_bar","bkgd_poisson_1_bar",*meas_bar_1,*bkgd_bar_1);
+  RooPoisson* bkgd_poisson_2_bar = new RooPoisson("bkgd_poisson_2_bar","bkgd_poisson_2_bar",*meas_bar_2,*bkgd_bar_2);
+
+
   RooPoisson* sig_poisson_1 = new RooPoisson("sig_poisson_1","sig_poisson_1",*meas_3,*splusb_1);
   RooPoisson* sig_poisson_2 = new RooPoisson("sig_poisson_2","sig_poisson_2",*meas_4,*splusb_2);
 
   RooPoisson* sig_poisson_bar = new RooPoisson("sig_poisson_bar","sig_poisson_bar",*meas_bar_3,*bkgd_bar_3);
  
 
-  RooPoisson* bkgd_poisson_1_bar = new RooPoisson("bkgd_poisson_1_bar","bkgd_poisson_1_bar",*meas_bar_1,*bkgd_bar_1);
-  RooPoisson* bkgd_poisson_2_bar = new RooPoisson("bkgd_poisson_2_bar","bkgd_poisson_2_bar",*meas_bar_2,*bkgd_bar_2);
 
 
  
@@ -591,7 +584,234 @@ void RobsPdfFactory::AddModel_Lin_Combi_one(Double_t* BR,Double_t d_signal_sys,I
 }
 
 
-void RobsPdfFactory::AddModel_Exp_Combi(Double_t* BR,Double_t d_signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
+void RobsPdfFactory::AddModel_Exp_Combi_one(Double_t* BR,Double_t d_signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
+  
+  using namespace RooFit;
+  using std::vector;
+
+  TList likelihoodFactors;
+
+
+
+
+  //Measurements//////////////////////////
+  //EWK
+  RooRealVar* muonMeas_1 = new RooRealVar("muonMeas_1","muonMeas_1",0.5,0.,100.);
+  RooRealVar* photMeas_1 = new RooRealVar("photMeas_1","photMeas_1",0.5,0.,100.);
+  
+  RooRealVar* muonMeas_2 = new RooRealVar("muonMeas_2","muonMeas_2",0.5,0.,100.);
+  RooRealVar* photMeas_2 = new RooRealVar("photMeas_2","photMeas_2",0.5,0.,100.);
+  
+  //Different HT bins
+  RooRealVar* meas_1 = new RooRealVar("meas_1","meas_1",33.,0.,100.);
+  RooRealVar* meas_2 = new RooRealVar("meas_2","meas_2",11.,0.,100.);
+  RooRealVar* meas_3 = new RooRealVar("meas_3","meas_3",8.,0.,100);
+  RooRealVar* meas_4 = new RooRealVar("meas_4","meas_4",5.,0.,100);
+ 
+  RooRealVar* meas_bar_1 = new RooRealVar("meas_bar_1","meas_bar_1",844459.,20000.,9000000.);
+  RooRealVar* meas_bar_2 = new RooRealVar("meas_bar_2","meas_bar_2",331948.,10000.,9000000.);
+  RooRealVar* meas_bar_3 = new RooRealVar("meas_bar_3","meas_bar_3",335683.,10000.,9000000.);
+ 
+
+  //define common variables
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
+
+  //signal systematic stuff
+  RooRealVar* signal_sys = new RooRealVar("signal_sys","signal_sys",1.,0.,10.);
+  RooRealVar* signal_sys_nom = new RooRealVar("signal_sys_nom","signal_sys_nom",1.);
+  RooRealVar* signal_sys_sigma = new RooRealVar("signal_sys_sigma","signal_sys_sigma",d_signal_sys);
+ 
+ 
+  RooRealVar* BR1 = new RooRealVar("BR1","BR1",BR[0]);
+  RooRealVar* BR2 = new RooRealVar("BR2","BR2",BR[1]);
+
+  RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*masterSignal,*BR1,*signal_sys));
+  RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*masterSignal,*BR2,*signal_sys));
+   
+
+
+ 
+  //The factors Tau_ which related lepton and photon control region to signal region
+  RooRealVar* tau_ttW_1 = new RooRealVar("tau_ttW_1","tau_ttW_1",.5);
+  RooRealVar* tau_Zinv_1 = new RooRealVar("tau_Zinv_1","tau_Zinv_1",.5);
+ 
+  RooRealVar* tau_ttW_2 = new RooRealVar("tau_ttW_2","tau_ttW_2",.5);
+  RooRealVar* tau_Zinv_2 = new RooRealVar("tau_Zinv_2","tau_Zinv_2",.5);
+
+  //Everything for syst. uncertainties on TTW and Zinv background estimation
+  RooRealVar* sys_ttW = new RooRealVar("sys_ttW","sys_ttW",1.,0.,2.);
+  RooRealVar* sys_Zinv = new RooRealVar("sys_Zinv","sys_Zinv",1.,0.,2.);
+
+  RooRealVar* sys_ttW_nom = new RooRealVar("sys_ttW_nom","sys_ttW_nom",1.);
+  RooRealVar* sys_Zinv_nom = new RooRealVar("sys_Zinv_nom","sys_Zinv_nom",1.);
+
+  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(muon_sys));
+  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(phot_sys));
+  
+ 
+ 
+  //The expected background
+  //ttW_tot_1 = ttW_1 * sys_ttW
+  //Zinv_tot_1 = Zinv_1 * sys_Zinv
+  //ttW_tot_2 = ttW_2 * sys_ttW
+  //Zinv_tot_2 = Zinv_2 * sys_Zinv
+  RooRealVar* ttW_1 = new RooRealVar("ttW_1","ttW_1",.5,0.,100.);
+  RooRealVar* Zinv_1 = new RooRealVar("Zinv_1","Zinv_1",3.5,0.,100.);
+  RooRealVar* QCD_1 = new RooRealVar("QCD_1","QCD_1",.5,0.,40.);
+  
+  
+  RooRealVar* ttW_2 = new RooRealVar("ttW_2","ttW_2",.5,0.,100.);
+  RooRealVar* Zinv_2 = new RooRealVar("Zinv_2","Zinv_2",0.7,0.,100.);
+  RooRealVar* QCD_2 = new RooRealVar("QCD_2","QCD_2",.5,0.,40.);
+  
+
+  RooProduct* Zinv_tot_1 = new RooProduct("Zinv_tot_1","Zinv_1*sys_Zinv",RooArgSet(*Zinv_1,*sys_Zinv)); 
+  RooProduct* ttW_tot_1 = new RooProduct("ttW_tot_1","ttW_1*sys_ttW",RooArgSet(*ttW_1,*sys_ttW)); 
+
+  RooProduct* Zinv_tot_2 = new RooProduct("Zinv_tot_2","Zinv_2*sys_Zinv",RooArgSet(*Zinv_2,*sys_Zinv));
+  RooProduct* ttW_tot_2 = new RooProduct("ttW_tot_2","ttW_2*sys_ttW",RooArgSet(*ttW_2,*sys_ttW));
+
+  //background in muon and photon control samples at two different HT signal bins
+  RooProduct* ttWTau_1 = new RooProduct("ttWTau_1","ttW_1*tau_ttW",RooArgSet(*ttW_1,*tau_ttW_1));
+  RooProduct* ZinvTau_1 = new RooProduct("ZinvTau_1","Zinv_1*tau_Zinv",RooArgSet(*Zinv_1,*tau_Zinv_1));
+
+  RooProduct* ttWTau_2 = new RooProduct("ttWTau_2","ttW_2*tau_ttW",RooArgSet(*ttW_2,*tau_ttW_2));
+  RooProduct* ZinvTau_2 = new RooProduct("ZinvTau_2","Zinv_2*tau_Zinv",RooArgSet(*Zinv_2,*tau_Zinv_2));
+
+  
+
+  //variables for low HT inclusive method//////////////////////////////////////////////////////////////////////
+
+  //total background of two signal HT bins
+  RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*ttW_tot_2,*Zinv_tot_2,*QCD_1,*QCD_2));
+
+  //total background at alphaT < 0.55 in signal HT region
+  RooRealVar* bbar = new RooRealVar("bbar","bbar",335683.,0.,10000000.);
+
+  RooRealVar* rho = new RooRealVar("rho","rho",1.0,0.,10.);
+
+  //factors tau which related different HT regions
+  RooRealVar* tau_1 = new RooRealVar("tau_1","tau_1",2.5,0.,100);
+  RooRealVar* tau_2 = new RooRealVar("tau_2","tau_2",1.0,0.,100);
+  
+  //background at alphaT < 0.55 in 3 HT bins
+  RooProduct* bkgd_bar_1 = new RooProduct("bkgd_bar_1","bkgd_bar_1",RooArgSet(*bbar,*tau_1));
+  RooProduct* bkgd_bar_2 = new RooProduct("bkgd_bar_2","bkgd_bar_2",RooArgSet(*bbar,*tau_2));
+  RooProduct* bkgd_bar_3 = new RooProduct("bkgd_bar_3","bkgd_bar_3",RooArgSet(*bbar));
+  
+  
+  //background of first signal HT bin 350 < HT < 450
+  RooAddition* b_1 = new RooAddition("b_1","b_1",RooArgSet(*ttW_tot_1,*Zinv_tot_1,*QCD_1));
+  //background of second signal HT bin HT > 450 
+  RooAddition* b_2 = new RooAddition("b_2","b_2",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
+ 
+  //background of first background HT bin 250 < HT < 300
+  RooProduct* bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*b,*tau_1));
+  //background of second background HT bin HT > 300
+  RooProduct* bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*b,*tau_2));
+  
+
+ 
+  RooAddition* splusb_1 = new RooAddition("splusb_1","splusb_1",RooArgSet(*sig_exp1,*b_1));
+  RooAddition* splusb_2 = new RooAddition("splusb_2","splusb_2",RooArgSet(*sig_exp2,*b_2));
+
+
+
+
+  //Define all the necessary pdf
+  //LogNormal for savety at 0 (test different functions for comparison)
+  RooLognormal *sys_ttW_Cons = new RooLognormal("sys_ttW_Cons","sys_ttW_Cons",*sys_ttW_nom,*sys_ttW,*sys_ttW_sigma);
+  RooLognormal *sys_Zinv_Cons = new RooLognormal("sys_Zinv_Cons","sys_Zinv_Cons",*sys_Zinv_nom,*sys_Zinv,*sys_Zinv_sigma);
+
+  RooGaussian *sys_signal_Cons = new RooGaussian("sys_signal_Cons","sys_signal_Cons",*signal_sys_nom,*signal_sys,*signal_sys_sigma);
+ 
+
+  //Poisson
+  RooPoisson* muonRegion_1 = new RooPoisson("muonRegion_1","muonRegion_1",*muonMeas_1,*ttWTau_1);
+  RooPoisson* photRegion_1 = new RooPoisson("photRegion_1","photRegion_1",*photMeas_1,*ZinvTau_1);
+
+  RooPoisson* muonRegion_2 = new RooPoisson("muonRegion_2","muonRegion_2",*muonMeas_2,*ttWTau_2);
+  RooPoisson* photRegion_2 = new RooPoisson("photRegion_2","photRegion_2",*photMeas_2,*ZinvTau_2);
+
+  RooPoisson* bkgd_poisson_1 = new RooPoisson("bkgd_poisson_1","bkgd_poisson_1",*meas_1,*bkgd_1);
+  RooPoisson* bkgd_poisson_2 = new RooPoisson("bkgd_poisson_2","bkgd_poisson_2",*meas_2,*bkgd_2);
+
+  RooPoisson* bkgd_poisson_1_bar = new RooPoisson("bkgd_poisson_1_bar","bkgd_poisson_1_bar",*meas_bar_1,*bkgd_bar_1);
+  RooPoisson* bkgd_poisson_2_bar = new RooPoisson("bkgd_poisson_2_bar","bkgd_poisson_2_bar",*meas_bar_2,*bkgd_bar_2);
+
+
+  RooPoisson* sig_poisson_1 = new RooPoisson("sig_poisson_1","sig_poisson_1",*meas_3,*splusb_1);
+  RooPoisson* sig_poisson_2 = new RooPoisson("sig_poisson_2","sig_poisson_2",*meas_4,*splusb_2);
+
+  RooPoisson* sig_poisson_bar = new RooPoisson("sig_poisson_bar","sig_poisson_bar",*meas_bar_3,*bkgd_bar_3);
+ 
+
+
+
+ 
+  //add likelihood factors
+
+  likelihoodFactors.Add(sys_ttW_Cons);
+  likelihoodFactors.Add(sys_Zinv_Cons);
+  likelihoodFactors.Add(sys_signal_Cons);
+
+  likelihoodFactors.Add(muonRegion_1);
+  likelihoodFactors.Add(photRegion_1);
+  
+  likelihoodFactors.Add(muonRegion_2);
+  likelihoodFactors.Add(photRegion_2);
+
+  likelihoodFactors.Add(sig_poisson_1);
+  likelihoodFactors.Add(sig_poisson_2);
+  likelihoodFactors.Add(bkgd_poisson_1);
+  likelihoodFactors.Add(bkgd_poisson_2);
+
+  likelihoodFactors.Add(sig_poisson_bar);
+ 
+  likelihoodFactors.Add(bkgd_poisson_1_bar);
+  likelihoodFactors.Add(bkgd_poisson_2_bar);
+
+  RooArgSet likelihoodFactorSet(likelihoodFactors);
+  RooProdPdf joint(pdfName,"joint",likelihoodFactorSet);
+
+ 
+
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+
+
+
+  ws->import(*muonMeas_1);
+  ws->import(*photMeas_1);
+  ws->import(*muonMeas_2);
+  ws->import(*photMeas_2);
+  ws->import(*meas_1);
+  ws->import(*meas_2);
+  ws->import(*meas_3);
+  ws->import(*meas_4);
+  ws->import(*meas_bar_1);
+  ws->import(*meas_bar_2);
+  ws->import(*meas_bar_3);
+  // ws->import(*meas_bar_4);
+  ws->import(joint);
+  
+  // ws->import(poi);
+  // ws->import(nuis);
+
+  RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
+
+   ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3");
+   ws->defineSet("poi",muName);
+   ws->defineSet("nuis","ttW_1,ttW_2,Zinv_1,Zinv_2,sys_ttW,sys_Zinv,rho,tau_1,tau_2,QCD_1,QCD_2");
+
+ 
+
+ 
+
+
+}
+
+
+void RobsPdfFactory::AddModel_Exp_Combi(Double_t* BR,Double_t d_signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
   
   using namespace RooFit;
   using std::vector;
@@ -621,7 +841,7 @@ void RobsPdfFactory::AddModel_Exp_Combi(Double_t* BR,Double_t d_signal_sys,Int_t
   RooRealVar* meas_bar_4 = new RooRealVar("meas_bar_4","meas_bar_4",110034.,50000., 9000000.);
 
   //define common variables
-  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,10000.);//POI
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
 
   RooRealVar* signal_sys = new RooRealVar("signal_sys","signal_sys",1.,0.,10.);
   RooRealVar* signal_sys_nom = new RooRealVar("signal_sys_nom","signal_sys_nom",1.);
@@ -664,8 +884,8 @@ void RobsPdfFactory::AddModel_Exp_Combi(Double_t* BR,Double_t d_signal_sys,Int_t
   RooRealVar* sys_ttW_nom = new RooRealVar("sys_ttW_nom","sys_ttW_nom",1.);
   RooRealVar* sys_Zinv_nom = new RooRealVar("sys_Zinv_nom","sys_Zinv_nom",1.);
 
-  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(0.3));
-  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(0.4));
+  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(muon_sys));
+  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(phot_sys));
   
  
  
@@ -822,7 +1042,7 @@ void RobsPdfFactory::AddModel_Exp_Combi(Double_t* BR,Double_t d_signal_sys,Int_t
 
 
 
-void RobsPdfFactory::AddModel_Lin(Double_t* BR,Double_t d_signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
+void RobsPdfFactory::AddModel_Lin(Double_t* BR,Double_t d_signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
   
   using namespace RooFit;
   using std::vector;
@@ -833,7 +1053,7 @@ void RobsPdfFactory::AddModel_Lin(Double_t* BR,Double_t d_signal_sys,Int_t nbins
   //define common variables
 
  
-  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,100.);//POI
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
 
   RooRealVar* signal_sys = new RooRealVar("signal_sys","signal_sys",1.,0.,10.);
   RooRealVar* signal_sys_nom = new RooRealVar("signal_sys_nom","signal_sys_nom",1.);
@@ -936,7 +1156,7 @@ void RobsPdfFactory::AddModel_Lin(Double_t* BR,Double_t d_signal_sys,Int_t nbins
 }
 
 
-void RobsPdfFactory::AddModel_Exp(Double_t* BR,Double_t d_signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
+void RobsPdfFactory::AddModel_Exp(Double_t* BR,Double_t d_signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName){
   
   using namespace RooFit;
   using std::vector;
@@ -956,7 +1176,7 @@ void RobsPdfFactory::AddModel_Exp(Double_t* BR,Double_t d_signal_sys,Int_t nbins
   
 
   //define common variables
-  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,100.);//POI
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
 
   RooRealVar* signal_sys = new RooRealVar("signal_sys","signal_sys",1.,0.,10.);
   RooRealVar* signal_sys_nom = new RooRealVar("signal_sys_nom","signal_sys_nom",1.);

@@ -8,15 +8,17 @@ public:
   RobsPdfFactory();
   virtual ~RobsPdfFactory();
 
-  void AddModel_EWK(Double_t* BR,Double_t signal_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName);
+  void AddModel_EWK(Double_t* BR,Double_t signal_sys,Double_t muon_sys,Double_t phot_sys,Int_t nbins,RooWorkspace* ws,const char* pdfName,const char* muName);
   
-  void AddModel_Lin_Combi(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
-   void AddModel_Lin_Combi_one(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+  void AddModel_Lin_Combi(Double_t* sigExp,Double_t signal_sys,Double_t muon_sys,Double_t phot_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+  void AddModel_Lin_Combi_one(Double_t* sigExp,Double_t signal_sys,Double_t muon_sys,Double_t phot_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
 
-  void AddModel_Exp_Combi(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+  void AddModel_Exp_Combi(Double_t* sigExp,Double_t signal_sys,Double_t muon_sys,Double_t phot_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+
+  void AddModel_Exp_Combi_one(Double_t* sigExp,Double_t signal_sys,Double_t muon_sys,Double_t phot_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
   
-  void AddModel_Lin(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
-  void AddModel_Exp(Double_t* sigExp,Double_t signal_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+  void AddModel_Lin(Double_t* sigExp,Double_t signal_sys,Double_t muon_sys,Double_t phot_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
+  void AddModel_Exp(Double_t* sigExp,Double_t signal_sys,Double_t muon_sys,Double_t phot_sys, Int_t nchan, RooWorkspace* ws, const char* pdfName ="CombinedPdf",const char* masterSignalName ="masterSignal");
  
   void AddDataSideband(  Double_t* bkgd_sideband,
 			 Double_t* bkgdbar_sideband,
