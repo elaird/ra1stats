@@ -18,25 +18,15 @@ def strings(m0, m12) :
     d["sourceFile"] = "Lepton.C"
     #d["sourceFile"] = "SplitSignal.C"
 
-    d["signalFile"]    = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root"
-    d["signalDir1"]    = "mSuGraScan_beforeAll"
-    d["signalDir2"]    = "mSuGraScan_350"
-    d["signalLoYield"] = "m0_m12_0"
+    d["signalFile"]      = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root"
+    d["muonControlFile"] = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_muon.root"
+    d["sys05File"]       = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root"
+    d["sys2File"]        = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root"
 
-    d["muonControlFile"]    = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_muon.root"
-    d["muonControlDir1"]    = "mSuGraScan_beforeAll"
-    d["muonControlDir2"]    = "mSuGraScan_350"
-    d["muonControlLoYield"] = "m0_m12_0"
-
-    d["sys05File"]    = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root"
-    d["sys05Dir1"]    = "mSuGraScan_beforeAll"
-    d["sys05Dir2"]    = "mSuGraScan_350"
-    d["sys05LoYield"] = "m0_m12_0"
-    
-    d["sys2File"]    = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root"
-    d["sys2Dir1"]    = "mSuGraScan_beforeAll"
-    d["sys2Dir2"]    = "mSuGraScan_350"
-    d["sys2LoYield"] = "m0_m12_0"
+    for item in ["muonControl", "signal", "sys05", "sys2"] :
+        d["%sDir1"%item]    = "mSuGraScan_beforeAll"
+        d["%sDir2"%item]    = "mSuGraScan_350"
+        d["%sLoYield"%item] = "m0_m12_0"
 
     #output name options
     d["outputDir"]         = "output"
