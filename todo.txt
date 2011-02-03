@@ -3,7 +3,7 @@ Correctness
 lolargs
 include Rob's method
 investigate ng
-bayesian switch in setupLikelihood
+bayesian switch in setupLikelihood and modelConfig
 
 Consistency
 -----------
