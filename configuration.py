@@ -7,6 +7,8 @@ def switches() :
     d["doMCMC"] = False
 
     d["nlo"] = True
+    d["fixQcdToZero"] = True
+    
     d["testPointsOnly"] = True
     d["printCovarianceMatrix"] = False
     d["printByHandValues"] = False

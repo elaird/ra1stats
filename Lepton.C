@@ -36,6 +36,35 @@
 #include "RooStats/BayesianCalculator.h"
 #include "RooStats/PointSetInterval.h"
 
+//Comments from Tanja:
+//A word of explanation before starting
+//The RA1 analysis uses three kinds of background estimation 
+//one estimates the combined tt+W background from a muon control auxiliary measurement
+// assumption the expected background in the muon control sample is tau_mu*TTplusW (expected tt+W background in signal-like region)
+//one estimates the Zinv background from a photon control auxiliary measurement
+// assumption the expected background in the photon control sample is tau_photon*ZINV (expected Zinv background in signal-like region)
+//one estimates the total background (tt+W+Zinv+QCD) using low HT and low alphaT control measurement
+//Here a little (hopefully helpful) drawing (yaxis is alphaT, xaxis is HT)
+//
+// ^ (alphaT)
+// |                                 |                                  |
+// | observe: n_control_2 events     | observe:n_control_1 events       | observe: n_signal events
+// | tauprime*b*rhoprime             | expect: tau*b*rho                | expect: s+ b
+// |                                 |                                  |
+//_|HT=250GeV________________________|HT=300 GeV________________________|HT=350 GeV_____________> (HT)
+// |alphaT = 0.55                    |                                  |
+// |                                 |                                  |
+// | observe: n_bar_control_2 events | observe: n_bar_control_1 events  | observe: n_bar_signal events               
+// | expect: tauprime*bbar           | expect: tau*bbar                 | expect: bbar
+// |                                 |                                  |
+// 
+// The asumption made in the method is that R_alphaT (#events with alphaT>0.55/#events with alphaT < 0.55) for a given HT bin behave the following in the bkgd only scenario
+// R_alphaT (HT>350 GeV) / R_alphaT (300 < HT < 350 GeV) = R_alphaT (300 < HT < 350 GeV) / R_alphaT (250 < HT < 300 GeV)
+// this corresponds to the assumption that rhoprime = rho*rho
+// using this assumption the b can be obtained
+// ! the influence of signal contamination is not included in this macro for simplicity reasons (it would modify e.g. tau*b*rho to tau*b*rho+s*tau_s
+// ! where tau_s would be taken from the signal monte carlo for each of the different test m0-m12 points
+
 TString histoName(std::string& s1, std::string& s2, std::string& s3) {
   return s1+"_"+s2+"_"+s3;
 }
@@ -111,42 +140,79 @@ TH2F* nloYieldHisto(std::string& fileName, std::string& dirName1, std::string& d
   return all;
 }
 
-
-//A word of explanation before starting
-//The RA1 analysis uses three kinds of background estimation 
-//one estimates the combined tt+W background from a muon control auxiliary measurement
-// assumption the expected background in the muon control sample is tau_mu*TTplusW (expected tt+W background in signal-like region)
-//one estimates the Zinv background from a photon control auxiliary measurement
-// assumption the expected background in the photon control sample is tau_photon*ZINV (expected Zinv background in signal-like region)
-//one estimates the total background (tt+W+Zinv+QCD) using low HT and low alphaT control measurement
-
 RooWorkspace* workspace() {
   return new RooWorkspace("Combine");
 }
 
-void setupLikelihood(RooWorkspace* wspace) {
-  //likelihood for the signal region
-  //a poisson to include the statistic uncertainty
-  wspace->factory("Poisson::signal(n_signal,sum::splusb(sum::b(prod::ttW(ratioBkgdEff_1[1.0,0.,5.],TTplusW),prod::Zinv(ratioBkgdEff_2[1.0,0.,5.],ZINV)),prod::SigUnc(s,ratioSigEff[1,0.3,1.9])))");
+void setupLikelihood(RooWorkspace* wspace, std::map<std::string,int>& switches) {
+  bool fixQcdToZero = switches["fixQcdToZero"];
+  
+  //likelihood for the signal region (Poisson to include the statistical uncertainty)
+  if (!fixQcdToZero) {
+    wspace->factory("Poisson::signal(n_signal,sum::splusb(sum::b(prod::ttW(ratioBkgdEff_1[1.0,0.,5.],TTplusW),QCD,prod::Zinv(ratioBkgdEff_2[1.0,0.,5.],ZINV)),prod::SigUnc(s,ratioSigEff[1,0.3,1.9])))");
+  }
+  else {
+    wspace->factory("Poisson::signal(n_signal,sum::splusb(sum::b(prod::ttW(ratioBkgdEff_1[1.0,0.,5.],TTplusW),prod::Zinv(ratioBkgdEff_2[1.0,0.,5.],ZINV)),prod::SigUnc(s,ratioSigEff[1,0.3,1.9])))");
+  }
+
+  if (!fixQcdToZero) {
+    //likelihood for the low HT and/or low alphaT auxiliary measurements
+    wspace->factory("Poisson::bar_signal(n_bar_signal,bbar)");//alphaT < 0.55 && HT > 350 GeV
+    wspace->factory("Poisson::control_1(n_control_1,prod::taub(tau,b,rho))"); //alphaT > 0.55 && 300 < HT < 350 GeV
+    wspace->factory("Poisson::bar_control_1(n_bar_control_1,prod::taubar(tau,bbar))");  //alphaT < 0.55 && 300 < HT << 350 GeV
+    wspace->factory("Poisson::control_2(n_control_2,prod::taub_2(tauprime,b,prod::rhoprime(f[1.,0.,2.],rho,rho)))");//alphaT > 0.55 && 250 < HT < 300 GeV
+    wspace->factory("Poisson::bar_control_2(n_bar_control_2,prod::taubar_2(tauprime,bbar))");//alphaT < 0.55 && 250 < HT < 300 GeV
+    //pdf for the systeamtic uncertainty on the assumption that rhoprime = rho*rho
+    wspace->factory("Gaussian::xConstraint(1.,f,sigma_x)");
+    wspace->factory("PROD::QCD_model(bar_signal,control_1,bar_control_1,control_2,bar_control_2,xConstraint)");
+  }
+
   //gaussians to include the systematic uncertainties on the background estimations and the signal acceptance*efficiency*luminosity
   wspace->factory("Gaussian::sigConstraint(1.,ratioSigEff,sigma_SigEff)");
   wspace->factory("Gaussian::mcCons_ttW(1.,ratioBkgdEff_1,sigma_ttW)"); 
   wspace->factory("Gaussian::mcCons_Zinv(1.,ratioBkgdEff_2,sigma_Zinv)");
   wspace->factory("PROD::signal_model(signal,sigConstraint,mcCons_ttW,mcCons_Zinv)");
+
   //set pdf for muon control 
-  wspace->factory("Poisson::muoncontrol(n_muoncontrol,sum::MuSPlusB(prod::TTWside(tau_mu,TTplusW),prod::smu(tau_s_mu[0.001],s)))");
+  if (!fixQcdToZero) {
+    wspace->factory("Poisson::muoncontrol(n_muoncontrol,prod::sideband_muon(tau_mu,TTplusW))");
+  }
+  else {
+    wspace->factory("Poisson::muoncontrol(n_muoncontrol,sum::MuSPlusB(prod::TTWside(tau_mu,TTplusW),prod::smu(tau_s_mu[0.001],s)))");
+  }
+
   //set pdf for photon control
   wspace->factory("Poisson::photoncontrol(n_photoncontrol,prod::sideband_photon(tau_photon,ZINV))");
+
   //combine the three
-  wspace->factory("PROD::total_model(signal_model,muoncontrol,photoncontrol)");
+  if (!fixQcdToZero) {
+    wspace->factory("PROD::total_model(signal_model,QCD_model,muoncontrol,photoncontrol)");
+  }
+  else {
+    wspace->factory("PROD::total_model(signal_model,muoncontrol,photoncontrol)");
+  }
+
   //to use for bayesian methods
   wspace->factory("Uniform::prior_poi({s})");
-  wspace->factory("Uniform::prior_nuis({TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff})");
+  if (!fixQcdToZero) {
+    wspace->factory("Uniform::prior_nuis({TTplusW,QCD,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff})");
+  }
+  else {
+    wspace->factory("Uniform::prior_nuis({TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff})");
+  }
   wspace->factory("PROD::prior(prior_poi,prior_nuis)");
+
   //define some sets to use later (plots)
-  wspace->defineSet("obs","n_signal,n_muoncontrol,n_photoncontrol");
   wspace->defineSet("poi","s");
-  wspace->defineSet("nuis","TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff");
+  if (!fixQcdToZero) {
+    wspace->defineSet("obs","n_signal,n_muoncontrol,n_photoncontrol,n_bar_signal,n_control_1,n_bar_control_1,n_control_2,n_bar_control_2"); 
+    wspace->defineSet("nuis","TTplusW,QCD,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff");
+  }
+  else {
+    wspace->defineSet("obs","n_signal,n_muoncontrol,n_photoncontrol");
+    wspace->defineSet("nuis","TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff");
+  }
+
 }
 
 void printByHandValues(std::map<std::string,double>& inputData) {
@@ -207,8 +273,22 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& input
   wspace->import(tau_photon);
   wspace->import(sigma_Zinv);
   wspace->import(sigma_SigEff);
+  //import variables for QCD control
+  if (not switches["fixQcdToZero"]) {
+    wspace->import(bbar);
+    wspace->import(QCD);
+    wspace->import(tau);
+    wspace->import(tauprime);
+    wspace->import(rho);
+    wspace->import(n_bar_signal);
+    wspace->import(n_control_1);
+    wspace->import(n_bar_control_1);
+    wspace->import(n_control_2);
+    wspace->import(n_bar_control_2);
+    wspace->import(sigma_x);
+  } 
 
-  setupLikelihood(wspace);
+  setupLikelihood(wspace, switches);
 
   //set values of observables
   const RooArgSet* lolArgSet=wspace->set("obs");
@@ -218,7 +298,16 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& input
   newSet->setRealValue("n_muoncontrol", inputData["n_muoncontrol"]); 
   //set observable for photon control method
   newSet->setRealValue("n_photoncontrol", inputData["n_photoncontrol"]);
-  
+  if (!switches["fixQcdToZero"]) {
+    //set observables for SixBin low HT method
+    newSet->setRealValue("n_control_1",     inputData["n_control_1"]    );
+    newSet->setRealValue("n_bar_control_1", inputData["n_bar_control_1"]);
+    newSet->setRealValue("n_control_2",     inputData["n_control_2"]    );
+    newSet->setRealValue("n_bar_control_2", inputData["n_bar_control_2"]);
+    newSet->setRealValue("n_signal",        inputData["n_signal"]       );
+    newSet->setRealValue("n_bar_signal",    inputData["n_bar_signal"]   );
+  }
+
   RooDataSet *data = new RooDataSet("obsDataSet","title",*lolArgSet);
   data->Print();
   data->add(*lolArgSet);
@@ -459,6 +548,7 @@ void Lepton(std::map<std::string,int>& switches,
   RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
   RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
   RooRealVar* ratioBkgdEff_2 = wspace->var("ratioBkgdEff_2");
+  //RooRealVar* f = wspace->var("f");
   RooArgSet constrainedParams(*ratioBkgdEff_1,*ratioBkgdEff_2,*ratioSigEff);
 
   RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
