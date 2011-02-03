@@ -97,6 +97,7 @@ def merge(nSlices) :
 ############################################    
 options = opts()
 hp.checkHistoBinning()
+utils.generateDictionaries()
 utils.compile(conf.strings(0,0)["sourceFile"])
 mkdirs()
 if options.batch : batch(int(options.batch))
