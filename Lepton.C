@@ -47,7 +47,17 @@ TString histoName(std::string& s1, std::string& s2, std::string& s3, std::string
 TH2F* loYieldHisto(std::string& fileName, std::string& dirName, std::string& histName, double lumi) {
   TFile f(fileName.c_str());
   TDirectory* dir = (TDirectory*)f.Get(dirName.c_str());
-  TH2F* h = (TH2F*)dir->Get(histName.c_str())->Clone(histoName(fileName, dirName, histName));
+
+  if (!dir) {
+    std::cerr << "ERROR: dir " << dirName << " does not exist in file " << fileName << std::endl;
+    return 0;
+  }
+  TH2F* hOld = (TH2F*)dir->Get(histName.c_str());
+  if (!hOld) {
+    std::cerr << "ERROR: histo " << histoName(fileName, dirName, histName) << " does not exist." << std::endl;
+    return 0;
+  }
+  TH2F* h = (TH2F*)hOld->Clone(histoName(fileName, dirName, histName));
   h->SetDirectory(0);
   h->Scale(lumi/100.0);//100/pb is the default normalization
   f.Close();
@@ -324,17 +334,21 @@ double setSignalVars(std::map<std::string,std::string>& strings,
 
   if (nloRatherThanLo) {
     signal = nloYieldHisto(strings["signalFile"],      strings["signalDir1"],      strings["signalDir2"],         lumi);
-    //muon   = nloYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlDir2"],    lumi);//does not yet work
-    muon   =  loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], lumi);
+    muon   = nloYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlDir2"],    lumi);
     sys05  = nloYieldHisto(strings["sys05File"],       strings["sys05Dir1"],       strings["sys05Dir2"],          lumi);
     sys2   = nloYieldHisto(strings["sys2File"],        strings["sys2Dir1"],        strings["sys2Dir2"],           lumi);
   }
   else {
-    signal =  loYieldHisto(strings["signalFile"],      strings["signalDir1"],      strings["signalDirLoYield"],   lumi);
-    muon   =  loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], lumi);
-    sys05  =  loYieldHisto(strings["sys05File"],       strings["sys05Dir1"],       strings["sys05DirLoYield"],    lumi);
-    sys2   =  loYieldHisto(strings["sys2File"],        strings["sys2Dir1"],        strings["sys2DirLoYield"],     lumi);
+    signal =  loYieldHisto(strings["signalFile"],      strings["signalDir2"],      strings["signalLoYield"],      lumi);
+    muon   =  loYieldHisto(strings["muonControlFile"], strings["muonControlDir2"], strings["muonControlLoYield"], lumi);
+    sys05  =  loYieldHisto(strings["sys05File"],       strings["sys05Dir2"],       strings["sys05LoYield"],       lumi);
+    sys2   =  loYieldHisto(strings["sys2File"],        strings["sys2Dir2"],        strings["sys2LoYield"],        lumi);
   }
+
+  assert(signal);
+  assert(muon);
+  assert(sys05);
+  assert(sys2);
 
   double tau_s_muon = 1;
 
