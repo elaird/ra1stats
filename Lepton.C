@@ -149,16 +149,38 @@ void setupLikelihood(RooWorkspace* wspace) {
   wspace->defineSet("nuis","TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff");
 }
 
-RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& inputData) {
+void printByHandValues(std::map<std::string,double>& inputData) {
+  //compute by hand the values of tau,tauprime and rho (good starting values)
+  Double_t tauprime = inputData["n_bar_control_2"]/inputData["n_bar_signal"];
+  Double_t tau = inputData["n_bar_control_1"]/inputData["n_bar_signal"];  
+  Double_t rho = tau/tauprime*inputData["n_control_2"]/inputData["n_control_1"];
+  cout << " tauprime " << tauprime << " tau " << tau << " rho " << rho << endl;
+}
+
+RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& inputData, std::map<std::string,int>& switches) {
   RooRealVar n_signal("n_signal", "n_signal", inputData["n_signal"], inputData["n_signal"]/10, inputData["n_signal"]*10);
   RooRealVar n_muoncontrol("n_muoncontrol", "n_muoncontrol", inputData["n_muoncontrol"], 0.001, inputData["n_muoncontrol"]*10);
   RooRealVar n_photoncontrol("n_photoncontrol", "n_photoncontrol", inputData["n_photoncontrol"], 0.001, inputData["n_photoncontrol"]*10);
+
+  RooRealVar n_bar_signal("n_bar_signal", "n_bar_signal", inputData["n_bar_signal"], inputData["n_bar_signal"]/10, RooNumber::infinity());
+  RooRealVar n_control_1("n_control_1", "n_control_1", inputData["n_control_1"], 0.001, RooNumber::infinity());
+  RooRealVar n_bar_control_1("n_bar_control_1", "n_bar_control_1", inputData["n_bar_control_1"], inputData["n_bar_control_1"]/10, RooNumber::infinity());
+  RooRealVar n_control_2("n_control_2", "n_control_2", inputData["n_control_2"], inputData["n_control_2"]/10, RooNumber::infinity());
+  RooRealVar n_bar_control_2("n_bar_control_2", "n_bar_control_2", inputData["n_bar_control_2"], inputData["n_bar_control_2"]/10,RooNumber::infinity());
 
   //Parameter of interest; the number of (SUSY) signal events above the Standard Model background
   RooRealVar s("s", "s", 2.5, 0.0001, inputData["n_signal"]*3);//expected numer of (SUSY) signal events above background 
   //Nuisance parameters
   RooRealVar TTplusW("TTplusW", "TTplusW", inputData["n_signal"]/2, 0.01, inputData["n_signal"]*10); //expected tt+W background in signal-like region
   RooRealVar ZINV("ZINV", "ZINV", inputData["n_signal"]/2,0.001, inputData["n_signal"]*10);//expected Zinv background in signal-like region  
+  RooRealVar QCD("QCD", "QCD", 0.001, 0, inputData["n_signal"]*10);//expected QCD background in signal-like region
+
+  //Nuisance parameter for low HT inclusive background estimation method
+  RooRealVar bbar("bbar", "bbar", inputData["n_bar_signal"], inputData["n_bar_signal"]/10, inputData["n_bar_signal"]*10);//expected total background in alphaT<0.55 and HT>350 GeV
+  RooRealVar tau("tau", "tau", 1.0, 0.001, 4.);//factor which relates expected background in alphaT > 0.55 for HT > 350 GeV and 300 < HT < 350 GeV
+  RooRealVar tauprime("tauprime", "tauprime", 2.515, 0, 5.);//factor which relates expected background in alphaT > 0.55 for HT > 350 GeV and 250 < HT < 300 GeV
+  RooRealVar rho("rho", "rho", 1.18, 0., 2.);//factor rho which takes into account differences between alphaT > 0.55 and alphaT < 0.55 in the signal yield development with HT    
+  RooRealVar sigma_x("sigma_x","sigma_x", inputData["sigma_x"]);//uncertainty on Monte Carlo estimation of X
 
   //Nuisance parameter for tt+W estimation
   RooRealVar tau_mu("tau_mu", "tau_mu", inputData["tau_mu"]);
@@ -168,6 +190,8 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& input
   RooRealVar sigma_Zinv("sigma_Zinv", "sigma_Zinv", inputData["sigma_Zinv"]);
   //Systematic uncertainty on singal*acceptance*efficiency*luminosity
   RooRealVar sigma_SigEff("sigma_SigEff", "sigma_SigEff", inputData["sigma_SigEff"]);
+
+  if (switches["printByHandValues"]) printByHandValues(inputData);
  
   //import RooRealVars
   wspace->import(TTplusW);
@@ -407,7 +431,7 @@ void writeExclusionLimitPlot(TH2F *exampleHisto, std::string& outputPlotFileName
 }
 
 void checkMap(int nInitial, int nFinal, std::string name) {
-  if (nInitial!=nFinal) std::cerr << "ERROR in " << name << ": nInitial = " << nInitial << "; nFinal = " << nFinal << std::endl;  
+  if (nInitial!=nFinal) std::cerr << "ERROR in " << name << ": nInitial = " << nInitial << "; nFinal = " << nFinal << std::endl;
 }
 
 void Lepton(std::map<std::string,int>& switches,
@@ -430,7 +454,7 @@ void Lepton(std::map<std::string,int>& switches,
   RooWorkspace* wspace = workspace();
   //import variables and set up total likelihood function
 
-  RooDataSet* data = importVars(wspace, inputData);
+  RooDataSet* data = importVars(wspace, inputData, switches);
 
   RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
   RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
