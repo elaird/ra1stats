@@ -9,6 +9,7 @@ def switches() :
     d["nlo"] = True
     d["testPointsOnly"] = True
     d["printCovarianceMatrix"] = False
+    d["printByHandValues"] = False
     d["writeWorkspaceFile"] = False
 
     return d
