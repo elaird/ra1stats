@@ -238,7 +238,7 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& input
   RooRealVar s("s", "s", 2.5, 0.0001, inputData["n_signal"]*3);//expected numer of (SUSY) signal events above background 
   //Nuisance parameters
   RooRealVar TTplusW("TTplusW", "TTplusW", inputData["n_signal"]/2, 0.01, inputData["n_signal"]*10); //expected tt+W background in signal-like region
-  RooRealVar ZINV("ZINV", "ZINV", inputData["n_signal"]/2,0.001, inputData["n_signal"]*10);//expected Zinv background in signal-like region  
+  RooRealVar ZINV("ZINV", "ZINV", inputData["n_signal"]/2, 0.001, inputData["n_signal"]*10);//expected Zinv background in signal-like region  
   RooRealVar QCD("QCD", "QCD", 0.001, 0, inputData["n_signal"]*10);//expected QCD background in signal-like region
 
   //Nuisance parameter for low HT inclusive background estimation method
@@ -274,7 +274,7 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& input
   wspace->import(sigma_Zinv);
   wspace->import(sigma_SigEff);
   //import variables for QCD control
-  if (not switches["fixQcdToZero"]) {
+  if (!switches["fixQcdToZero"]) {
     wspace->import(bbar);
     wspace->import(QCD);
     wspace->import(tau);
@@ -433,19 +433,19 @@ void mcmc(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* ws
 }
 
 double setSignalVars(std::map<std::string,std::string>& strings,
+		     std::map<std::string,int>& switches,
 		     RooWorkspace* wspace,
 		     int m0,
 		     int m12,
 		     double lumi,
-		     double sigma_SigEff_,
-		     bool nloRatherThanLo
+		     double sigma_SigEff_
 		     ) {
   TH2F *signal = 0;
   TH2F *muon   = 0;
   TH2F *sys05  = 0;
   TH2F *sys2   = 0;
 
-  if (nloRatherThanLo) {
+  if (switches["nlo"]) {
     signal = nloYieldHisto(strings["signalFile"],      strings["signalDir1"],      strings["signalDir2"],         lumi);
     muon   = nloYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlDir2"],    lumi);
     sys05  = nloYieldHisto(strings["sys05File"],       strings["sys05Dir1"],       strings["sys05Dir2"],          lumi);
@@ -472,14 +472,14 @@ double setSignalVars(std::map<std::string,std::string>& strings,
   double masterPlus = 0;
   double masterMinus = 0;
   double signal_sys = sigma_SigEff_;
-  
+
   if(d_s > 0){
     tau_s_muon = d_muon / d_s;
     masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
     masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
     signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  );
   }
-  
+
   //set background contamination
   wspace->var("tau_s_mu")->setVal(tau_s_muon);
   wspace->var("sigma_SigEff")->setVal(signal_sys);
@@ -569,11 +569,17 @@ void Lepton(std::map<std::string,int>& switches,
   if (switches["doBayesian"]) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (switches["doMCMC"]) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
 
-  double d_s = setSignalVars(strings, wspace, m0, m12, inputData["lumi"], inputData["sigma_SigEff"], switches["nlo"]);
-  bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
-  
-  TH2F *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"]);
-  writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, isInInterval);
+  if (switches["fixQcdToZero"]) {
+    double d_s = setSignalVars(strings, switches, wspace, m0, m12, inputData["lumi"], inputData["sigma_SigEff"]);
+    bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
+    
+    TH2F *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"]);
+    writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, isInInterval);
+  }
+  else {
+    std::cerr << "ERROR: Signal contamination is not yet handled when QCD is not fixed to zero." << std::endl;
+  }
+
   t.Print();
 
   checkMap(nSwitches, switches.size(),"switches");
