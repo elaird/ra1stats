@@ -174,12 +174,7 @@ void setupLikelihood(RooWorkspace* wspace, std::map<std::string,int>& switches) 
   wspace->factory("PROD::signal_model(signal,sigConstraint,mcCons_ttW,mcCons_Zinv)");
 
   //set pdf for muon control 
-  if (!fixQcdToZero) {
-    wspace->factory("Poisson::muoncontrol(n_muoncontrol,prod::sideband_muon(tau_mu,TTplusW))");
-  }
-  else {
-    wspace->factory("Poisson::muoncontrol(n_muoncontrol,sum::MuSPlusB(prod::TTWside(tau_mu,TTplusW),prod::smu(tau_s_mu[0.001],s)))");
-  }
+  wspace->factory("Poisson::muoncontrol(n_muoncontrol,sum::MuSPlusB(prod::TTWside(tau_mu,TTplusW),prod::smu(tau_s_mu[0.001],s)))");
 
   //set pdf for photon control
   wspace->factory("Poisson::photoncontrol(n_photoncontrol,prod::sideband_photon(tau_photon,ZINV))");
@@ -569,17 +564,11 @@ void Lepton(std::map<std::string,int>& switches,
   if (switches["doBayesian"]) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (switches["doMCMC"]) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
 
-  if (switches["fixQcdToZero"]) {
-    double d_s = setSignalVars(strings, switches, wspace, m0, m12, inputData["lumi"], inputData["sigma_SigEff"]);
-    bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
-    
-    TH2F *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"]);
-    writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, isInInterval);
-  }
-  else {
-    std::cerr << "ERROR: Signal contamination is not yet handled when QCD is not fixed to zero." << std::endl;
-  }
-
+  double d_s = setSignalVars(strings, switches, wspace, m0, m12, inputData["lumi"], inputData["sigma_SigEff"]);
+  bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
+  
+  TH2F *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"]);
+  writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, isInInterval);
   t.Print();
 
   checkMap(nSwitches, switches.size(),"switches");
