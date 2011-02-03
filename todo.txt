@@ -1,9 +1,9 @@
 Correctness
 -----------
 lolargs
-tempfile for output
 include Rob's method
 investigate ng
+bayesian switch in setupLikelihood
 
 Consistency
 -----------
@@ -11,9 +11,14 @@ Consistency
 0.95
 "Combine"
 
+Upgrades
+--------
+yield plots
+tt etc map
+pair-wise merge
+tempfile for output
+
 Style
 -----
 RooRandom::randomGenerator()->SetSeed(4357);
-pair-wise merge
-tt etc map
 info level
