@@ -210,49 +210,68 @@ void setupLikelihood(RooWorkspace* wspace, std::map<std::string,int>& switches) 
 
 }
 
-void printByHandValues(std::map<std::string,double>& inputData) {
-  //compute by hand the values of tau,tauprime and rho (good starting values)
-  Double_t tauprime = inputData["n_bar_control_2"]/inputData["n_bar_signal"];
-  Double_t tau = inputData["n_bar_control_1"]/inputData["n_bar_signal"];  
-  Double_t rho = tau/tauprime*inputData["n_control_2"]/inputData["n_control_1"];
-  cout << " tauprime " << tauprime << " tau " << tau << " rho " << rho << endl;
-}
+//void printByHandValues(std::map<std::string,double>& inputData) {
+//  //compute by hand the values of tau,tauprime and rho (good starting values)
+//  Double_t tauprime = inputData["n_bar_control_2"]/inputData["n_bar_signal"];
+//  Double_t tau = inputData["n_bar_control_1"]/inputData["n_bar_signal"];  
+//  Double_t rho = tau/tauprime*inputData["n_control_2"]/inputData["n_control_1"];
+//  cout << " tauprime " << tauprime << " tau " << tau << " rho " << rho << endl;
+//}
 
-RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& inputData, std::map<std::string,int>& switches) {
-  RooRealVar n_signal("n_signal", "n_signal", inputData["n_signal"], inputData["n_signal"]/10, inputData["n_signal"]*10);
-  RooRealVar n_muoncontrol("n_muoncontrol", "n_muoncontrol", inputData["n_muoncontrol"], 0.001, inputData["n_muoncontrol"]*10);
-  RooRealVar n_photoncontrol("n_photoncontrol", "n_photoncontrol", inputData["n_photoncontrol"], 0.001, inputData["n_photoncontrol"]*10);
+RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,std::vector<double> >& inputData, std::map<std::string,int>& switches) {
+  double n_signal_ = inputData["n_signal"].at(0)+inputData["n_signal"].at(1);
+  double n_bar_signal_ = inputData["n_bar_htcontrol"].at(2)+inputData["n_bar_htcontrol"].at(3);
 
-  RooRealVar n_bar_signal("n_bar_signal", "n_bar_signal", inputData["n_bar_signal"], inputData["n_bar_signal"]/10, RooNumber::infinity());
-  RooRealVar n_control_1("n_control_1", "n_control_1", inputData["n_control_1"], 0.001, RooNumber::infinity());
-  RooRealVar n_bar_control_1("n_bar_control_1", "n_bar_control_1", inputData["n_bar_control_1"], inputData["n_bar_control_1"]/10, RooNumber::infinity());
-  RooRealVar n_control_2("n_control_2", "n_control_2", inputData["n_control_2"], inputData["n_control_2"]/10, RooNumber::infinity());
-  RooRealVar n_bar_control_2("n_bar_control_2", "n_bar_control_2", inputData["n_bar_control_2"], inputData["n_bar_control_2"]/10,RooNumber::infinity());
+  double n_muoncontrol_ = inputData["n_muoncontrol"].at(0)+inputData["n_muoncontrol"].at(1);
+  double tau_mu_ = (inputData["mc_muoncontrol"].at(0)+inputData["mc_muoncontrol"].at(1)) / (inputData["mc_ttW"].at(0)+inputData["mc_ttW"].at(1));
+  double sigma_ttW_ = inputData["sigma_ttW"].at(0);
+
+  double n_photoncontrol_ = inputData["n_photoncontrol"].at(0)+inputData["n_photoncontrol"].at(1);
+  double tau_photon_ = (inputData["mc_photoncontrol"].at(0)+inputData["mc_photoncontrol"].at(1)) / (inputData["mc_Zinv"].at(0)+inputData["mc_Zinv"].at(1));
+  double sigma_Zinv_ = inputData["sigma_Zinv"].at(0);
+  
+  double n_control_1_ = inputData["n_htcontrol"].at(1);
+  double n_control_2_ = inputData["n_htcontrol"].at(0);
+  double n_bar_control_1_ = inputData["n_bar_htcontrol"].at(1);
+  double n_bar_control_2_ = inputData["n_bar_htcontrol"].at(0);
+  double sigma_x_ = inputData["sigma_x"].at(0);
+
+  double sigma_SigEff_ = inputData["sigma_SigEff"].at(0);
+
+  RooRealVar n_signal("n_signal", "n_signal", n_signal_, n_signal_/10, n_signal_*10);
+  RooRealVar n_muoncontrol("n_muoncontrol", "n_muoncontrol", n_muoncontrol_, 0.001, n_muoncontrol_*10);
+  RooRealVar n_photoncontrol("n_photoncontrol", "n_photoncontrol", n_photoncontrol_, 0.001, n_photoncontrol_*10);
+
+  RooRealVar n_bar_signal("n_bar_signal", "n_bar_signal", n_bar_signal_, n_bar_signal_/10, RooNumber::infinity());
+  RooRealVar n_control_1("n_control_1", "n_control_1", n_control_1_, 0.001, RooNumber::infinity());
+  RooRealVar n_bar_control_1("n_bar_control_1", "n_bar_control_1", n_bar_control_1_, n_bar_control_1_/10, RooNumber::infinity());
+  RooRealVar n_control_2("n_control_2", "n_control_2", n_control_2_, n_control_2_/10, RooNumber::infinity());
+  RooRealVar n_bar_control_2("n_bar_control_2", "n_bar_control_2", n_bar_control_2_, n_bar_control_2_/10,RooNumber::infinity());
 
   //Parameter of interest; the number of (SUSY) signal events above the Standard Model background
-  RooRealVar s("s", "s", 2.5, 0.0001, inputData["n_signal"]*3);//expected numer of (SUSY) signal events above background 
+  RooRealVar s("s", "s", 2.5, 0.0001, n_signal_*3);//expected numer of (SUSY) signal events above background 
   //Nuisance parameters
-  RooRealVar TTplusW("TTplusW", "TTplusW", inputData["n_signal"]/2, 0.01, inputData["n_signal"]*10); //expected tt+W background in signal-like region
-  RooRealVar ZINV("ZINV", "ZINV", inputData["n_signal"]/2, 0.001, inputData["n_signal"]*10);//expected Zinv background in signal-like region  
-  RooRealVar QCD("QCD", "QCD", 0.001, 0, inputData["n_signal"]*10);//expected QCD background in signal-like region
+  RooRealVar TTplusW("TTplusW", "TTplusW", n_signal_/2, 0.01, n_signal_*10); //expected tt+W background in signal-like region
+  RooRealVar ZINV("ZINV", "ZINV", n_signal_/2, 0.001, n_signal_*10);//expected Zinv background in signal-like region  
+  RooRealVar QCD("QCD", "QCD", 0.001, 0, n_signal_*10);//expected QCD background in signal-like region
 
   //Nuisance parameter for low HT inclusive background estimation method
-  RooRealVar bbar("bbar", "bbar", inputData["n_bar_signal"], inputData["n_bar_signal"]/10, inputData["n_bar_signal"]*10);//expected total background in alphaT<0.55 and HT>350 GeV
+  RooRealVar bbar("bbar", "bbar", n_bar_signal_, n_bar_signal_/10, n_bar_signal_*10);//expected total background in alphaT<0.55 and HT>350 GeV
   RooRealVar tau("tau", "tau", 1.0, 0.001, 4.);//factor which relates expected background in alphaT > 0.55 for HT > 350 GeV and 300 < HT < 350 GeV
   RooRealVar tauprime("tauprime", "tauprime", 2.515, 0, 5.);//factor which relates expected background in alphaT > 0.55 for HT > 350 GeV and 250 < HT < 300 GeV
   RooRealVar rho("rho", "rho", 1.18, 0., 2.);//factor rho which takes into account differences between alphaT > 0.55 and alphaT < 0.55 in the signal yield development with HT    
-  RooRealVar sigma_x("sigma_x","sigma_x", inputData["sigma_x"]);//uncertainty on Monte Carlo estimation of X
+  RooRealVar sigma_x("sigma_x","sigma_x", sigma_x_);//uncertainty on Monte Carlo estimation of X
 
   //Nuisance parameter for tt+W estimation
-  RooRealVar tau_mu("tau_mu", "tau_mu", inputData["tau_mu"]);
-  RooRealVar sigma_ttW("sigma_ttW", "sigma_ttW", inputData["sigma_ttW"]);
+  RooRealVar tau_mu("tau_mu", "tau_mu", tau_mu_);
+  RooRealVar sigma_ttW("sigma_ttW", "sigma_ttW", sigma_ttW_);
   //Nuisance parameter for Zinv estiamtion
-  RooRealVar tau_photon("tau_photon", "tau_photon", inputData["tau_photon"]); 
-  RooRealVar sigma_Zinv("sigma_Zinv", "sigma_Zinv", inputData["sigma_Zinv"]);
+  RooRealVar tau_photon("tau_photon", "tau_photon", tau_photon_); 
+  RooRealVar sigma_Zinv("sigma_Zinv", "sigma_Zinv", sigma_Zinv_);
   //Systematic uncertainty on singal*acceptance*efficiency*luminosity
-  RooRealVar sigma_SigEff("sigma_SigEff", "sigma_SigEff", inputData["sigma_SigEff"]);
+  RooRealVar sigma_SigEff("sigma_SigEff", "sigma_SigEff", sigma_SigEff_);
 
-  if (switches["printByHandValues"]) printByHandValues(inputData);
+  //if (switches["printByHandValues"]) printByHandValues(inputData);
  
   //import RooRealVars
   wspace->import(TTplusW);
@@ -288,19 +307,19 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,double>& input
   //set values of observables
   const RooArgSet* lolArgSet=wspace->set("obs");
   RooArgSet* newSet = new RooArgSet(*lolArgSet);
-  newSet->setRealValue("n_signal", inputData["n_signal"]);
+  newSet->setRealValue("n_signal", n_signal_);
   //set observables for muon control method
-  newSet->setRealValue("n_muoncontrol", inputData["n_muoncontrol"]); 
+  newSet->setRealValue("n_muoncontrol", n_muoncontrol_); 
   //set observable for photon control method
-  newSet->setRealValue("n_photoncontrol", inputData["n_photoncontrol"]);
+  newSet->setRealValue("n_photoncontrol", n_photoncontrol_);
   if (!switches["fixQcdToZero"]) {
     //set observables for SixBin low HT method
-    newSet->setRealValue("n_control_1",     inputData["n_control_1"]    );
-    newSet->setRealValue("n_bar_control_1", inputData["n_bar_control_1"]);
-    newSet->setRealValue("n_control_2",     inputData["n_control_2"]    );
-    newSet->setRealValue("n_bar_control_2", inputData["n_bar_control_2"]);
-    newSet->setRealValue("n_signal",        inputData["n_signal"]       );
-    newSet->setRealValue("n_bar_signal",    inputData["n_bar_signal"]   );
+    newSet->setRealValue("n_control_1",     n_control_1_    );
+    newSet->setRealValue("n_bar_control_1", n_bar_control_1_);
+    newSet->setRealValue("n_control_2",     n_control_2_    );
+    newSet->setRealValue("n_bar_control_2", n_bar_control_2_);
+    newSet->setRealValue("n_signal",        n_signal_       );
+    newSet->setRealValue("n_bar_signal",    n_bar_signal_   );
   }
 
   RooDataSet *data = new RooDataSet("obsDataSet","title",*lolArgSet);
@@ -432,7 +451,7 @@ double setSignalVars(std::map<std::string,std::string>& strings,
 		     RooWorkspace* wspace,
 		     int m0,
 		     int m12,
-		     int mZ,
+		     int mChi,
 		     double lumi,
 		     double sigma_SigEff_
 		     ) {
@@ -458,8 +477,8 @@ double setSignalVars(std::map<std::string,std::string>& strings,
   assert(muon);
 
   double tau_s_muon = 1;
-  double d_s       = signal->GetBinContent(m0, m12, mZ);
-  double d_muon    = muon->GetBinContent(m0, m12, mZ);
+  double d_s       = signal->GetBinContent(m0, m12, mChi);
+  double d_muon    = muon->GetBinContent(m0, m12, mChi);
   double signal_sys = sigma_SigEff_;
 
   if(d_s > 0) tau_s_muon = d_muon / d_s;
@@ -467,8 +486,8 @@ double setSignalVars(std::map<std::string,std::string>& strings,
   if (switches["nlo"]) {
     assert(sys05);
     assert(sys2);
-    double d_s_sys05 = sys05->GetBinContent(m0, m12, mZ);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
-    double d_s_sys2  = sys2->GetBinContent(m0, m12, mZ);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
+    double d_s_sys05 = sys05->GetBinContent(m0, m12, mChi);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
+    double d_s_sys2  = sys2->GetBinContent(m0, m12, mChi);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
     double masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
     double masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
     signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  );
@@ -495,7 +514,7 @@ TCanvas* canvas(bool doBayesian, bool doMCMC) {
   return c1;
 }
 
-void writeExclusionLimitPlot(TH1 *exampleHisto, std::string& outputPlotFileName, int m0, int m12, int mZ, bool isInInterval) {
+void writeExclusionLimitPlot(TH1 *exampleHisto, std::string& outputPlotFileName, int m0, int m12, int mChi, bool isInInterval) {
   TFile output(outputPlotFileName.c_str(), "RECREATE");
   if (output.IsZombie()) std::cout << " zombie alarm output is a zombie " << std::endl;
 
@@ -507,7 +526,7 @@ void writeExclusionLimitPlot(TH1 *exampleHisto, std::string& outputPlotFileName,
   TH1 *exclusionLimit = (TH1*)exampleHisto->Clone("ExclusionLimit");
   exclusionLimit->SetTitle("ExclusionLimit;m_{0} (GeV);m_{1/2} (GeV);z-axis");
   exclusionLimit->Reset();
-  exclusionLimit->SetBinContent(m0, m12, mZ, 2.0*isInInterval - 1.0);
+  exclusionLimit->SetBinContent(m0, m12, mChi, 2.0*isInInterval - 1.0);
   exclusionLimit->Write();
 
   output.Close();
@@ -519,10 +538,10 @@ void checkMap(int nInitial, int nFinal, std::string name) {
 
 void Lepton(std::map<std::string,int>& switches,
 	    std::map<std::string,std::string>& strings,
-	    std::map<std::string,double>& inputData,
+	    std::map<std::string,std::vector<double> >& inputData,
 	    int m0,
 	    int m12,
-	    int mZ
+	    int mChi
 	    ) {
 
   const int nSwitches = switches.size();
@@ -533,7 +552,7 @@ void Lepton(std::map<std::string,int>& switches,
   t.Start();
 
   //set RooFit random seed for reproducible results
-  RooRandom::randomGenerator()->SetSeed(4357);
+  RooRandom::randomGenerator()->SetSeed(inputData["seed"].at(0));
   //make a workspace
   RooWorkspace* wspace = workspace();
   //import variables and set up total likelihood function
@@ -564,11 +583,11 @@ void Lepton(std::map<std::string,int>& switches,
   if (switches["doBayesian"]) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (switches["doMCMC"]) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
 
-  double d_s = setSignalVars(strings, switches, wspace, m0, m12, mZ, inputData["lumi"], inputData["sigma_SigEff"]);
+  double d_s = setSignalVars(strings, switches, wspace, m0, m12, mChi, inputData["lumi"].at(0), inputData["sigma_SigEff"].at(0));
   bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
   
-  TH1 *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"]);
-  writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mZ, isInInterval);
+  TH1 *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"].at(0));
+  writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval);
   t.Print();
 
   checkMap(nSwitches, switches.size(),"switches");
