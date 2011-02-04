@@ -264,7 +264,12 @@ void SplitSignal(Int_t method
     Double_t _lumi_sys = 0.11;
     Double_t _accXeff = 1.;
     Double_t _accXeff_sys = sqrt(pow(0.12,2) - pow(0.11,2) );
-  
+    Double_t _muon_sys = 0.3;
+    Double_t _phot_sys = 0.4;
+    Double_t _muon_cont_1 = 0.2;
+    Double_t _muon_cont_2 = 0.2;
+    Double_t _lowHT_cont_1 = 0.2;
+    Double_t _lowHT_cont_2 = 0.2;
 
     f.AddModel_Lin_Combi(s,_lumi, _lumi_sys,
 			 _accXeff,_accXeff_sys,
