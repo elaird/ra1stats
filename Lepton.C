@@ -36,6 +36,8 @@
 #include "RooStats/BayesianCalculator.h"
 #include "RooStats/PointSetInterval.h"
 
+//#include "RobsPdfFactory.cxx"
+
 //Comments from Tanja:
 //A word of explanation before starting
 //The RA1 analysis uses three kinds of background estimation 
@@ -75,6 +77,7 @@ TString histoName(std::string& s1, std::string& s2, std::string& s3, std::string
 
 TH1* loYieldHisto(std::string& fileName, std::string& dirName, std::string& histName, double lumi) {
   TFile f(fileName.c_str());
+  if (f.IsZombie()) return 0;
   TDirectory* dir = (TDirectory*)f.Get(dirName.c_str());
 
   if (!dir) {
@@ -95,6 +98,7 @@ TH1* loYieldHisto(std::string& fileName, std::string& dirName, std::string& hist
 
 TH1* nloYieldHisto(std::string& fileName, std::string& dirName1, std::string& dirName2, double lumi) {
   TFile f(fileName.c_str());
+  if (f.IsZombie()) return 0;
   TDirectory* dir = (TDirectory*)f.Get(dirName1.c_str());
   TDirectory* dir2 = (TDirectory*)f.Get(dirName2.c_str());
 
@@ -144,7 +148,7 @@ RooWorkspace* workspace() {
   return new RooWorkspace("Combine");
 }
 
-void setupLikelihood(RooWorkspace* wspace, std::map<std::string,int>& switches) {
+void setupLikelihoodOneBin(RooWorkspace* wspace, std::map<std::string,int>& switches) {
   bool fixQcdToZero = switches["fixQcdToZero"];
   
   //likelihood for the signal region (Poisson to include the statistical uncertainty)
@@ -218,7 +222,11 @@ void setupLikelihood(RooWorkspace* wspace, std::map<std::string,int>& switches) 
 //  cout << " tauprime " << tauprime << " tau " << tau << " rho " << rho << endl;
 //}
 
-RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,std::vector<double> >& inputData, std::map<std::string,int>& switches) {
+RooDataSet* importVarsOneBin(RooWorkspace* wspace,
+			     std::map<std::string,std::vector<double> >& inputData,
+			     std::map<std::string,int>& switches,
+			     std::string& dataName
+			     ) {
   double n_signal_ = inputData["n_signal"].at(0)+inputData["n_signal"].at(1);
   double n_bar_signal_ = inputData["n_bar_htcontrol"].at(2)+inputData["n_bar_htcontrol"].at(3);
 
@@ -302,7 +310,7 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,std::vector<do
     wspace->import(sigma_x);
   } 
 
-  setupLikelihood(wspace, switches);
+  setupLikelihoodOneBin(wspace, switches);
 
   //set values of observables
   const RooArgSet* lolArgSet=wspace->set("obs");
@@ -322,7 +330,7 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,std::vector<do
     newSet->setRealValue("n_bar_signal",    n_bar_signal_   );
   }
 
-  RooDataSet *data = new RooDataSet("obsDataSet","title",*lolArgSet);
+  RooDataSet *data = new RooDataSet(dataName.c_str(),"title",*lolArgSet);
   data->Print();
   data->add(*lolArgSet);
   wspace->import(*data);
@@ -330,10 +338,10 @@ RooDataSet* importVars(RooWorkspace* wspace, std::map<std::string,std::vector<do
   return data;
 } 
 
-RooStats::ModelConfig* modelConfiguration(RooWorkspace* wspace) {
+RooStats::ModelConfig* modelConfiguration(RooWorkspace* wspace, std::string& pdfName) {
   RooStats::ModelConfig* modelConfig = new RooStats::ModelConfig("Combine");
   modelConfig->SetWorkspace(*wspace);
-  modelConfig->SetPdf(*wspace->pdf("total_model"));
+  modelConfig->SetPdf(*wspace->pdf(pdfName.c_str()));
   modelConfig->SetPriorPdf(*wspace->pdf("prior"));
   modelConfig->SetParametersOfInterest(*wspace->set("poi"));
   modelConfig->SetNuisanceParameters(*wspace->set("nuis"));
@@ -347,7 +355,8 @@ void printCovMat(RooWorkspace* wspace, RooDataSet* data) {
   RooRealVar* ratioBkgdEff_2 = wspace->var("ratioBkgdEff_2");
   //RooRealVar* f = wspace->var("f");
   RooArgSet constrainedParams(*ratioBkgdEff_1,*ratioBkgdEff_2,*ratioSigEff);
-
+  
+  assert(data);
   wspace->pdf("total_model")->fitTo(*data,RooFit::Constrain(constrainedParams));
 }
 
@@ -366,10 +375,10 @@ void constrainParams(RooWorkspace* wspace) {
   }
 }
 
-bool profileLikelihood(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace, double d_s = 0.0) {
+bool profileLikelihood(RooStats::ModelConfig* modelConfig, RooWorkspace* wspace, std::string& dataName, std::string& signalVar, double d_s = 0.0) {
   bool isInInterval = false;
 
-  RooStats::ProfileLikelihoodCalculator plc(*data, *modelConfig);
+  RooStats::ProfileLikelihoodCalculator plc(*wspace->data(dataName.c_str()), *modelConfig);
   plc.SetConfidenceLevel(0.95);
   RooStats::LikelihoodInterval* plInt = plc.GetInterval();
 
@@ -378,13 +387,13 @@ bool profileLikelihood(RooDataSet* data, RooStats::ModelConfig* modelConfig, Roo
     lrplot->Draw();
     
     cout << "Profile Likelihood interval on s = ["
-	 << plInt->LowerLimit( *wspace->var("s") ) << ", "
-	 << plInt->UpperLimit( *wspace->var("s") ) << "]" << endl;
-    plInt->UpperLimit( *wspace->var("s") );
+	 << plInt->LowerLimit( *wspace->var(signalVar.c_str()) ) << ", "
+	 << plInt->UpperLimit( *wspace->var(signalVar.c_str()) ) << "]" << endl;
+    plInt->UpperLimit( *wspace->var(signalVar.c_str()) );
     //Profile Likelihood interval on s = [12.1902, 88.6871]
   }
   else {
-    RooRealVar* tmp_s = wspace->var("s");
+    RooRealVar* tmp_s = wspace->var(signalVar.c_str());
     cout << " upper limit " << plInt->UpperLimit(*tmp_s) << endl;
     tmp_s->setVal(d_s);
     isInInterval = plInt->IsInInterval(*tmp_s);
@@ -476,8 +485,6 @@ double setSignalVars(std::map<std::string,std::string>& strings,
   else {
     signal =  loYieldHisto(strings["signalFile"],      strings["signalDir2"],      strings["signalLoYield"],      lumi);
     muon   =  loYieldHisto(strings["muonControlFile"], strings["muonControlDir2"], strings["muonControlLoYield"], lumi);
-    sys05  =  loYieldHisto(strings["sys05File"],       strings["sys05Dir2"],       strings["sys05LoYield"],       lumi);
-    sys2   =  loYieldHisto(strings["sys2File"],        strings["sys2Dir2"],        strings["sys2LoYield"],        lumi);
   }
 
   assert(signal);
@@ -545,6 +552,7 @@ void checkMap(int nInitial, int nFinal, std::string name) {
 
 void Lepton(std::map<std::string,int>& switches,
 	    std::map<std::string,std::string>& strings,
+	    std::map<std::string,double>& signalYields,
 	    std::map<std::string,std::vector<double> >& inputData,
 	    int m0,
 	    int m12,
@@ -553,6 +561,7 @@ void Lepton(std::map<std::string,int>& switches,
 
   const int nSwitches = switches.size();
   const int nStrings = strings.size();
+  const int nYields = signalYields.size();
   const int nData = inputData.size();
 
   TStopwatch t;
@@ -564,29 +573,38 @@ void Lepton(std::map<std::string,int>& switches,
   RooWorkspace* wspace = workspace();
   //import variables and set up total likelihood function
 
-  RooDataSet* data = importVars(wspace, inputData, switches);
+  RooDataSet* data = 0;
+  RooStats::ModelConfig* modelConfig = 0;
+  if (!switches["twoHtBins"]) {
+    data = importVarsOneBin(wspace, inputData, switches, strings["dataName"]);
+    modelConfig = modelConfiguration(wspace, strings["pdfName"]);
+    //RooRealVar* mu = wspace->var("s");
+    //RooArgSet* nullParams = new RooArgSet("nullParams");
+    //nullParams->addClone(*mu);
+    //nullParams->setRealValue("s",0);
+  }
+  else {
+    //RobsPdfFactory f;
+    //f.AddModel_Lin_Combi(s, signal_sys, muon_sys, phot_sys, 2, wspace, strings["pdfName"], strings["signalVar"]);
+    //f.AddDataSideband_Combi(bkgd_sideband, bkgd_bar_sideband, 4, muonMeas, photMeas, tau_muon, tau_phot, 2, wspace, strings["dataName"]);
+    modelConfig = modelConfiguration(wspace, strings["pdfName"]);
+  }
 
-  RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
   if (switches["writeWorkspaceFile"]) wspace->writeToFile(strings["outputWorkspaceFileName"].c_str());
   if (switches["printCovarianceMatrix"]) printCovMat(wspace, data);
   if (switches["constrainParameters"]) constrainParams(wspace);
 
-  //RooRealVar* mu = wspace->var("s");
-  //RooArgSet* nullParams = new RooArgSet("nullParams");
-  //nullParams->addClone(*mu);
-  //nullParams->setRealValue("s",0);
-  
   canvas(switches["doBayesian"], switches["doMCMC"]); //prepare a canvas
   std::cout << " Limit " << std::endl;
 
-  //profileLikelihood(data, modelConfig, wspace); //run with no signal contamination
+  //profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"]); //run with no signal contamination
 
   if (switches["doFeldmanCousins"]) feldmanCousins(data, modelConfig, wspace); //takes 7 minutes
   if (switches["doBayesian"]) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (switches["doMCMC"]) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
-
+  
   double d_s = setSignalVars(strings, switches, wspace, m0, m12, mChi, inputData["lumi"].at(0), inputData["sigma_SigEff"].at(0));
-  bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
+  bool isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s);
   
   TH1 *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"].at(0));
   writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval);
@@ -594,5 +612,6 @@ void Lepton(std::map<std::string,int>& switches,
 
   checkMap(nSwitches, switches.size(),"switches");
   checkMap(nStrings, strings.size(), "strings");
+  checkMap(nYields, signalYields.size(), "signalYields");
   checkMap(nData, inputData.size(), "inputData");
 }
