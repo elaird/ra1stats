@@ -8,7 +8,8 @@ def switches() :
 
     d["nlo"] = True
     d["fixQcdToZero"] = True
-    
+    d["constrainParameters"] = False
+
     d["testPointsOnly"] = True
     d["printCovarianceMatrix"] = False
     d["printByHandValues"] = False

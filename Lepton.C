@@ -341,10 +341,17 @@ RooStats::ModelConfig* modelConfiguration(RooWorkspace* wspace) {
   return modelConfig;
 }
 
-void printCovMat(RooWorkspace* wspace, RooDataSet* data, RooArgSet& constrainedParams) {
-  wspace->pdf("total_model")->fitTo(*data,RooFit::Constrain(constrainedParams));
+void printCovMat(RooWorkspace* wspace, RooDataSet* data) {
+  RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
+  RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
+  RooRealVar* ratioBkgdEff_2 = wspace->var("ratioBkgdEff_2");
+  //RooRealVar* f = wspace->var("f");
+  RooArgSet constrainedParams(*ratioBkgdEff_1,*ratioBkgdEff_2,*ratioSigEff);
 
-  //some limitations good for fitting
+  wspace->pdf("total_model")->fitTo(*data,RooFit::Constrain(constrainedParams));
+}
+
+void constrainParams(RooWorkspace* wspace) {
   RooArgList nuispar(*wspace->set("nuis"));
   for(int i = 0; i < nuispar.getSize();++i){
     RooRealVar &par = (RooRealVar&) nuispar[i];
@@ -559,15 +566,10 @@ void Lepton(std::map<std::string,int>& switches,
 
   RooDataSet* data = importVars(wspace, inputData, switches);
 
-  RooRealVar* ratioSigEff = wspace->var("ratioSigEff");
-  RooRealVar* ratioBkgdEff_1 = wspace->var("ratioBkgdEff_1");
-  RooRealVar* ratioBkgdEff_2 = wspace->var("ratioBkgdEff_2");
-  //RooRealVar* f = wspace->var("f");
-  RooArgSet constrainedParams(*ratioBkgdEff_1,*ratioBkgdEff_2,*ratioSigEff);
-
   RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
   if (switches["writeWorkspaceFile"]) wspace->writeToFile(strings["outputWorkspaceFileName"].c_str());
-  if (switches["printCovarianceMatrix"]) printCovMat(wspace, data, constrainedParams);
+  if (switches["printCovarianceMatrix"]) printCovMat(wspace, data);
+  if (switches["constrainParameters"]) constrainParams(wspace);
 
   //RooRealVar* mu = wspace->var("s");
   //RooArgSet* nullParams = new RooArgSet("nullParams");
