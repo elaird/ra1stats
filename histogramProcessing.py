@@ -31,8 +31,8 @@ def checkHistoBinning() :
     
 def fullPoints() :
     #return 
-    f = r.TFile(conf.mSuGra_FileMuonControl())
-    h = f.Get("%s/%s"%(conf.mSuGra_DirMuonControl(), conf.mSuGra_HistMuonControl()))
+    f = r.TFile(conf.stringsNoArgs()["muonControlFile"])
+    h = f.Get("%s/%s"%(conf.stringsNoArgs()["muonControlDir2"], conf.stringsNoArgs()["muonControlLoYield"]))
     out = []
 
     for iBinX in range(1, 1+h.GetNbinsX()) :
