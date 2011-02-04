@@ -6,9 +6,9 @@ import histogramProcessing as hp
 def opts() :
     from optparse import OptionParser
     parser = OptionParser("usage: %prog [options]")
-    parser.add_option("--batch", dest = "batch", default = None,  metavar = "N",          help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
-    parser.add_option("--local", dest = "local", default = None,  metavar = "N",          help = "loop over events locally using N cores (N>0)")
-    parser.add_option("--merge", dest = "merge", default = None,  metavar = "N",          help = "merge job output using N temporary slices (N>0)")
+    parser.add_option("--batch", dest = "batch", default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
+    parser.add_option("--local", dest = "local", default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
+    parser.add_option("--merge", dest = "merge", default = None,  metavar = "N", help = "merge job output using N temporary slices (N>0)")
     options,args = parser.parse_args()
     assert options.batch==None or options.local==None,"Choose only one of (batch, local)"
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
@@ -17,16 +17,16 @@ def opts() :
 ############################################
 def jobCmds(nSlices = None, useCompiled = True) :
     def logFileName(iSlice) :
-        return "%s_%d.log"%(conf.strings(0,0)["logStem"], iSlice)
+        return "%s_%d.log"%(conf.stringsNoArgs()["logStem"], iSlice)
     
     pwd = os.environ["PWD"]
 
     if nSlices<=0 : nSlices = len(hp.points())
     out = []
 
-    strings = conf.strings(0,0)
+    strings = conf.stringsNoArgs()
     for iSlice in range(nSlices) :
-        args = [ "%g %g"%point for point in hp.points()[iSlice::nSlices] ]
+        args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
         s += " %s/%s%s"%(pwd,                            #2
@@ -52,7 +52,7 @@ def local(nWorkers) :
     utils.operateOnListUsingQueue(nWorkers, worker, jobCmds())
 ############################################
 def mkdirs() :
-    s = conf.strings(0,0)
+    s = conf.stringsNoArgs()
     utils.mkdir(s["logDir"])
     utils.mkdir(s["outputDir"])
 ############################################
@@ -81,8 +81,8 @@ def merge(nSlices) :
         return outFile if inList2 else None
         
     def mergeOneType(attr) :
-        inList = [getattr(conf, "%sFileName"%attr)(*point) for point in hp.points()]
-        outFile = "%s%s"%(getattr(conf, "%sStem"%attr)(), ".root")
+        inList = [conf.strings(*point)["%sFileName"%attr] for point in hp.points()]
+        outFile = "%s.root"%conf.stringsNoArgs()["%sStem"%attr]
 
         outFiles = []
         for iSlice in range(nSlices) :
@@ -92,13 +92,13 @@ def merge(nSlices) :
         go(outFile, outFiles)
 
     mergeOneType("plot")
-    if conf.writeWorkspaceFile() :
+    if conf.switches()["writeWorkspaceFile"] :
         mergeOneType("workspace")
 ############################################    
 options = opts()
 hp.checkHistoBinning()
 utils.generateDictionaries()
-utils.compile(conf.strings(0,0)["sourceFile"])
+utils.compile(conf.stringsNoArgs()["sourceFile"])
 mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
