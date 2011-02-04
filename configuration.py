@@ -47,7 +47,6 @@ def stringsNoArgs() :
     return d
 
 def strings(xBin, yBin, zBin) :
-    assert(xBin*yBin*zBin)
     d = stringsNoArgs()
     #output name options
     d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
