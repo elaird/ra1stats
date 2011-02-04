@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os,utils
+import os,cPickle,utils
 import configuration as conf
 import histogramProcessing as hp
 ############################################
@@ -18,15 +18,21 @@ def opts() :
 def jobCmds(nSlices = None, useCompiled = True) :
     def logFileName(iSlice) :
         return "%s_%d.log"%(conf.stringsNoArgs()["logStem"], iSlice)
-    
+
+    def writeYields() :
+        for point,yields in hp.points().iteritems() :
+            outFile = open(conf.strings(*point)["configFileName"], "w")
+            cPickle.dump(yields, outFile)
+            outFile.close()
     pwd = os.environ["PWD"]
 
     if nSlices<=0 : nSlices = len(hp.points())
     out = []
 
+    writeYields()
     strings = conf.stringsNoArgs()
     for iSlice in range(nSlices) :
-        args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
+        args = [ "%d %d %d"%point for point in hp.points().keys()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
         s += " %s/%s%s"%(pwd,                            #2
@@ -53,6 +59,7 @@ def local(nWorkers) :
 ############################################
 def mkdirs() :
     s = conf.stringsNoArgs()
+    utils.mkdir(s["configDir"])
     utils.mkdir(s["logDir"])
     utils.mkdir(s["outputDir"])
 ############################################
