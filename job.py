@@ -19,12 +19,18 @@ def libName() :
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(3, len(sys.argv), 3)]
 
-for lib in ["AutoDict_pair_std__string_std__string__cxx.so", "AutoDict_std__map_std__string_std__string__cxx.so", libName()] :
+for lib in ["AutoDict_std__pair_std__string_std__string__cxx.so",
+            "AutoDict_std__map_std__string_std__string__cxx.so",
+            "AutoDict_std__pair_std__string_std__vector_double____cxx.so",
+            "AutoDict_std__map_string_vector_double____cxx.so",
+            libName(),
+            ] :
     assert not r.gSystem.Load(lib), "Could not load library %s"%lib
 
 for point in points() :
+    print point
     getattr(r, funcName())(utils.stdMap(conf.switches(), "string", "int"),
                            utils.stdMap(conf.strings(*point), "string", "string"),
-                           utils.stdMap(data.numbers(), "string", "double"),
+                           utils.stdMap_String_VectorDoubles(data.numbers()),
                            *point
                            )
