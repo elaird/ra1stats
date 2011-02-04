@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys
+import os,sys,cPickle
 import ROOT as r
 import configuration as conf
 import data,utils
@@ -19,6 +19,18 @@ def libName() :
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(3, len(sys.argv), 3)]
 
+def signalYields(fileName) :
+    inFile = open(fileName)
+    stuff = cPickle.load(inFile)
+    inFile.close()
+    os.remove(fileName)
+
+    out = {}
+    for key,value in stuff.iteritems() :
+        if value is None : continue
+        out[key] = value
+    return out
+    
 for lib in ["AutoDict_std__pair_std__string_std__string__cxx.so",
             "AutoDict_std__map_std__string_std__string__cxx.so",
             "AutoDict_std__pair_std__string_std__vector_double____cxx.so",
@@ -30,6 +42,7 @@ for lib in ["AutoDict_std__pair_std__string_std__string__cxx.so",
 for point in points() :
     getattr(r, funcName())(utils.stdMap(conf.switches(), "string", "int"),
                            utils.stdMap(conf.strings(*point), "string", "string"),
+                           utils.stdMap(signalYields(conf.strings(*point)["configFileName"]), "string", "double"),
                            utils.stdMap_String_VectorDoubles(data.numbers()),
                            *point
                            )
