@@ -4,7 +4,6 @@ lolargs
 include Rob's method
 investigate ng
 bayesian switch in setupLikelihood and modelConfig
-automate set of histos included in bin check
 
 Consistency
 -----------
