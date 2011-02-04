@@ -18,7 +18,7 @@ def checkHistoBinning() :
         return out
     
     def handles() :
-        s = conf.strings(0, 0)
+        s = conf.stringsNoArgs()
         return [
             (s["signalFile"],        s["signalDir2"],      s["signalLoYield"]),
             (s["sys05File"],         s["signalDir2"],      s["signalLoYield"]),
@@ -37,17 +37,17 @@ def fullPoints() :
 
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
-            content = h.GetBinContent(iBinX, iBinY)
-            if content==0.0 :
-                continue
-            out.append( (iBinX, iBinY) )
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :
+                content = h.GetBinContent(iBinX, iBinY, iBinZ)
+                if content==0.0 : continue
+                out.append( (iBinX, iBinY, iBinZ) )
 
     f.Close()
     return out
 
 def cachedPoints() :
     if conf.switches()["testPointsOnly"] :
-        return [(10, 10), (10, 20), (20, 10), (20, 20)]
+        return [(10, 10, 1), (10, 20, 1), (20, 10, 1), (20, 20, 1)]
     else :
         return fullPoints()
 
