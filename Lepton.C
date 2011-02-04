@@ -73,7 +73,7 @@ TString histoName(std::string& s1, std::string& s2, std::string& s3, std::string
   return s1+"_"+s2+"_"+s3+"_"+s4;
 }
 
-TH2F* loYieldHisto(std::string& fileName, std::string& dirName, std::string& histName, double lumi) {
+TH1* loYieldHisto(std::string& fileName, std::string& dirName, std::string& histName, double lumi) {
   TFile f(fileName.c_str());
   TDirectory* dir = (TDirectory*)f.Get(dirName.c_str());
 
@@ -81,26 +81,26 @@ TH2F* loYieldHisto(std::string& fileName, std::string& dirName, std::string& his
     std::cerr << "ERROR: dir " << dirName << " does not exist in file " << fileName << std::endl;
     return 0;
   }
-  TH2F* hOld = (TH2F*)dir->Get(histName.c_str());
+  TH1* hOld = (TH1*)dir->Get(histName.c_str());
   if (!hOld) {
     std::cerr << "ERROR: histo " << histoName(fileName, dirName, histName) << " does not exist." << std::endl;
     return 0;
   }
-  TH2F* h = (TH2F*)hOld->Clone(histoName(fileName, dirName, histName));
+  TH1* h = (TH1*)hOld->Clone(histoName(fileName, dirName, histName));
   h->SetDirectory(0);
   h->Scale(lumi/100.0);//100/pb is the default normalization
   f.Close();
   return h;
 }
 
-TH2F* nloYieldHisto(std::string& fileName, std::string& dirName1, std::string& dirName2, double lumi) {
+TH1* nloYieldHisto(std::string& fileName, std::string& dirName1, std::string& dirName2, double lumi) {
   TFile f(fileName.c_str());
   TDirectory* dir = (TDirectory*)f.Get(dirName1.c_str());
   TDirectory* dir2 = (TDirectory*)f.Get(dirName2.c_str());
 
-  TH2F* gg = (TH2F*)dir2->Get("m0_m12_gg_0");
+  TH1* gg = (TH1*)dir2->Get("m0_m12_gg_0");
   std::string ggName = gg->GetName();
-  TH2F* all = (TH2F*)gg->Clone(histoName(fileName, dirName1, dirName2, ggName));
+  TH1* all = (TH1*)gg->Clone(histoName(fileName, dirName1, dirName2, ggName));
   all->SetDirectory(0);
   all->Reset();
 
@@ -119,8 +119,8 @@ TH2F* nloYieldHisto(std::string& fileName, std::string& dirName1, std::string& d
   for(unsigned int i=0;i<names.size();++i) {
     std::string numName = "m0_m12_"+names.at(i)+"_0";
     std::string denName = "m0_m12_"+names.at(i)+"_5";
-    TH2F* num = (TH2F*)dir2->Get(numName.c_str());
-    TH2F* den = (TH2F*)dir->Get(denName.c_str());
+    TH1* num = (TH1*)dir2->Get(numName.c_str());
+    TH1* den = (TH1*)dir->Get(denName.c_str());
 
     if (!num) {
       std::cerr << "ERROR: histo " << numName << " does not exist." << std::endl;
@@ -432,13 +432,14 @@ double setSignalVars(std::map<std::string,std::string>& strings,
 		     RooWorkspace* wspace,
 		     int m0,
 		     int m12,
+		     int mZ,
 		     double lumi,
 		     double sigma_SigEff_
 		     ) {
-  TH2F *signal = 0;
-  TH2F *muon   = 0;
-  TH2F *sys05  = 0;
-  TH2F *sys2   = 0;
+  TH1 *signal = 0;
+  TH1 *muon   = 0;
+  TH1 *sys05  = 0;
+  TH1 *sys2   = 0;
 
   if (switches["nlo"]) {
     signal = nloYieldHisto(strings["signalFile"],      strings["signalDir1"],      strings["signalDir2"],         lumi);
@@ -455,23 +456,21 @@ double setSignalVars(std::map<std::string,std::string>& strings,
 
   assert(signal);
   assert(muon);
-  assert(sys05);
-  assert(sys2);
 
   double tau_s_muon = 1;
-
-  double d_s       = signal->GetBinContent(m0,m12);
-  double d_s_sys05 = sys05->GetBinContent(m0,m12);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
-  double d_s_sys2  = sys2->GetBinContent(m0,m12);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
-  double d_muon    = muon->GetBinContent(m0,m12);
-  double masterPlus = 0;
-  double masterMinus = 0;
+  double d_s       = signal->GetBinContent(m0, m12, mZ);
+  double d_muon    = muon->GetBinContent(m0, m12, mZ);
   double signal_sys = sigma_SigEff_;
 
-  if(d_s > 0){
-    tau_s_muon = d_muon / d_s;
-    masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
-    masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
+  if(d_s > 0) tau_s_muon = d_muon / d_s;
+
+  if (switches["nlo"]) {
+    assert(sys05);
+    assert(sys2);
+    double d_s_sys05 = sys05->GetBinContent(m0, m12, mZ);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
+    double d_s_sys2  = sys2->GetBinContent(m0, m12, mZ);//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
+    double masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
+    double masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
     signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  );
   }
 
@@ -496,7 +495,7 @@ TCanvas* canvas(bool doBayesian, bool doMCMC) {
   return c1;
 }
 
-void writeExclusionLimitPlot(TH2F *exampleHisto, std::string& outputPlotFileName, int m0, int m12, bool isInInterval) {
+void writeExclusionLimitPlot(TH1 *exampleHisto, std::string& outputPlotFileName, int m0, int m12, int mZ, bool isInInterval) {
   TFile output(outputPlotFileName.c_str(), "RECREATE");
   if (output.IsZombie()) std::cout << " zombie alarm output is a zombie " << std::endl;
 
@@ -505,10 +504,10 @@ void writeExclusionLimitPlot(TH2F *exampleHisto, std::string& outputPlotFileName
     return;
   }
 
-  TH2F *exclusionLimit = (TH2F*)exampleHisto->Clone("ExclusionLimit");
-  exclusionLimit->SetTitle("ExclusionLimit;m_{0} (GeV);m_{1/2} (GeV)");
+  TH1 *exclusionLimit = (TH1*)exampleHisto->Clone("ExclusionLimit");
+  exclusionLimit->SetTitle("ExclusionLimit;m_{0} (GeV);m_{1/2} (GeV);z-axis");
   exclusionLimit->Reset();
-  exclusionLimit->SetBinContent(m0, m12, 2.0*isInInterval - 1.0);
+  exclusionLimit->SetBinContent(m0, m12, mZ, 2.0*isInInterval - 1.0);
   exclusionLimit->Write();
 
   output.Close();
@@ -522,7 +521,8 @@ void Lepton(std::map<std::string,int>& switches,
 	    std::map<std::string,std::string>& strings,
 	    std::map<std::string,double>& inputData,
 	    int m0,
-	    int m12
+	    int m12,
+	    int mZ
 	    ) {
 
   const int nSwitches = switches.size();
@@ -564,11 +564,11 @@ void Lepton(std::map<std::string,int>& switches,
   if (switches["doBayesian"]) bayesian(data, modelConfig, wspace); //use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
   if (switches["doMCMC"]) mcmc(data, modelConfig, wspace); //use MCMCCalculator (takes about 1 min)
 
-  double d_s = setSignalVars(strings, switches, wspace, m0, m12, inputData["lumi"], inputData["sigma_SigEff"]);
+  double d_s = setSignalVars(strings, switches, wspace, m0, m12, mZ, inputData["lumi"], inputData["sigma_SigEff"]);
   bool isInInterval = profileLikelihood(data, modelConfig, wspace, d_s);
   
-  TH2F *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"]);
-  writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, isInInterval);
+  TH1 *exampleHisto = loYieldHisto(strings["muonControlFile"], strings["muonControlDir1"], strings["muonControlLoYield"], inputData["lumi"]);
+  writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mZ, isInInterval);
   t.Print();
 
   checkMap(nSwitches, switches.size(),"switches");
