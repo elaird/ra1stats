@@ -2,6 +2,33 @@
 
 def numbers() :
     d = {}
+    d["seed"]             = 4357 #seed for RooRandom::randomGenerator()
+    d["lumi"]             = 35.0 #/pb
+                          
+    d["sFrac"]            = (   0.25,   0.75) #assumed fraction of signal in each bin (in case of no model)
+                          
+    d["n_signal"]         = (      8,      5) #number of events measured at HT > 350 GeV and alphaT > 0.55
+    d["sigma_SigEff"]     = 0.12    #systematic uncertainty on signal acceptance*efficiency*luminosity //added single uncertainties quadratically
+                          
+    d["n_htcontrol"]      = (33, 11,  8,  5)
+    d["n_bar_htcontrol"]  = (844459, 331948, 225649, 110034)
+    d["sigma_x"]          = 0.11 #systematic uncertainty on inclusive background estimation (uncertainty on the assumpotion that rhoprime = rho*rho)
+                          
+    d["n_muoncontrol"]    = (      5,      2) #number of events measured in muon control sample
+    d["mc_muoncontrol"]   = (    4.1,    1.9) #MC expectation in muon control sample
+    d["mc_ttW"]           = (  3.415,  1.692) #MC expectation in hadronic sample
+    d["sigma_ttW"]        = 0.3               #systematic uncertainty on tt+W background estimation
+                          
+    d["n_photoncontrol"]  = (      6,      1) #number of events measured in photon control sample
+    d["mc_photoncontrol"] = (    4.4,    2.1) #MC expectation in photon control sample
+    d["mc_Zinv"]          = (  2.586,  1.492) #MC expectation in photon control sample
+    d["sigma_Zinv"]       = 0.4     #systematic uncertainty on Zinv background estimation
+
+    return d
+
+#the numbers below are out-dated
+def numbersOneBin() :
+    d = {}
     d["lumi"]            =   35.0  #/pb
     d["n_signal"]        =     13  #number of events measured at HT > 350 GeV and alphaT > 0.55
     d["n_bar_signal"]    = 336044  #number of events measured at HT > 350 GeV and alphaT < 0.55
