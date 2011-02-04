@@ -43,9 +43,7 @@ def stringsNoArgs() :
     for item in ["muonControl", "signal", "sys05", "sys2"] :
         d["%sDir1"%item]    = "mSuGraScan_beforeAll"
         d["%sDir2"%item]    = "mSuGraScan_350"
-        #d["%sLoYield"%item] = "m0_m12_0"
-        print item,"fix this"
-        d["%sLoYield"%item] = "m0_m12_gg_0"
+        d["%sLoYield"%item] = "m0_m12_mChi_0"
 
     #output name options
     d["outputDir"]         = "output"
