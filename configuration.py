@@ -16,7 +16,9 @@ def switches() :
 
     return d
 
-def strings(m0, m12) :
+def strings(xBin, yBin, zBin) :
+    dir = "/afs/cern.ch/user/e/elaird/public/20_yieldHistograms"
+    
     d = {}
     d["sourceFile"] = "Lepton.C"
     #d["sourceFile"] = "SplitSignal.C"
@@ -26,6 +28,11 @@ def strings(m0, m12) :
     d["sys05File"]       = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root"
     d["sys2File"]        = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root"
 
+    #d["signalFile"]      = "%s/Signal/AK5Calo_tanBeta3.root"%dir
+    #d["muonControlFile"] = "%s/Muon/AK5Calo_tanBeta3.root"%dir
+    #d["sys05File"]       = "%s/QCDBkgd/QcdBkgdEst_tanbeta3.root"%dir
+    #d["sys2File"]        = "%s/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root"%dir
+
     for item in ["muonControl", "signal", "sys05", "sys2"] :
         d["%sDir1"%item]    = "mSuGraScan_beforeAll"
         d["%sDir2"%item]    = "mSuGraScan_350"
@@ -34,7 +41,7 @@ def strings(m0, m12) :
     #output name options
     d["outputDir"]         = "output"
     d["logDir"]            = "log"
-    d["tag"]               = "m0_%d_m12_%d"%(m0, m12)
+    d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
     d["plotStem"]          = "%s/Significance"%d["outputDir"]
     d["plotFileName"]      = "%s_%s.root"%(d["plotStem"], d["tag"])
     d["workspaceStem"]     = "%s/Combine"%d["outputDir"]
