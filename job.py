@@ -28,7 +28,6 @@ for lib in ["AutoDict_std__pair_std__string_std__string__cxx.so",
     assert not r.gSystem.Load(lib), "Could not load library %s"%lib
 
 for point in points() :
-    print point
     getattr(r, funcName())(utils.stdMap(conf.switches(), "string", "int"),
                            utils.stdMap(conf.strings(*point), "string", "string"),
                            utils.stdMap_String_VectorDoubles(data.numbers()),
