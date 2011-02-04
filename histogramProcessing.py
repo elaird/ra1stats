@@ -21,8 +21,8 @@ def checkHistoBinning() :
         s = conf.stringsNoArgs()
         return [
             (s["signalFile"],        s["signalDir2"],      s["signalLoYield"]),
-            (s["sys05File"],         s["signalDir2"],      s["signalLoYield"]),
-            (s["sys2File"],          s["signalDir2"],      s["signalLoYield"]),
+            #(s["sys05File"],         s["signalDir2"],      s["signalLoYield"]),
+            #(s["sys2File"],          s["signalDir2"],      s["signalLoYield"]),
             (s["muonControlFile"],   s["muonControlDir2"], s["muonControlLoYield"]),
             ]
 
