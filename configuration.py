@@ -16,9 +16,9 @@ def switches() :
 
     return d
 
-def strings(xBin, yBin, zBin) :
+def stringsNoArgs() :
     dir = "/afs/cern.ch/user/e/elaird/public/20_yieldHistograms"
-    
+
     d = {}
     d["sourceFile"] = "Lepton.C"
     #d["sourceFile"] = "SplitSignal.C"
@@ -41,12 +41,17 @@ def strings(xBin, yBin, zBin) :
     #output name options
     d["outputDir"]         = "output"
     d["logDir"]            = "log"
-    d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
     d["plotStem"]          = "%s/Significance"%d["outputDir"]
-    d["plotFileName"]      = "%s_%s.root"%(d["plotStem"], d["tag"])
     d["workspaceStem"]     = "%s/Combine"%d["outputDir"]
-    d["workspaceFileName"] = "%s_%s.root"%(d["workspaceStem"], d["tag"])
     d["logStem"]           = "%s/job"%d["logDir"]
+    return d
 
+def strings(xBin, yBin, zBin) :
+    assert(xBin*yBin*zBin)
+    d = stringsNoArgs()
+    #output name options
+    d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
+    d["plotFileName"]      = "%s_%s.root"%(d["plotStem"], d["tag"])
+    d["workspaceFileName"] = "%s_%s.root"%(d["workspaceStem"], d["tag"])
     return d
 
