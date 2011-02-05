@@ -6,7 +6,7 @@ def switches() :
     d["doFeldmanCousins"] = False
     d["doMCMC"] = False
 
-    d["nlo"] = True
+    d["nlo"] = False
     d["fixQcdToZero"] = True
     d["constrainParameters"] = False
 
