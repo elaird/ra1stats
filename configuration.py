@@ -30,13 +30,21 @@ def histoSpecs() :
     #d["sys05"]  = {"file": "%s/v1/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root"%dir}
     #d["sys2"]   = {"file": "%s/v1/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root"%dir}
 
-    #v2
+    ##v2
+    #sig = "AK5Calo_PhysicsProcesses_mSUGRA_TanBeta3.root"
+    #d["sig10"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
+    #d["muon"]   = {"file": "%s/v2/Muon/AK5Calo_mSugra_TanBeta3.root"%dir}
+    #d["sig05"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
+    #d["sig20"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
+    #d["ht"]     = {"file": "%s/v2/QCDBkgd/QcdBkgdEst_tanbeta3.root"%dir}
+
+    #v3
     sig = "AK5Calo_PhysicsProcesses_mSUGRA_TanBeta3.root"
-    d["sig10"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
-    d["muon"]   = {"file": "%s/v2/Muon/AK5Calo_mSugra_TanBeta3.root"%dir}
-    d["sig05"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
-    d["sig20"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
-    d["ht"]     = {"file": "%s/v2/QCDBkgd/QcdBkgdEst_tanbeta3.root"%dir}
+    d["sig10"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
+    d["muon"]   = {"file": "%s/v3/muon/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3.root"%dir}
+    d["sig05"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
+    d["sig20"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
+    d["ht"]     = {"file": "%s/v3/ht/QcdBkgdEst_tanbeta3.root"%dir}
 
     for key in d :
         d[key]["beforeDir"] = "mSuGraScan_beforeAll"
