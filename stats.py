@@ -19,27 +19,17 @@ def jobCmds(nSlices = None, useCompiled = True) :
     def logFileName(iSlice) :
         return "%s_%d.log"%(conf.stringsNoArgs()["logStem"], iSlice)
 
-    def writeYields() :
-        for point,yields in hp.points().iteritems() :
-            outFile = open(conf.strings(*point)["configFileName"], "w")
-            cPickle.dump(yields, outFile)
-            outFile.close()
     pwd = os.environ["PWD"]
 
     if nSlices<=0 : nSlices = len(hp.points())
     out = []
 
-    writeYields()
     strings = conf.stringsNoArgs()
     for iSlice in range(nSlices) :
-        args = [ "%d %d %d"%point for point in hp.points().keys()[iSlice::nSlices] ]
+        args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
-        s += " %s/%s%s"%(pwd,                            #2
-                         strings["sourceFile"],
-                         "+" if useCompiled else "+"
-                         )
-        s += " %s"%(" ".join(args))                      #3
+        s += " %s"%(" ".join(args))                      #2
         s += " >& %s/%s"%(pwd, logFileName(iSlice))
         out.append(s)
     return out
@@ -59,7 +49,6 @@ def local(nWorkers) :
 ############################################
 def mkdirs() :
     s = conf.stringsNoArgs()
-    utils.mkdir(s["configDir"])
     utils.mkdir(s["logDir"])
     utils.mkdir(s["outputDir"])
 ############################################
@@ -104,8 +93,6 @@ def merge(nSlices) :
 ############################################    
 options = opts()
 hp.checkHistoBinning()
-utils.generateDictionaries()
-utils.compile(conf.stringsNoArgs()["sourceFile"])
 mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
