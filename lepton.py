@@ -2,12 +2,6 @@
 import ROOT as r
 import math
 
-def histoName(s1, s2, s3) :
-    return s1+"_"+s2+"_"+s3
-
-def histoName(s1, s2, s3, s4) :
-    return s1+"_"+s2+"_"+s3+"_"+s4
-
 def loYieldHisto(spec, dirs, lumi) :
     f = r.TFile(spec["file"])
     assert not f.IsZombie()
@@ -15,7 +9,6 @@ def loYieldHisto(spec, dirs, lumi) :
     h = None
     for dir in dirs :
         hOld = f.Get("%s/%s"%(dir, spec["loYield"]))
-        assert hOld,"ERROR: histo %s does not exist."%histoName(fileName, dirName, histName)
         if not h :
             h = hOld.Clone("%s_%s_%s"%(spec["file"], dir, hOld.GetName()))
         else :
@@ -26,23 +19,31 @@ def loYieldHisto(spec, dirs, lumi) :
     f.Close()
     return h
 
-def nloYieldHisto(fileName, dirName1, dirName2, lumi) :
-    f = r.TFile(fileName)
+def nloYieldHisto(spec, dirs, lumi) :
+    def numerator(name) :
+        out = None
+        for dir in dirs :
+            if out is None :
+                out = f.Get("%s/m0_m12_%s_0"%(dir, name))
+            else :
+                out.Add(f.Get("%s/m0_m12_%s_0"%(dir, name)))
+        return out
+
+    f = r.TFile(spec["file"])
     if f.IsZombie() : return None
-    dir = f.Get(dirName1)
-    dir2 = f.Get(dirName2)
-    
-    all = dir2.Get("m0_m12_gg_0").Clone(histoName(fileName, dirName1, dirName2, gg.GetName()))
-    all.SetDirectory(0)
-    all.Reset()
-    
+
+    all = None
     for name in ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"] :
-        num = dir2.Get("m0_m12_%s_0"%name)
-        den = dir.Get("m0_m12_%s_5"%name)
+        den = f.Get("%s/m0_m12_%s_5"%(spec["beforeDir"], name))
+        num = numerator(name)
+        num.Divide(den)
+        
+        if all is None :
+            all = num.Clone("%s_%s_%s"%(spec["file"], dirs[0], name))
+        else :
+            all.Add(num)
 
-    num.Divide(den)
-    all.Add(num)
-
+    all.SetDirectory(0)
     all.Scale(lumi)
     f.Close()
     return all
@@ -311,10 +312,10 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
     sys2   = None
 
     if switches["nlo"] :
-        signal = nloYieldHisto(specs["signalFile"],      specs["signalDir1"],      specs["signalDir2"],         lumi)
-        muon   = nloYieldHisto(specs["muonControlFile"], specs["muonControlDir1"], specs["muonControlDir2"],    lumi)
-        sys05  = nloYieldHisto(specs["sys05File"],       specs["sys05Dir1"],       specs["sys05Dir2"],          lumi)
-        sys2   = nloYieldHisto(specs["sys2File"],        specs["sys2Dir1"],        specs["sys2Dir2"],           lumi)
+        signal = nloYieldHisto(specs["sig10"], specs["sig10"]["350Dirs"] + specs["sig10"]["450Dirs"],lumi)
+        muon   = nloYieldHisto(specs["muon"],  specs["muon"]["350Dirs"]  + specs["muon"]["450Dirs"], lumi)
+        sys05  = nloYieldHisto(specs["sig05"], specs["sig05"]["350Dirs"] + specs["sig05"]["450Dirs"],lumi)
+        sys2   = nloYieldHisto(specs["sig20"], specs["sig20"]["350Dirs"] + specs["sig20"]["450Dirs"],lumi)
     else :
         signal =  loYieldHisto(specs["sig10"], specs["sig10"]["350Dirs"] + specs["sig10"]["450Dirs"],lumi)
         muon   =  loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"]  + specs["muon"]["450Dirs"], lumi)
