@@ -6,13 +6,12 @@ def switches() :
     d["doFeldmanCousins"] = False
     d["doMCMC"] = False
 
-    d["nlo"] = False
+    d["nlo"] = True
     d["fixQcdToZero"] = True
     d["constrainParameters"] = False
 
     d["testPointsOnly"] = True
     d["printCovarianceMatrix"] = False
-    d["printByHandValues"] = False
     d["writeWorkspaceFile"] = False
 
     d["twoHtBins"] = False
@@ -47,13 +46,15 @@ def histoSpecs() :
     d["ht"]     = {"file": "%s/v3/ht/QcdBkgdEst_tanbeta3.root"%dir}
 
     for key in d :
-        d[key]["beforeDir"] = "mSuGraScan_beforeAll"
+        tag = key[-2:]
+        d[key]["beforeDir"] = "mSuGraScan_beforeAll_%s"%tag
         d[key]["250Dirs"  ] = []
         d[key]["300Dirs"  ] = []
-        d[key]["350Dirs"  ] = ["mSuGraScan_350_%s"%key[-2:]]
-        d[key]["450Dirs"  ] = ["mSuGraScan_450_%s"%key[-2:]]
+        d[key]["350Dirs"  ] = ["mSuGraScan_350_%s"%tag]
+        d[key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
         d[key]["loYield"  ] = "m0_m12_mChi_0"
 
+    d["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
     d["muon"]["350Dirs"] = ["mSuGraScan_350"]
     d["muon"]["450Dirs"] = ["mSuGraScan_450"]
 
