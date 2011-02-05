@@ -244,7 +244,7 @@ void SplitSignal(Int_t method
   //mSUGRA
   Double_t s[2] = {0.25,0.75};//how signal is split
 
-  Double_t signal_sys = 0.12;
+  Double_t signal_sys = 0.18;
   Double_t muon_sys = 0.3;
   Double_t phot_sys = 0.4;
 
@@ -272,7 +272,22 @@ void SplitSignal(Int_t method
   
   Double_t accXeff = 1.;
   Double_t accXeff_sys = sqrt(pow(0.12,2) - pow(0.11,2) );
-  
+
+  Double_t _lumi = 1;
+    Double_t _lumi_sys = 0.18;
+    Double_t _accXeff = 1.;
+    Double_t _accXeff_sys = 0.01;
+    Double_t _muon_sys = 0.3;
+    Double_t _phot_sys = 0.4;
+    Double_t _muon_cont_1 = 0.2;
+    Double_t _muon_cont_2 = 0.2;
+    Double_t _lowHT_cont_1 = 0.2;
+    Double_t _lowHT_cont_2 = 0.2;
+
+    Double_t _lowHT_sys_1 = 0.08;
+    Double_t _lowHT_sys_2 = 0.14;
+
+    Double_t _lowHT_sys = 0.11;
 
   //MyPdfFactory f;
 
@@ -293,20 +308,11 @@ void SplitSignal(Int_t method
     f.AddDataSideband(  bkgd_sideband,bkgd_bar_sideband,4,wspace,"ObservedNumberCountingDataWithSideband"); 
   }
   if(method == 4) {//incl + EWK linear
-    Double_t _lumi = 1;
-    Double_t _lumi_sys = 0.18;
-    Double_t _accXeff = 1.;
-    Double_t _accXeff_sys = 0.01;
-    Double_t _muon_sys = 0.3;
-    Double_t _phot_sys = 0.4;
-    Double_t _muon_cont_1 = 0.2;
-    Double_t _muon_cont_2 = 0.2;
-    Double_t _lowHT_cont_1 = 0.2;
-    Double_t _lowHT_cont_2 = 0.2;
+  
 
     f.AddModel_Lin_Combi(s,_lumi, _lumi_sys,
 			 _accXeff,_accXeff_sys,
-			 _muon_sys,_phot_sys,
+			 _muon_sys,_phot_sys,_lowHT_sys_1,_lowHT_sys_2,
 			 _muon_cont_1,_muon_cont_2,
 			 _lowHT_cont_1,_lowHT_cont_2,
 			 wspace,"TopLevelPdf","masterSignal");
@@ -318,8 +324,8 @@ void SplitSignal(Int_t method
     f.AddDataSideband_Combi(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
   if(method == 6) {//incl.(one bin) + EWK (two bins) linear
-    f.AddModel_Lin_Combi_one(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
-    f.AddDataSideband_Combi_one(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
+    // f.AddModel_Lin_Combi_one(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
+    //f.AddDataSideband_Combi_one(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
    if(method == 7) {//incl.(one bin) + EWK (two bins) linear
     f.AddModel_Exp_Combi_one(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
@@ -330,7 +336,13 @@ void SplitSignal(Int_t method
      f.AddDataSideband(  bkgd_sideband_3,bkgd_bar_sideband_3,3,wspace,"ObservedNumberCountingDataWithSideband"); 
    }
    if(method == 9){//incl. (one bin) + EWK (one bin) exp
-     f.AddModel_Exp_Combi_both_one(signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
+     f.AddModel_Exp_Combi_both_one(_lumi, _lumi_sys,
+				   _accXeff,_accXeff_sys,
+				   _muon_sys,_phot_sys,_lowHT_sys,
+				   _muon_cont_1,
+				   _lowHT_cont_1,_lowHT_cont_2,
+				   wspace,"TopLevelPdf","masterSignal");
+
      f.AddDataSideband_Combi(  bkgd_sideband_3,bkgd_bar_sideband_3,3,muonMeas_1,photMeas_1,tau_muon_1,tau_phot_1,1,wspace,"ObservedNumberCountingDataWithSideband");
    }
 
@@ -342,10 +354,10 @@ void SplitSignal(Int_t method
 
    RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
 
-   profileLikelihood(modelConfig,wspace);
+     profileLikelihood(modelConfig,wspace);
 
-   // feldmanCousins(modelConfig,wspace);
-
+     //  feldmanCousins(modelConfig,wspace);
+   
    TString outputPlotName = "Significance_LO_observed_tanBeta10.root";
   
 
@@ -364,20 +376,41 @@ void SplitSignal(Int_t method
 
    TString signal_dir_1 = "mSuGraScan_350_10";
    TString signal_dir_2 = "mSuGraScan_450_10";
+
+   TString signal_dir_05_1 = "mSuGraScan_350_05";
+   TString signal_dir_05_2 = "mSuGraScan_450_05";
+
+   TString signal_dir_20_1 = "mSuGraScan_350_20";
+   TString signal_dir_20_2 = "mSuGraScan_450_20";
+
    TString beforeAll_dir = "mSuGraScan_beforeAll_10";
    TString signal_hist = "m0_m12_mChi_0";
 
    TString muon_dir = "./rootFiles/MuonFinal/";
    TString muon_dir_1 = "mSuGraScan_350";
    TString muon_dir_2 = "mSuGraScan_450";
+   TString beforeAll_dir_muon = "mSuGraScan_beforeAll";
    TString muon_file = muon_dir + "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta10.root";
+
+   TString lowHT_dir = "./rootFiles/QCDBkgd/";
+   TString lowHT_file = lowHT_dir + "QcdBkgdEst_tanbeta10.root";
+   TString lowHT_dir_1 = "Reco_Bin_250_HT_300";
+   TString lowHT_dir_2 = "Reco_Bin_300_HT_350";
       
-   TH2F* yield_signal_1 =  sysPlot(signal_file,signal_dir_1,beforeAll_dir);
+   TH2F* yield_signal_1 =  sysPlot(signal_file,signal_dir_1,signal_file,beforeAll_dir);
+   TH2F* yield_signal_2 = sysPlot(signal_file,signal_dir_2,signal_file,beforeAll_dir);
 
-   TH2F* yield_signal_2 = sysPlot(signal_file,signal_dir_2,beforeAll_dir);
+   TH2F* yield_signal_05_1 =  sysPlot(signal_file,signal_dir_05_1,signal_file,beforeAll_dir);
+   TH2F* yield_signal_05_2 = sysPlot(signal_file,signal_dir_05_2,signal_file,beforeAll_dir);
 
-   TH3F* yield_muon_1 = yieldPlot_3d(muon_file,muon_dir_1,signal_hist);
-   TH3F* yield_muon_2 = yieldPlot_3d(muon_file,muon_dir_2,signal_hist);
+   TH2F* yield_signal_20_1 =  sysPlot(signal_file,signal_dir_20_1,signal_file,beforeAll_dir);
+   TH2F* yield_signal_20_2 = sysPlot(signal_file,signal_dir_20_2,signal_file,beforeAll_dir);
+
+   TH2F* yield_muon_1 = sysPlot(muon_file,muon_dir_1,muon_file,beforeAll_dir_muon);
+   TH2F* yield_muon_2 = sysPlot(muon_file,muon_dir_2,muon_file,beforeAll_dir_muon);
+
+   TH2F* yield_lowHT_1 = sysPlot(lowHT_file,lowHT_dir_1,signal_file,beforeAll_dir);
+   TH2F* yield_lowHT_2 = sysPlot(lowHT_file,lowHT_dir_2,signal_file,beforeAll_dir);
 
    //output root file
    TH2F* exclusionLimits = new TH2F("ExclusionLimit","ExclusionLimit",yield_signal_1->GetXaxis()->GetNbins(),yield_signal_1->GetXaxis()->GetXmin(),yield_signal_1->GetXaxis()->GetXmax(),yield_signal_1->GetYaxis()->GetNbins(),yield_signal_1->GetYaxis()->GetXmin(),yield_signal_1->GetYaxis()->GetXmax());
@@ -410,13 +443,41 @@ void SplitSignal(Int_t method
        Double_t d_s_1 = yield_signal_1->GetBinContent(m0+1,m12)/100*lumi;
        Double_t d_s_2 = yield_signal_2->GetBinContent(m0+1,m12)/100*lumi;
 
-       Double_t muon_1 = yield_muon_1->GetBinContent(m0+1,m12,1)/100*lumi;
-       Double_t muon_2 = yield_muon_2->GetBinContent(m0+1,m12,1)/100*lumi;
+       Double_t muon_1 = yield_muon_1->GetBinContent(m0+1,m12)/100*lumi;
+       Double_t muon_2 = yield_muon_2->GetBinContent(m0+1,m12)/100*lumi;
+
+       cout << " here "<< endl;
+       Double_t lowHT_1 = yield_lowHT_1->GetBinContent(m0+1,m12)/100*lumi;
+       cout << "lowHT_1 " << lowHT_1 << endl;
+       Double_t lowHT_2 = yield_lowHT_2->GetBinContent(m0+1,m12)/100*lumi;
+
+       Double_t d_s_sys05_1 = yield_signal_05_1->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
+       Double_t d_s_sys05_2 = yield_signal_05_2->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
+
+      Double_t d_s_sys2_1 = yield_signal_20_1->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
+      Double_t d_s_sys2_2 = yield_signal_20_2->GetBinContent(m0+1,m12)/100*lumi;//the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
+
+      Double_t masterPlus = 0;
+      Double_t masterMinus = 0;
+     signal_sys = 0.12;
+
+     
+	
 
        //cout << " here " << endl;
        
        if(d_s_1 > 0 || d_s_2 > 0){
 
+	 Double_t d_s = d_s_1 + d_s_2;
+	 Double_t d_s_sys2 = d_s_sys2_1 + d_s_sys2_2;
+	 Double_t d_s_sys05 = d_s_sys05_1 + d_s_sys05_2;
+	 
+	 	
+	 masterPlus =  fabs(TMath::Max((TMath::Max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.));
+	 masterMinus = fabs(TMath::Max((TMath::Max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.));
+	 
+	 signal_sys = sqrt( pow( TMath::Max(masterMinus,masterPlus)/d_s,2) + pow(signal_sys,2) + pow(0.1,2) );
+	
 
 	 Double_t BR1 = d_s_1/(d_s_1+d_s_2);
 	 Double_t BR2 = d_s_2/(d_s_1+d_s_2);
@@ -424,14 +485,24 @@ void SplitSignal(Int_t method
 	 Double_t muon_cont_1 = muon_1/(d_s_1+d_s_2);
 	 Double_t muon_cont_2 = muon_2/(d_s_1+d_s_2);
 	 
-	 f.AddParameters( BR1,BR2,muon_cont_1,muon_cont_2,wspace);
+	 Double_t lowHT_cont_1 = lowHT_1/(d_s_1+d_s_2);
+	 Double_t lowHT_cont_2 = lowHT_2/(d_s_1+d_s_2);
+
+	
+	 Double_t muon_cont = ( muon_1 + muon_2)/(d_s_1+d_s_2);
+
+	 cout << "befoe add para " << endl;
 	 
-	 cout << " m0 " << m0*50 << " m12 " << m12*25 << " d_s_1 "<< d_s_1 << " d_s_2 " << d_s_2 << " BR1 " << BR1 << " BR2 " << BR2 << " muon_cont_1 " << muon_cont_1 << " muon_cont_2 " << muon_cont_2 << endl;
+	 // f.AddParameters( BR1,BR2,signal_sys,muon_cont_1,muon_cont_2,lowHT_cont_1,lowHT_cont_2,wspace);
+
+	 f.AddParameters_1d(signal_sys,muon_cont,lowHT_cont_1,lowHT_cont_2,wspace);
+	 
+	 cout << " m0 " << m0*50 << " m12 " << m12*25 << " d_s_1 "<< d_s_1 << " d_s_2 " << d_s_2 << " BR1 " << BR1 << " BR2 " << BR2 << " muon_cont_1 " << muon_cont_1 << " muon_cont_2 " << muon_cont_2 << " low HT _cont _1 " << lowHT_cont_1 << " lowHT_cont_2 " << lowHT_cont_2 <<  " signal_sys " << signal_sys << endl;
 	 //bool isIn = profileLikelihood(modelConfig,wspace,(d_s_1 + d_s_2));
 	 bool isIn = updateLikelihood(plc,wspace,(d_s_1+d_s_2));
 	 //  }
 
-	 exclusionLimits->SetBinContent(m0,m12,isIn);
+	 if(!isIn)exclusionLimits->SetBinContent(m0,m12,1);
 
        }
 
@@ -447,7 +518,7 @@ void SplitSignal(Int_t method
 
    output->Write();
   output->Close();
-  
+   
 
   delete wspace;
   
