@@ -320,16 +320,13 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
         signal =  loYieldHisto(specs["sig10"], specs["sig10"]["350Dirs"] + specs["sig10"]["450Dirs"],lumi)
         muon   =  loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"]  + specs["muon"]["450Dirs"], lumi)
 
-    assert signal
-    assert muon
-    
     tau_s_muon = 1
     d_s       = signal.GetBinContent(m0, m12, mChi)
     d_muon    = muon.GetBinContent(m0, m12, mChi)
     signal_sys = sigma_SigEff_
     
     if d_s>0.0 : tau_s_muon = d_muon / d_s
-    
+
     if switches["nlo"] :
         assert sys05
         assert sys2
@@ -384,7 +381,7 @@ def Lepton(switches,
     t.Start()
 
     #set RooFit random seed for reproducible results
-    r.RooRandom.randomGenerator().SetSeed(4357)
+    r.RooRandom.randomGenerator().SetSeed(inputData["seed"])
     #make a workspace
     wspace = workspace()
     
