@@ -40,41 +40,19 @@ def fullPoints() :
         f.Close()
         return out
 
-    def loYields(specs, dirs) :
-        out = {}
-        for key,spec in specs.iteritems() :
-            out[key] = loYield(spec, dirs)
-        return out
-
-    out = collections.defaultdict(dict)
-
-    specs = conf.histoSpecs()
-
-    yields = {}
-    for edge in [250, 300, 350, 450] :
-        yields[edge] = loYields(specs, "%dDirs"%edge)
-
-    norm = data.numbers()["lumi"]/100.0 #100/pb is the default normalization
-
-    h = yields[350]["sig10"]
+    out = []
+    h = loYield(conf.histoSpecs()["sig10"], "350Dirs")
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 content = h.GetBinContent(iBinX, iBinY, iBinZ)
                 if content==0.0 : continue
-                bins = (iBinX, iBinY, iBinZ)
-                for key in specs :
-                    for binEdge,histoDict in yields.iteritems() :
-                        out[bins]["%s_%d"%(key, binEdge)] = histoDict[key].GetBinContent(*bins)*norm if histoDict[key] else None
+                out.append( (iBinX, iBinY, iBinZ) )
     return out
 
 def cachedPoints() :
     if conf.switches()["testPointsOnly"] :
-        small = {}
-        for key,value in fullPoints().iteritems() :
-            small[key] = value
-            if len(small)>=4 : break
-        return small
+        return fullPoints()[:4]        
     else :
         return fullPoints()
 
