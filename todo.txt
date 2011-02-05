@@ -2,14 +2,13 @@ Correctness
 -----------
 lolargs
 include Rob's method
-investigate ng
 bayesian switch in setupLikelihood and modelConfig
+fix nlo yields
 
 Consistency
 -----------
 0.95
 "Combine"
-automate loading of libraries
 
 Upgrades
 --------
