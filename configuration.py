@@ -67,8 +67,6 @@ def histoSpecs() :
 
 def stringsNoArgs() :
     d = {}
-    d["sourceFile"] = "Lepton.C"
-    #d["sourceFile"] = "SplitSignal.C"
 
     #internal names
     if switches()["twoHtBins"] :
@@ -83,11 +81,9 @@ def stringsNoArgs() :
     #output name options
     d["outputDir"]         = "output"
     d["logDir"]            = "log"
-    d["configDir"]         = "config"
     d["plotStem"]          = "%s/Significance"%d["outputDir"]
     d["workspaceStem"]     = "%s/Combine"%d["outputDir"]
     d["logStem"]           = "%s/job"%d["logDir"]
-    d["configStem"]        = "%s/job"%d["configDir"]
     return d
 
 def strings(xBin, yBin, zBin) :
@@ -95,7 +91,6 @@ def strings(xBin, yBin, zBin) :
     #output name options
     d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
     d["plotFileName"]      = "%s_%s.root"%(d["plotStem"], d["tag"])
-    d["configFileName"]    = "%s_%s.pickled"%(d["configStem"], d["tag"])
     d["workspaceFileName"] = "%s_%s.root"%(d["workspaceStem"], d["tag"])
     return d
 
