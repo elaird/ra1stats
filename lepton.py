@@ -115,24 +115,24 @@ def importVarsOneBin(wspace, inputData, switches, dataName) :
             assert upper!=None
             getattr(wspace, "import")(r.RooRealVar(name, name, value, lower, upper))
             
-    n_signal_ = inputData["n_signal"].at(0)+inputData["n_signal"].at(1)
-    n_bar_signal_ = inputData["n_bar_htcontrol"].at(2)+inputData["n_bar_htcontrol"].at(3)
+    n_signal_ = inputData["n_signal"][0]+inputData["n_signal"][1]
+    n_bar_signal_ = inputData["n_bar_htcontrol"][2]+inputData["n_bar_htcontrol"][3]
 
-    n_muoncontrol_ = inputData["n_muoncontrol"].at(0)+inputData["n_muoncontrol"].at(1)
-    tau_mu_ = (inputData["mc_muoncontrol"].at(0)+inputData["mc_muoncontrol"].at(1)) / (inputData["mc_ttW"].at(0)+inputData["mc_ttW"].at(1));
-    sigma_ttW_ = inputData["sigma_ttW"].at(0);
+    n_muoncontrol_ = inputData["n_muoncontrol"][0]+inputData["n_muoncontrol"][1]
+    tau_mu_ = (inputData["mc_muoncontrol"][0]+inputData["mc_muoncontrol"][1]) / (inputData["mc_ttW"][0]+inputData["mc_ttW"][1]);
+    sigma_ttW_ = inputData["sigma_ttW"]
     
-    n_photoncontrol_ = inputData["n_photoncontrol"].at(0)+inputData["n_photoncontrol"].at(1);
-    tau_photon_ = (inputData["mc_photoncontrol"].at(0)+inputData["mc_photoncontrol"].at(1)) / (inputData["mc_Zinv"].at(0)+inputData["mc_Zinv"].at(1));
-    sigma_Zinv_ = inputData["sigma_Zinv"].at(0);
+    n_photoncontrol_ = inputData["n_photoncontrol"][0]+inputData["n_photoncontrol"][1];
+    tau_photon_ = (inputData["mc_photoncontrol"][0]+inputData["mc_photoncontrol"][1]) / (inputData["mc_Zinv"][0]+inputData["mc_Zinv"][1]);
+    sigma_Zinv_ = inputData["sigma_Zinv"]
     
-    n_control_1_ = inputData["n_htcontrol"].at(1);
-    n_control_2_ = inputData["n_htcontrol"].at(0);
-    n_bar_control_1_ = inputData["n_bar_htcontrol"].at(1);
-    n_bar_control_2_ = inputData["n_bar_htcontrol"].at(0);
-    sigma_x_ = inputData["sigma_x"].at(0);
+    n_control_1_ = inputData["n_htcontrol"][1]
+    n_control_2_ = inputData["n_htcontrol"][0]
+    n_bar_control_1_ = inputData["n_bar_htcontrol"][1]
+    n_bar_control_2_ = inputData["n_bar_htcontrol"][0]
+    sigma_x_ = inputData["sigma_x"]
 
-    sigma_SigEff_ = inputData["sigma_SigEff"].at(0);
+    sigma_SigEff_ = inputData["sigma_SigEff"]
 
     wimport("n_signal", n_signal_, n_signal_/10, n_signal_*10)
     wimport("n_muoncontrol", n_muoncontrol_, 0.001, n_muoncontrol_*10)
@@ -373,7 +373,6 @@ def checkMap(nInitial, nFinal, name) :
 def Lepton(switches,
            specs,
            strings,
-           signalYields,
            inputData,
            m0,
            m12,
@@ -408,15 +407,15 @@ def Lepton(switches,
     
     canvas(switches["doBayesian"], switches["doMCMC"])#prepare a canvas
     
-    profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
+    #profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
 
-    #if switches["doFeldmanCousins"] : feldmanCousins(data, modelConfig, wspace) #takes 7 minutes
-    #if switches["doBayesian"] : bayesian(data, modelConfig, wspace) #use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
-    #if switches["doMCMC"] : mcmc(data, modelConfig, wspace) #use MCMCCalculator (takes about 1 min)
-    #
-    #d_s = setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"].at(0), inputData["sigma_SigEff"].at(0))
-    #isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s)
-    #
-    #exampleHisto = loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"], inputData["lumi"].at(0))
-    #writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval)
-    #t.Print()
+    if switches["doFeldmanCousins"] : feldmanCousins(data, modelConfig, wspace) #takes 7 minutes
+    if switches["doBayesian"] : bayesian(data, modelConfig, wspace) #use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
+    if switches["doMCMC"] : mcmc(data, modelConfig, wspace) #use MCMCCalculator (takes about 1 min)
+    
+    d_s = setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"])
+    isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s)
+    
+    exampleHisto = loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"], inputData["lumi"])
+    writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval)
+    t.Print()
