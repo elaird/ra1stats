@@ -77,6 +77,8 @@ void AddModel_Lin_Combi(Double_t* BR,
 			       const char* dsName);
 
 
+  void AddParameters(Double_t _BR1,Double_t _BR2,Double_t _muon_cont_1,Double_t _muon_cont_2,RooWorkspace* ws);
+
 private:
   
   RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t value);

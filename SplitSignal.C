@@ -14,6 +14,8 @@
 #include "RooGlobalFunc.h"
 #include "RooRandom.h"
 
+#include "TStyle.h"
+
 #include "PlottingStuff.cxx"
 
 #include "RobsPdfFactory.cxx"
@@ -25,6 +27,7 @@ RooStats::ModelConfig* modelConfiguration(RooWorkspace* wspace) {
   ModelConfig* modelConfig = new ModelConfig("Combine");
   modelConfig->SetWorkspace(*wspace);
   modelConfig->SetPdf( *wspace->pdf("TopLevelPdf"));
+  modelConfig->SetObservables (*wspace->set("obs"));
   // modelConfig->SetPriorPdf(*wspace->pdf("prior"));
   modelConfig->SetParametersOfInterest(*wspace->set("poi"));
   modelConfig->SetNuisanceParameters(*wspace->set("nuis"));
@@ -40,11 +43,12 @@ void constrainParameters(RooWorkspace* wspace) {
   cout << " try " << endl;
   //some limitations good for fitting
   RooArgList nuispar(*wspace->set("nuis"));
+  cout << " heer e" << endl;
   for(int i = 0; i < nuispar.getSize();++i){
     cout << " i " << endl;
     RooRealVar &par = (RooRealVar&) nuispar[i];
-    par.setMin(std::max(par.getVal()-10*par.getError(),par.getMin() ) );
-    par.setMax(std::min(par.getVal()+10*par.getError(),par.getMax() ) );
+    par.setMin(std::max(par.getVal()-5*par.getError(),par.getMin() ) );
+    par.setMax(std::min(par.getVal()+5*par.getError(),par.getMax() ) );
   }
   RooArgList poipar(*wspace->set("poi"));
   for(int i = 0; i < poipar.getSize();++i){
@@ -55,13 +59,42 @@ void constrainParameters(RooWorkspace* wspace) {
 }
 
 
-bool profileLikelihood(RooStats::ModelConfig* modelConfig, RooWorkspace* wspace, double d_s = 0.0) {
+bool updateLikelihood(RooStats::ProfileLikelihoodCalculator* plc,RooWorkspace* wspace,double d_s = 0.0){
+
+  cout << " d_s " << d_s << endl;
+
+  bool isInInterval = false;
+
+  RooStats::LikelihoodInterval *plInt = (LikelihoodInterval*)plc->GetInterval();
+  RooRealVar* tmp_s = wspace->var("masterSignal");
+
+  Double_t lowerLimit = plInt->LowerLimit( *tmp_s );
+  cout << " lower LImit " << lowerLimit <<  endl;
+  
+  Double_t upperLimit = plInt->UpperLimit( *tmp_s );
+  cout << " upper limit " << upperLimit << endl;
+
+  
+ 
+  tmp_s->setVal(d_s);
+  isInInterval = plInt->IsInInterval(*tmp_s);
+  
+  delete plInt;
+
+  cout << " is in " << isInInterval << endl;
+
+  return isInInterval;
+
+
+}
+
+ProfileLikelihoodCalculator* profileLikelihood(RooStats::ModelConfig* modelConfig, RooWorkspace* wspace, double d_s = 0.0) {
 
 bool isInInterval = false;
   
-  RooStats::ProfileLikelihoodCalculator plc(*wspace->data("ObservedNumberCountingDataWithSideband"), *modelConfig);
-  plc.SetConfidenceLevel(0.95);
-  RooStats::LikelihoodInterval* plInt = plc.GetInterval();
+  RooStats::ProfileLikelihoodCalculator* plc = new ProfileLikelihoodCalculator(*wspace->data("ObservedNumberCountingDataWithSideband"), *modelConfig);
+  plc->SetConfidenceLevel(0.95);
+  RooStats::LikelihoodInterval* plInt = plc->GetInterval();
 
   Double_t lowerLimit = plInt->LowerLimit( *wspace->var("masterSignal") );
   Double_t upperLimit = plInt->UpperLimit( *wspace->var("masterSignal") );
@@ -83,7 +116,7 @@ bool isInInterval = false;
     isInInterval = plInt->IsInInterval(*tmp_s);
   }
 
-  return isInInterval;
+  return plc;
 }
 
 
@@ -245,7 +278,7 @@ void SplitSignal(Int_t method
 
   
   RobsPdfFactory f;
-  RooWorkspace* wspace = new RooWorkspace();
+  RooWorkspace* wspace = new RooWorkspace("myWorkspace");
  
   if(method == 1) {//EWK only
     f.AddModel_EWK(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
@@ -261,9 +294,9 @@ void SplitSignal(Int_t method
   }
   if(method == 4) {//incl + EWK linear
     Double_t _lumi = 1;
-    Double_t _lumi_sys = 0.11;
+    Double_t _lumi_sys = 0.18;
     Double_t _accXeff = 1.;
-    Double_t _accXeff_sys = sqrt(pow(0.12,2) - pow(0.11,2) );
+    Double_t _accXeff_sys = 0.01;
     Double_t _muon_sys = 0.3;
     Double_t _phot_sys = 0.4;
     Double_t _muon_cont_1 = 0.2;
@@ -278,7 +311,7 @@ void SplitSignal(Int_t method
 			 _lowHT_cont_1,_lowHT_cont_2,
 			 wspace,"TopLevelPdf","masterSignal");
 
-    //f.AddDataSideband_Combi(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
+    f.AddDataSideband_Combi(  bkgd_sideband,bkgd_bar_sideband,4,muonMeas,photMeas,tau_muon,tau_phot,2,wspace,"ObservedNumberCountingDataWithSideband");
   }
   if(method == 5) {//incl. + EWK exponential
     f.AddModel_Exp_Combi(s,signal_sys,muon_sys,phot_sys,2,wspace,"TopLevelPdf","masterSignal");
@@ -301,17 +334,120 @@ void SplitSignal(Int_t method
      f.AddDataSideband_Combi(  bkgd_sideband_3,bkgd_bar_sideband_3,3,muonMeas_1,photMeas_1,tau_muon_1,tau_phot_1,1,wspace,"ObservedNumberCountingDataWithSideband");
    }
 
+  
+
    constrainParameters(wspace);
+
+  
 
    RooStats::ModelConfig* modelConfig = modelConfiguration(wspace);
 
    profileLikelihood(modelConfig,wspace);
 
-   feldmanCousins(modelConfig,wspace);
+   // feldmanCousins(modelConfig,wspace);
 
-  
+   TString outputPlotName = "Significance_LO_observed_tanBeta10.root";
   
 
+  //Define output file 
+  TFile* output = new TFile(outputPlotName,"RECREATE");
+  if( !output || output->IsZombie()){
+    cout << " zombie alarm output is a zombie " << std::endl; 
+    return;
+  }
+
+
+   TString dir = "./rootFiles/MsugraTanBeta10/";
+   TString signal_file = dir+ "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta10.root";
+   
+   
+
+   TString signal_dir_1 = "mSuGraScan_350_10";
+   TString signal_dir_2 = "mSuGraScan_450_10";
+   TString beforeAll_dir = "mSuGraScan_beforeAll_10";
+   TString signal_hist = "m0_m12_mChi_0";
+
+   TString muon_dir = "./rootFiles/MuonFinal/";
+   TString muon_dir_1 = "mSuGraScan_350";
+   TString muon_dir_2 = "mSuGraScan_450";
+   TString muon_file = muon_dir + "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta10.root";
+      
+   TH2F* yield_signal_1 =  sysPlot(signal_file,signal_dir_1,beforeAll_dir);
+
+   TH2F* yield_signal_2 = sysPlot(signal_file,signal_dir_2,beforeAll_dir);
+
+   TH3F* yield_muon_1 = yieldPlot_3d(muon_file,muon_dir_1,signal_hist);
+   TH3F* yield_muon_2 = yieldPlot_3d(muon_file,muon_dir_2,signal_hist);
+
+   //output root file
+   TH2F* exclusionLimits = new TH2F("ExclusionLimit","ExclusionLimit",yield_signal_1->GetXaxis()->GetNbins(),yield_signal_1->GetXaxis()->GetXmin(),yield_signal_1->GetXaxis()->GetXmax(),yield_signal_1->GetYaxis()->GetNbins(),yield_signal_1->GetYaxis()->GetXmin(),yield_signal_1->GetYaxis()->GetXmax());
+ 
+ 
+
+
+   bool mytry = false;
+   
+   lumi = 35.;
+   
+  
+   ProfileLikelihoodCalculator* plc = profileLikelihood(modelConfig,wspace);
+
+   cout << " bin width x " << yield_signal_1->GetXaxis()->GetBinWidth(1) << " bin min " << yield_signal_1->GetXaxis()->GetXmin() << " bin max " << yield_signal_1->GetXaxis()->GetXmax() << endl;
+
+   cout << " bin width y " << yield_signal_1->GetYaxis()->GetBinWidth(1) << " bin min " << yield_signal_1->GetYaxis()->GetXmin() << " bin max " << yield_signal_1->GetYaxis()->GetXmax() << endl;
+
+   for(int m0 = 0; m0 < yield_signal_1->GetXaxis()->GetNbins();m0++){
+     mytry = false;
+      
+     for(int m12 = yield_signal_1->GetYaxis()->GetNbins();m12 > 0; m12--){
+       
+       // for(int mz = 0; mz < yield_signal_1->GetZaxis()->GetNbins();mz++){
+
+       //cout << "m12 " << endl;
+
+       if(!yield_signal_1) cout << "no file " << endl;
+
+       Double_t d_s_1 = yield_signal_1->GetBinContent(m0+1,m12)/100*lumi;
+       Double_t d_s_2 = yield_signal_2->GetBinContent(m0+1,m12)/100*lumi;
+
+       Double_t muon_1 = yield_muon_1->GetBinContent(m0+1,m12,1)/100*lumi;
+       Double_t muon_2 = yield_muon_2->GetBinContent(m0+1,m12,1)/100*lumi;
+
+       //cout << " here " << endl;
+       
+       if(d_s_1 > 0 || d_s_2 > 0){
+
+
+	 Double_t BR1 = d_s_1/(d_s_1+d_s_2);
+	 Double_t BR2 = d_s_2/(d_s_1+d_s_2);
+
+	 Double_t muon_cont_1 = muon_1/(d_s_1+d_s_2);
+	 Double_t muon_cont_2 = muon_2/(d_s_1+d_s_2);
+	 
+	 f.AddParameters( BR1,BR2,muon_cont_1,muon_cont_2,wspace);
+	 
+	 cout << " m0 " << m0*50 << " m12 " << m12*25 << " d_s_1 "<< d_s_1 << " d_s_2 " << d_s_2 << " BR1 " << BR1 << " BR2 " << BR2 << " muon_cont_1 " << muon_cont_1 << " muon_cont_2 " << muon_cont_2 << endl;
+	 //bool isIn = profileLikelihood(modelConfig,wspace,(d_s_1 + d_s_2));
+	 bool isIn = updateLikelihood(plc,wspace,(d_s_1+d_s_2));
+	 //  }
+
+	 exclusionLimits->SetBinContent(m0,m12,isIn);
+
+       }
+
+     }
+
+     
+   }
+   gStyle->SetPalette(1);
+   
+   output->cd();
+   exclusionLimits->Draw("colz");
+   exclusionLimits->Write();
+
+   output->Write();
+  output->Close();
+  
 
   delete wspace;
   
