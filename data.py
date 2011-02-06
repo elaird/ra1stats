@@ -28,8 +28,10 @@ def numbers() :
     #new from Tanja
     d["pdfUncertainty"] = 0.1
     
+    d["_lumi"] = 1.0
     d["_lumi_sys"] = 0.11
-    d["_accXeff_sys"] = math.sqrt(math.pow(0.12,2) - math.pow(0.11,2) )
+    d["_accXeff"] = 1.0
+    d["_accXeff_sys"] = 0.1
 
     d["_muon_sys"] = 0.3
     d["_phot_sys"] = 0.4
