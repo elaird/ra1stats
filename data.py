@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import math
 
 def numbers() :
     d = {}
@@ -23,6 +24,22 @@ def numbers() :
     d["mc_photoncontrol"] = (    4.4,    2.1) #MC expectation in photon control sample
     d["mc_Zinv"]          = (  2.586,  1.492) #MC expectation in photon control sample
     d["sigma_Zinv"]       = 0.4     #systematic uncertainty on Zinv background estimation
+
+    #new from Tanja
+    d["pdfUncertainty"] = 0.1
+    
+    d["_lumi_sys"] = 0.11
+    d["_accXeff_sys"] = math.sqrt(math.pow(0.12,2) - math.pow(0.11,2) )
+
+    d["_muon_sys"] = 0.3
+    d["_phot_sys"] = 0.4
+    d["_muon_cont_1"] = 0.2
+    d["_muon_cont_2"] = 0.2
+    d["_lowHT_cont_1"] = 0.2
+    d["_lowHT_cont_2"] = 0.2
+
+    d["_lowHT_sys_1"] = 0.08
+    d["_lowHT_sys_2"] = 0.14
 
     return d
 
