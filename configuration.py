@@ -6,7 +6,7 @@ def switches() :
     d["doFeldmanCousins"] = False
     d["doMCMC"] = False
 
-    d["nlo"] = False
+    d["nlo"] = True
     d["fixQcdToZero"] = True
     d["constrainParameters"] = False
 
@@ -37,13 +37,21 @@ def histoSpecs() :
     #d["sig20"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
     #d["ht"]     = {"file": "%s/v2/QCDBkgd/QcdBkgdEst_tanbeta3.root"%dir}
 
-    #v3
-    sig = "AK5Calo_PhysicsProcesses_mSUGRA_TanBeta3.root"
-    d["sig10"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
-    d["muon"]   = {"file": "%s/v3/muon/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3.root"%dir}
-    d["sig05"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
-    d["sig20"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
-    d["ht"]     = {"file": "%s/v3/ht/QcdBkgdEst_tanbeta3.root"%dir}
+    ##v3
+    #sig = "AK5Calo_PhysicsProcesses_mSUGRA_TanBeta3.root"
+    #d["sig10"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
+    #d["muon"]   = {"file": "%s/v3/muon/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3.root"%dir}
+    #d["sig05"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
+    #d["sig20"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
+    #d["ht"]     = {"file": "%s/v3/ht/QcdBkgdEst_tanbeta3.root"%dir}
+
+    #v4
+    f = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1.root"
+    d["sig10"]  = {"file": "%s/v4/had/%s"%(dir,f)}
+    d["muon"]   = {"file": "%s/v4/muonRa2/%s"%(dir,f)}
+    d["sig05"]  = {"file": "%s/v4/had/%s"%(dir,f)}
+    d["sig20"]  = {"file": "%s/v4/had/%s"%(dir,f)}
+    d["ht"]     = {"file": "%s/v4/ht/QcdBkgdEst_tanbeta3.root"%dir}
 
     for key in d :
         tag = key[-2:]
@@ -54,9 +62,9 @@ def histoSpecs() :
         d[key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
         d[key]["loYield"  ] = "m0_m12_mChi_0"
 
-    d["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
-    d["muon"]["350Dirs"] = ["mSuGraScan_350"]
-    d["muon"]["450Dirs"] = ["mSuGraScan_450"]
+    d["muon"]["beforeDir"] = "mSuGraScan_beforeAll_10"
+    d["muon"]["350Dirs"] = ["mSuGraScan_350_10"]
+    d["muon"]["450Dirs"] = ["mSuGraScan_450_10"]
 
     d["ht"]["beforeDir"] = None
     d["ht"]["250Dirs"]   = ["Reco_Bin_250_HT_300"]
