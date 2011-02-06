@@ -200,13 +200,13 @@ def printCovMat(wspace, data) :
     wspace.pdf("total_model").fitTo(data, RooFit.Constrain(constrainedParams))
 
 def constrainParams(wspace) :
-    nuispar = RooArgList(wspace.set("nuis"))
+    nuispar = r.RooArgList(wspace.set("nuis"))
     for i in range(nuispar.getSize()) :
         par = nuispar[i]
         par.setMin(max(par.getVal()-10*par.getError(), par.getMin() ) )
         par.setMax(min(par.getVal()+10*par.getError(), par.getMax() ) )
 
-        poipar = RooArgList(wspace.set("poi"))
+        poipar = r.RooArgList(wspace.set("poi"))
         for i in range(poipar.getSize()) :
             spar = poipar[i]
             spar.setMin(max(spar.getVal()-10*spar.getError(), spar.getMin() ) )
@@ -226,7 +226,7 @@ def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
         plInt.UpperLimit(wspace.var(signalVar))
     else :
         tmp_s = r.RooRealVar(wspace.var(signalVar))
-        #print "upper limit",plInt.UpperLimit(wspace.var(signalVar))
+        print "upper limit",plInt.UpperLimit(wspace.var(signalVar))
         tmp_s.setVal(d_s)
         isInInterval = plInt.IsInInterval(r.RooArgSet(tmp_s))
 
@@ -321,6 +321,9 @@ def setSignalVarsOneBin(switches, specs, strings, wspace, m0, m12, mChi, lumi, s
     wspace.var("sigma_SigEff").setVal(signal_sys);
     return d_s
 
+def d_s(y) :
+    return y["sig10_1"] + y["sig10_2"]
+
 def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_SigEff_, pdfUncertainty) :
     def yields(nlo) :
         func = nloYieldHisto if nlo else loYieldHisto
@@ -346,9 +349,6 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
         masterMinus = abs(max((max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.))
         return math.sqrt( math.pow( max(masterMinus,masterPlus)/d_s,2) + pow(init,2) + pow(pdfUncertainty, 2) )
 
-    def d_s(y) :
-        return y["sig10_1"] + y["sig10_2"]
-
     def frac(y, tag, index) :
         return y["%s_%d"%(tag, index)] / d_s(y)
 
@@ -363,8 +363,8 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
         wspace.var("lowHT_cont_1").setVal(frac(y, "ht", 1))
         wspace.var("lowHT_cont_2").setVal(frac(y, "ht", 2))
         wspace.var("signal_sys").setVal(sigma_SigEff_ if not switches["nlo"] else signalSys(sigma_SigEff_, y))
-
-    return ds
+    
+    return y
 
 def prepareCanvas(doBayesian, doMCMC) :
     c1 = r.TCanvas("c1")
@@ -375,16 +375,21 @@ def prepareCanvas(doBayesian, doMCMC) :
         c1.Divide(2)
         c1.cd(1)
 
-def writeExclusionLimitPlot(exampleHisto, outputPlotFileName, m0, m12, mChi, isInInterval) :
+def writePlots(exampleHisto, outputPlotFileName, m0, m12, mChi, isInInterval, yields = {}) :
     output = r.TFile(outputPlotFileName, "RECREATE")
     assert not output.IsZombie()
     assert exampleHisto
 
-    exclusionLimit = exampleHisto.Clone("ExclusionLimit")
-    exclusionLimit.SetTitle("ExclusionLimit;m_{0} (GeV);m_{1/2} (GeV);z-axis")
-    exclusionLimit.Reset()
-    exclusionLimit.SetBinContent(m0, m12, mChi, 2.0*isInInterval - 1.0)
-    exclusionLimit.Write()
+    name = "ExclusionLimit"
+    assert name not in yields
+    yields[name] = 2.0*isInInterval - 1.0
+
+    for name,content in yields.iteritems() :
+        h = exampleHisto.Clone(name)
+        h.SetTitle("%s;m_{0} (GeV);m_{1/2} (GeV);z-axis"%name)
+        h.Reset()
+        h.SetBinContent(m0, m12, mChi, content)
+        h.Write()
     output.Close()
 
 def taus(num, den) :
@@ -461,11 +466,11 @@ def Lepton(switches, specs, strings, inputData,
     if switches["doMCMC"] : mcmc(data, modelConfig, wspace) #use MCMCCalculator (takes about 1 min)
     
     if switches["twoHtBins"] :
-        d_s = setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"], inputData["pdfUncertainty"])
+        yields = setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"], inputData["pdfUncertainty"])
     else :
-        d_s = setSignalVarsOneBin(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"])
+        yields = setSignalVarsOneBin(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"])
         
-    isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s)
+    isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s(yields))
     
-    exampleHisto = loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"], inputData["lumi"])
-    writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval)
+    exampleHisto = loYieldHisto(specs["muon"], specs["muon"]["350Dirs"], inputData["lumi"])
+    writePlots(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval, yields)
