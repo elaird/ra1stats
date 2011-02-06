@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import ROOT as r
-import math
+import math,array
 
 def loYieldHisto(spec, dirs, lumi) :
     f = r.TFile(spec["file"])
@@ -98,10 +98,10 @@ def setupLikelihoodOneBin(wspace, switches) :
     nuisance = ["ratioBkgdEff_1","ratioBkgdEff_2","ratioSigEff","TTplusW","ZINV",
                 "QCD"][:-1 if switches["fixQcdToZero"] else None]
 
-    # for bayesian methods
-    wspace.factory("Uniform::prior_nuis({%s})"%(','.join(nuisance)))
-    wspace.factory("Uniform::prior_poi({s})")
-    wspace.factory("PROD::prior(prior_poi,prior_nuis)")
+    ## for bayesian methods
+    #wspace.factory("Uniform::prior_nuis({%s})"%(','.join(nuisance)))
+    #wspace.factory("Uniform::prior_poi({s})")
+    #wspace.factory("PROD::prior(prior_poi,prior_nuis)")
 
     #for later use (plots)
     wspace.defineSet( "poi","s")
@@ -182,7 +182,7 @@ def modelConfiguration(wspace, pdfName)  :
     modelConfig = r.RooStats.ModelConfig("Combine")
     modelConfig.SetWorkspace(wspace)
     modelConfig.SetPdf(wspace.pdf(pdfName))
-    modelConfig.SetPriorPdf(wspace.pdf("prior"))
+    #modelConfig.SetPriorPdf(wspace.pdf("prior"))
     modelConfig.SetParametersOfInterest(wspace.set("poi"))
     modelConfig.SetNuisanceParameters(wspace.set("nuis"))
     getattr(wspace,"import")(modelConfig)
@@ -224,7 +224,7 @@ def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
         plInt.UpperLimit(wspace.var(signalVar))
     else :
         tmp_s = r.RooRealVar(wspace.var(signalVar))
-        print "upper limit",plInt.UpperLimit(wspace.var(signalVar))
+        #print "upper limit",plInt.UpperLimit(wspace.var(signalVar))
         tmp_s.setVal(d_s)
         isInInterval = plInt.IsInInterval(r.RooArgSet(tmp_s))
 
@@ -290,12 +290,7 @@ def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
 #  //MCMC interval on s = [15.7628, 84.7266]
 #}
 
-def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_SigEff_) :
-    signal = None
-    muon   = None
-    sys05  = None
-    sys2   = None
-
+def setSignalVarsOneBin(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_SigEff_) :
     if switches["nlo"] :
         signal = nloYieldHisto(specs["sig10"], specs["sig10"]["350Dirs"] + specs["sig10"]["450Dirs"],lumi)
         muon   = nloYieldHisto(specs["muon"],  specs["muon"]["350Dirs"]  + specs["muon"]["450Dirs"], lumi)
@@ -313,8 +308,6 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
     if d_s>0.0 : tau_s_muon = d_muon / d_s
 
     if switches["nlo"] :
-        assert sys05
-        assert sys2
         d_s_sys05 = sys05.GetBinContent(m0, m12, mChi)#the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
         d_s_sys2  = sys2.GetBinContent(m0, m12, mChi)#the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
         masterPlus =  abs(max((max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.))
@@ -324,8 +317,48 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
     #set background contamination
     wspace.var("tau_s_mu").setVal(tau_s_muon);
     wspace.var("sigma_SigEff").setVal(signal_sys);
-
     return d_s
+
+def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_SigEff_, pdfUncertainty) :
+    def yields(nlo) :
+        func = nloYieldHisto if nlo else loYieldHisto
+        out = {}
+        for item in ["sig10", "sig05", "sig20", "muon"] :
+            for tag,dir in zip(["1", "2"],["350Dirs", "450Dirs"]) :
+                histo = func(specs[item], specs[item][dir], lumi)
+                if histo :
+                    out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+
+        for item in ["ht"] :
+            for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
+                histo = func(specs[item], specs[item][dir], lumi)
+                if histo :
+                    out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+        return out
+
+    def signalSys(init, y) :
+        d_s       = y["sig10_1"]+y["sig10_2"]
+        d_s_sys05 = y["sig05_1"]+y["sig05_2"]
+        d_s_sys2  = y["sig20_1"]+y["sig20_2"]
+        masterPlus =  abs(max((max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.))
+        masterMinus = abs(max((max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.))
+        return math.sqrt( math.pow( max(masterMinus,masterPlus)/d_s,2) + pow(init,2) + pow(pdfUncertainty, 2) )
+
+    def frac(y, tag, index) :
+        return y["%s_%d"%(tag, index)] / (y["sig10_1"] + y["sig10_2"])
+
+    y = yields(switches["nlo"])
+
+    wspace.var("BR1").setVal(frac(y, "sig10", 1))
+    wspace.var("BR2").setVal(frac(y, "sig10", 2))
+     
+    wspace.var("muon_cont_1").setVal(frac(y, "muon", 1))
+    wspace.var("muon_cont_2").setVal(frac(y, "muon", 2))
+    wspace.var("lowHT_cont_1").setVal(frac(y, "ht", 1))
+    wspace.var("lowHT_cont_2").setVal(frac(y, "ht", 2))
+    wspace.var("signal_sys").setVal(sigma_SigEff_ if not switches["nlo"] else signalSys(sigma_SigEff_, y))
+
+    return y["sig10_1"] + y["sig10_2"]
 
 def prepareCanvas(doBayesian, doMCMC) :
     c1 = r.TCanvas("c1")
@@ -365,11 +398,50 @@ def Lepton(switches, specs, strings, inputData,
         data = importVarsOneBin( wspace, inputData, switches, strings["dataName"])
         modelConfig = modelConfiguration( wspace, strings["pdfName"])
     else :
-        pass
-    ##RobsPdfFactory f;
-    ##f.AddModel_Lin_Combi(s, signal_sys, muon_sys, phot_sys, 2, wspace, strings["pdfName"], strings["signalVar"])
-    ##f.AddDataSideband_Combi(bkgd_sideband, bkgd_bar_sideband, 4, muonMeas, photMeas, tau_muon, tau_phot, 2, wspace, strings["dataName"])
-    ##modelConfig = modelConfiguration(wspace, strings["pdfName"])
+        r.gSystem.Load("SlimPdfFactory_C.so")
+        r.AddModel_Lin_Combi(array.array('d',inputData["sFrac"]),
+                             inputData["_lumi_sys"],
+                             inputData["_accXeff_sys"],
+
+                             inputData["_muon_sys"],
+                             inputData["_phot_sys"],
+
+                             inputData["_lowHT_sys_1"],
+                             inputData["_lowHT_sys_2"],
+
+                             inputData["_muon_cont_1"],
+                             inputData["_muon_cont_2"],
+
+                             inputData["_lowHT_cont_1"],
+                             inputData["_lowHT_cont_2"],
+
+                             wspace,
+                             strings["pdfName"],
+                             strings["signalVar"],
+                             )
+        def taus(num, den) :
+            assert len(num)==len(den)
+            out = array.array('d', [0.0]*len(num))
+            for i in range(len(out)) :
+                out[i] = num[i]/den[i]
+            return out
+            
+        r.AddDataSideband_Combi( array.array('d', inputData["n_htcontrol"]),
+                                 array.array('d', inputData["n_bar_htcontrol"]),
+                                 len(inputData["n_bar_htcontrol"]),
+
+                                 array.array('d', inputData["n_muoncontrol"]),
+                                 array.array('d', inputData["n_photoncontrol"]),
+
+                                 taus(inputData["mc_muoncontrol"], inputData["mc_ttW"]),
+                                 taus(inputData["mc_photoncontrol"], inputData["mc_Zinv"]),
+                                 
+                                 len(inputData["n_muoncontrol"]),
+                                 wspace,
+                                 strings["pdfName"]
+                                 )
+
+    modelConfig = modelConfiguration(wspace, strings["pdfName"])
 
     if switches["writeWorkspaceFile"] : wspace.writeToFile(strings["outputWorkspaceFileName"])
     if switches["printCovarianceMatrix"] : printCovMat(wspace, data)
@@ -383,7 +455,11 @@ def Lepton(switches, specs, strings, inputData,
     if switches["doBayesian"] : bayesian(data, modelConfig, wspace) #use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
     if switches["doMCMC"] : mcmc(data, modelConfig, wspace) #use MCMCCalculator (takes about 1 min)
     
-    d_s = setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"])
+    if switches["twoHtBins"] :
+        d_s = setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"], inputData["pdfUncertainty"])
+    else :
+        d_s = setSignalVarsOneBin(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"])
+        
     isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s)
     
     exampleHisto = loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"], inputData["lumi"])
