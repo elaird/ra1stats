@@ -3,8 +3,7 @@ Correctness
 lolargs
 include Rob's method
 bayesian switch in setupLikelihood and modelConfig
-fix nlo yields
-verify high ht signal contamination
+350 --> 350 + 450 for example
 
 Consistency
 -----------
@@ -13,7 +12,6 @@ Consistency
 
 Upgrades
 --------
-yield plots
 tt etc map
 pair-wise merge
 tempfile for output
