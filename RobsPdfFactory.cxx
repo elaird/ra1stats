@@ -21,8 +21,20 @@
 #include "RooMsgService.h"
 #include "RooLognormal.h"
 #include "RobsPdfFactory.hh"
-
 #include "RooAddPdf.h"
+
+#include "RooStats/ProfileLikelihoodCalculator.h"
+#include "RooStats/LikelihoodInterval.h"
+#include "RooStats/LikelihoodIntervalPlot.h"
+#include "RooStats/BayesianCalculator.h"
+#include "RooStats/MCMCCalculator.h"
+#include "RooStats/MCMCInterval.h"
+#include "RooStats/MCMCIntervalPlot.h"
+#include "RooStats/ProposalHelper.h"
+#include "RooStats/SimpleInterval.h"
+#include "RooStats/FeldmanCousins.h"
+#include "RooStats/PointSetInterval.h"
+#include "RooStats/HypoTestResult.h"
 
 using namespace RooStats;
 using namespace RooFit;
