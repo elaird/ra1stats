@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import ROOT as r
-import math,array
+import math,array,cPickle
 
 def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f = r.TFile(spec["file"])
@@ -392,6 +392,15 @@ def writePlots(exampleHisto, outputPlotFileName, m0, m12, mChi, isInInterval, yi
         h.Write()
     output.Close()
 
+def writeNumbers(outputPlotFileName, m0, m12, mChi, isInInterval, yields = {}) :
+    name = "ExclusionLimit"
+    assert name not in yields
+    yields[name] = 2.0*isInInterval - 1.0
+
+    outFile = open(outputPlotFileName, "w")
+    cPickle.dump([m0, m12, mChi, yields], outFile)
+    outFile.close()
+
 def taus(num, den) :
     assert len(num)==len(den)
     out = array.array('d', [0.0]*len(num))
@@ -473,4 +482,5 @@ def Lepton(switches, specs, strings, inputData,
     isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s(yields))
     
     exampleHisto = loYieldHisto(specs["muon"], specs["muon"]["350Dirs"], inputData["lumi"])
-    writePlots(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval, yields)
+    #writePlots(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval, yields)
+    writeNumbers(strings["plotFileName"], m0, m12, mChi, isInInterval, yields)
