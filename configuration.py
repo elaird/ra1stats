@@ -14,7 +14,7 @@ def switches() :
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
 
-    d["twoHtBins"] = False
+    d["twoHtBins"] = True
     
     return d
 
