@@ -48,7 +48,7 @@ def histoSpecs() :
     #v4
     f = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1.root"
     d["sig10"]  = {"file": "%s/v4/had/%s"%(dir,f)}
-    d["muon"]   = {"file": "%s/v4/muonRa2/%s"%(dir,f)}
+    d["muon"]   = {"file": "%s/v4/muon/%s"%(dir,f)}
     d["sig05"]  = {"file": "%s/v4/had/%s"%(dir,f)}
     d["sig20"]  = {"file": "%s/v4/had/%s"%(dir,f)}
     d["ht"]     = {"file": "%s/v4/ht/QcdBkgdEst_tanbeta3.root"%dir}
@@ -93,13 +93,14 @@ def stringsNoArgs() :
     d["plotStem"]          = "%s/Significance"%d["outputDir"]
     d["workspaceStem"]     = "%s/Combine"%d["outputDir"]
     d["logStem"]           = "%s/job"%d["logDir"]
+    d["mergedFile"]        = "%s/Significance_merged.root"%d["outputDir"]
     return d
 
 def strings(xBin, yBin, zBin) :
     d = stringsNoArgs()
     #output name options
     d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
-    d["plotFileName"]      = "%s_%s.root"%(d["plotStem"], d["tag"])
+    d["plotFileName"]      = "%s_%s.pickled"%(d["plotStem"], d["tag"])
     d["workspaceFileName"] = "%s_%s.root"%(d["workspaceStem"], d["tag"])
     return d
 
