@@ -2,7 +2,7 @@
 import ROOT as r
 import math,array
 
-def loYieldHisto(spec, dirs, lumi) :
+def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f = r.TFile(spec["file"])
     assert not f.IsZombie()
 
@@ -19,7 +19,7 @@ def loYieldHisto(spec, dirs, lumi) :
     f.Close()
     return h
 
-def nloYieldHisto(spec, dirs, lumi) :
+def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     def numerator(name) :
         out = None
         for dir in dirs :
@@ -30,13 +30,14 @@ def nloYieldHisto(spec, dirs, lumi) :
         return out
 
     f = r.TFile(spec["file"])
+    beforeFile = f if not beforeSpec else r.TFile(beforeSpec["file"])
+    beforeDir = spec["beforeDir"] if not beforeSpec else beforeSpec["beforeDir"]
     if f.IsZombie() : return None
 
     all = None
     for name in ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"] :
-        den = f.Get("%s/m0_m12_%s_5"%(spec["beforeDir"], name))
         num = numerator(name)
-        num.Divide(den)
+        num.Divide(beforeFile.Get("%s/m0_m12_%s_5"%(beforeDir, name)))
         
         if all is None :
             all = num.Clone("%s_%s_%s"%(spec["file"], dirs[0], name))
@@ -46,6 +47,7 @@ def nloYieldHisto(spec, dirs, lumi) :
     all.SetDirectory(0)
     all.Scale(lumi)
     f.Close()
+    if beforeSpec : beforeFile.Close()
     return all
 
 def setupLikelihoodOneBin(wspace, switches) :
@@ -331,7 +333,7 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
 
         for item in ["ht"] :
             for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
-                histo = func(specs[item], specs[item][dir], lumi)
+                histo = func(specs[item], specs[item][dir], lumi, beforeSpec = specs["sig10"])
                 if histo :
                     out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
         return out
@@ -344,21 +346,25 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
         masterMinus = abs(max((max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.))
         return math.sqrt( math.pow( max(masterMinus,masterPlus)/d_s,2) + pow(init,2) + pow(pdfUncertainty, 2) )
 
+    def d_s(y) :
+        return y["sig10_1"] + y["sig10_2"]
+
     def frac(y, tag, index) :
-        return y["%s_%d"%(tag, index)] / (y["sig10_1"] + y["sig10_2"])
+        return y["%s_%d"%(tag, index)] / d_s(y)
 
     y = yields(switches["nlo"])
+    ds = d_s(y)
+    if ds>0.0 :
+        wspace.var("BR1").setVal(frac(y, "sig10", 1))
+        wspace.var("BR2").setVal(frac(y, "sig10", 2))
+        
+        wspace.var("muon_cont_1").setVal(frac(y, "muon", 1))
+        wspace.var("muon_cont_2").setVal(frac(y, "muon", 2))
+        wspace.var("lowHT_cont_1").setVal(frac(y, "ht", 1))
+        wspace.var("lowHT_cont_2").setVal(frac(y, "ht", 2))
+        wspace.var("signal_sys").setVal(sigma_SigEff_ if not switches["nlo"] else signalSys(sigma_SigEff_, y))
 
-    wspace.var("BR1").setVal(frac(y, "sig10", 1))
-    wspace.var("BR2").setVal(frac(y, "sig10", 2))
-     
-    wspace.var("muon_cont_1").setVal(frac(y, "muon", 1))
-    wspace.var("muon_cont_2").setVal(frac(y, "muon", 2))
-    wspace.var("lowHT_cont_1").setVal(frac(y, "ht", 1))
-    wspace.var("lowHT_cont_2").setVal(frac(y, "ht", 2))
-    wspace.var("signal_sys").setVal(sigma_SigEff_ if not switches["nlo"] else signalSys(sigma_SigEff_, y))
-
-    return y["sig10_1"] + y["sig10_2"]
+    return ds
 
 def prepareCanvas(doBayesian, doMCMC) :
     c1 = r.TCanvas("c1")
