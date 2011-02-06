@@ -357,6 +357,9 @@ void SplitSignal(Int_t method
      profileLikelihood(modelConfig,wspace);
 
      //  feldmanCousins(modelConfig,wspace);
+
+
+     /*
    
    TString outputPlotName = "Significance_LO_observed_tanBeta10.root";
   
@@ -518,7 +521,7 @@ void SplitSignal(Int_t method
 
    output->Write();
   output->Close();
-   
+     */
 
   delete wspace;
   

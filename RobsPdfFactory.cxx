@@ -153,6 +153,8 @@ void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,
 
   TList likelihoodFactors;
 
+  TList nosignal_likelihoodFactors;
+
 
 
 
@@ -343,7 +345,39 @@ void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,
   RooPoisson* bkgd_poisson_1_bar = new RooPoisson("bkgd_poisson_1_bar","bkgd_poisson_1_bar",*meas_bar_1,*bkgd_bar_1);
   RooPoisson* bkgd_poisson_2_bar = new RooPoisson("bkgd_poisson_2_bar","bkgd_poisson_2_bar",*meas_bar_2,*bkgd_bar_2);
 
+  //nosignal cont
+  RooPoisson* sig_poisson_1_nosig = new RooPoisson("sig_poisson_1_nosig","sig_poisson_1_nosig",*meas_3,*bkgd_3);
+  RooPoisson* sig_poisson_2_nosig = new RooPoisson("sig_poisson_2_nosig","sig_poisson_2_nosig",*meas_4,*bkgd_4);
 
+  RooPoisson* bkgd_poisson_1_nosig = new RooPoisson("bkgd_poisson_1_nosig","bkgd_poisson_1_nosig",*meas_1,*bkgd_1);
+  RooPoisson* bkgd_poisson_2_nosig = new RooPoisson("bkgd_poisson_2_nosig","bkgd_poisson_2_nosig",*meas_2,*bkgd_2);
+
+  RooPoisson* muonRegion_1_nosig = new RooPoisson("muonRegion_1_nosig","muonRegion_1_nosig",*muonMeas_1,*ttWTau_1);
+  RooPoisson* muonRegion_2_nosig = new RooPoisson("muonRegion_2_nosig","muonRegion_2_nosig",*muonMeas_2,*ttWTau_2);
+
+  
+  nosignal_likelihoodFactors.Add(sys_lowHT_Cons_1);
+  nosignal_likelihoodFactors.Add(sys_lowHT_Cons_2);
+ 
+  nosignal_likelihoodFactors.Add(sys_ttW_Cons);
+  nosignal_likelihoodFactors.Add(sys_Zinv_Cons);
+  nosignal_likelihoodFactors.Add(sys_signal_Cons);
+
+  nosignal_likelihoodFactors.Add(muonRegion_1_nosig);
+  nosignal_likelihoodFactors.Add(photRegion_1);
+  
+  nosignal_likelihoodFactors.Add(muonRegion_2_nosig);
+  nosignal_likelihoodFactors.Add(photRegion_2);
+
+  nosignal_likelihoodFactors.Add(sig_poisson_1_nosig);
+  nosignal_likelihoodFactors.Add(sig_poisson_2_nosig);
+  nosignal_likelihoodFactors.Add(bkgd_poisson_1_nosig);
+  nosignal_likelihoodFactors.Add(bkgd_poisson_2_nosig);
+
+  nosignal_likelihoodFactors.Add(sig_poisson_1_bar);
+  nosignal_likelihoodFactors.Add(sig_poisson_2_bar);
+  nosignal_likelihoodFactors.Add(bkgd_poisson_1_bar);
+  nosignal_likelihoodFactors.Add(bkgd_poisson_2_bar);
  
   //add likelihood factors
   likelihoodFactors.Add(sys_lowHT_Cons_1);
@@ -372,11 +406,12 @@ void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,
   RooArgSet likelihoodFactorSet(likelihoodFactors);
   RooProdPdf joint(pdfName,"joint",likelihoodFactorSet);
 
+  RooArgSet nosignal_likelihoodFactorSet(nosignal_likelihoodFactors);
+  RooProdPdf nosignal_joint("modelBkg","nosignal_joint",nosignal_likelihoodFactorSet);
+
  
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
-
-
 
   ws->import(*muonMeas_1);
   ws->import(*photMeas_1);
@@ -391,13 +426,15 @@ void RobsPdfFactory::AddModel_Lin_Combi(Double_t* BR,
   ws->import(*meas_bar_3);
   ws->import(*meas_bar_4);
   ws->import(joint);
+
+  ws->import(nosignal_joint);
   
   // ws->import(poi);
   // ws->import(nuis);
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
 
-  ws->defineSet("nuis","signal_sys,sys_ttW,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2");  
+  ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2");  
 
    ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3,meas_bar_4,muonMeas_1,muonMeas_2,photMeas_1,photMeas_2");
    ws->defineSet("poi",muName);
