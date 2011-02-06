@@ -4,6 +4,7 @@ lolargs
 include Rob's method
 bayesian switch in setupLikelihood and modelConfig
 fix nlo yields
+verify high ht signal contamination
 
 Consistency
 -----------
