@@ -51,8 +51,8 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
 }
 
 void AddModel_Lin_Combi(Double_t* BR,
-			Double_t _lumi_sys,
-			Double_t _accXeff_sys,
+			Double_t _lumi, Double_t _lumi_sys,
+			Double_t _accXeff, Double_t _accXeff_sys,
 			Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
 			Double_t _muon_cont_1,Double_t _muon_cont_2,
 			Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,
@@ -86,7 +86,8 @@ void AddModel_Lin_Combi(Double_t* BR,
 
   //define common variables
   RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
-
+  RooRealVar* lumi = new RooRealVar("lumi","lumi",_lumi);
+  RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff);
   
   Double_t d_signal_sys = sqrt( pow(_lumi_sys,2) + pow(_accXeff_sys,2));
 
@@ -98,8 +99,8 @@ void AddModel_Lin_Combi(Double_t* BR,
   RooRealVar* BR1 = new RooRealVar("BR1","BR1",BR[0]);
   RooRealVar* BR2 = new RooRealVar("BR2","BR2",BR[1]);
 
-  RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*masterSignal,*BR1,*signal_sys));
-  RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*masterSignal,*BR2,*signal_sys));
+  RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*lumi,*accXeff,*masterSignal,*BR1,*signal_sys));
+  RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*lumi,*accXeff,*masterSignal,*BR2,*signal_sys));
    
 
   //Easy variables for low HT inclusive method
@@ -334,7 +335,7 @@ void AddModel_Lin_Combi(Double_t* BR,
   ws->import(*meas_bar_4);
   ws->import(joint);
 
-  ws->import(nosignal_joint);
+  // ws->import(nosignal_joint);
   
   // ws->import(poi);
   // ws->import(nuis);
