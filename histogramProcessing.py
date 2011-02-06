@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import collections
+import collections,cPickle
 import configuration as conf
 import data
 import ROOT as r
@@ -25,21 +25,43 @@ def checkHistoBinning() :
     for axis,values in properties(handles()).iteritems() :
         assert len(set(values))==1,"The %s binnings do not match: %s"%(axis, str(values))
     
-def fullPoints() :
-    def loYield(spec, dirs) :
-        out = None
-        f = r.TFile(spec["file"])
-        for iDir,dir in enumerate(spec[dirs]) :
-            name = "%s_%s_%s"%(spec["file"], dir, spec["loYield"])
-            h = f.Get("%s/%s"%(dir, spec["loYield"]))
-            if not iDir :
-                out = h.Clone(name)
-                out.SetDirectory(0)
-            else :
-                out.Add(h)
-        f.Close()
-        return out
+def loYield(spec, dirs) :
+    out = None
+    f = r.TFile(spec["file"])
+    for iDir,dir in enumerate(spec[dirs]) :
+        name = "%s_%s_%s"%(spec["file"], dir, spec["loYield"])
+        h = f.Get("%s/%s"%(dir, spec["loYield"]))
+        if not iDir :
+            out = h.Clone(name)
+            out.SetDirectory(0)
+        else :
+            out.Add(h)
+    f.Close()
+    return out
 
+def mergePickledFiles() :
+    example = loYield(conf.histoSpecs()["sig10"], "350Dirs")
+    histos = {}
+    for point in points() :
+        inFile = open(conf.strings(*point)["plotFileName"])
+        stuff = cPickle.load(inFile)
+        inFile.close()
+        bin = tuple(stuff[:3])
+        d = stuff[3]
+
+        for key,value in d.iteritems() :
+            if key not in histos :
+                histos[key] = example.Clone(key)
+                histos[key].Reset()
+            histos[key].SetBinContent(bin[0], bin[1], bin[2], value)
+
+    print histos
+    f = r.TFile(conf.stringsNoArgs()["mergedFile"], "RECREATE")
+    for histo in histos.values() :
+        histo.Write()
+    f.Close()
+
+def fullPoints() :
     out = []
     h = loYield(conf.histoSpecs()["sig10"], "350Dirs")
     for iBinX in range(1, 1+h.GetNbinsX()) :

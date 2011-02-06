@@ -8,11 +8,10 @@ def opts() :
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch", dest = "batch", default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
     parser.add_option("--local", dest = "local", default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
-    parser.add_option("--merge", dest = "merge", default = None,  metavar = "N", help = "merge job output using N temporary slices (N>0)")
+    parser.add_option("--merge", dest = "merge", default = False, action  = "store_true", help = "profile merge job output")    
     options,args = parser.parse_args()
     assert options.batch==None or options.local==None,"Choose only one of (batch, local)"
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
-    assert options.merge==None or int(options.merge)>0,"N must be greater than 0"
     return options
 ############################################
 def jobCmds(nSlices = None, useCompiled = True) :
@@ -52,7 +51,7 @@ def mkdirs() :
     utils.mkdir(s["logDir"])
     utils.mkdir(s["outputDir"])
 ############################################
-def merge(nSlices) :
+def mergeRootFiles(nSlices) :
     def cleanUp(stderr, files) :
         if stderr :
             print "hadd had this stderr: %s"%stderr
@@ -97,4 +96,4 @@ utils.compile("SlimPdfFactory.C")
 mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
-if options.merge : merge(int(options.merge))
+if options.merge : hp.mergePickledFiles()
