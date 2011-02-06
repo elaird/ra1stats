@@ -48,145 +48,130 @@ def nloYieldHisto(spec, dirs, lumi) :
     f.Close()
     return all
 
-def workspace() : return r.RooWorkspace("Combine")
-
 def setupLikelihoodOneBin(wspace, switches) :
-    #likelihood for the signal region (Poisson to include the statistical uncertainty)
-    if not switches["fixQcdToZero"] :
-        wspace.factory("Poisson::signal(n_signal,sum::splusb(sum::b(prod::ttW(ratioBkgdEff_1[1.0,0.,5.],TTplusW),QCD,prod::Zinv(ratioBkgdEff_2[1.0,0.,5.],ZINV)),prod::SigUnc(s,ratioSigEff[1,0.3,1.9])))")
-    else :
-        wspace.factory("Poisson::signal(n_signal,sum::splusb(sum::b(prod::ttW(ratioBkgdEff_1[1.0,0.,5.],TTplusW),prod::Zinv(ratioBkgdEff_2[1.0,0.,5.],ZINV)),prod::SigUnc(s,ratioSigEff[1,0.3,1.9])))")
+    
+    def makeSignalModel() :
+        splusb = "sum::splusb(%s,%s)" % ("prod::SigUnc(s,ratioSigEff[1,0.3,1.9])",
+                                         "sum::b(%s)" % (','.join(["prod::ttW(ratioBkgdEff_1[1.0,0.,5.],TTplusW)",
+                                                                   "prod::Zinv(ratioBkgdEff_2[1.0,0.,5.],ZINV)",
+                                                                   "QCD"][:-1 if switches["fixQcdToZero"] else None])))
+        wspace.factory("Poisson::signal(%s,%s)" % ("n_signal",splusb))
+    
+        wspace.factory("Gaussian::sigConstraint(1.,ratioSigEff,sigma_SigEff)")  # Systematic: signal acceptance*efficiency*luminosity
+        wspace.factory("Gaussian::mcCons_ttW(1.,ratioBkgdEff_1,sigma_ttW)")     # Systematic:  ttw background estimate
+        wspace.factory("Gaussian::mcCons_Zinv(1.,ratioBkgdEff_2,sigma_Zinv)")   # Systematic: Zinv background estimate
 
-    if not switches["fixQcdToZero"] :
+        wspace.factory("PROD::signal_model(%s,%s,%s,%s)" % ("signal","sigConstraint","mcCons_ttW","mcCons_Zinv"))
+
+    def makePhotonMuonControls() :
+        wspace.factory("Poisson::photoncontrol(%s,%s)" % ("n_photoncontrol",
+                                                          "prod::sideband_photon(tau_photon,ZINV)"))
+
+        wspace.factory("Poisson::muoncontrol(%s,%s)" % ("n_muoncontrol",
+                                                        "sum::MuSPlusB(%s,%s)"%("prod::TTWside(tau_mu,TTplusW)",
+                                                                                "prod::smu(tau_s_mu[0.001],s)") ))
+    def makeQcdModel() :
+        if switches["fixQcdToZero"] : return
+        wspace.factory("Gaussian::xConstraint(1.,f,sigma_x)") # Systematic: uncertainty on assumption that rhoprime = rho*rho
         #likelihood for the low HT and/or low alphaT auxiliary measurements
         wspace.factory("Poisson::bar_signal(n_bar_signal,bbar)") #alphaT < 0.55 && HT > 350 GeV
         wspace.factory("Poisson::control_1(n_control_1,prod::taub(tau,b,rho))") #alphaT > 0.55 && 300 < HT < 350 GeV
         wspace.factory("Poisson::bar_control_1(n_bar_control_1,prod::taubar(tau,bbar))") #alphaT < 0.55 && 300 < HT << 350 GeV
         wspace.factory("Poisson::control_2(n_control_2,prod::taub_2(tauprime,b,prod::rhoprime(f[1.,0.,2.],rho,rho)))") #alphaT > 0.55 && 250 < HT < 300 GeV
         wspace.factory("Poisson::bar_control_2(n_bar_control_2,prod::taubar_2(tauprime,bbar))") #alphaT < 0.55 && 250 < HT < 300 GeV
-        #pdf for the systeamtic uncertainty on the assumption that rhoprime = rho*rho
-        wspace.factory("Gaussian::xConstraint(1.,f,sigma_x)")
-        wspace.factory("PROD::QCD_model(bar_signal,control_1,bar_control_1,control_2,bar_control_2,xConstraint)")
 
-    #gaussians to include the systematic uncertainties on the background estimations and the signal acceptance*efficiency*luminosity
-    wspace.factory("Gaussian::sigConstraint(1.,ratioSigEff,sigma_SigEff)");
-    wspace.factory("Gaussian::mcCons_ttW(1.,ratioBkgdEff_1,sigma_ttW)"); 
-    wspace.factory("Gaussian::mcCons_Zinv(1.,ratioBkgdEff_2,sigma_Zinv)");
-    wspace.factory("PROD::signal_model(signal,sigConstraint,mcCons_ttW,mcCons_Zinv)");
+        wspace.factory("PROD::QCD_model(%s)" % (','.join(["xConstraint","bar_signal",
+                                                          "control_1",  "bar_control_1",
+                                                          "control_2",  "bar_control_2"]) ) )
+    makeSignalModel()
+    makePhotonMuonControls()
+    makeQcdModel()
 
-    #set pdf for muon control 
-    wspace.factory("Poisson::muoncontrol(n_muoncontrol,sum::MuSPlusB(prod::TTWside(tau_mu,TTplusW),prod::smu(tau_s_mu[0.001],s)))");
+    wspace.factory("PROD::total_model(%s)" % (','.join(["muoncontrol", "signal_model",
+                                                        "photoncontrol",  "QCD_model"][:-1 if switches["fixQcdToZero"] else None])))
 
-    #set pdf for photon control
-    wspace.factory("Poisson::photoncontrol(n_photoncontrol,prod::sideband_photon(tau_photon,ZINV))");
 
-    #combine the three
-    if not switches["fixQcdToZero"] :
-        wspace.factory("PROD::total_model(signal_model,QCD_model,muoncontrol,photoncontrol)")
-    else :
-        wspace.factory("PROD::total_model(signal_model,muoncontrol,photoncontrol)")
-        
-    #to use for bayesian methods
+    observe = ["n_signal","n_muoncontrol","n_photoncontrol",
+               "n_bar","n_bar_signal","n_control_1","n_bar_control_1","n_control_2","n_bar_control_2"
+               ][:3 if switches["fixQcdToZero"] else None]
+
+    nuisance = ["ratioBkgdEff_1","ratioBkgdEff_2","ratioSigEff","TTplusW","ZINV",
+                "QCD"][:-1 if switches["fixQcdToZero"] else None]
+
+    # for bayesian methods
+    wspace.factory("Uniform::prior_nuis({%s})"%(','.join(nuisance)))
     wspace.factory("Uniform::prior_poi({s})")
-    if not switches["fixQcdToZero"] :
-        wspace.factory("Uniform::prior_nuis({TTplusW,QCD,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff})")
-    else :
-        wspace.factory("Uniform::prior_nuis({TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff})")
-
     wspace.factory("PROD::prior(prior_poi,prior_nuis)")
 
-    #define some sets to use later (plots)
-    wspace.defineSet("poi","s")
-    if not switches["fixQcdToZero"] :
-        wspace.defineSet("obs","n_signal,n_muoncontrol,n_photoncontrol,n_bar_signal,n_control_1,n_bar_control_1,n_control_2,n_bar_control_2")
-        wspace.defineSet("nuis","TTplusW,QCD,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff")
-    else :
-        wspace.defineSet("obs","n_signal,n_muoncontrol,n_photoncontrol")
-        wspace.defineSet("nuis","TTplusW,ZINV,ratioBkgdEff_1,ratioBkgdEff_2,ratioSigEff")
-
+    #for later use (plots)
+    wspace.defineSet( "poi","s")
+    wspace.defineSet( "obs",','.join(observe))
+    wspace.defineSet("nuis",','.join(nuisance))
+    return
 
 def importVarsOneBin(wspace, inputData, switches, dataName) :
+    for item in ["sigma_Zinv","sigma_ttW","sigma_x","sigma_SigEff"] :
+        globals()[item] = inputData[item]  # maybe use a class?
+        
+    for item in ["n_signal",
+                 "n_muoncontrol",  "mc_muoncontrol",  "mc_ttW",
+                 "n_photoncontrol","mc_photoncontrol","mc_Zinv"] :
+        globals()[item] = sum(inputData[item][:2]) # maybe use a class?
+
+    tau_mu     = mc_muoncontrol   / mc_ttW    
+    tau_photon = mc_photoncontrol / mc_Zinv
+    
+    n_control_2,     n_control_1     = inputData["n_htcontrol"][:2]
+    n_bar_control_2, n_bar_control_1 = inputData["n_bar_htcontrol"][:2]
+    n_bar_signal = sum(inputData["n_bar_htcontrol"][2:4])
+
     def wimport(name = None, value = None, lower = None, upper = None) :
-        assert name
-        assert value
-        if lower is None and upper is None :
-            getattr(wspace, "import")(r.RooRealVar(name, name, value))
-        else :
-            assert lower!=None
-            assert upper!=None
-            getattr(wspace, "import")(r.RooRealVar(name, name, value, lower, upper))
-            
-    n_signal_ = inputData["n_signal"][0]+inputData["n_signal"][1]
-    n_bar_signal_ = inputData["n_bar_htcontrol"][2]+inputData["n_bar_htcontrol"][3]
+        assert name and value!=None
+        assert (lower==None==upper) or (lower!=None!=upper)
+        if lower==upper==None : getattr(wspace, "import")(r.RooRealVar(name, name, value))
+        else :                  getattr(wspace, "import")(r.RooRealVar(name, name, value, lower, upper))
 
-    n_muoncontrol_ = inputData["n_muoncontrol"][0]+inputData["n_muoncontrol"][1]
-    tau_mu_ = (inputData["mc_muoncontrol"][0]+inputData["mc_muoncontrol"][1]) / (inputData["mc_ttW"][0]+inputData["mc_ttW"][1]);
-    sigma_ttW_ = inputData["sigma_ttW"]
-    
-    n_photoncontrol_ = inputData["n_photoncontrol"][0]+inputData["n_photoncontrol"][1];
-    tau_photon_ = (inputData["mc_photoncontrol"][0]+inputData["mc_photoncontrol"][1]) / (inputData["mc_Zinv"][0]+inputData["mc_Zinv"][1]);
-    sigma_Zinv_ = inputData["sigma_Zinv"]
-    
-    n_control_1_ = inputData["n_htcontrol"][1]
-    n_control_2_ = inputData["n_htcontrol"][0]
-    n_bar_control_1_ = inputData["n_bar_htcontrol"][1]
-    n_bar_control_2_ = inputData["n_bar_htcontrol"][0]
-    sigma_x_ = inputData["sigma_x"]
+    wimport("n_signal", n_signal, n_signal/10, n_signal*10)
+    wimport("n_muoncontrol", n_muoncontrol, 0.001, n_muoncontrol*10)
+    wimport("n_photoncontrol", n_photoncontrol, 0.001, n_photoncontrol*10)
 
-    sigma_SigEff_ = inputData["sigma_SigEff"]
-
-    wimport("n_signal", n_signal_, n_signal_/10, n_signal_*10)
-    wimport("n_muoncontrol", n_muoncontrol_, 0.001, n_muoncontrol_*10)
-    wimport("n_photoncontrol", n_photoncontrol_, 0.001, n_photoncontrol_*10)
-
-    wimport("n_bar_signal", n_bar_signal_, n_bar_signal_/10, r.RooNumber.infinity())
-    wimport("n_control_1", n_control_1_, 0.001, r.RooNumber.infinity())
-    wimport("n_bar_control_1", n_bar_control_1_, n_bar_control_1_/10, r.RooNumber.infinity())
-    wimport("n_control_2", n_control_2_, n_control_2_/10, r.RooNumber.infinity())
-    wimport("n_bar_control_2", n_bar_control_2_, n_bar_control_2_/10,r.RooNumber.infinity())
+    wimport("n_bar_signal", n_bar_signal, n_bar_signal/10, r.RooNumber.infinity())
+    wimport("n_control_1", n_control_1, 0.001, r.RooNumber.infinity())
+    wimport("n_bar_control_1", n_bar_control_1, n_bar_control_1/10, r.RooNumber.infinity())
+    wimport("n_control_2", n_control_2, n_control_2/10, r.RooNumber.infinity())
+    wimport("n_bar_control_2", n_bar_control_2, n_bar_control_2/10,r.RooNumber.infinity())
 
     #Parameter of interest; the number of (SUSY) signal events above the Standard Model background
-    wimport("s", 2.5, 0.0001, n_signal_*3) #expected numer of (SUSY) signal events above background 
+    wimport("s", 2.5, 0.0001, n_signal*3) #expected numer of (SUSY) signal events above background
 
     #Nuisance parameters
-    wimport("TTplusW", n_signal_/2, 0.01, n_signal_*10)#expected tt+W background in signal-like region
-    wimport("ZINV", n_signal_/2, 0.001, n_signal_*10)#expected Zinv background in signal-like region
-    wimport("QCD", 0.001, 0, n_signal_*10)#expected QCD background in signal-like region
+    wimport("TTplusW", n_signal/2, 0.01, n_signal*10)#expected tt+W background in signal-like region
+    wimport("ZINV", n_signal/2, 0.001, n_signal*10)#expected Zinv background in signal-like region
+    wimport("QCD", 0.001, 0, n_signal*10)#expected QCD background in signal-like region
 
     #Nuisance parameter for low HT inclusive background estimation method
-    wimport("bbar", n_bar_signal_, n_bar_signal_/10, n_bar_signal_*10)#expected total background in alphaT<0.55 and HT>350 GeV
+    wimport("bbar", n_bar_signal, n_bar_signal/10, n_bar_signal*10)#expected total background in alphaT<0.55 and HT>350 GeV
     wimport("tau", 1.0, 0.001, 4.)#factor which relates expected background in alphaT > 0.55 for HT > 350 GeV and 300 < HT < 350 GeV
     wimport("tauprime", 2.515, 0, 5.)#factor which relates expected background in alphaT > 0.55 for HT > 350 GeV and 250 < HT < 300 GeV
     wimport("rho", 1.18, 0., 2.)#factor rho which takes into account differences between alphaT > 0.55 and alphaT < 0.55 in the signal yield development with HT    
-    wimport("sigma_x", sigma_x_)#uncertainty on Monte Carlo estimation of X
     
-    #Nuisance parameter for tt+W estimation
-    wimport("tau_mu", tau_mu_)
-    wimport("sigma_ttW", sigma_ttW_)
-
-    #Nuisance parameter for Zinv estiamtion
-    wimport("tau_photon", tau_photon_)
-    wimport("sigma_Zinv", sigma_Zinv_)
-    #Systematic uncertainty on singal*acceptance*efficiency*luminosity
-    wimport("sigma_SigEff", sigma_SigEff_)
-
+    for item in ["sigma_x",                # uncertainty on Monte Carlo estimation of X
+                 "tau_mu","sigma_ttW",     # Nuisance par tt+w
+                 "tau_photon","sigma_Zinv",# Nuisance par Zinv
+                 "sigma_SigEff"            # Systematic : uncertainty on signal*acceptance*efficiency*lumi
+                 ] : wimport(item, eval(item))
+    
     setupLikelihoodOneBin(wspace, switches)
 
     #set values of observables
     lolArgSet = wspace.set("obs")
     newSet = r.RooArgSet(wspace.set("obs"))
-    newSet.setRealValue("n_signal", n_signal_)
-    newSet.setRealValue("n_muoncontrol", n_muoncontrol_) #set observables for muon control method
-    newSet.setRealValue("n_photoncontrol", n_photoncontrol_) #set observable for photon control method
-    if not switches["fixQcdToZero"] :
-        #set observables for SixBin low HT method
-        newSet.setRealValue("n_control_1",     n_control_1_    )
-        newSet.setRealValue("n_bar_control_1", n_bar_control_1_)
-        newSet.setRealValue("n_control_2",     n_control_2_    )
-        newSet.setRealValue("n_bar_control_2", n_bar_control_2_)
-        newSet.setRealValue("n_signal",        n_signal_       )
-        newSet.setRealValue("n_bar_signal",    n_bar_signal_   )
-
+    for item in ["n_signal","n_muoncontrol","n_photoncontrol",
+                 "n_control_1","n_bar_control_1",
+                 "n_control_2","n_bar_control_2","n_bar_signal"
+                 ][:3 if switches["fixQcdToZero"] else None] :
+        newSet.setRealValue(item, eval(item))
+    
     data = r.RooDataSet(dataName, "title", lolArgSet)
     data.Print()
     data.add(lolArgSet)
@@ -342,16 +327,14 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
 
     return d_s
 
-def canvas(doBayesian, doMCMC) :
+def prepareCanvas(doBayesian, doMCMC) :
     c1 = r.TCanvas("c1")
-  
     if doBayesian and doMCMC :
         c1.Divide(3)
         c1.cd(1)
     elif doBayesian or doMCMC :
         c1.Divide(2)
         c1.cd(1)
-    return c1
 
 def writeExclusionLimitPlot(exampleHisto, outputPlotFileName, m0, m12, mChi, isInInterval) :
     output = r.TFile(outputPlotFileName, "RECREATE")
@@ -368,42 +351,31 @@ def writeExclusionLimitPlot(exampleHisto, outputPlotFileName, m0, m12, mChi, isI
 def checkMap(nInitial, nFinal, name) :
     assert nInitial==nFinal, "ERROR in %s : nInitial = %d; nFinal = %s"%(name, nInitial, nFinal)
 
-def Lepton(switches,
-           specs,
-           strings,
-           inputData,
-           m0,
-           m12,
-           mChi
-           ) :
+def Lepton(switches, specs, strings, inputData,
+           m0, m12, mChi) :
 
-    t = r.TStopwatch()
-    t.Start()
-
-    #set RooFit random seed for reproducible results
-    r.RooRandom.randomGenerator().SetSeed(inputData["seed"])
-    #make a workspace
-    wspace = workspace()
+    r.RooRandom.randomGenerator().SetSeed(inputData["seed"]) #set RooFit random seed for reproducible results
+    wspace = r.RooWorkspace("Combine")
     
     #import variables and set up total likelihood function
     data = None
     modelConfig = None
     
     if not switches["twoHtBins"] :
-        data = importVarsOneBin(wspace, inputData, switches, strings["dataName"])
-        modelConfig = modelConfiguration(wspace, strings["pdfName"])
+        data = importVarsOneBin( wspace, inputData, switches, strings["dataName"])
+        modelConfig = modelConfiguration( wspace, strings["pdfName"])
     else :
         pass
     ##RobsPdfFactory f;
-    ##f.AddModel_Lin_Combi(s, signal_sys, muon_sys, phot_sys, 2, wspace, strings["pdfName"], strings["signalVar"]);
-    ##f.AddDataSideband_Combi(bkgd_sideband, bkgd_bar_sideband, 4, muonMeas, photMeas, tau_muon, tau_phot, 2, wspace, strings["dataName"]);
-    ##modelConfig = modelConfiguration(wspace, strings["pdfName"]);
+    ##f.AddModel_Lin_Combi(s, signal_sys, muon_sys, phot_sys, 2, wspace, strings["pdfName"], strings["signalVar"])
+    ##f.AddDataSideband_Combi(bkgd_sideband, bkgd_bar_sideband, 4, muonMeas, photMeas, tau_muon, tau_phot, 2, wspace, strings["dataName"])
+    ##modelConfig = modelConfiguration(wspace, strings["pdfName"])
 
     if switches["writeWorkspaceFile"] : wspace.writeToFile(strings["outputWorkspaceFileName"])
     if switches["printCovarianceMatrix"] : printCovMat(wspace, data)
     if switches["constrainParameters"] : constrainParams(wspace)
     
-    canvas(switches["doBayesian"], switches["doMCMC"])#prepare a canvas
+    prepareCanvas(switches["doBayesian"], switches["doMCMC"])
     
     #profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
 
@@ -416,4 +388,3 @@ def Lepton(switches,
     
     exampleHisto = loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"], inputData["lumi"])
     writeExclusionLimitPlot(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval)
-    t.Print()
