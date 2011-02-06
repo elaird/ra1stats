@@ -215,7 +215,7 @@ def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
 
     plc = r.RooStats.ProfileLikelihoodCalculator(wspace.data(dataName), modelConfig)
     plc.SetConfidenceLevel(0.95)
-    plInt = r.RooStats.LikelihoodInterval = plc.GetInterval()
+    plInt = plc.GetInterval()
 
     if d_s<=1.0 :
         lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
@@ -381,8 +381,12 @@ def writeExclusionLimitPlot(exampleHisto, outputPlotFileName, m0, m12, mChi, isI
     exclusionLimit.Write()
     output.Close()
 
-def checkMap(nInitial, nFinal, name) :
-    assert nInitial==nFinal, "ERROR in %s : nInitial = %d; nFinal = %s"%(name, nInitial, nFinal)
+def taus(num, den) :
+    assert len(num)==len(den)
+    out = array.array('d', [0.0]*len(num))
+    for i in range(len(out)) :
+        out[i] = num[i]/den[i]
+    return out
 
 def Lepton(switches, specs, strings, inputData,
            m0, m12, mChi) :
@@ -396,11 +400,12 @@ def Lepton(switches, specs, strings, inputData,
     
     if not switches["twoHtBins"] :
         data = importVarsOneBin( wspace, inputData, switches, strings["dataName"])
-        modelConfig = modelConfiguration( wspace, strings["pdfName"])
     else :
         r.gSystem.Load("SlimPdfFactory_C.so")
         r.AddModel_Lin_Combi(array.array('d',inputData["sFrac"]),
+                             inputData["_lumi"],
                              inputData["_lumi_sys"],
+                             inputData["_accXeff"],
                              inputData["_accXeff_sys"],
 
                              inputData["_muon_sys"],
@@ -419,13 +424,7 @@ def Lepton(switches, specs, strings, inputData,
                              strings["pdfName"],
                              strings["signalVar"],
                              )
-        def taus(num, den) :
-            assert len(num)==len(den)
-            out = array.array('d', [0.0]*len(num))
-            for i in range(len(out)) :
-                out[i] = num[i]/den[i]
-            return out
-            
+
         r.AddDataSideband_Combi( array.array('d', inputData["n_htcontrol"]),
                                  array.array('d', inputData["n_bar_htcontrol"]),
                                  len(inputData["n_bar_htcontrol"]),
@@ -438,7 +437,7 @@ def Lepton(switches, specs, strings, inputData,
                                  
                                  len(inputData["n_muoncontrol"]),
                                  wspace,
-                                 strings["pdfName"]
+                                 strings["dataName"]
                                  )
 
     modelConfig = modelConfiguration(wspace, strings["pdfName"])
