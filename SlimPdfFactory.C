@@ -1,10 +1,10 @@
 //#include <sstream>
 //#include <algorithm>
 //
-//#include "TROOT.h"
-//#include "TTree.h"
-//#include "TMath.h"
-//
+#include "TROOT.h"
+#include "TTree.h"
+#include "TMath.h"
+
 #include "RooPlot.h"
 #include "RooAbsPdf.h"
 #include "RooWorkspace.h"
@@ -35,6 +35,20 @@
 #include "RooStats/FeldmanCousins.h"
 #include "RooStats/PointSetInterval.h"
 #include "RooStats/HypoTestResult.h"
+
+RooRealVar* SafeObservableCreation(RooWorkspace* ws, const char* varName,Double_t value, Double_t maximum){
+ //need to be careful here that the range of the observable in the dataset is consistent with the one in the workspace. Don't rescale unless necessary. If it is necessary, then rescale by x10 or a defined maximum
+  RooRealVar* x = ws->var( varName);
+  if(!x) x = new RooRealVar(varName,varName,value,0,maximum);
+  if(x->getMax() < value) x->setMax(max(x->getMax(),60*value));
+  x->setVal(value);
+  return x;
+}
+
+RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t value){
+  //need to be careful here that the range of the observable in the dataset is consistent with the one in the workspace. Don't rescale unless necessary. If it is necessary, then rescale by x10 or a defined maximum
+  return SafeObservableCreation(ws,varName,value,60.*value);
+}
 
 void AddModel_Lin_Combi(Double_t* BR,
 			Double_t _lumi_sys,
@@ -336,6 +350,151 @@ void AddModel_Lin_Combi(Double_t* BR,
  
 
   cout << " here of modelmaking " << endl;
+
+
+}
+
+
+void AddDataSideband_Combi(  Double_t* meas,
+			     Double_t* meas_bar,
+			     Int_t nbins_incl,
+			     Double_t* muon_sideband,
+			     Double_t* photon_sideband,
+			     Double_t* tau_ttWForTree,
+			     Double_t* tau_ZinvForTree,
+			     Int_t nbins_EWK,
+			     RooWorkspace* ws, 
+			     const char* dsName){
+
+
+  //arguments are an array of measured events in signal region, measured events in control regions, factors that relate signal to background region and the number of channels
+
+  using namespace RooFit;
+  using std::vector;
+
+  Double_t MaxSigma = 8;
+
+
+
+  TList observablesCollection;
+
+
+  TTree* tree = new TTree();
+  Double_t* bkgdForTree = new Double_t[nbins_incl];
+  Double_t* bkgdbarForTree = new Double_t[nbins_incl];
+
+  Double_t* muonForTree = new Double_t[nbins_EWK];
+  Double_t* photForTree = new Double_t[nbins_EWK];
+ 
+
+  cout << " nbinx_incl " << nbins_incl << endl;
+  //loop over channels
+  for(Int_t i = 0; i < nbins_incl; ++i){
+    std::stringstream str;
+    str<<"_"<<i+1;
+
+    cout << " i " << i << endl;
+   
+    //need to be careful
+    RooRealVar* bkgdMeas = SafeObservableCreation(ws,("meas"+str.str()).c_str(),meas[i]);
+    //need to be careful
+    RooRealVar* bkgdBarMeas = SafeObservableCreation(ws, ("meas_bar"+str.str()).c_str(),meas_bar[i]);
+    //need to be careful
+   
+
+    observablesCollection.Add(bkgdMeas);   
+    observablesCollection.Add(bkgdBarMeas);
+
+    bkgdForTree[i] = meas[i];
+    bkgdbarForTree[i] = meas_bar[i];
+ 
+
+    tree->Branch(("meas"+str.str()).c_str(),bkgdForTree+i,("meas"+str.str()+"/D").c_str());
+    tree->Branch(("meas_bar"+str.str()).c_str(),bkgdbarForTree+i,("meas_bar"+str.str()+"/D").c_str());
+
+
+    if( i < nbins_incl - 1){
+      Double_t _tau = (meas_bar[i]/meas_bar[nbins_incl-1]);
+
+      cout << " _tau " << _tau << endl;
+
+      RooRealVar* tau = SafeObservableCreation(ws, ("tau"+str.str()).c_str(),_tau);
+      RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+      ws->import(*((RooRealVar*)tau->clone(( string(tau->GetName())+string(dsName)).c_str() ) ));     
+      RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
+
+      
+    }
+
+  }
+
+  cout << " nbins_EWK " << nbins_EWK << endl;
+   //loop over channels
+  for(Int_t i = 0; i < nbins_EWK; ++i){
+    std::stringstream str;
+    str<<"_"<<i+1;
+
+    cout << " i " << i << endl;
+    
+    Double_t _tauTTW = tau_ttWForTree[i];
+    RooRealVar* tauTTW = SafeObservableCreation(ws, ("tau_ttW"+str.str()).c_str(),_tauTTW);
+
+    Double_t _tauZinv = tau_ZinvForTree[i];
+    RooRealVar* tauZinv = SafeObservableCreation(ws, ("tau_Zinv"+str.str()).c_str(),_tauZinv);
+
+    Double_t ttW_sys = 1./sqrt(muon_sideband[i]);
+    Double_t Zinv_sys = 1./sqrt(photon_sideband[i]);
+
+    Double_t ttW = (muon_sideband[i]/_tauTTW);
+    Double_t Zinv = (photon_sideband[i]/_tauZinv);
+
+    cout << " calc zinv " << Zinv << " photon sid " << photon_sideband[i] << endl;
+
+    RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+    ws->import(*((RooRealVar*)tauTTW->clone(( string(tauTTW->GetName())+string(dsName)).c_str() ) ));
+    ws->import(*((RooRealVar*)tauZinv->clone(( string(tauZinv->GetName())+string(dsName)).c_str() ) ));
+    RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
+
+   
+   
+    //need to be careful
+    RooRealVar* muonMeas = SafeObservableCreation(ws, ("muonMeas"+str.str()).c_str(),muon_sideband[i]);
+    //need to be careful
+    RooRealVar* photMeas = SafeObservableCreation(ws, ("photMeas"+str.str()).c_str(),photon_sideband[i]);
+
+   
+    observablesCollection.Add(muonMeas);
+    observablesCollection.Add(photMeas);
+
+   
+    muonForTree[i] = muon_sideband[i];
+    photForTree[i] = photon_sideband[i];
+
+   
+    tree->Branch(("muonMeas"+str.str()).c_str(),muonForTree+i,("muonMeas"+str.str()+"/D").c_str());
+    tree->Branch(("photMeas"+str.str()).c_str(),photForTree+i,("photMeas"+str.str()+"/D").c_str());
+
+    ws->var(("ttW"+str.str()).c_str())->setMax(1.2*ttW+MaxSigma*(sqrt(ttW)+ttW*ttW_sys) );
+    ws->var(("Zinv"+str.str()).c_str())->setMax(1.2*Zinv+MaxSigma*(sqrt(Zinv)+Zinv*Zinv_sys) );
+
+    ws->var(("ttW"+str.str()).c_str())->setVal(ttW);
+    ws->var(("Zinv"+str.str()).c_str())->setVal(Zinv);
+
+  }
+
+  tree->Fill();
+
+  RooArgList* observableList = new RooArgList(observablesCollection);
+  observableList->Print();
+
+  RooDataSet* data = new RooDataSet(dsName,"Number Counting Data",tree,*observableList);
+  //data->Scan();
+
+ 
+  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  ws->import(*data);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
+
 
 
 }
