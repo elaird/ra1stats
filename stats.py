@@ -93,6 +93,7 @@ def merge(nSlices) :
 ############################################    
 options = opts()
 hp.checkHistoBinning()
+utils.compile("SlimPdfFactory.C")
 mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
