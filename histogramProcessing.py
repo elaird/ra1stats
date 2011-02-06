@@ -55,7 +55,6 @@ def mergePickledFiles() :
                 histos[key].Reset()
             histos[key].SetBinContent(bin[0], bin[1], bin[2], value)
 
-    print histos
     f = r.TFile(conf.stringsNoArgs()["mergedFile"], "RECREATE")
     for histo in histos.values() :
         histo.Write()
@@ -74,7 +73,8 @@ def fullPoints() :
 
 def cachedPoints() :
     if conf.switches()["testPointsOnly"] :
-        return fullPoints()[:4]        
+        #return fullPoints()[:4]
+        return [(20, 20, 1), (20, 30, 1), (30, 20, 1), (30, 30, 1)]
     else :
         return fullPoints()
 
