@@ -303,7 +303,7 @@ def prepareCanvas(doBayesian, doMCMC) :
         c1.Divide(2)
         c1.cd(1)
 
-def writeNumbers(outputPlotFileName, m0, m12, mChi, ds, upperLimit, y) :
+def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, upperLimit = None, ds = None, y = None) :
     def insert(name, value) :
         assert name not in y
         y[name] = value
@@ -311,7 +311,7 @@ def writeNumbers(outputPlotFileName, m0, m12, mChi, ds, upperLimit, y) :
     insert("UpperLimit", upperLimit)
     insert("ExclusionLimit", 2*(ds<upperLimit)-1)
 
-    outFile = open(outputPlotFileName, "w")
+    outFile = open(fileName, "w")
     cPickle.dump([m0, m12, mChi, y], outFile)
     outFile.close()
 
@@ -329,6 +329,21 @@ def printStuff(y, m0, m12, mChi) :
     print "m12",m12
     print "mChi",mChi
 
+def accXeff(switches, specs, inputData, m0, m12, mChi) :
+    if len(switches["signalModel"])==2 :
+        num = hp.loYieldHisto(specs["sig10"], ["350Dirs", "450Dirs"], inputData["lumi"])
+        den = hp.loYieldHisto(specs["sig10"], ["beforeDir"], inputData["lumi"])
+        num.Divide(den)
+        return num.GetBinContent(m0, m12, mChi)
+    else :
+        return inputData["_accXeff"]
+
+def lumi(switches, inputData) :
+    if len(switches["signalModel"])==2 :
+        return inputData["lumi"]
+    else :
+        return 1.0
+
 def Lepton(switches, specs, strings, inputData,
            m0, m12, mChi) :
 
@@ -344,13 +359,13 @@ def Lepton(switches, specs, strings, inputData,
     else :
         r.gSystem.Load("SlimPdfFactory_C.so")
         r.AddModel_Lin_Combi(array.array('d',inputData["sFrac"]),
-                             inputData["_lumi"],
+                             lumi(switches, inputData),
                              inputData["_lumi_sys"],
-                             inputData["_accXeff"],
+                             accXeff(switches, specs, inputData, m0, m12, mChi),
                              inputData["_accXeff_sys"],
 
-                             inputData["_muon_sys"],
-                             inputData["_phot_sys"],
+                             inputData["sigma_ttW"],
+                             inputData["sigma_Zinv"],
 
                              inputData["_lowHT_sys_1"],
                              inputData["_lowHT_sys_2"],
@@ -389,15 +404,12 @@ def Lepton(switches, specs, strings, inputData,
     
     prepareCanvas(switches["method"]=="doBayesian", switches["method"]=="doMCMC")
 
-    func = eval(switches["method"])
-
-    if switches["signalFreeMode"] :
-        func(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
-    else :
+    if not switches["signalFreeMode"] :
         y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
         if switches["twoHtBins"] : ds = setSignalVars(      y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
         else :                     ds = setSignalVarsOneBin(y, switches, specs, strings, wspace, inputData["sigma_SigEff"])
     
-        upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"])
-        writeNumbers(strings["plotFileName"], m0, m12, mChi, upperLimit, ds, y)
-        #printStuff(y, m0, m12, mChi)
+    func = eval(switches["method"])
+    upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"])
+    writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = upperLimit, ds = ds, y = y)
+    #printStuff(y, m0, m12, mChi)
