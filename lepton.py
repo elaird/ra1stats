@@ -167,28 +167,20 @@ def constrainParams(wspace) :
 
 def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
     isInInterval = False
-    print "1"
     plc = r.RooStats.ProfileLikelihoodCalculator(wspace.data(dataName), modelConfig)
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
-    print "2"
-    if d_s<=1.0 :
-        print "3"
+    print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
+
+    if False :
         lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
         lrplot.Draw();
-        print "4"
-        print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
-        print "5"        
-        plInt.UpperLimit(wspace.var(signalVar))
-        print "6"
-    else :
-        print "7"
-        tmp_s = r.RooRealVar(wspace.var(signalVar))
-        print "upper limit",plInt.UpperLimit(wspace.var(signalVar))
-        tmp_s.setVal(d_s)
-        isInInterval = plInt.IsInInterval(r.RooArgSet(tmp_s))
-        print "8"
-    return isInInterval
+
+    #tmp_s = r.RooRealVar(wspace.var(signalVar))
+    #tmp_s.setVal(d_s)
+    #isInInterval = plInt.IsInInterval(r.RooArgSet(tmp_s))
+    #return isInInterval
+    return d_s<plInt.UpperLimit(wspace.var(signalVar))
 
 #def feldmanCousins(data, modelConfig, wspace) :
 #    #setup for Felman Cousins
