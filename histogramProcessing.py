@@ -24,23 +24,61 @@ def checkHistoBinning() :
 
     for axis,values in properties(handles()).iteritems() :
         assert len(set(values))==1,"The %s binnings do not match: %s"%(axis, str(values))
-    
-def loYield(spec, dirs) :
-    out = None
+
+
+def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f = r.TFile(spec["file"])
-    for iDir,dir in enumerate(spec[dirs]) :
-        name = "%s_%s_%s"%(spec["file"], dir, spec["loYield"])
-        h = f.Get("%s/%s"%(dir, spec["loYield"]))
-        if not iDir :
-            out = h.Clone(name)
-            out.SetDirectory(0)
+    assert not f.IsZombie()
+
+    h = None
+    for dir in dirs :
+        hOld = f.Get("%s/%s"%(dir, spec["loYield"]))
+        if not h :
+            h = hOld.Clone("%s_%s_%s"%(spec["file"], dir, hOld.GetName()))
         else :
-            out.Add(h)
+            h.Add(hOld)
+            
+    h.SetDirectory(0)
+    h.Scale(lumi/100.0) #100/pb is the default normalization
     f.Close()
-    return out
+    return h
+
+def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
+    def numerator(name) :
+        out = None
+        for dir in dirs :
+            if out is None :
+                out = f.Get("%s/m0_m12_%s_0"%(dir, name))
+            else :
+                out.Add(f.Get("%s/m0_m12_%s_0"%(dir, name)))
+        return out
+
+    f = r.TFile(spec["file"])
+    beforeFile = f if not beforeSpec else r.TFile(beforeSpec["file"])
+    beforeDir = spec["beforeDir"] if not beforeSpec else beforeSpec["beforeDir"]
+    if f.IsZombie() : return None
+
+    all = None
+    #l = ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
+    l = ["gg", "sb", "ss", "sg", "ll", "nn", "bb", "tb", "ns"]
+    for name in l :
+        num = numerator(name)
+        num.Divide(beforeFile.Get("%s/m0_m12_%s_5"%(beforeDir, name)))
+        
+        if all is None :
+            all = num.Clone("%s_%s_%s"%(spec["file"], dirs[0], name))
+        else :
+            all.Add(num)
+
+    all.SetDirectory(0)
+    all.Scale(lumi)
+    f.Close()
+    if beforeSpec : beforeFile.Close()
+    return all
 
 def mergePickledFiles() :
-    example = loYield(conf.histoSpecs()["sig10"], "350Dirs")
+    func = nloYieldHisto if conf.switches()["nlo"] else hp.loYieldHisto    
+    example = func(conf.histoSpecs()["sig10"], conf.histoSpecs()["sig10"]["350Dirs"], data.numbers()["lumi"])
     histos = {}
 
     for point in points() :
@@ -79,7 +117,7 @@ def fullPoints() :
 def cachedPoints() :
     if conf.switches()["testPointsOnly"] :
         #return fullPoints()[:4]
-        return [(20, 20, 1), (20, 30, 1), (30, 20, 1), (30, 30, 1)]
+        return [(20, 20, 1), (20, 40, 1), (40, 20, 1), (40, 40, 1)]
     else :
         return fullPoints()
 
