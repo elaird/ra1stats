@@ -41,7 +41,7 @@ class simplePL(object) :
         
         # Import vars into the workspace
         nsel = self.values["n_selected"]
-        self.wimport(self.interest, 0.1 * nsel, 1e-5, 3*nsel)
+        self.wimport(self.interest, 0.1*nsel, 1e-5, 3*nsel)
         for name in self.constituents :           self.wimport(name, 0.5*nsel, 1e-2, 5*nsel)
         for name,val in self.params.iteritems() : self.wimport(name, val, 0.01*val, 100*val)
         for pair in self.values.iteritems():      self.wimport(*pair)
@@ -50,8 +50,8 @@ class simplePL(object) :
         self.wspace.defineSet("nuisance",','.join(self.params.keys()+self.constituents))
 
         # Construct the likelihood constraints
-        self.wspace.factory("Poisson::select_constraint(n_selected,sum::constituents(%s))" % ','.join(["prod::susy_yeild(susy,R_susy_eff)",
-                                                                                                       "zinv","ttw"]))
+        self.wspace.factory("Poisson::select_constraint(n_selected,sum::constituents(%s))" % ','.join(["prod::susy_yeild(susy,R_susy_eff)"]+
+                                                                                                      self.constituents))
         self.wspace.factory("Poisson::photon_constraint(n_photon,prod::photons(zinv,tau_ph))")
         self.wspace.factory("Poisson::muon_constraint(n_muon,prod::muons(ttw,tau_mu))")
         self.wspace.factory("Gaussian::tau_mu_constraint(mc_tau_mu,tau_mu,sigma_tau_mu)")
