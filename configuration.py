@@ -15,7 +15,8 @@ def switches() :
     d["writeWorkspaceFile"] = False
 
     d["twoHtBins"] = True
-    
+    d["tanBeta"] = 10
+
     return d
 
 def histoSpecs() :
@@ -46,12 +47,12 @@ def histoSpecs() :
     #d["ht"]     = {"file": "%s/v3/ht/QcdBkgdEst_tanbeta3.root"%dir}
 
     #v4
-    f = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1.root"
+    f = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta%dFall10v1.root"%switches()["tanBeta"]
     d["sig10"]  = {"file": "%s/v4/had/%s"%(dir,f)}
     d["muon"]   = {"file": "%s/v4/muon/%s"%(dir,f)}
     d["sig05"]  = {"file": "%s/v4/had/%s"%(dir,f)}
     d["sig20"]  = {"file": "%s/v4/had/%s"%(dir,f)}
-    d["ht"]     = {"file": "%s/v4/ht/QcdBkgdEst_tanbeta3.root"%dir}
+    d["ht"]     = {"file": "%s/v4/ht/QcdBkgdEst_tanbeta%d.root"%(dir,switches()["tanBeta"])}
 
     for key in d :
         tag = key[-2:]
@@ -93,7 +94,11 @@ def stringsNoArgs() :
     d["plotStem"]          = "%s/Significance"%d["outputDir"]
     d["workspaceStem"]     = "%s/Combine"%d["outputDir"]
     d["logStem"]           = "%s/job"%d["logDir"]
-    d["mergedFile"]        = "%s/Significance_merged.root"%d["outputDir"]
+    d["mergedFile"]        = "%s/Significance_tanBeta%d_%s_%s.root"%(d["outputDir"],
+                                                                     switches()["tanBeta"],
+                                                                     "nlo" if switches()["nlo"] else "lo",
+                                                                     "2HtBins" if switches()["twoHtBins"] else "1HtBin",
+                                                                     )
     return d
 
 def strings(xBin, yBin, zBin) :
