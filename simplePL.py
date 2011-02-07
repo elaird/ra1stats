@@ -7,10 +7,8 @@ class simplePL(object) :
         
         r.RooRandom.randomGenerator().SetSeed(inputData["seed"])
         self.wspace = r.RooWorkspace("Workspace")
-        
         self.data = self.setup1BinLikelihood()
         self.model = self.modelConfiguration()
-        return
     
     def translateInputData(self,iD) :
         self.interest = "susy"
@@ -48,6 +46,8 @@ class simplePL(object) :
 
         self.wspace.defineSet("interest",self.interest)
         self.wspace.defineSet("nuisance",','.join(self.params.keys()+self.constituents))
+        self.wspace.defineSet("observe","")
+        emptyData = r.RooDataSet("data", "empty", self.wspace.set("observe"))
 
         # Construct the likelihood constraints
         self.wspace.factory("Poisson::select_constraint(n_selected,sum::constituents(%s))" % ','.join(["prod::susy_yeild(susy,R_susy_eff)"]+
@@ -60,7 +60,7 @@ class simplePL(object) :
         
         self.wspace.factory("PROD::total_model(%s)" % ','.join(["%s_constraint"%s for s in ["select","photon","muon",
                                                                                             "tau_mu","tau_ph","R_susy_eff"]]))
-        return
+        return emptyData
     
     def modelConfiguration(self)  :
         model = r.RooStats.ModelConfig("Model")
@@ -72,10 +72,8 @@ class simplePL(object) :
         return model
 
     def upperLimit(self, confidenceLevel) :
-        self.wspace.defineSet("observe","")
-        emptyData = r.RooDataSet("data", "empty", self.wspace.set("observe"))
 
-        plc = r.RooStats.ProfileLikelihoodCalculator(emptyData, self.model)        
+        plc = r.RooStats.ProfileLikelihoodCalculator(self.data, self.model)
         plc.SetConfidenceLevel(confidenceLevel)
         
         plInt = plc.GetInterval()
