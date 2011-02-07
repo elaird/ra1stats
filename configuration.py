@@ -13,7 +13,8 @@ def switches() :
     d["testPointsOnly"] = True
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
-
+    d["signalFreeMode"] = False
+    
     d["twoHtBins"] = True
     d["tanBeta"] = 10
 
@@ -23,28 +24,6 @@ def histoSpecs() :
     dir = "/afs/cern.ch/user/e/elaird/public/20_yieldHistograms"
 
     d = {}
-
-    ##v1
-    #d["signal"] = {"file": "%s/v1/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_nlo.root"%dir}
-    #d["muon"]   = {"file": "%s/v1/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_muon.root"%dir}
-    #d["sys05"]  = {"file": "%s/v1/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys05.root"%dir}
-    #d["sys2"]   = {"file": "%s/v1/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3Fall10v1_sys2.root"%dir}
-
-    ##v2
-    #sig = "AK5Calo_PhysicsProcesses_mSUGRA_TanBeta3.root"
-    #d["sig10"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
-    #d["muon"]   = {"file": "%s/v2/Muon/AK5Calo_mSugra_TanBeta3.root"%dir}
-    #d["sig05"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
-    #d["sig20"]  = {"file": "%s/v2/Signal/%s"%(dir, sig)}
-    #d["ht"]     = {"file": "%s/v2/QCDBkgd/QcdBkgdEst_tanbeta3.root"%dir}
-
-    ##v3
-    #sig = "AK5Calo_PhysicsProcesses_mSUGRA_TanBeta3.root"
-    #d["sig10"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
-    #d["muon"]   = {"file": "%s/v3/muon/AK5Calo_PhysicsProcesses_mSUGRA_tanbeta3.root"%dir}
-    #d["sig05"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
-    #d["sig20"]  = {"file": "%s/v3/had/%s"%(dir, sig)}
-    #d["ht"]     = {"file": "%s/v3/ht/QcdBkgdEst_tanbeta3.root"%dir}
 
     #v4
     f = "AK5Calo_PhysicsProcesses_mSUGRA_tanbeta%dFall10v1.root"%switches()["tanBeta"]
@@ -89,12 +68,13 @@ def stringsNoArgs() :
         d["signalVar"] = "s"
 
     #output name options
-    d["outputDir"]         = "output"
-    d["logDir"]            = "log"
-    d["plotStem"]          = "%s/Significance"%d["outputDir"]
-    d["workspaceStem"]     = "%s/Combine"%d["outputDir"]
-    d["logStem"]           = "%s/job"%d["logDir"]
-    d["mergedFile"]        = "%s/Significance_tanBeta%d_%s_%s.root"%(d["outputDir"],
+    d["outputDir"]      = "output"
+    d["logDir"]         = "log"
+    d["plotStem"]       = "%s/Significance"%d["outputDir"]
+    d["workspaceStem"]  = "%s/Combine"%d["outputDir"]
+    d["logStem"]        = "%s/job"%d["logDir"]
+    d["mergedFile"]     = "%s/Significance_%s_tanBeta%d_%s_%s.root"%(d["outputDir"],
+                                                                     switches()["method"],
                                                                      switches()["tanBeta"],
                                                                      "nlo" if switches()["nlo"] else "lo",
                                                                      "2HtBins" if switches()["twoHtBins"] else "1HtBin",
