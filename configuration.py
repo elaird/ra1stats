@@ -2,9 +2,9 @@
 
 def switches() :
     d = {}
-    d["doBayesian"] = False
-    d["doFeldmanCousins"] = False
-    d["doMCMC"] = False
+
+    d["method"] = "profileLikelihood"
+    #d["method"] = "feldmanCousins"
 
     d["nlo"] = True
     d["fixQcdToZero"] = True
