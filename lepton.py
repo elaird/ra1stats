@@ -1,54 +1,7 @@
 #!/usr/bin/env python
 import ROOT as r
 import math,array,cPickle
-
-def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
-    f = r.TFile(spec["file"])
-    assert not f.IsZombie()
-
-    h = None
-    for dir in dirs :
-        hOld = f.Get("%s/%s"%(dir, spec["loYield"]))
-        if not h :
-            h = hOld.Clone("%s_%s_%s"%(spec["file"], dir, hOld.GetName()))
-        else :
-            h.Add(hOld)
-            
-    h.SetDirectory(0)
-    h.Scale(lumi/100.0) #100/pb is the default normalization
-    f.Close()
-    return h
-
-def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
-    def numerator(name) :
-        out = None
-        for dir in dirs :
-            if out is None :
-                out = f.Get("%s/m0_m12_%s_0"%(dir, name))
-            else :
-                out.Add(f.Get("%s/m0_m12_%s_0"%(dir, name)))
-        return out
-
-    f = r.TFile(spec["file"])
-    beforeFile = f if not beforeSpec else r.TFile(beforeSpec["file"])
-    beforeDir = spec["beforeDir"] if not beforeSpec else beforeSpec["beforeDir"]
-    if f.IsZombie() : return None
-
-    all = None
-    for name in ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"] :
-        num = numerator(name)
-        num.Divide(beforeFile.Get("%s/m0_m12_%s_5"%(beforeDir, name)))
-        
-        if all is None :
-            all = num.Clone("%s_%s_%s"%(spec["file"], dirs[0], name))
-        else :
-            all.Add(num)
-
-    all.SetDirectory(0)
-    all.Scale(lumi)
-    f.Close()
-    if beforeSpec : beforeFile.Close()
-    return all
+import histogramProcessing as hp
 
 def setupLikelihoodOneBin(wspace, switches) :
     
@@ -214,22 +167,27 @@ def constrainParams(wspace) :
 
 def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
     isInInterval = False
-
+    print "1"
     plc = r.RooStats.ProfileLikelihoodCalculator(wspace.data(dataName), modelConfig)
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
-
+    print "2"
     if d_s<=1.0 :
+        print "3"
         lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
         lrplot.Draw();
+        print "4"
         print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
+        print "5"        
         plInt.UpperLimit(wspace.var(signalVar))
+        print "6"
     else :
+        print "7"
         tmp_s = r.RooRealVar(wspace.var(signalVar))
         print "upper limit",plInt.UpperLimit(wspace.var(signalVar))
         tmp_s.setVal(d_s)
         isInInterval = plInt.IsInInterval(r.RooArgSet(tmp_s))
-
+        print "8"
     return isInInterval
 
 #def feldmanCousins(data, modelConfig, wspace) :
@@ -292,55 +250,25 @@ def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
 #  //MCMC interval on s = [15.7628, 84.7266]
 #}
 
-def setSignalVarsOneBin(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_SigEff_) :
-    if switches["nlo"] :
-        signal = nloYieldHisto(specs["sig10"], specs["sig10"]["350Dirs"] + specs["sig10"]["450Dirs"],lumi)
-        muon   = nloYieldHisto(specs["muon"],  specs["muon"]["350Dirs"]  + specs["muon"]["450Dirs"], lumi)
-        sys05  = nloYieldHisto(specs["sig05"], specs["sig05"]["350Dirs"] + specs["sig05"]["450Dirs"],lumi)
-        sys2   = nloYieldHisto(specs["sig20"], specs["sig20"]["350Dirs"] + specs["sig20"]["450Dirs"],lumi)
-    else :
-        signal =  loYieldHisto(specs["sig10"], specs["sig10"]["350Dirs"] + specs["sig10"]["450Dirs"],lumi)
-        muon   =  loYieldHisto(specs["muon"],  specs["muon"]["350Dirs"]  + specs["muon"]["450Dirs"], lumi)
-
-    tau_s_muon = 1
-    d_s       = signal.GetBinContent(m0, m12, mChi)
-    d_muon    = muon.GetBinContent(m0, m12, mChi)
-    signal_sys = sigma_SigEff_
-    
-    if d_s>0.0 : tau_s_muon = d_muon / d_s
-
-    if switches["nlo"] :
-        d_s_sys05 = sys05.GetBinContent(m0, m12, mChi)#the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 0.5
-        d_s_sys2  = sys2.GetBinContent(m0, m12, mChi)#the event yield if the NLO factorizaiton and renormalizaiton are varied by a factor of 2
-        masterPlus =  abs(max((max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.))
-        masterMinus = abs(max((max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.))
-        signal_sys = math.sqrt( math.pow( max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  )
-
-    #set background contamination
-    wspace.var("tau_s_mu").setVal(tau_s_muon);
-    wspace.var("sigma_SigEff").setVal(signal_sys);
-    return d_s
-
-def d_s(y) :
-    return y["sig10_1"] + y["sig10_2"]
-
-def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_SigEff_, pdfUncertainty) :
-    def yields(nlo) :
-        func = nloYieldHisto if nlo else loYieldHisto
-        out = {}
-        for item in ["sig10", "sig05", "sig20", "muon"] :
+def yields(specs, nlo, twoHtBins, lumi, m0, m12, mChi) :
+    func = hp.nloYieldHisto if nlo else hp.loYieldHisto
+    out = {}
+    for item in ["sig10", "sig05", "sig20", "muon"] :
+        if twoHtBins :
             for tag,dir in zip(["1", "2"],["350Dirs", "450Dirs"]) :
                 histo = func(specs[item], specs[item][dir], lumi)
-                if histo :
-                    out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+                if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+        else :
+            histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], lumi)
+            if histo : out["%s"%item] = histo.GetBinContent(m0, m12, mChi)
 
-        for item in ["ht"] :
-            for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
-                histo = func(specs[item], specs[item][dir], lumi, beforeSpec = specs["sig10"])
-                if histo :
-                    out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
-        return out
+    for item in ["ht"] :
+        for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
+            histo = func(specs[item], specs[item][dir], lumi, beforeSpec = specs["sig10"])
+            if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+    return out
 
+def setSignalVars(y, switches, specs, strings, wspace, sigma_SigEff_, pdfUncertainty) :
     def signalSys(init, y) :
         d_s       = y["sig10_1"]+y["sig10_2"]
         d_s_sys05 = y["sig05_1"]+y["sig05_2"]
@@ -349,10 +277,12 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
         masterMinus = abs(max((max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.))
         return math.sqrt( math.pow( max(masterMinus,masterPlus)/d_s,2) + pow(init,2) + pow(pdfUncertainty, 2) )
 
+    def d_s(y) :
+        return y["sig10_1"] + y["sig10_2"]
+
     def frac(y, tag, index) :
         return y["%s_%d"%(tag, index)] / d_s(y)
 
-    y = yields(switches["nlo"])
     ds = d_s(y)
     if ds>0.0 :
         wspace.var("BR1").setVal(frac(y, "sig10", 1))
@@ -364,7 +294,27 @@ def setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, lumi, sigma_S
         wspace.var("lowHT_cont_2").setVal(frac(y, "ht", 2))
         wspace.var("signal_sys").setVal(sigma_SigEff_ if not switches["nlo"] else signalSys(sigma_SigEff_, y))
     
-    return y
+    return ds
+
+def setSignalVarsOneBin(y, switches, specs, strings, wspace, sigma_SigEff_) :
+    tau_s_muon = 1
+    d_s        = y["sig10"]
+    d_muon     = y["muon"]
+    signal_sys = sigma_SigEff_
+    
+    if d_s>0.0 : tau_s_muon = d_muon / d_s
+
+    if switches["nlo"] and d_s>0.0 :
+        d_s_sys05 = y["sig05"]
+        d_s_sys2  = y["sig20"]
+        masterPlus =  abs(max((max((d_s_sys2 - d_s),(d_s_sys05 - d_s))),0.))
+        masterMinus = abs(max((max((d_s - d_s_sys2),(d_s - d_s_sys05))),0.))
+        signal_sys = math.sqrt( math.pow( max(masterMinus,masterPlus)/d_s,2) + pow(sigma_SigEff_,2)  )
+
+    #set background contamination
+    wspace.var("tau_s_mu").setVal(tau_s_muon);
+    wspace.var("sigma_SigEff").setVal(signal_sys);
+    return d_s
 
 def prepareCanvas(doBayesian, doMCMC) :
     c1 = r.TCanvas("c1")
@@ -392,13 +342,13 @@ def writePlots(exampleHisto, outputPlotFileName, m0, m12, mChi, isInInterval, yi
         h.Write()
     output.Close()
 
-def writeNumbers(outputPlotFileName, m0, m12, mChi, isInInterval, yields = {}) :
+def writeNumbers(outputPlotFileName, m0, m12, mChi, isInInterval, y) :
     name = "ExclusionLimit"
-    assert name not in yields
-    yields[name] = 2.0*isInInterval - 1.0
+    assert name not in y
+    y[name] = 2.0*isInInterval - 1.0
 
     outFile = open(outputPlotFileName, "w")
-    cPickle.dump([m0, m12, mChi, yields], outFile)
+    cPickle.dump([m0, m12, mChi, y], outFile)
     outFile.close()
 
 def taus(num, den) :
@@ -473,14 +423,21 @@ def Lepton(switches, specs, strings, inputData,
     if switches["doFeldmanCousins"] : feldmanCousins(data, modelConfig, wspace) #takes 7 minutes
     if switches["doBayesian"] : bayesian(data, modelConfig, wspace) #use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
     if switches["doMCMC"] : mcmc(data, modelConfig, wspace) #use MCMCCalculator (takes about 1 min)
-    
+
+    y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
+
     if switches["twoHtBins"] :
-        yields = setSignalVars(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"], inputData["pdfUncertainty"])
+        ds = setSignalVars(y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
     else :
-        yields = setSignalVarsOneBin(switches, specs, strings, wspace, m0, m12, mChi, inputData["lumi"], inputData["sigma_SigEff"])
-        
-    isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], d_s(yields))
+        ds = setSignalVarsOneBin(y, switches, specs, strings, wspace, inputData["sigma_SigEff"])
+
+    isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], ds)
     
-    exampleHisto = loYieldHisto(specs["muon"], specs["muon"]["350Dirs"], inputData["lumi"])
+    #exampleHisto = loYieldHisto(specs["muon"], specs["muon"]["350Dirs"], inputData["lumi"])
     #writePlots(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval, yields)
-    writeNumbers(strings["plotFileName"], m0, m12, mChi, isInInterval, yields)
+    writeNumbers(strings["plotFileName"], m0, m12, mChi, isInInterval, y)
+    #for key in sorted(y.keys()) :
+    #    print key,y[key]
+    #print "m0",m0
+    #print "m12",m12
+    #print "mChi",mChi
