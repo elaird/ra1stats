@@ -3,7 +3,9 @@ Correctness
 lolargs
 include Rob's method
 bayesian switch in setupLikelihood and modelConfig
-350 --> 350 + 450 for example
+improve histo bin check
+investigate ng
+fix masterSignal duplication
 
 Consistency
 -----------
