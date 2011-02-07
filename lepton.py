@@ -182,23 +182,18 @@ def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
     #return isInInterval
     return d_s<plInt.UpperLimit(wspace.var(signalVar))
 
-#def feldmanCousins(data, modelConfig, wspace) :
-#    #setup for Felman Cousins
-#  RooStats::FeldmanCousins fc(*data, *modelConfig);
-#  fc.SetConfidenceLevel(0.95);
-#  //number counting: dataset always has 1 entry with N events observed
-#  fc.FluctuateNumDataEntries(false); 
-#  fc.UseAdaptiveSampling(true);
-#  fc.SetNBins(50);
-#  RooStats::PointSetInterval* fcInt = (RooStats::PointSetInterval*) fc.GetInterval();
-#
-#  cout << "Feldman Cousins interval on s = ["
-#       << fcInt.LowerLimit( *wspace.var("s") ) << ", "
-#       << fcInt.UpperLimit( *wspace.var("s") ) << "]" << endl;
-#  //Feldman Cousins interval on s = [18.75 +/- 2.45, 83.75 +/- 2.45]
-#  fcInt.UpperLimit( *wspace.var("s") );
-#}
-#
+def feldmanCousins(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
+    fc = r.RooStats.FeldmanCousins(wspace.data(dataName), modelConfig)
+    fc.SetConfidenceLevel(0.95)
+    fc.FluctuateNumDataEntries(False) #number counting: dataset always has 1 entry with N events observed
+    fc.UseAdaptiveSampling(True)
+    fc.AdditionalNToysFactor(4)
+    fc.SetNBins(40)
+
+    fcInt = fc.GetInterval()
+    print "Feldman Cousins interval on s = [%g, %g]"%(fcInt.LowerLimit(wspace.var(signalVar)), fcInt.UpperLimit(wspace.var(signalVar)))
+    return d_s<fcInt.UpperLimit(wspace.var(signalVar))
+
 #void bayesian(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace) {
 #  RooStats::BayesianCalculator bc(*data, *modelConfig);
 #  bc.SetConfidenceLevel(0.95);
@@ -350,6 +345,13 @@ def taus(num, den) :
         out[i] = num[i]/den[i]
     return out
 
+def printStuff(y, m0, m12, mChi) :
+    for key in sorted(y.keys()) :
+        print key,y[key]
+    print "m0",m0
+    print "m12",m12
+    print "mChi",mChi
+
 def Lepton(switches, specs, strings, inputData,
            m0, m12, mChi) :
 
@@ -408,28 +410,15 @@ def Lepton(switches, specs, strings, inputData,
     if switches["printCovarianceMatrix"] : printCovMat(wspace, data)
     if switches["constrainParameters"] : constrainParams(wspace)
     
-    prepareCanvas(switches["doBayesian"], switches["doMCMC"])
-    
-    #profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
+    prepareCanvas(switches["method"]=="doBayesian", switches["method"]=="doMCMC")
 
-    if switches["doFeldmanCousins"] : feldmanCousins(data, modelConfig, wspace) #takes 7 minutes
-    if switches["doBayesian"] : bayesian(data, modelConfig, wspace) #use BayesianCalculator (only 1-d parameter of interest, slow for this problem)
-    if switches["doMCMC"] : mcmc(data, modelConfig, wspace) #use MCMCCalculator (takes about 1 min)
+    func = eval(switches["method"])
+    func(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
 
-    y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
-
-    if switches["twoHtBins"] :
-        ds = setSignalVars(y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
-    else :
-        ds = setSignalVarsOneBin(y, switches, specs, strings, wspace, inputData["sigma_SigEff"])
-
-    isInInterval = profileLikelihood(modelConfig, wspace, strings["dataName"], strings["signalVar"], ds)
-    
-    #exampleHisto = loYieldHisto(specs["muon"], specs["muon"]["350Dirs"], inputData["lumi"])
-    #writePlots(exampleHisto, strings["plotFileName"], m0, m12, mChi, isInInterval, yields)
-    writeNumbers(strings["plotFileName"], m0, m12, mChi, isInInterval, y)
-    #for key in sorted(y.keys()) :
-    #    print key,y[key]
-    #print "m0",m0
-    #print "m12",m12
-    #print "mChi",mChi
+    #y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
+    #if switches["twoHtBins"] : ds = setSignalVars(      y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
+    #else :                     ds = setSignalVarsOneBin(y, switches, specs, strings, wspace, inputData["sigma_SigEff"])
+    #
+    #isInInterval = func(modelConfig, wspace, strings["dataName"], strings["signalVar"], ds)
+    #writeNumbers(strings["plotFileName"], m0, m12, mChi, isInInterval, y)
+    ##printStuff(y, m0, m12, mChi)
