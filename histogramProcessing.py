@@ -120,7 +120,9 @@ def fullPoints() :
 def cachedPoints() :
     if conf.switches()["testPointsOnly"] :
         #return fullPoints()[:4]
-        return [(20, 20, 1), (20, 40, 1), (40, 20, 1), (40, 40, 1)]
+        l = 20
+        u = 30
+        return [(l, l, 1), (l, u, 1), (u, l, 1), (u, u, 1)]
     else :
         return fullPoints()
 
