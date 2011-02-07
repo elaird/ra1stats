@@ -2,7 +2,7 @@
 import data, ROOT as r
 from simpleCLs import *
 
-n_susy = 13.5
+n_susy = 10.2
 print "CLS with n_susy expected = %0.1f" % n_susy
 
 cls = simpleCLs( data.numbers() )
