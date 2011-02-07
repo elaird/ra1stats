@@ -86,7 +86,9 @@ def mergePickledFiles() :
 
     for point in points() :
         fileName = conf.strings(*point)["plotFileName"]
-        if os.path.exists(fileName) :
+        if not os.path.exists(fileName) :
+            print "skipping file",fileName            
+        else :
             inFile = open(fileName)
             stuff = cPickle.load(inFile)
             inFile.close()
@@ -98,8 +100,6 @@ def mergePickledFiles() :
                     histos[key].Reset()
                 histos[key].SetBinContent(bin[0], bin[1], bin[2], value)
             os.remove(fileName)
-        else :
-            print "skipping file",fileName
 
     f = r.TFile(conf.stringsNoArgs()["mergedFile"], "RECREATE")
     for histo in histos.values() :
