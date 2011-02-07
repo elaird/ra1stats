@@ -76,9 +76,12 @@ def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     if beforeSpec : beforeFile.Close()
     return all
 
+def exampleHisto() :
+    func = nloYieldHisto if conf.switches()["nlo"] else hp.loYieldHisto
+    return func(conf.histoSpecs()["sig10"], conf.histoSpecs()["sig10"]["350Dirs"], data.numbers()["lumi"])
+
 def mergePickledFiles() :
-    func = nloYieldHisto if conf.switches()["nlo"] else hp.loYieldHisto    
-    example = func(conf.histoSpecs()["sig10"], conf.histoSpecs()["sig10"]["350Dirs"], data.numbers()["lumi"])
+    example = exampleHisto()
     histos = {}
 
     for point in points() :
@@ -105,7 +108,7 @@ def mergePickledFiles() :
 
 def fullPoints() :
     out = []
-    h = loYield(conf.histoSpecs()["sig10"], "350Dirs")
+    h = exampleHisto()
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
