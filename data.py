@@ -33,8 +33,6 @@ def numbers() :
     d["_accXeff"] = 1.0
     d["_accXeff_sys"] = 0.1
 
-    d["_muon_sys"] = 0.3
-    d["_phot_sys"] = 0.4
     d["_muon_cont_1"] = 0.2
     d["_muon_cont_2"] = 0.2
     d["_lowHT_cont_1"] = 0.2
