@@ -165,24 +165,16 @@ def constrainParams(wspace) :
             spar.setMin(max(spar.getVal()-10*spar.getError(), spar.getMin() ) )
             spar.setMax(min(spar.getVal()+10*spar.getError(), spar.getMax() ) )
 
-def profileLikelihood(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
-    isInInterval = False
+def profileLikelihood(modelConfig, wspace, dataName, signalVar) :
     plc = r.RooStats.ProfileLikelihoodCalculator(wspace.data(dataName), modelConfig)
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
     print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
+    #lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
+    #lrplot.Draw();
+    return plInt.UpperLimit(wspace.var(signalVar))
 
-    if False :
-        lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
-        lrplot.Draw();
-
-    #tmp_s = r.RooRealVar(wspace.var(signalVar))
-    #tmp_s.setVal(d_s)
-    #isInInterval = plInt.IsInInterval(r.RooArgSet(tmp_s))
-    #return isInInterval
-    return d_s<plInt.UpperLimit(wspace.var(signalVar))
-
-def feldmanCousins(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
+def feldmanCousins(modelConfig, wspace, dataName, signalVar) :
     fc = r.RooStats.FeldmanCousins(wspace.data(dataName), modelConfig)
     fc.SetConfidenceLevel(0.95)
     fc.FluctuateNumDataEntries(False) #number counting: dataset always has 1 entry with N events observed
@@ -192,7 +184,7 @@ def feldmanCousins(modelConfig, wspace, dataName, signalVar, d_s = 0.0) :
 
     fcInt = fc.GetInterval()
     print "Feldman Cousins interval on s = [%g, %g]"%(fcInt.LowerLimit(wspace.var(signalVar)), fcInt.UpperLimit(wspace.var(signalVar)))
-    return d_s<fcInt.UpperLimit(wspace.var(signalVar))
+    return fcInt.UpperLimit(wspace.var(signalVar))
 
 #void bayesian(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace) {
 #  RooStats::BayesianCalculator bc(*data, *modelConfig);
@@ -280,7 +272,6 @@ def setSignalVars(y, switches, specs, strings, wspace, sigma_SigEff_, pdfUncerta
         wspace.var("lowHT_cont_1").setVal(frac(y, "ht", 1))
         wspace.var("lowHT_cont_2").setVal(frac(y, "ht", 2))
         wspace.var("signal_sys").setVal(sigma_SigEff_ if not switches["nlo"] else signalSys(sigma_SigEff_, y))
-    
     return ds
 
 def setSignalVarsOneBin(y, switches, specs, strings, wspace, sigma_SigEff_) :
@@ -312,27 +303,13 @@ def prepareCanvas(doBayesian, doMCMC) :
         c1.Divide(2)
         c1.cd(1)
 
-def writePlots(exampleHisto, outputPlotFileName, m0, m12, mChi, isInInterval, yields = {}) :
-    output = r.TFile(outputPlotFileName, "RECREATE")
-    assert not output.IsZombie()
-    assert exampleHisto
+def writeNumbers(outputPlotFileName, m0, m12, mChi, ds, upperLimit, y) :
+    def insert(name, value) :
+        assert name not in y
+        y[name] = value
 
-    name = "ExclusionLimit"
-    assert name not in yields
-    yields[name] = 2.0*isInInterval - 1.0
-
-    for name,content in yields.iteritems() :
-        h = exampleHisto.Clone(name)
-        h.SetTitle("%s;m_{0} (GeV);m_{1/2} (GeV);z-axis"%name)
-        h.Reset()
-        h.SetBinContent(m0, m12, mChi, content)
-        h.Write()
-    output.Close()
-
-def writeNumbers(outputPlotFileName, m0, m12, mChi, isInInterval, y) :
-    name = "ExclusionLimit"
-    assert name not in y
-    y[name] = 2.0*isInInterval - 1.0
+    insert("UpperLimit", upperLimit)
+    insert("ExclusionLimit", 2*(ds<upperLimit)-1)
 
     outFile = open(outputPlotFileName, "w")
     cPickle.dump([m0, m12, mChi, y], outFile)
@@ -413,12 +390,14 @@ def Lepton(switches, specs, strings, inputData,
     prepareCanvas(switches["method"]=="doBayesian", switches["method"]=="doMCMC")
 
     func = eval(switches["method"])
-    func(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
 
-    #y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
-    #if switches["twoHtBins"] : ds = setSignalVars(      y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
-    #else :                     ds = setSignalVarsOneBin(y, switches, specs, strings, wspace, inputData["sigma_SigEff"])
-    #
-    #isInInterval = func(modelConfig, wspace, strings["dataName"], strings["signalVar"], ds)
-    #writeNumbers(strings["plotFileName"], m0, m12, mChi, isInInterval, y)
-    ##printStuff(y, m0, m12, mChi)
+    if switches["signalFreeMode"] :
+        func(modelConfig, wspace, strings["dataName"], strings["signalVar"]) #run with no signal contamination
+    else :
+        y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
+        if switches["twoHtBins"] : ds = setSignalVars(      y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
+        else :                     ds = setSignalVarsOneBin(y, switches, specs, strings, wspace, inputData["sigma_SigEff"])
+    
+        upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"])
+        writeNumbers(strings["plotFileName"], m0, m12, mChi, upperLimit, ds, y)
+        #printStuff(y, m0, m12, mChi)
