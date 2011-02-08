@@ -6,6 +6,8 @@ bayesian switch in setupLikelihood and modelConfig
 improve histo bin check
 investigate ng
 fix masterSignal duplication
+use muon variation directories?
+use sms variation directories?
 
 Consistency
 -----------
