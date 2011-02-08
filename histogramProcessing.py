@@ -11,11 +11,16 @@ def checkHistoBinning() :
     def properties(handles) :
         out = collections.defaultdict(list)
         for handle in handles :
-            f = r.TFile(handle[0])
-            h = f.Get("%s/%s"%(handle[1], handle[2]))
-            out["x"].append(axisStuff(h.GetXaxis()))
-            out["y"].append(axisStuff(h.GetYaxis()))
-            f.Close()
+            try:
+                f = r.TFile(handle[0])
+                h = f.Get("%s/%s"%(handle[1], handle[2]))
+                out["x"].append(axisStuff(h.GetXaxis()))
+                out["y"].append(axisStuff(h.GetYaxis()))
+                f.Close()
+            except AttributeError as ae :
+                print handle
+                raise ae
+                
         return out
     
     def handles() :
