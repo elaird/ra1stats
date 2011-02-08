@@ -107,8 +107,8 @@ def yields(specs, nlo, twoHtBins, lumi, m0, m12, mChi) :
                     histo = func(specs[item], specs[item][dir], lumi)
                     if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
             else :
-                histo = func(specs[item+"_2"], specs[item]["350Dirs"] + specs[item]["450Dirs"], lumi)
-                if histo : out["%s"%item] = histo.GetBinContent(m0, m12, mChi)
+                histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], lumi)
+                if histo : out["%s_2"%item] = histo.GetBinContent(m0, m12, mChi)
 
         else :
             for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
@@ -225,6 +225,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
                
                switches["exponentialBkg"],
                switches["twoHtBins"],
+               switches["assumeUncorrelatedLowHtSystematics"],
                
                wspace,
                strings["pdfName"],
