@@ -64,6 +64,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 	      Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,
 	      bool exponential,
 	      bool twobins,
+	      bool sys_uncorr,
 	      RooWorkspace* ws,const char* pdfName,const char* muName){
   
   using namespace RooStats;
@@ -175,13 +176,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   
 
 
-  RooRealVar* lowHT_sys1 = new RooRealVar("lowHT_sys1","lowHT_sys1",1.0,0.1,5.);
-  RooRealVar* lowHT_sys1_nom = new RooRealVar("lowHT_sys1_nom","lowHT_sys1_nom",1.0);
-  RooRealVar* lowHT_sys1_sigma = new RooRealVar("lowHT_sys1_sigma","lowHT_sys1_sigma",_lowHT_sys1);
-
-  RooRealVar* lowHT_sys2 = new RooRealVar("lowHT_sys2","lowHT_sys2",1.0,0.1,5.);
-  RooRealVar* lowHT_sys2_nom = new RooRealVar("lowHT_sys2_nom","lowHT_sys2_nom",1.0);
-  RooRealVar* lowHT_sys2_sigma = new RooRealVar("lowHT_sys2_sigma","lowHT_sys2_sigma",_lowHT_sys2);
+ 
 
   //Now the awful combination part
   RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
@@ -193,27 +188,48 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooProduct *bkgd_3;
   RooProduct *bkgd_4;
 
-
-
-  if(exponential){
-    if(twobins){
+  RooRealVar* lowHT_sys1 = new RooRealVar("lowHT_sys1","lowHT_sys1",1.0,0.1,5.);
+  RooRealVar* lowHT_sys1_nom = new RooRealVar("lowHT_sys1_nom","lowHT_sys1_nom",1.0);
+  RooRealVar* lowHT_sys1_sigma = new RooRealVar("lowHT_sys1_sigma","lowHT_sys1_sigma",_lowHT_sys1);
+      
+  RooRealVar* lowHT_sys2 = new RooRealVar("lowHT_sys2","lowHT_sys2",1.0,0.1,5.);    
+  RooRealVar* lowHT_sys2_nom = new RooRealVar("lowHT_sys2_nom","lowHT_sys2_nom",1.0);
+  RooRealVar* lowHT_sys2_sigma = new RooRealVar("lowHT_sys2_sigma","lowHT_sys2_sigma",_lowHT_sys2);
+  
+  RooRealVar* lowHT_sys_corr = new RooRealVar("lowHT_sys_corr","lowHT_sys_corr",_lowHT_sys2/_lowHT_sys1);
+   
+  if(twobins){// 2signal bins
+       
+    if(exponential){//exponential
       bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*rho,*b,*tau_1));
       bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*rho,*b,*tau_2));
       bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
-      bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
+      if(sys_uncorr)bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));//100% uncorrelated
+      else          bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys_corr,*lowHT_sys1));//100% correlated
     }
-    else{
+    else{//linear
+      bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
+      bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
+      bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
+      if(sys_uncorr)bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));//sys 100% uncorrelated
+      else bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys1,*lowHT_sys_corr));//sys 100% correlated
+    }
+  }
+  else{//1 signal bin
+    if(exponential){//exponential
       bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*b,*tau_1));
       bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*b,*tau_2));     
       bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
     }
+    else{//linear 
+      bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
+      bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));     
+      bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
+      
+    }
   }
-  else{
-    bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
-    bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
-    bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
-    bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
-  }
+  
+ 
  
 
   ////Do some weird things to allow substractions
@@ -293,7 +309,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
     likelihoodFactors.Add(sig_poisson_1);
     likelihoodFactors.Add(sig_poisson_1_bar);
   }
-  likelihoodFactors.Add(sys_lowHT_Cons_2);
+  if(sys_uncorr)likelihoodFactors.Add(sys_lowHT_Cons_2);
 
   likelihoodFactors.Add(sys_ttW_Cons);
   likelihoodFactors.Add(sys_Zinv_Cons);
