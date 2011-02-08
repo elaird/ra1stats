@@ -57,8 +57,7 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
 
 
 
-void AddModel_Lin_Combi(Double_t* BR,
-			Double_t _lumi, Double_t _lumi_sys,
+void AddModel_Lin_Combi(Double_t _lumi, Double_t _lumi_sys,
 			Double_t _accXeff, Double_t _accXeff_sys,
 			Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
 			Double_t _muon_cont_1,Double_t _muon_cont_2,
@@ -105,8 +104,8 @@ void AddModel_Lin_Combi(Double_t* BR,
   RooRealVar* signal_sys_sigma = new RooRealVar("signal_sys_sigma","signal_sys_sigma",d_signal_sys);
  
  
-  RooRealVar* BR1 = new RooRealVar("BR1","BR1",BR[0]);
-  RooRealVar* BR2 = new RooRealVar("BR2","BR2",BR[1]);
+  RooRealVar* BR1 = new RooRealVar("BR1","BR1",1.);
+  RooRealVar* BR2 = new RooRealVar("BR2","BR2",1.);
 
   RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*lumi,*accXeff,*masterSignal,*BR1,*signal_sys));
   RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*lumi,*accXeff,*masterSignal,*BR2,*signal_sys));
@@ -348,17 +347,17 @@ void AddModel_Lin_Combi(Double_t* BR,
 
 
 
-void AddDataSideband_Combi(  Double_t* meas,
-			     Double_t* meas_bar,
-			     Int_t nbins_incl,
-			     Double_t* muon_sideband,
-			     Double_t* photon_sideband,
-			     Double_t* tau_ttWForTree,
-			     Double_t* tau_ZinvForTree,
-			     Int_t nbins_EWK,
-			     bool twobins,
-			     RooWorkspace* ws, 
-			     const char* dsName){
+void AddDataSideband_Combi(Double_t* meas,
+			   Double_t* meas_bar,
+			   Int_t nbins_incl,
+			   Double_t* muon_sideband,
+			   Double_t* photon_sideband,
+			   Double_t* tau_ttWForTree,
+			   Double_t* tau_ZinvForTree,
+			   Int_t nbins_EWK,
+			   bool twobins,
+			   RooWorkspace* ws, 
+			   const char* dsName){
 
 
  
