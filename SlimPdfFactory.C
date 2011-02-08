@@ -312,7 +312,13 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
     likelihoodFactors.Add(sig_poisson_1);
     likelihoodFactors.Add(sig_poisson_1_bar);
   }
-  if(sys_uncorr)likelihoodFactors.Add(sys_lowHT_Cons_2);
+  
+  if(sys_uncorr || !twobins)likelihoodFactors.Add(sys_lowHT_Cons_2);
+   
+ 
+    
+
+
 
   likelihoodFactors.Add(sys_ttW_Cons);
   likelihoodFactors.Add(sys_Zinv_Cons);
@@ -348,7 +354,10 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
 
-  if(twobins)ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
+  if(twobins){
+    if(sys_uncorr) ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
+    else  ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
+  }
   else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2"); 
   cout << "f" << endl; 
   if(twobins)ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3,meas_bar_4,muonMeas_1,muonMeas_2,photMeas_1,photMeas_2");
@@ -408,9 +417,7 @@ void AddDataSideband_Combi(Double_t* meas,
 
 
   ws->var("bbar")->setMax(1.2*meas_bar_lastbin+MaxSigma*(sqrt(meas_bar_lastbin)) );
-  //ws->var("b")->setMax(1.2*meas_lastbin+MaxSigma*(sqrt(meas_lastbin)) );
-  
-  //ws->var("b")->setVal(meas_lastbin);
+
   ws->var("bbar")->setVal(meas_bar_lastbin);
 
   cout << " nbinx_incl " << nbins_incl << endl;
