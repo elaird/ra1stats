@@ -408,9 +408,9 @@ void AddDataSideband_Combi(Double_t* meas,
 
 
   ws->var("bbar")->setMax(1.2*meas_bar_lastbin+MaxSigma*(sqrt(meas_bar_lastbin)) );
-  ws->var("b")->setMax(1.2*meas_lastbin+MaxSigma*(sqrt(meas_lastbin)) );
+  //ws->var("b")->setMax(1.2*meas_lastbin+MaxSigma*(sqrt(meas_lastbin)) );
   
-  ws->var("b")->setVal(meas_lastbin);
+  //ws->var("b")->setVal(meas_lastbin);
   ws->var("bbar")->setVal(meas_bar_lastbin);
 
   cout << " nbinx_incl " << nbins_incl << endl;
