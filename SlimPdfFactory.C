@@ -64,6 +64,7 @@ void AddModel_Lin_Combi(Double_t* BR,
 			Double_t _muon_cont_1,Double_t _muon_cont_2,
 			Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,
 			bool exponential,
+			bool twobins,
 			RooWorkspace* ws,const char* pdfName,const char* muName){
 
   using namespace RooStats;
@@ -161,7 +162,7 @@ void AddModel_Lin_Combi(Double_t* BR,
 
   RooRealVar* ttW_1 = new RooRealVar("ttW_1","ttW_1",.5,0.,100.);
   RooRealVar* Zinv_1 = new RooRealVar("Zinv_1","Zinv_1",.5,0.,100.);
-  //RooRealVar* QCD_1 = new RooRealVar("QCD_1","QCD_1",.5,0.,100.);
+  // RooRealVar* QCD_1 = new RooRealVar("QCD_1","QCD_1",.5,0.,100.);
   
   RooRealVar* Zinv_2 = new RooRealVar("Zinv_2","Zinv_2",.5,0.,100.);
   RooRealVar* QCD_2 = new RooRealVar("QCD_2","QCD_2",.5,0.,100.);
@@ -188,28 +189,30 @@ void AddModel_Lin_Combi(Double_t* BR,
 
   RooRealVar* rho = new RooRealVar("rho","rho",1.05,0.,10.);
 
-  RooProduct* bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
-  RooProduct* bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
-  RooProduct *bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
-
-  RooProduct *bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
+  RooProduct* bkgd_1;
+  RooProduct* bkgd_2;
+  RooProduct *bkgd_3;
+  RooProduct *bkgd_4;
 
 
 
   if(exponential){
-    bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*rho,*b,*tau_1));
-    bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*rho,*b,*tau_2));
-    bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
-
-    bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
-
-
+    if(twobins){
+      bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*rho,*b,*tau_1));
+      bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*rho,*b,*tau_2));
+      bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
+      bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
+    }
+    else{
+      bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*b,*tau_1));
+      bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*b,*tau_2));     
+      bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
+    }
   }
   else{
     bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
     bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
     bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
-
     bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
   }
  
@@ -280,60 +283,33 @@ void AddModel_Lin_Combi(Double_t* BR,
   RooPoisson* bkgd_poisson_1_bar = new RooPoisson("bkgd_poisson_1_bar","bkgd_poisson_1_bar",*meas_bar_1,*bkgd_bar_1);
   RooPoisson* bkgd_poisson_2_bar = new RooPoisson("bkgd_poisson_2_bar","bkgd_poisson_2_bar",*meas_bar_2,*bkgd_bar_2);
 
-  //nosignal cont
-  RooPoisson* sig_poisson_1_nosig = new RooPoisson("sig_poisson_1_nosig","sig_poisson_1_nosig",*meas_3,*bkgd_3);
-  RooPoisson* sig_poisson_2_nosig = new RooPoisson("sig_poisson_2_nosig","sig_poisson_2_nosig",*meas_4,*bkgd_4);
-
-  RooPoisson* bkgd_poisson_1_nosig = new RooPoisson("bkgd_poisson_1_nosig","bkgd_poisson_1_nosig",*meas_1,*bkgd_1);
-  RooPoisson* bkgd_poisson_2_nosig = new RooPoisson("bkgd_poisson_2_nosig","bkgd_poisson_2_nosig",*meas_2,*bkgd_2);
-
-  RooPoisson* muonRegion_1_nosig = new RooPoisson("muonRegion_1_nosig","muonRegion_1_nosig",*muonMeas_1,*ttWTau_1);
-  RooPoisson* muonRegion_2_nosig = new RooPoisson("muonRegion_2_nosig","muonRegion_2_nosig",*muonMeas_2,*ttWTau_2);
-
-  
-  nosignal_likelihoodFactors.Add(sys_lowHT_Cons_1);
-  nosignal_likelihoodFactors.Add(sys_lowHT_Cons_2);
  
-  nosignal_likelihoodFactors.Add(sys_ttW_Cons);
-  nosignal_likelihoodFactors.Add(sys_Zinv_Cons);
-  nosignal_likelihoodFactors.Add(sys_signal_Cons);
-
-  nosignal_likelihoodFactors.Add(muonRegion_1_nosig);
-  nosignal_likelihoodFactors.Add(photRegion_1);
   
-  nosignal_likelihoodFactors.Add(muonRegion_2_nosig);
-  nosignal_likelihoodFactors.Add(photRegion_2);
-
-  nosignal_likelihoodFactors.Add(sig_poisson_1_nosig);
-  nosignal_likelihoodFactors.Add(sig_poisson_2_nosig);
-  nosignal_likelihoodFactors.Add(bkgd_poisson_1_nosig);
-  nosignal_likelihoodFactors.Add(bkgd_poisson_2_nosig);
-
-  nosignal_likelihoodFactors.Add(sig_poisson_1_bar);
-  nosignal_likelihoodFactors.Add(sig_poisson_2_bar);
-  nosignal_likelihoodFactors.Add(bkgd_poisson_1_bar);
-  nosignal_likelihoodFactors.Add(bkgd_poisson_2_bar);
  
   //add likelihood factors
-  likelihoodFactors.Add(sys_lowHT_Cons_1);
+  if(twobins){
+    likelihoodFactors.Add(sys_lowHT_Cons_1);
+    likelihoodFactors.Add(muonRegion_1);
+    likelihoodFactors.Add(photRegion_1);
+    likelihoodFactors.Add(sig_poisson_1);
+    likelihoodFactors.Add(sig_poisson_1_bar);
+  }
   likelihoodFactors.Add(sys_lowHT_Cons_2);
 
   likelihoodFactors.Add(sys_ttW_Cons);
   likelihoodFactors.Add(sys_Zinv_Cons);
   likelihoodFactors.Add(sys_signal_Cons);
 
-  likelihoodFactors.Add(muonRegion_1);
-  likelihoodFactors.Add(photRegion_1);
-  
+ 
   likelihoodFactors.Add(muonRegion_2);
   likelihoodFactors.Add(photRegion_2);
 
-  likelihoodFactors.Add(sig_poisson_1);
+ 
   likelihoodFactors.Add(sig_poisson_2);
   likelihoodFactors.Add(bkgd_poisson_1);
   likelihoodFactors.Add(bkgd_poisson_2);
 
-  likelihoodFactors.Add(sig_poisson_1_bar);
+ 
   likelihoodFactors.Add(sig_poisson_2_bar);
   likelihoodFactors.Add(bkgd_poisson_1_bar);
   likelihoodFactors.Add(bkgd_poisson_2_bar);
@@ -341,38 +317,23 @@ void AddModel_Lin_Combi(Double_t* BR,
   RooArgSet likelihoodFactorSet(likelihoodFactors);
   RooProdPdf joint(pdfName,"joint",likelihoodFactorSet);
 
-  RooArgSet nosignal_likelihoodFactorSet(nosignal_likelihoodFactors);
-  RooProdPdf nosignal_joint("modelBkg","nosignal_joint",nosignal_likelihoodFactorSet);
-
  
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
 
-  /* ws->import(*muonMeas_1);
-  ws->import(*photMeas_1);
-  ws->import(*muonMeas_2);
-  ws->import(*photMeas_2);
-  ws->import(*meas_1);
-  ws->import(*meas_2);
-  ws->import(*meas_3);
-  ws->import(*meas_4);
-  ws->import(*meas_bar_1);
-  ws->import(*meas_bar_2);
-  ws->import(*meas_bar_3);
-  ws->import(*meas_bar_4);*/
+ 
   ws->import(joint);
 
-  // ws->import(nosignal_joint);
-  
-  // ws->import(poi);
-  // ws->import(nuis);
+ 
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
 
-  ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2");  
+  if(twobins)ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
+  else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2"); 
 
-   ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3,meas_bar_4,muonMeas_1,muonMeas_2,photMeas_1,photMeas_2");
-   ws->defineSet("poi",muName);
+  if(twobins)ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3,meas_bar_4,muonMeas_1,muonMeas_2,photMeas_1,photMeas_2");
+  else ws->defineSet("obs","meas_1,meas_2,meas_4,meas_bar_1,meas_bar_2,meas_bar_4,muonMeas_2,photMeas_2");
+  ws->defineSet("poi",muName);
 
 
  
@@ -383,6 +344,10 @@ void AddModel_Lin_Combi(Double_t* BR,
 }
 
 
+
+
+
+
 void AddDataSideband_Combi(  Double_t* meas,
 			     Double_t* meas_bar,
 			     Int_t nbins_incl,
@@ -391,10 +356,12 @@ void AddDataSideband_Combi(  Double_t* meas,
 			     Double_t* tau_ttWForTree,
 			     Double_t* tau_ZinvForTree,
 			     Int_t nbins_EWK,
+			     bool twobins,
 			     RooWorkspace* ws, 
 			     const char* dsName){
 
 
+ 
   //arguments are an array of measured events in signal region, measured events in control regions, factors that relate signal to background region and the number of channels
 
   using namespace RooFit;
@@ -415,12 +382,23 @@ void AddDataSideband_Combi(  Double_t* meas,
   Double_t* photForTree = new Double_t[nbins_EWK];
  
 
+  Double_t meas_bar_lastbin = meas_bar[nbins_incl - 1];
+  if(!twobins)meas_bar_lastbin += meas_bar[nbins_incl - 2];
+
   cout << " nbinx_incl " << nbins_incl << endl;
   //loop over channels
   for(Int_t i = 0; i < nbins_incl; ++i){
-    std::stringstream str;
-    str<<"_"<<i+1;
 
+    std::stringstream str;
+   
+
+    if(!twobins){
+      if(i < nbins_incl-1)str << "_" << i+1;
+      else str << "_" << nbins_incl+1;
+    }
+    else str<<"_"<<i+1;
+    
+  
     cout << " i " << i << endl;
    
     //need to be careful
@@ -442,16 +420,14 @@ void AddDataSideband_Combi(  Double_t* meas,
 
 
     if( i < nbins_incl - 1){
-      Double_t _tau = (meas_bar[i]/meas_bar[nbins_incl-1]);
+      Double_t _tau = (meas_bar[i]/meas_bar_lastbin);
 
       cout << " _tau " << _tau << endl;
 
       RooRealVar* tau = SafeObservableCreation(ws, ("tau"+str.str()).c_str(),_tau);
       RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
       ws->import(*((RooRealVar*)tau->clone(( string(tau->GetName())+string(dsName)).c_str() ) ));     
-      RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
-
-      
+      RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);      
     }
 
   }
@@ -459,10 +435,14 @@ void AddDataSideband_Combi(  Double_t* meas,
   cout << " nbins_EWK " << nbins_EWK << endl;
    //loop over channels
   for(Int_t i = 0; i < nbins_EWK; ++i){
-    std::stringstream str;
-    str<<"_"<<i+1;
 
-    cout << " i " << i << endl;
+  
+
+    std::stringstream str;
+    if(!twobins)str << "_" << nbins_EWK+1;
+    else str<<"_"<<i+1;
+
+    cout << " i " << str << endl;
     
     Double_t _tauTTW = tau_ttWForTree[i];
     RooRealVar* tauTTW = SafeObservableCreation(ws, ("tau_ttW"+str.str()).c_str(),_tauTTW);
