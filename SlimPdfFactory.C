@@ -57,15 +57,15 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
 
 
 
-void AddModel_Lin_Combi(Double_t _lumi, Double_t _lumi_sys,
-			Double_t _accXeff, Double_t _accXeff_sys,
-			Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
-			Double_t _muon_cont_1,Double_t _muon_cont_2,
-			Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,
-			bool exponential,
-			bool twobins,
-			RooWorkspace* ws,const char* pdfName,const char* muName){
-
+void AddModel(Double_t _lumi, Double_t _lumi_sys,
+	      Double_t _accXeff, Double_t _accXeff_sys,
+	      Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
+	      Double_t _muon_cont_1,Double_t _muon_cont_2,
+	      Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,
+	      bool exponential,
+	      bool twobins,
+	      RooWorkspace* ws,const char* pdfName,const char* muName){
+  
   using namespace RooStats;
   using namespace RooFit;
   
