@@ -442,13 +442,13 @@ void AddDataSideband_Combi(Double_t* BR_ForTree,
     if(!twobins)str << "_" << nbins_EWK+1;
     else str<<"_"<<i+1;
 
-    cout << " i " << str << endl;
+    cout << " i " << str.str() << endl;
     
     Double_t _tauTTW = tau_ttWForTree[i];
-    // RooRealVar* tauTTW = SafeObservableCreation(ws, ("tau_ttW"+str.str()).c_str(),_tauTTW);
+    RooRealVar* tauTTW = SafeObservableCreation(ws, ("tau_ttW"+str.str()).c_str(),_tauTTW);
 
     Double_t _tauZinv = tau_ZinvForTree[i];
-    // RooRealVar* tauZinv = SafeObservableCreation(ws, ("tau_Zinv"+str.str()).c_str(),_tauZinv);
+    RooRealVar* tauZinv = SafeObservableCreation(ws, ("tau_Zinv"+str.str()).c_str(),_tauZinv);
 
     Double_t ttW_sys = 1./sqrt(muon_sideband[i]);
     Double_t Zinv_sys = 1./sqrt(photon_sideband[i]);
@@ -457,17 +457,17 @@ void AddDataSideband_Combi(Double_t* BR_ForTree,
     Double_t Zinv = (photon_sideband[i]/_tauZinv);
 
     Double_t _BR = BR_ForTree[i];
-    //RooRealVar* BR  = SafeObservableCreation(ws, ("BR"+str.str()).c_str(),_BR);
+    RooRealVar* BR  = SafeObservableCreation(ws, ("BR"+str.str()).c_str(),_BR);
 
 
     cout << " calc zinv " << Zinv << " photon sid " << photon_sideband[i] << endl;
 
-    /* RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
     ws->import(*((RooRealVar*)tauTTW->clone(( string(tauTTW->GetName())+string(dsName)).c_str() ) ));
     ws->import(*((RooRealVar*)tauZinv->clone(( string(tauZinv->GetName())+string(dsName)).c_str() ) ));
     ws->import(*((RooRealVar*)BR->clone(( string(BR->GetName())+string(dsName)).c_str() ) ));
     RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
-    */
+    
    
    
     //need to be careful
@@ -492,11 +492,6 @@ void AddDataSideband_Combi(Double_t* BR_ForTree,
 
     ws->var(("ttW"+str.str()).c_str())->setVal(ttW);
     ws->var(("Zinv"+str.str()).c_str())->setVal(Zinv);
-
-    ws->var(("ttWTau"+str.str()).c_str())->setVal(_tauTTW);
-    ws->var(("ZinvTau"+str.str()).c_str())->setVal(_tauZinv);
-    ws->var(("BR"+str.str()).c_str())->setVal(_BR);
-    
 
   }
 
