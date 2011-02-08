@@ -66,7 +66,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 	      bool twobins,
 	      bool sys_uncorr,
 	      RooWorkspace* ws,const char* pdfName,const char* muName){
-  std::cout << "t 0" << std::endl;    
+
   using namespace RooStats;
   using namespace RooFit;
   
@@ -197,7 +197,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooRealVar* lowHT_sys2_sigma = new RooRealVar("lowHT_sys2_sigma","lowHT_sys2_sigma",_lowHT_sys2);
   
   RooRealVar* lowHT_sys_corr = new RooRealVar("lowHT_sys_corr","lowHT_sys_corr",_lowHT_sys2/_lowHT_sys1);
-  std::cout << "t a" << std::endl;       
+
   if(twobins){// 2signal bins
        
     if(exponential){//exponential
@@ -229,9 +229,6 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
     }
   }
   
-  std::cout << "t b" << std::endl;        
- 
-
   ////Do some weird things to allow substractions
   //RooRealVar* MOne = new RooRealVar("MOne","MOne",-1);  
   //RooProduct *MttW = new RooProduct("MttW","MTTW",RooArgSet(*MOne,*ttW_1));
@@ -243,33 +240,31 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 
   RooProduct* ttWTau_1 = new RooProduct("ttWTau_1","ttW_1*tau_ttW",RooArgSet(*ttW_1,*tau_ttW_1));
   RooProduct* ZinvTau_1 = new RooProduct("ZinvTau_1","Zinv_1*tau_Zinv",RooArgSet(*Zinv_1,*tau_Zinv_1));
-  std::cout << "t c" << std::endl;        
+
   RooProduct* ttWTau_2 = new RooProduct("ttWTau_2","ttW_2*tau_ttW",RooArgSet(*ttW_2,*tau_ttW_2));
   RooProduct* ZinvTau_2 = new RooProduct("ZinvTau_2","Zinv_2*tau_Zinv",RooArgSet(*Zinv_2,*tau_Zinv_2));
-  std::cout << "t d" << std::endl;        
 
   RooAddition* splusb_2 = new RooAddition("splusb_2","splusb_2",RooArgSet(*sig_exp2,*bkgd_4));
-  std::cout << "t e" << std::endl;        
+
   RooRealVar* muon_cont_1 = new RooRealVar("muon_cont_1","muon_cont_1",_muon_cont_1); 
   RooRealVar* muon_cont_2 = new RooRealVar("muon_cont_2","muon_cont_2",_muon_cont_2); 
-  std::cout << "t f" << std::endl;        
+
   RooRealVar* lowHT_cont_1 = new RooRealVar("lowHT_cont_1","lowHT_cont_1",_lowHT_cont_1); 
   RooRealVar* lowHT_cont_2 = new RooRealVar("lowHT_cont_2","lowHT_cont_2",_lowHT_cont_2); 
-  std::cout << "t g" << std::endl;        
+
   RooProduct* signal_in_muon_1 = new RooProduct("signal_in_muon_1","signal_in_muon_1",RooArgSet(*masterSignal,*muon_cont_1));
   RooProduct* signal_in_muon_2 = new RooProduct("signal_in_muon_2","signal_in_muon_2",RooArgSet(*masterSignal,*muon_cont_2));
-  std::cout << "t h" << std::endl;        
+
   RooProduct* signal_in_lowHT_1 = new RooProduct("signal_in_lowHT_1","signal_in_lowHT_1",RooArgSet(*masterSignal,*lowHT_cont_1));
   RooProduct* signal_in_lowHT_2 = new RooProduct("signal_in_lowHT_2","signal_in_lowHT_2",RooArgSet(*masterSignal,*lowHT_cont_2));
-  std::cout << "t i" << std::endl;        
 
   RooAddition* sPlusb_muon_1 = new RooAddition("sPlusb_muon_1","sPlusb_muon_1",RooArgSet(*signal_in_muon_1,*ttWTau_1));
   RooAddition* sPlusb_muon_2 = new RooAddition("sPlusb_muon_2","sPlusb_muon_2",RooArgSet(*signal_in_muon_2,*ttWTau_2));
-  std::cout << "t j" << std::endl;        
+
   RooAddition* sPlusb_lowHT_1 = new RooAddition("sPlusb_lowHT_1","sPlusb_lowHT_1",RooArgSet(*signal_in_lowHT_1,*bkgd_1));
   RooAddition* sPlusb_lowHT_2 = new RooAddition("sPlusb_lowHT_2","sPlusb_lowHT_2",RooArgSet(*signal_in_lowHT_2,*bkgd_2));
   
-  std::cout << "t 1" << std::endl;
+
   //Define all the necessary pdf
   //Gaussian
   RooLognormal *sys_ttW_Cons = new RooLognormal("sys_ttW_Cons","sys_ttW_Cons",*sys_ttW_nom,*sys_ttW,*sys_ttW_sigma);
@@ -298,8 +293,6 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooPoisson* bkgd_poisson_1_bar = new RooPoisson("bkgd_poisson_1_bar","bkgd_poisson_1_bar",*meas_bar_1,*bkgd_bar_1);
   RooPoisson* bkgd_poisson_2_bar = new RooPoisson("bkgd_poisson_2_bar","bkgd_poisson_2_bar",*meas_bar_2,*bkgd_bar_2);
 
- 
-  std::cout << "t 2" << std::endl;  
  
   //add likelihood factors
   if(twobins){
@@ -338,20 +331,11 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   likelihoodFactors.Add(bkgd_poisson_1_bar);
   likelihoodFactors.Add(bkgd_poisson_2_bar);
 
-  cout << "a" << endl;
   RooArgSet likelihoodFactorSet(likelihoodFactors);
-  cout << "b" << endl;
   RooProdPdf joint(pdfName,"joint",likelihoodFactorSet);
-  cout << "c" << endl;
- 
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
-
-  cout << "d" << endl; 
   ws->import(joint);
-  cout << "e" << endl; 
- 
-
   RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
 
   if(twobins){
@@ -359,22 +343,12 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
     else  ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
   }
   else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2"); 
-  cout << "f" << endl; 
+
   if(twobins)ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3,meas_bar_4,muonMeas_1,muonMeas_2,photMeas_1,photMeas_2");
   else ws->defineSet("obs","meas_1,meas_2,meas_4,meas_bar_1,meas_bar_2,meas_bar_4,muonMeas_2,photMeas_2");
   ws->defineSet("poi",muName);
-  cout << "g" << endl; 
-
- 
-
-  cout << " end of modelmaking " << endl;
-
 
 }
-
-
-
-
 
 
 void AddDataSideband_Combi(Double_t* meas,
@@ -389,13 +363,9 @@ void AddDataSideband_Combi(Double_t* meas,
 			   RooWorkspace* ws, 
 			   const char* dsName){
 
-  std::cout << "nBinsInc=" << nbins_incl << std::endl;
-  std::cout << "nBinsEwk=" << nbins_EWK << std::endl;
- 
   //arguments are an array of measured events in signal region, measured events in control regions, factors that relate signal to background region and the number of channels
 
   using namespace RooFit;
-  using std::vector;
 
   Double_t MaxSigma = 8;
 
@@ -413,7 +383,7 @@ void AddDataSideband_Combi(Double_t* meas,
  
 
   Double_t meas_bar_lastbin = meas_bar[nbins_incl - 1];
-  Double_t meas_lastbin = meas[nbins_incl - 1];
+  //Double_t meas_lastbin = meas[nbins_incl - 1];
 
 
   ws->var("bbar")->setMax(1.2*meas_bar_lastbin+MaxSigma*(sqrt(meas_bar_lastbin)) );
@@ -448,7 +418,6 @@ void AddDataSideband_Combi(Double_t* meas,
 
     bkgdForTree[i] = meas[i];
     bkgdbarForTree[i] = meas_bar[i];
-    std::cout << i << "," << meas_bar[i] << std::endl;
  
 
     tree->Branch(("meas"+str.str()).c_str(),bkgdForTree+i,("meas"+str.str()+"/D").c_str());
