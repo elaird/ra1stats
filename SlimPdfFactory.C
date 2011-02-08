@@ -404,6 +404,14 @@ void AddDataSideband_Combi(Double_t* meas,
  
 
   Double_t meas_bar_lastbin = meas_bar[nbins_incl - 1];
+  Double_t meas_lastbin = meas[nbins_incl - 1];
+
+
+  ws->var("bbar")->setMax(1.2*meas_bar_lastbin+MaxSigma*(sqrt(meas_bar_lastbin)) );
+  ws->var("b")->setMax(1.2*meas_lastbin+MaxSigma*(sqrt(meas_lastbin)) );
+  
+  ws->var("b")->setVal(meas_lastbin);
+  ws->var("bbar")->setVal(meas_bar_lastbin);
 
   cout << " nbinx_incl " << nbins_incl << endl;
   //loop over channels
@@ -439,6 +447,7 @@ void AddDataSideband_Combi(Double_t* meas,
     tree->Branch(("meas"+str.str()).c_str(),bkgdForTree+i,("meas"+str.str()+"/D").c_str());
     tree->Branch(("meas_bar"+str.str()).c_str(),bkgdbarForTree+i,("meas_bar"+str.str()+"/D").c_str());
 
+  
 
     if( i < nbins_incl - 1){
       Double_t _tau = (meas_bar[i]/meas_bar_lastbin);
