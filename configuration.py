@@ -9,19 +9,20 @@ def switches() :
     d["nlo"] = True
     #this is the list of valid signalModels: T1, T2, tanBeta3, tanBeta10, tanBeta50
     #d["signalModel"] = "T2"
-    d["signalModel"] = "tanBeta10"#binnings do not match
+    d["signalModel"] = "tanBeta3"
 
     d["testPointsOnly"] = True
     d["twoHtBins"] = True
+    d["exponentialBkg"] = False
 
-    d["signalFreeMode"] = False
+    d["ignoreSignalContamination"] = False
     d["fixQcdToZero"] = True
     d["constrainParameters"] = False
 
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
     
-    assert d["nlo"] ^ (len(d["signalModel"])==2), "SMS do not have NLO"
+    if len(d["signalModel"])==2 : d["nlo"] = False
     return d
 
 def histoSpecs() :
