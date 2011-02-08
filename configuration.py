@@ -9,7 +9,6 @@ def switches() :
     d["nlo"] = True
     #this is the list of valid signalModels: T1, T2, tanBeta3, tanBeta10, tanBeta50
     #d["signalModel"] = "T2"
-    #d["signalModel"] = "tanBeta3"
     d["signalModel"] = "tanBeta10"#binnings do not match
 
     d["testPointsOnly"] = True
@@ -76,14 +75,9 @@ def histoSpecs() :
             d[model][key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
             d[model][key]["loYield"  ] = "m0_m12_mChi_0"
 
-        if model=="tanBeta10" :
-            d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
-            d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
-            d[model]["muon"]["450Dirs"] = ["mSuGraScan_450"]
-        else :
-            d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll_10"
-            d[model]["muon"]["350Dirs"] = ["mSuGraScan_350_10"]
-            d[model]["muon"]["450Dirs"] = ["mSuGraScan_450_10"]
+        d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll_10"
+        d[model]["muon"]["350Dirs"] = ["mSuGraScan_350_10"]
+        d[model]["muon"]["450Dirs"] = ["mSuGraScan_450_10"]
             
         d[model]["ht"]["beforeDir"] = None
         d[model]["ht"]["250Dirs"]   = ["Reco_Bin_250_HT_300"]
