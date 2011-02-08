@@ -347,8 +347,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 
 
 
-void AddDataSideband_Combi(Double_t* BR_ForTree,
-			   Double_t* meas,
+void AddDataSideband_Combi(Double_t* meas,
 			   Double_t* meas_bar,
 			   Int_t nbins_incl,
 			   Double_t* muon_sideband,
@@ -456,16 +455,11 @@ void AddDataSideband_Combi(Double_t* BR_ForTree,
     Double_t ttW = (muon_sideband[i]/_tauTTW);
     Double_t Zinv = (photon_sideband[i]/_tauZinv);
 
-    Double_t _BR = BR_ForTree[i];
-    RooRealVar* BR  = SafeObservableCreation(ws, ("BR"+str.str()).c_str(),_BR);
-
-
     cout << " calc zinv " << Zinv << " photon sid " << photon_sideband[i] << endl;
 
     RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
     ws->import(*((RooRealVar*)tauTTW->clone(( string(tauTTW->GetName())+string(dsName)).c_str() ) ));
     ws->import(*((RooRealVar*)tauZinv->clone(( string(tauZinv->GetName())+string(dsName)).c_str() ) ));
-    ws->import(*((RooRealVar*)BR->clone(( string(BR->GetName())+string(dsName)).c_str() ) ));
     RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
     
    
