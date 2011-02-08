@@ -104,8 +104,8 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooRealVar* signal_sys_sigma = new RooRealVar("signal_sys_sigma","signal_sys_sigma",d_signal_sys);
  
  
-  RooRealVar* BR1 = new RooRealVar("BR1","BR1",1.);
-  RooRealVar* BR2 = new RooRealVar("BR2","BR2",1.);
+  RooRealVar* BR1 = new RooRealVar("BR_1","BR_1",1.);
+  RooRealVar* BR2 = new RooRealVar("BR_2","BR_2",1.);
 
   RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*lumi,*accXeff,*masterSignal,*BR1,*signal_sys));
   RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*lumi,*accXeff,*masterSignal,*BR2,*signal_sys));
@@ -347,7 +347,8 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 
 
 
-void AddDataSideband_Combi(Double_t* meas,
+void AddDataSideband_Combi(Double_t* BR_ForTree,
+			   Double_t* meas,
 			   Double_t* meas_bar,
 			   Int_t nbins_incl,
 			   Double_t* muon_sideband,
@@ -444,10 +445,10 @@ void AddDataSideband_Combi(Double_t* meas,
     cout << " i " << str << endl;
     
     Double_t _tauTTW = tau_ttWForTree[i];
-    RooRealVar* tauTTW = SafeObservableCreation(ws, ("tau_ttW"+str.str()).c_str(),_tauTTW);
+    // RooRealVar* tauTTW = SafeObservableCreation(ws, ("tau_ttW"+str.str()).c_str(),_tauTTW);
 
     Double_t _tauZinv = tau_ZinvForTree[i];
-    RooRealVar* tauZinv = SafeObservableCreation(ws, ("tau_Zinv"+str.str()).c_str(),_tauZinv);
+    // RooRealVar* tauZinv = SafeObservableCreation(ws, ("tau_Zinv"+str.str()).c_str(),_tauZinv);
 
     Double_t ttW_sys = 1./sqrt(muon_sideband[i]);
     Double_t Zinv_sys = 1./sqrt(photon_sideband[i]);
@@ -455,13 +456,18 @@ void AddDataSideband_Combi(Double_t* meas,
     Double_t ttW = (muon_sideband[i]/_tauTTW);
     Double_t Zinv = (photon_sideband[i]/_tauZinv);
 
+    Double_t _BR = BR_ForTree[i];
+    //RooRealVar* BR  = SafeObservableCreation(ws, ("BR"+str.str()).c_str(),_BR);
+
+
     cout << " calc zinv " << Zinv << " photon sid " << photon_sideband[i] << endl;
 
-    RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+    /* RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
     ws->import(*((RooRealVar*)tauTTW->clone(( string(tauTTW->GetName())+string(dsName)).c_str() ) ));
     ws->import(*((RooRealVar*)tauZinv->clone(( string(tauZinv->GetName())+string(dsName)).c_str() ) ));
+    ws->import(*((RooRealVar*)BR->clone(( string(BR->GetName())+string(dsName)).c_str() ) ));
     RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
-
+    */
    
    
     //need to be careful
@@ -486,6 +492,11 @@ void AddDataSideband_Combi(Double_t* meas,
 
     ws->var(("ttW"+str.str()).c_str())->setVal(ttW);
     ws->var(("Zinv"+str.str()).c_str())->setVal(Zinv);
+
+    ws->var(("ttWTau"+str.str()).c_str())->setVal(_tauTTW);
+    ws->var(("ZinvTau"+str.str()).c_str())->setVal(_tauZinv);
+    ws->var(("BR"+str.str()).c_str())->setVal(_BR);
+    
 
   }
 
