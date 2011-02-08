@@ -50,6 +50,13 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
   return SafeObservableCreation(ws,varName,value,60.*value);
 }
 
+
+
+
+
+
+
+
 void AddModel_Lin_Combi(Double_t* BR,
 			Double_t _lumi, Double_t _lumi_sys,
 			Double_t _accXeff, Double_t _accXeff_sys,
@@ -341,7 +348,7 @@ void AddModel_Lin_Combi(Double_t* BR,
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
 
-  ws->import(*muonMeas_1);
+  /* ws->import(*muonMeas_1);
   ws->import(*photMeas_1);
   ws->import(*muonMeas_2);
   ws->import(*photMeas_2);
@@ -352,7 +359,7 @@ void AddModel_Lin_Combi(Double_t* BR,
   ws->import(*meas_bar_1);
   ws->import(*meas_bar_2);
   ws->import(*meas_bar_3);
-  ws->import(*meas_bar_4);
+  ws->import(*meas_bar_4);*/
   ws->import(joint);
 
   // ws->import(nosignal_joint);
