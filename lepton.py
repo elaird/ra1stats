@@ -143,14 +143,12 @@ def modelConfiguration(wspace, pdfName)  :
     getattr(wspace,"import")(modelConfig)
     return modelConfig
 
-def printCovMat(wspace, data) :
+def printCovMat(wspace, dataName) :
     ratioSigEff = wspace.var("ratioSigEff")
     ratioBkgdEff_1 = wspace.var("ratioBkgdEff_1")
     ratioBkgdEff_2 = wspace.var("ratioBkgdEff_2")
     constrainedParams = r.RooArgSet(ratioBkgdEff_1, ratioBkgdEff_2, ratioSigEff)
-  
-    assert data
-    wspace.pdf("total_model").fitTo(data, RooFit.Constrain(constrainedParams))
+    wspace.pdf("total_model").fitTo(wspace.data(dataName), RooFit.Constrain(constrainedParams))
 
 def constrainParams(wspace) :
     nuispar = r.RooArgList(wspace.set("nuis"))
@@ -232,19 +230,20 @@ def feldmanCousins(modelConfig, wspace, dataName, signalVar) :
 def yields(specs, nlo, twoHtBins, lumi, m0, m12, mChi) :
     func = hp.nloYieldHisto if nlo else hp.loYieldHisto
     out = {}
-    for item in ["sig10", "sig05", "sig20", "muon"] :
-        if twoHtBins :
-            for tag,dir in zip(["1", "2"],["350Dirs", "450Dirs"]) :
-                histo = func(specs[item], specs[item][dir], lumi)
-                if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
-        else :
-            histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], lumi)
-            if histo : out["%s"%item] = histo.GetBinContent(m0, m12, mChi)
+    for item in specs :
+        if item!="ht" :
+            if twoHtBins :
+                for tag,dir in zip(["1", "2"],["350Dirs", "450Dirs"]) :
+                    histo = func(specs[item], specs[item][dir], lumi)
+                    if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+            else :
+                histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], lumi)
+                if histo : out["%s"%item] = histo.GetBinContent(m0, m12, mChi)
 
-    for item in ["ht"] :
-        for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
-            histo = func(specs[item], specs[item][dir], lumi, beforeSpec = specs["sig10"])
-            if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+        else :
+            for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
+                histo = func(specs[item], specs[item][dir], lumi, beforeSpec = specs["sig10"])
+                if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
     return out
 
 def setSignalVars(y, switches, specs, strings, wspace, sigma_SigEff_, pdfUncertainty) :
@@ -331,8 +330,9 @@ def printStuff(y, m0, m12, mChi) :
 
 def accXeff(switches, specs, inputData, m0, m12, mChi) :
     if len(switches["signalModel"])==2 :
-        num = hp.loYieldHisto(specs["sig10"], ["350Dirs", "450Dirs"], inputData["lumi"])
-        den = hp.loYieldHisto(specs["sig10"], ["beforeDir"], inputData["lumi"])
+        s = specs["sig10"]
+        num = hp.loYieldHisto(s, s["350Dirs"] + s["450Dirs"], inputData["lumi"])
+        den = hp.loYieldHisto(s, [s["beforeDir"]]           , inputData["lumi"])
         num.Divide(den)
         return num.GetBinContent(m0, m12, mChi)
     else :
@@ -351,11 +351,8 @@ def Lepton(switches, specs, strings, inputData,
     wspace = r.RooWorkspace("Combine")
     
     #import variables and set up total likelihood function
-    data = None
-    modelConfig = None
-    
     if not switches["twoHtBins"] :
-        data = importVarsOneBin( wspace, inputData, switches, strings["dataName"])
+        importVarsOneBin( wspace, inputData, switches, strings["dataName"])
     else :
         r.gSystem.Load("SlimPdfFactory_C.so")
         r.AddModel_Lin_Combi(array.array('d',inputData["sFrac"]),
@@ -399,7 +396,7 @@ def Lepton(switches, specs, strings, inputData,
     modelConfig = modelConfiguration(wspace, strings["pdfName"])
 
     if switches["writeWorkspaceFile"] : wspace.writeToFile(strings["outputWorkspaceFileName"])
-    if switches["printCovarianceMatrix"] : printCovMat(wspace, data)
+    if switches["printCovarianceMatrix"] : printCovMat(wspace, dataName)
     if switches["constrainParameters"] : constrainParams(wspace)
     
     prepareCanvas(switches["method"]=="doBayesian", switches["method"]=="doMCMC")
@@ -408,7 +405,10 @@ def Lepton(switches, specs, strings, inputData,
         y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
         if switches["twoHtBins"] : ds = setSignalVars(      y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
         else :                     ds = setSignalVarsOneBin(y, switches, specs, strings, wspace, inputData["sigma_SigEff"])
-    
+    else :
+        y = {}
+        ds = None
+
     func = eval(switches["method"])
     upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"])
     writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = upperLimit, ds = ds, y = y)
