@@ -56,6 +56,7 @@ void AddModel_Lin_Combi(Double_t* BR,
 			Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
 			Double_t _muon_cont_1,Double_t _muon_cont_2,
 			Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,
+			bool exponential,
 			RooWorkspace* ws,const char* pdfName,const char* muName){
 
   using namespace RooStats;
@@ -178,7 +179,8 @@ void AddModel_Lin_Combi(Double_t* BR,
   //Now the awful combination part
   RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
 
- 
+  RooRealVar* rho = new RooRealVar("rho","rho",1.05,0.,10.);
+
   RooProduct* bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
   RooProduct* bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
   RooProduct *bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
@@ -186,6 +188,24 @@ void AddModel_Lin_Combi(Double_t* BR,
   RooProduct *bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
 
 
+
+  if(exponential){
+    bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*rho,*b,*tau_1));
+    bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*rho,*b,*tau_2));
+    bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
+
+    bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
+
+
+  }
+  else{
+    bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
+    bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
+    bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
+
+    bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));
+  }
+ 
 
   ////Do some weird things to allow substractions
   //RooRealVar* MOne = new RooRealVar("MOne","MOne",-1);  
