@@ -80,7 +80,7 @@ def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     return all
 
 def exampleHisto() :
-    func = nloYieldHisto if conf.switches()["nlo"] else hp.loYieldHisto
+    func = nloYieldHisto if conf.switches()["nlo"] else loYieldHisto
     return func(conf.histoSpecs()["sig10"], conf.histoSpecs()["sig10"]["350Dirs"], data.numbers()["lumi"])
 
 def mergePickledFiles() :
