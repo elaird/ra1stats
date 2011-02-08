@@ -23,8 +23,11 @@ def checkHistoBinning() :
         return [(value["file"], value["350Dirs"][0], value["loYield"]) for value in d.values()]
 
     for axis,values in properties(handles()).iteritems() :
-        assert len(set(values))==1,"The %s binnings do not match: %s"%(axis, str(values))
-
+        if len(set(values))!=1 :
+            print "The %s binnings do not match: %s"%(axis, str(values))
+            for h in handles() :
+                print h,properties([h])
+            assert False
 
 def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f = r.TFile(spec["file"])
