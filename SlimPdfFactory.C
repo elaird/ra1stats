@@ -1,40 +1,17 @@
-//#include <sstream>
-//#include <algorithm>
-//
-#include "TROOT.h"
+#include <sstream>
 #include "TTree.h"
 #include "TMath.h"
 
-#include "RooPlot.h"
-#include "RooAbsPdf.h"
 #include "RooWorkspace.h"
 #include "RooDataSet.h"
-#include "RooGlobalFunc.h"
-#include "RooFitResult.h"
 #include "RooRealVar.h"
 #include "RooAddition.h"
-#include "RooDataSet.h"
 #include "RooProdPdf.h"
+#include "RooProduct.h"
 #include "RooPoisson.h"
 #include "RooGaussian.h"
-#include "RooCmdArg.h"
 #include "RooMsgService.h"
 #include "RooLognormal.h"
-#include "RobsPdfFactory.hh"
-#include "RooAddPdf.h"
-
-#include "RooStats/ProfileLikelihoodCalculator.h"
-#include "RooStats/LikelihoodInterval.h"
-#include "RooStats/LikelihoodIntervalPlot.h"
-#include "RooStats/BayesianCalculator.h"
-#include "RooStats/MCMCCalculator.h"
-#include "RooStats/MCMCInterval.h"
-#include "RooStats/MCMCIntervalPlot.h"
-#include "RooStats/ProposalHelper.h"
-#include "RooStats/SimpleInterval.h"
-#include "RooStats/FeldmanCousins.h"
-#include "RooStats/PointSetInterval.h"
-#include "RooStats/HypoTestResult.h"
 
 RooRealVar* SafeObservableCreation(RooWorkspace* ws, const char* varName,Double_t value, Double_t maximum){
  //need to be careful here that the range of the observable in the dataset is consistent with the one in the workspace. Don't rescale unless necessary. If it is necessary, then rescale by x10 or a defined maximum
@@ -67,9 +44,6 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 	      bool sys_uncorr,
 	      RooWorkspace* ws,const char* pdfName,const char* muName){
 
-  using namespace RooStats;
-  using namespace RooFit;
-  
   TList likelihoodFactors;
 
   TList nosignal_likelihoodFactors;
@@ -364,8 +338,6 @@ void AddDataSideband_Combi(Double_t* meas,
 			   const char* dsName){
 
   //arguments are an array of measured events in signal region, measured events in control regions, factors that relate signal to background region and the number of channels
-
-  using namespace RooFit;
 
   Double_t MaxSigma = 8;
 
