@@ -8,8 +8,8 @@ def switches() :
 
     d["nlo"] = True
     #this is the list of valid signalModels: T1, T2, tanBeta3, tanBeta10, tanBeta50
-    #d["signalModel"] = "T2"
-    d["signalModel"] = "tanBeta3"
+    d["signalModel"] = "T2"
+    #d["signalModel"] = "tanBeta3"
 
     d["testPointsOnly"] = True
     d["twoHtBins"] = True
@@ -47,7 +47,6 @@ def histoSpecs() :
             d[model][key]["350Dirs"  ] = ["mSuGraScan_350_%s"%tag]
             d[model][key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
             d[model][key]["loYield"  ] = "m0_m12_mChi_0"
-            d[model][key]["title"    ] = ";m_{0} (GeV);m_{1/2} (GeV)"
 
         d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll_10"
         d[model]["muon"]["350Dirs"] = ["mSuGraScan_350_10"]
@@ -74,10 +73,6 @@ def histoSpecs() :
             d[model][key]["350Dirs"  ] = ["mSuGraScan_350_%s"%tag]
             d[model][key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
             d[model][key]["loYield"  ] = "m0_m12_mChi_0"
-            if model=="T1" :
-                d[model][key]["title"] = ";m_{gluino} (GeV);m_{LSP} (GeV)"
-            elif model=="T2" :
-                d[model][key]["title"] = ";m_{squark} (GeV);m_{LSP} (GeV)"
             
             d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
             d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
@@ -90,6 +85,14 @@ def histoSpecs() :
         d[model]["ht"]["450Dirs"]   = ["Reco_Bin_450_HT_500", "Reco_Bin_500_HT_Inf"]
 
     return d[switches()["signalModel"]]
+
+def histoTitle() :
+    if switches()["signalModel"]=="T1" :
+        return ";m_{gluino} (GeV);m_{LSP} (GeV)"
+    if switches()["signalModel"]=="T2" :
+        return ";m_{squark} (GeV);m_{LSP} (GeV)"
+    else :
+        return ";m_{0} (GeV);m_{1/2} (GeV)"
 
 def stringsNoArgs() :
     d = {}
