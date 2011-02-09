@@ -13,7 +13,7 @@ def opts() :
     options,args = parser.parse_args()
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
     for pair in [("local", "batch"), ("merge", "batch"), ("local", "efficiency"), ("batch", "efficiency")] :
-        assert getattr(options, pair[0])==None or getattr(options, pair[1])==None,"Choose only one of (%s, %s)"%pair
+        assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
 ############################################
 def jobCmds(nSlices = None, useCompiled = True) :
