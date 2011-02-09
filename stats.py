@@ -6,12 +6,14 @@ import histogramProcessing as hp
 def opts() :
     from optparse import OptionParser
     parser = OptionParser("usage: %prog [options]")
-    parser.add_option("--batch", dest = "batch", default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
-    parser.add_option("--local", dest = "local", default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
-    parser.add_option("--merge", dest = "merge", default = False, action  = "store_true", help = "profile merge job output")    
+    parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
+    parser.add_option("--local",      dest = "local",      default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
+    parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "profile merge job output")
+    parser.add_option("--efficiency", dest = "efficiency", default = False, action  = "store_true", help = "make efficiency plots")
     options,args = parser.parse_args()
-    assert options.batch==None or options.local==None,"Choose only one of (batch, local)"
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
+    for pair in [("local", "batch"), ("merge", "batch"), ("local", "efficiency"), ("batch", "efficiency")] :
+        assert getattr(options, pair[0])==None or getattr(options, pair[1])==None,"Choose only one of (%s, %s)"%pair
     return options
 ############################################
 def jobCmds(nSlices = None, useCompiled = True) :
@@ -97,3 +99,4 @@ mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
 if options.merge : hp.mergePickledFiles()
+if options.efficiency : hp.efficiency()
