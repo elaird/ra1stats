@@ -138,3 +138,6 @@ def points() :
     return _points
 
 _points = cachedPoints()
+
+def efficiency() :
+    print conf.histoSpecs()
