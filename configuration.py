@@ -47,6 +47,7 @@ def histoSpecs() :
             d[model][key]["350Dirs"  ] = ["mSuGraScan_350_%s"%tag]
             d[model][key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
             d[model][key]["loYield"  ] = "m0_m12_mChi_0"
+            d[model][key]["title"    ] = ";m_{0} (GeV);m_{1/2} (GeV)"
 
         d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll_10"
         d[model]["muon"]["350Dirs"] = ["mSuGraScan_350_10"]
@@ -73,7 +74,11 @@ def histoSpecs() :
             d[model][key]["350Dirs"  ] = ["mSuGraScan_350_%s"%tag]
             d[model][key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
             d[model][key]["loYield"  ] = "m0_m12_mChi_0"
-
+            if model=="T1" :
+                d[model][key]["title"] = ";m_{gluino} (GeV);m_{LSP} (GeV)"
+            elif model=="T2" :
+                d[model][key]["title"] = ";m_{squark} (GeV);m_{LSP} (GeV)"
+            
             d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
             d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
             d[model]["muon"]["450Dirs"] = ["mSuGraScan_450"]
