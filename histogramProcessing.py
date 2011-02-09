@@ -159,24 +159,13 @@ def threeToTwo(h3) :
             h2.SetBinContent(iX, iY, content)
     return h2
 
-def makeEfficiencyPlots(tight = True) :
-    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], conf.switches()["signalModel"])
+def squareCanvas() :
     canvas = r.TCanvas("canvas","canvas",2)
     for side in ["Left", "Right", "Top", "Bottom"] :
         getattr(canvas, "Set%sMargin"%side)(0.18)
-    for item,spec in conf.histoSpecs().iteritems() :
-        if item!="sig10" : continue
-        num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
-        den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
-        num.Divide(den)
-        h2 = threeToTwo(num)
-        h2.SetTitle("%s; selection efficiency"%conf.histoTitle())
-        h2.SetStats(False)
-        h2.GetYaxis().SetTitleOffset(1.5)
-        h2.GetZaxis().SetTitleOffset(1.5)
-        h2.Draw("colz")
-        canvas.Print(fileName)
+    return canvas
 
+def epsToPdf(fileName, tight = True) :
     if not tight : #make pdf
         os.system("epstopdf "+fileName)
         os.system("rm       "+fileName)
@@ -188,13 +177,61 @@ def makeEfficiencyPlots(tight = True) :
         os.system("rm       "+fileName)
     print "%s has been written."%fileName.replace(".eps",".pdf")
 
+def adjustHisto(h, zTitle = "") :
+    h.SetStats(False)
+    h.SetTitle("%s;%s"%(conf.histoTitle(), zTitle))
+    h.GetYaxis().SetTitleOffset(1.5)
+    h.GetZaxis().SetTitleOffset(1.5)
+
+def printOnce(canvas, fileName) :
+    canvas.Print(fileName)
+    epsToPdf(fileName)
+
+def makeEfficiencyPlots(item = "sig10") :
+    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], conf.switches()["signalModel"])
+    c = squareCanvas()
+    spec = conf.histoSpecs()[item]
+    num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
+    den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
+    num.Divide(den)
+    h2 = threeToTwo(num)
+
+    #output a root file
+    f = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
+    h2.Write("m0_m12_0")
+    f.Close()
+
+    #output a pdf
+    adjustHisto(h2, zTitle = "analysis efficiency")
+    h2.Draw("colz")
+    printOnce(c, fileName)
+    
+def makeTopologyXsLimitPlots(name = "UpperLimit") :
+    if not (conf.switches()["signalModel"] in ["T1","T2"]) : return
+    
+    inFile = conf.stringsNoArgs()["mergedFile"]
+    f = r.TFile(inFile)
+    fileName = inFile.replace(".root","_xsLimit.eps")
+
+    c = squareCanvas()
+    h2 = threeToTwo(f.Get(name))
+    adjustHisto(h2, zTitle = "upper limit on #sigma (pb)")
+    h2.Draw("colz")
+
+    #linear
+    printOnce(c, fileName)
+
+    #log
+    c.SetLogz()
+    h2.GetZaxis().SetRangeUser(0.1, 20.0)
+    printOnce(c, fileName.replace(".eps","_logZ.eps"))
+    
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
     f = r.TFile(inFile)
     fileName = inFile.replace(".root",".ps")
     outFileName = fileName.replace(".ps",".pdf")
     canvas = r.TCanvas()
-    canvas.SetRightMargin(0.15)
 
     canvas.Print(fileName+"[")
     for key in f.GetListOfKeys() :
@@ -203,10 +240,6 @@ def makeValidationPlots() :
         h2.SetStats(False)
         h2.SetTitle("%s%s"%(name, conf.histoTitle()))
         h2.Draw("colz")
-
-        if conf.switches()["signalModel"] in ["T1","T2"] :
-            h2.GetZaxis().SetRangeUser(0.1, 20.0)
-            canvas.SetLogz()
         canvas.Print(fileName)
 
     canvas.Print(fileName+"]")
