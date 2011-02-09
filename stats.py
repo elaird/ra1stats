@@ -10,6 +10,7 @@ def opts() :
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
     parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "profile merge job output")
     parser.add_option("--efficiency", dest = "efficiency", default = False, action  = "store_true", help = "make efficiency plots")
+    parser.add_option("--validation", dest = "validation", default = False, action  = "store_true", help = "make validation plots")
     options,args = parser.parse_args()
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
     for pair in [("local", "batch"), ("merge", "batch"), ("local", "efficiency"), ("batch", "efficiency")] :
@@ -103,6 +104,7 @@ if options.local :
     local(int(options.local))
 if options.merge :
     hp.mergePickledFiles()
+if options.merge or options.validation :
     hp.makeValidationPlots()
 if options.efficiency :
     hp.makeEfficiencyPlots()
