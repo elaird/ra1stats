@@ -198,13 +198,15 @@ def summed(inputData, twoHtBins) :
             out[key] = value
     return out
 
+def loadLibraries(sourceFiles) :
+    for file in sourceFiles :
+        r.gSystem.Load(file.replace(".cxx", "_cxx.so").replace(".C", "_C.so"))
+
 def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
 
     r.RooRandom.randomGenerator().SetSeed(inputData["seed"]) #set RooFit random seed for reproducible results
     wspace = r.RooWorkspace("Combine")
-    
-    r.gSystem.Load("RooMyPdf_cxx.so")
-    r.gSystem.Load("SlimPdfFactory_C.so")
+    loadLibraries(strings["sourceFiles"])
     r.AddModel(lumi(switches, inputData),
                inputData["_lumi_sys"],
                accXeff(switches, specs, inputData, m0, m12, mChi),
