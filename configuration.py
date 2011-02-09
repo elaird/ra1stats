@@ -7,8 +7,8 @@ def switches() :
     #d["method"] = "feldmanCousins"
 
     d["nlo"] = True
-    d["signalModel"] = "T1"
-    #d["signalModel"] = "tanBeta3"
+    #d["signalModel"] = "T1"
+    d["signalModel"] = "tanBeta3"
 
     d["testPointsOnly"] = True
     d["twoHtBins"] = True
@@ -97,6 +97,7 @@ def histoTitle() :
 def stringsNoArgs() :
     d = {}
 
+    d["sourceFiles"] = ["RooMyPdf.cxx", "SlimPdfFactory.C"]
     #internal names
     if switches()["twoHtBins"] :
         d["pdfName"] = "TopLevelPdf"
