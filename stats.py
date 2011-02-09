@@ -94,6 +94,7 @@ def mergeRootFiles(nSlices) :
 ############################################    
 options = opts()
 hp.checkHistoBinning()
+utils.compile("RooMyPdf.cxx")
 utils.compile("SlimPdfFactory.C")
 mkdirs()
 if options.batch : batch(int(options.batch))
