@@ -205,6 +205,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     r.RooRandom.randomGenerator().SetSeed(inputData["seed"]) #set RooFit random seed for reproducible results
     wspace = r.RooWorkspace("Combine")
     
+    r.gSystem.Load("RooMyPdf_cxx.so")
     r.gSystem.Load("SlimPdfFactory_C.so")
     r.AddModel(lumi(switches, inputData),
                inputData["_lumi_sys"],
