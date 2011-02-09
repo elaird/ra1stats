@@ -108,3 +108,4 @@ if options.merge or options.validation :
     hp.makeValidationPlots()
 if options.efficiency :
     hp.makeEfficiencyPlots()
+    hp.makeTopologyXsLimitPlots()
