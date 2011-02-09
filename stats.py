@@ -97,7 +97,12 @@ hp.checkHistoBinning()
 utils.compile("RooMyPdf.cxx")
 utils.compile("SlimPdfFactory.C")
 mkdirs()
-if options.batch : batch(int(options.batch))
-if options.local : local(int(options.local))
-if options.merge : hp.mergePickledFiles()
-if options.efficiency : hp.efficiency()
+if options.batch :
+    batch(int(options.batch))
+if options.local :
+    local(int(options.local))
+if options.merge :
+    hp.mergePickledFiles()
+    hp.makeValidationPlots()
+if options.efficiency :
+    hp.makeEfficiencyPlots()
