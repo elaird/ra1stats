@@ -11,6 +11,7 @@ def opts() :
     parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "profile merge job output")
     parser.add_option("--efficiency", dest = "efficiency", default = False, action  = "store_true", help = "make efficiency plots")
     parser.add_option("--validation", dest = "validation", default = False, action  = "store_true", help = "make validation plots")
+    parser.add_option("--clean",      dest = "clean",      default = False, action  = "store_true", help = "remove object files")
     options,args = parser.parse_args()
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
     for pair in [("local", "batch"), ("merge", "batch"), ("local", "efficiency"), ("batch", "efficiency")] :
@@ -93,17 +94,32 @@ def mergeRootFiles(nSlices) :
     if conf.switches()["writeWorkspaceFile"] :
         mergeOneType("workspace")
 ############################################    
+def compile() :
+    for file in conf.stringsNoArgs()["sourceFiles"] :
+        utils.compile(file)
+############################################    
+def clean() :
+    for file in conf.stringsNoArgs()["sourceFiles"] :
+        toRemove = []
+        for ext in [".cxx", ".C"] :
+            if ext in file :
+                toRemove.append(file.replace(ext, "_%s.so"%(ext[1:])))
+                toRemove.append(file.replace(ext, "_%s.d"%(ext[1:])))
+        for item in toRemove :
+            if os.path.exists(item) :
+                os.remove(item)
+############################################
 options = opts()
+if options.clean : clean()
+
 hp.checkHistoBinning()
-utils.compile("RooMyPdf.cxx")
-utils.compile("SlimPdfFactory.C")
+compile()
 mkdirs()
-if options.batch :
-    batch(int(options.batch))
-if options.local :
-    local(int(options.local))
-if options.merge :
-    hp.mergePickledFiles()
+
+if options.batch : batch(int(options.batch))
+if options.local : local(int(options.local))
+if options.merge : hp.mergePickledFiles()
+    
 if options.merge or options.validation :
     hp.makeValidationPlots()
 if options.efficiency :
