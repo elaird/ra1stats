@@ -144,6 +144,7 @@ def points() :
     return _points
 
 _points = cachedPoints()
+setupRoot()
 
 def threeToTwo(h3) :
     name = h3.GetName()
@@ -158,8 +159,7 @@ def threeToTwo(h3) :
             h2.SetBinContent(iX, iY, content)
     return h2
 
-def efficiency(tight = True) :
-    setupRoot()
+def makeEfficiencyPlots(tight = True) :
     fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], conf.switches()["signalModel"])
     canvas = r.TCanvas("canvas","canvas",2)
     for side in ["Left", "Right", "Top", "Bottom"] :
@@ -170,7 +170,7 @@ def efficiency(tight = True) :
         den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
         num.Divide(den)
         h2 = threeToTwo(num)
-        h2.SetTitle("%s; selection efficiency"%spec["title"])
+        h2.SetTitle("%s; selection efficiency"%conf.histoTitle())
         h2.SetStats(False)
         h2.GetYaxis().SetTitleOffset(1.5)
         h2.GetZaxis().SetTitleOffset(1.5)
@@ -187,3 +187,29 @@ def efficiency(tight = True) :
         os.system("rm       "+epsiFile)
         os.system("rm       "+fileName)
     print "%s has been written."%fileName.replace(".eps",".pdf")
+
+def makeValidationPlots() :
+    inFile = conf.stringsNoArgs()["mergedFile"]
+    f = r.TFile(inFile)
+    fileName = inFile.replace(".root",".ps")
+    outFileName = fileName.replace(".ps",".pdf")
+    canvas = r.TCanvas()
+    canvas.SetRightMargin(0.15)
+
+    canvas.Print(fileName+"[")
+    for key in f.GetListOfKeys() :
+        name = key.GetName()
+        h2 = threeToTwo(f.Get(key.GetName()))
+        h2.SetStats(False)
+        h2.SetTitle("%s%s"%(name, conf.histoTitle()))
+        h2.Draw("colz")
+
+        if conf.switches()["signalModel"] in ["T1","T2"] :
+            h2.GetZaxis().SetRangeUser(0.1, 20.0)
+            canvas.SetLogz()
+        canvas.Print(fileName)
+
+    canvas.Print(fileName+"]")
+    os.system("ps2pdf %s %s"%(fileName, outFileName))
+    os.remove(fileName)
+    print "%s has been written."%outFileName
