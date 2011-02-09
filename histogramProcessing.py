@@ -147,7 +147,7 @@ _points = cachedPoints()
 
 def threeToTwo(h3) :
     name = h3.GetName()
-    h2 = r.TH2D(name+"_2D",name,
+    h2 = r.TH2D(name+"_2D",h3.GetTitle(),
                 h3.GetNbinsX(), h3.GetXaxis().GetXmin(), h3.GetXaxis().GetXmax(),
                 h3.GetNbinsY(), h3.GetYaxis().GetXmin(), h3.GetYaxis().GetXmax(),
                 )
@@ -158,24 +158,32 @@ def threeToTwo(h3) :
             h2.SetBinContent(iX, iY, content)
     return h2
 
-def efficiency() :
+def efficiency(tight = True) :
     setupRoot()
-    psFileName = conf.stringsNoArgs()["mergedFile"].replace(".root","_eff.ps")
-    canvas = r.TCanvas()
-    canvas.SetRightMargin(0.15)
-    canvas.Print(psFileName+"[")
+    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], conf.switches()["signalModel"])
+    canvas = r.TCanvas("canvas","canvas",2)
+    for side in ["Left", "Right", "Top", "Bottom"] :
+        getattr(canvas, "Set%sMargin"%side)(0.18)
     for item,spec in conf.histoSpecs().iteritems() :
-        if item not in ["sig10", "muon"] : continue
+        if item!="sig10" : continue
         num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
         den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
         num.Divide(den)
         h2 = threeToTwo(num)
-        h2.SetTitle("%s#semicolon %s"%(conf.switches()["signalModel"], item))
+        h2.SetTitle("%s; selection efficiency"%spec["title"])
         h2.SetStats(False)
+        h2.GetYaxis().SetTitleOffset(1.5)
+        h2.GetZaxis().SetTitleOffset(1.5)
         h2.Draw("colz")
-        canvas.Print(psFileName)
-    canvas.Print(psFileName+"]")
-    pdfFileName = psFileName.replace(".ps",".pdf")
-    os.system("ps2pdf %s %s"%(psFileName, pdfFileName) )
-    os.remove(psFileName)
-    print "%s has been written."%pdfFileName
+        canvas.Print(fileName)
+
+    if not tight : #make pdf
+        os.system("epstopdf "+fileName)
+        os.system("rm       "+fileName)
+    else : #make pdf with tight bounding box
+        epsiFile = fileName.replace(".eps",".epsi")
+        os.system("ps2epsi "+fileName+" "+epsiFile)
+        os.system("epstopdf "+epsiFile)
+        os.system("rm       "+epsiFile)
+        os.system("rm       "+fileName)
+    print "%s has been written."%fileName.replace(".eps",".pdf")
