@@ -7,9 +7,8 @@ def switches() :
     #d["method"] = "feldmanCousins"
 
     d["nlo"] = True
-    #this is the list of valid signalModels: T1, T2, tanBeta3, tanBeta10, tanBeta50
-    #d["signalModel"] = "T2"
-    d["signalModel"] = "tanBeta3"
+    d["signalModel"] = "T1"
+    #d["signalModel"] = "tanBeta3"
 
     d["testPointsOnly"] = True
     d["twoHtBins"] = True
@@ -21,7 +20,8 @@ def switches() :
 
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
-    
+
+    assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
     if len(d["signalModel"])==2 : d["nlo"] = False
     return d
 
