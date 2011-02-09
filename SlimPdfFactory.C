@@ -196,7 +196,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
       bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*rho,*b,*tau_2));
 
 
-      bkgd_3 = new RooAddition("bkgd_3","bkgd_3",RooArgSet(*QCD_1));
+      bkgd_3 = new RooAddition("bkgd_3","bkgd_3",RooArgSet(*QCD_1,*Zinv_tot_1,*ttW_tot_1));
       //bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
       if(sys_uncorr)bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));//100% uncorrelated
       else          bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys_corr,*lowHT_sys1));//100% correlated
