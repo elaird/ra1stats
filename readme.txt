@@ -7,7 +7,7 @@ GPLv3 (http://www.gnu.org/licenses/gpl.html)
 | Instructions |
 ----------------
 0) Log in to lxplus:
-ssh lxplus401.cern.ch (to avoid snoopy, which breaks batch mode: https://twiki.cern.ch/twiki/bin/view/Sandbox/CrabVsSnoopy)
+ssh lxplus.cern.ch (note: snoopy currently breaks batch mode: https://twiki.cern.ch/twiki/bin/view/Sandbox/CrabVsSnoopy)
 
 1) Check out the code:
 [if needed: export CVSROOT=username@cmscvs.cern.ch:/cvs_server/repositories/CMSSW;export CVS_RSH=ssh]
