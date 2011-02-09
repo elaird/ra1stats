@@ -206,7 +206,7 @@ def makeEfficiencyPlots(item = "sig10") :
     h2.Draw("colz")
     printOnce(c, fileName)
     
-def makeTopologyXsLimitPlots(name = "UpperLimit") :
+def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     if not (conf.switches()["signalModel"] in ["T1","T2"]) : return
     
     inFile = conf.stringsNoArgs()["mergedFile"]
@@ -218,13 +218,14 @@ def makeTopologyXsLimitPlots(name = "UpperLimit") :
     adjustHisto(h2, zTitle = "upper limit on #sigma (pb)")
     h2.Draw("colz")
 
-    #linear
-    printOnce(c, fileName)
-
-    #log
-    c.SetLogz()
-    h2.GetZaxis().SetRangeUser(0.1, 20.0)
-    printOnce(c, fileName.replace(".eps","_logZ.eps"))
+    if not logZ :
+        printOnce(c, fileName)
+    else :
+        c.SetLogz()
+        #h2.GetZaxis().SetRangeUser(0.1, 40.0)
+        h2.SetMaximum(40.0)
+        h2.SetMinimum(0.1)
+        printOnce(c, fileName.replace(".eps","_logZ.eps"))
     
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
