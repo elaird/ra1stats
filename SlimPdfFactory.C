@@ -161,7 +161,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 
   RooProduct* bkgd_1;
   RooProduct* bkgd_2;
-  RooProduct *bkgd_3;
+  RooAddition *bkgd_3;
   RooProduct *bkgd_4;
 
   RooRealVar* lowHT_sys1 = new RooRealVar("lowHT_sys1","lowHT_sys1",1.0,0.1,5.);
