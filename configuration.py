@@ -8,8 +8,8 @@ def switches() :
 
     d["nlo"] = True
     #this is the list of valid signalModels: T1, T2, tanBeta3, tanBeta10, tanBeta50
-    d["signalModel"] = "T2"
-    #d["signalModel"] = "tanBeta3"
+    #d["signalModel"] = "T2"
+    d["signalModel"] = "tanBeta3"
 
     d["testPointsOnly"] = True
     d["twoHtBins"] = True
