@@ -13,6 +13,8 @@
 #include "RooMsgService.h"
 #include "RooLognormal.h"
 
+#include "RooMyPdf.h"
+
 RooRealVar* SafeObservableCreation(RooWorkspace* ws, const char* varName,Double_t value, Double_t maximum){
  //need to be careful here that the range of the observable in the dataset is consistent with the one in the workspace. Don't rescale unless necessary. If it is necessary, then rescale by x10 or a defined maximum
   RooRealVar* x = ws->var( varName);
@@ -68,7 +70,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooRealVar* meas_bar_4 = new RooRealVar("meas_bar_4","meas_bar_4",110034.,50000., 9000000.);
 
   //define common variables
-  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,200.);//POI
   RooRealVar* lumi = new RooRealVar("lumi","lumi",_lumi);
   RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff);
   
@@ -142,8 +144,8 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooRealVar* QCD_2 = new RooRealVar("QCD_2","QCD_2",.5,0.,100.);
   RooRealVar* ttW_2 = new RooRealVar("ttW_2","ttW_2",.5,0.,100.);
 
-  //RooProduct* Zinv_tot_1 = new RooProduct("Zinv_tot_1","Zinv_1*sys_Zinv",RooArgSet(*Zinv_1,*sys_Zinv)); 
-  //RooProduct* ttW_tot_1 = new RooProduct("ttW_tot_1","ttW_1*sys_ttW",RooArgSet(*ttW_1,*sys_ttW)); 
+  RooProduct* Zinv_tot_1 = new RooProduct("Zinv_tot_1","Zinv_1*sys_Zinv",RooArgSet(*Zinv_1,*sys_Zinv)); 
+  RooProduct* ttW_tot_1 = new RooProduct("ttW_tot_1","ttW_1*sys_ttW",RooArgSet(*ttW_1,*sys_ttW)); 
 
   RooProduct* Zinv_tot_2 = new RooProduct("Zinv_tot_2","Zinv_2*sys_Zinv",RooArgSet(*Zinv_2,*sys_Zinv));
   RooProduct* ttW_tot_2 = new RooProduct("ttW_tot_2","ttW_2*sys_ttW",RooArgSet(*ttW_2,*sys_ttW));
@@ -172,19 +174,42 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   
   RooRealVar* lowHT_sys_corr = new RooRealVar("lowHT_sys_corr","lowHT_sys_corr",_lowHT_sys2/_lowHT_sys1);
 
+
+  
+  RooRealVar* MOne = new RooRealVar("MOne","MOne",-1);  
+  RooProduct *MttW = new RooProduct("MttW","MTTW",RooArgSet(*MOne,*ttW_tot_1));
+  RooProduct *MZinv = new RooProduct("MZinv","MZinv",RooArgSet(*MOne,*Zinv_tot_1));
+
+  RooProduct *b_3;
+  RooAddition *tQCD_1;
+  RooMyPdf* QCD_1;
+
+
   if(twobins){// 2signal bins
        
     if(exponential){//exponential
+      b_3 = new RooProduct("b_3","b_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
+      tQCD_1 = new RooAddition("tQCD_1","tQCD_1",RooArgSet(*b_3,*MttW,*MZinv));
+      QCD_1 = new RooMyPdf("QCD_1","QCD_1",*tQCD_1);
+     
       bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*rho,*rho,*rho,*b,*tau_1));
       bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*rho,*rho,*b,*tau_2));
-      bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
+
+
+      bkgd_3 = new RooAddition("bkgd_3","bkgd_3",RooArgSet(*QCD_1));
+      //bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*rho,*lowHT_sys1,*b,*tau_3));
       if(sys_uncorr)bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));//100% uncorrelated
       else          bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys_corr,*lowHT_sys1));//100% correlated
     }
     else{//linear
+      b_3 = new RooProduct("b_3","b_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
+      tQCD_1 = new RooAddition("tQCD_1","tQCD_1",RooArgSet(*b_3,*MttW,*MZinv));
+      QCD_1 = new RooMyPdf("QCD_1","QCD_1",*tQCD_1);
+     
       bkgd_1 = new RooProduct("bkgd_1","bkgd_1",RooArgSet(*b,*tau_1));
       bkgd_2 = new RooProduct("bkgd_2","bkgd_2",RooArgSet(*b,*tau_2));
-      bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
+      bkgd_3 = new RooAddition("bkgd_3","bkgd_3",RooArgSet(*QCD_1,*ttW_1,*Zinv_1));
+      // bkgd_3 = new RooProduct("bkgd_3","bkgd_3",RooArgSet(*lowHT_sys1,*b,*tau_3));
       if(sys_uncorr)bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys2));//sys 100% uncorrelated
       else bkgd_4 = new RooProduct("bkgd_4","bkgd_4",RooArgSet(*b,*lowHT_sys1,*lowHT_sys_corr));//sys 100% correlated
     }
@@ -483,4 +508,16 @@ void AddDataSideband_Combi(Double_t* meas,
 
 
 
+}
+
+void AddParameters_1d(Double_t _signal_sys,Double_t _muon_cont_1,Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,RooWorkspace* ws){
+
+  cout << " signal_sys " << _signal_sys << endl;
+  ws->var("muon_cont_2")->setVal(_muon_cont_1);
+  ws->var("lowHT_cont_1")->setVal(_lowHT_cont_1);
+  ws->var("lowHT_cont_2")->setVal(_lowHT_cont_2);
+ 
+  ws->var("signal_sys")->setVal(_signal_sys);
+
+  return;
 }
