@@ -4,6 +4,12 @@ import configuration as conf
 import data
 import ROOT as r
 
+def setupRoot() :
+    r.gROOT.SetStyle("Plain")
+    r.gStyle.SetPalette(1)
+    r.gErrorIgnoreLevel = 2000
+    r.gROOT.SetBatch(True)
+    
 def checkHistoBinning() :
     def axisStuff(axis) :
         return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
@@ -139,5 +145,37 @@ def points() :
 
 _points = cachedPoints()
 
+def threeToTwo(h3) :
+    name = h3.GetName()
+    h2 = r.TH2D(name+"_2D",name,
+                h3.GetNbinsX(), h3.GetXaxis().GetXmin(), h3.GetXaxis().GetXmax(),
+                h3.GetNbinsY(), h3.GetYaxis().GetXmin(), h3.GetYaxis().GetXmax(),
+                )
+
+    for iX in range(1, 1+h3.GetNbinsX()) :
+        for iY in range(1, 1+h3.GetNbinsY()) :
+            content = h3.GetBinContent(iX, iY, 1)
+            h2.SetBinContent(iX, iY, content)
+    return h2
+
 def efficiency() :
-    print conf.histoSpecs()
+    setupRoot()
+    psFileName = conf.stringsNoArgs()["mergedFile"].replace(".root","_eff.ps")
+    canvas = r.TCanvas()
+    canvas.SetRightMargin(0.15)
+    canvas.Print(psFileName+"[")
+    for item,spec in conf.histoSpecs().iteritems() :
+        if item not in ["sig10", "muon"] : continue
+        num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
+        den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
+        num.Divide(den)
+        h2 = threeToTwo(num)
+        h2.SetTitle("%s#semicolon %s"%(conf.switches()["signalModel"], item))
+        h2.SetStats(False)
+        h2.Draw("colz")
+        canvas.Print(psFileName)
+    canvas.Print(psFileName+"]")
+    pdfFileName = psFileName.replace(".ps",".pdf")
+    os.system("ps2pdf %s %s"%(psFileName, pdfFileName) )
+    os.remove(psFileName)
+    print "%s has been written."%pdfFileName
