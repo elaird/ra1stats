@@ -13,25 +13,23 @@ def modelConfiguration(wspace, pdfName)  :
     getattr(wspace,"import")(modelConfig)
     return modelConfig
 
-def printCovMat(wspace, dataName) :
-    ratioSigEff = wspace.var("ratioSigEff")
-    ratioBkgdEff_1 = wspace.var("ratioBkgdEff_1")
-    ratioBkgdEff_2 = wspace.var("ratioBkgdEff_2")
-    constrainedParams = r.RooArgSet(ratioBkgdEff_1, ratioBkgdEff_2, ratioSigEff)
-    wspace.pdf("total_model").fitTo(wspace.data(dataName), RooFit.Constrain(constrainedParams))
+def constrainParams(wspace, pdfName, dataName) :
+    def newMin(p) : return max(p.getVal()-10*p.getError(), p.getMin() )
+    def newMax(p) : return min(p.getVal()+10*p.getError(), p.getMax() )
 
-def constrainParams(wspace) :
+    wspace.pdf(pdfName).fitTo(wspace.data(dataName))
+    
     nuispar = r.RooArgList(wspace.set("nuis"))
     for i in range(nuispar.getSize()) :
         par = nuispar[i]
-        par.setMin(max(par.getVal()-10*par.getError(), par.getMin() ) )
-        par.setMax(min(par.getVal()+10*par.getError(), par.getMax() ) )
+        par.setMin( newMin(par) )
+        par.setMax( newMax(par) )
 
         poipar = r.RooArgList(wspace.set("poi"))
         for i in range(poipar.getSize()) :
             spar = poipar[i]
-            spar.setMin(max(spar.getVal()-10*spar.getError(), spar.getMin() ) )
-            spar.setMax(min(spar.getVal()+10*spar.getError(), spar.getMax() ) )
+            spar.setMin( newMin(par) )
+            spar.setMax( newMin(par) )
 
 def profileLikelihood(modelConfig, wspace, dataName, signalVar) :
     plc = r.RooStats.ProfileLikelihoodCalculator(wspace.data(dataName), modelConfig)
@@ -254,8 +252,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     modelConfig = modelConfiguration(wspace, strings["pdfName"])
 
     if switches["writeWorkspaceFile"] : wspace.writeToFile(strings["outputWorkspaceFileName"])
-    if switches["printCovarianceMatrix"] : printCovMat(wspace, dataName)
-    if switches["constrainParameters"] : constrainParams(wspace)
+    if switches["constrainParameters"] : constrainParams(wspace, strings["pdfName"], strings["dataName"])
     
     if switches["ignoreSignalContamination"] :
         y = {}
