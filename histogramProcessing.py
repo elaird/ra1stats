@@ -6,9 +6,11 @@ import ROOT as r
 
 def setupRoot() :
     r.gROOT.SetStyle("Plain")
-    r.gStyle.SetPalette(1)
-    r.gErrorIgnoreLevel = 2000
     r.gROOT.SetBatch(True)
+    r.gErrorIgnoreLevel = 2000
+    r.gStyle.SetPalette(1)
+    #r.gStyle.SetPadTickX(True)
+    #r.gStyle.SetPadTickY(True)
     
 def checkHistoBinning() :
     def axisStuff(axis) :
