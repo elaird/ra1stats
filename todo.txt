@@ -7,8 +7,6 @@ improve histo bin check
 investigate ng
 use muon variation directories?
 use sms variation directories?
-expected limit functionality
-log size plot
 
 Consistency
 -----------
@@ -17,8 +15,9 @@ Consistency
 
 Upgrades
 --------
+expected limit functionality
+log size plot
 tt etc map
-pair-wise merge
 tempfile for output
 
 Style
