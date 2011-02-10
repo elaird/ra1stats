@@ -12,13 +12,14 @@ class baseOneBin(object) :
         self.interest = "susy"
         self.constituents = ["zinv","ttw"]
 
-        self.values = { 'n_selected'      : sum(iD['n_signal']),
+        self.counts = { 'n_selected'      : sum(iD['n_signal']),
                         'n_muon'          : sum(iD['n_muoncontrol']),
-                        'n_photon'        : sum(iD['n_photoncontrol']),
-                        'mc_tau_mu'       : sum(iD['mc_muoncontrol'])   / sum(iD['mc_ttW']),
+                        'n_photon'        : sum(iD['n_photoncontrol']) }
+
+        self.values = { 'mc_tau_mu'       : sum(iD['mc_muoncontrol'])   / sum(iD['mc_ttW']),
                         'mc_tau_ph'       : sum(iD['mc_photoncontrol']) / sum(iD['mc_Zinv']),
                         'sigma_R_susy_eff': iD['sigma_SigEff'],
-                        'R_susy_muons'        : 0.0}
+                        'R_susy_muons'    : 0.0 }
         self.values['sigma_tau_ph'] = self.values['mc_tau_ph'] * iD['sigma_Zinv']
         self.values['sigma_tau_mu'] = self.values['mc_tau_mu'] * iD['sigma_ttW']
 
@@ -37,11 +38,12 @@ class baseOneBin(object) :
     def buildShared(self) :
         
         # Import vars into the workspace
-        nsel = self.values["n_selected"]
+        nsel = self.counts["n_selected"]
         self.wimport(self.interest, 0.1*nsel, 1e-5, 3*nsel)
         for name in self.constituents :           self.wimport(name, 0.5*nsel, 1e-2, 5*nsel)
         for name,val in self.params.iteritems() : self.wimport(name, val, 0.01*val, 100*val)
         for pair in self.values.iteritems():      self.wimport(*pair)
+        for pair in self.counts.iteritems():  self.wimport(*pair)
 
         # Sets
         self.wspace.defineSet("interest",self.interest)

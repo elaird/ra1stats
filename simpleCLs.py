@@ -13,7 +13,7 @@ class simpleCLs(baseOneBin.baseOneBin) :
     def setup1BinCLs(self) :
         self.wspace.factory("ExtendPdf::selected(Uniform::f(m[0,1]),constituents)")
         self.wspace.defineSet("observe","m")
-        data = self.wspace.pdf("selected").generate(self.wspace.set("observe"),self.values['n_selected'])
+        data = self.wspace.pdf("selected").generate(self.wspace.set("observe"),self.counts['n_selected'])
         return data
     
     def modelConfiguration(self,name,n_susy) :
