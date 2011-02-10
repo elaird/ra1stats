@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import ROOT as r
 import configuration as conf
 import data,lepton
 
