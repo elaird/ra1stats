@@ -18,6 +18,7 @@ def switches() :
     d["assumeUncorrelatedLowHtSystematics"] = True
     d["constrainParameters"] = False
 
+    d["Ra2SyncHack"] = False
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
 
@@ -114,13 +115,16 @@ def stringsNoArgs() :
     d["plotStem"]       = "%s/Significance"%d["outputDir"]
     d["workspaceStem"]  = "%s/Combine"%d["outputDir"]
     d["logStem"]        = "%s/job"%d["logDir"]
-    d["mergedFile"]     = "%s/%s_%s_%s_%s_%s.root"%(d["outputDir"],
-                                                    switches()["method"],
-                                                    switches()["signalModel"],
-                                                    "nlo" if switches()["nlo"] else "lo",
-                                                    "2HtBins" if switches()["twoHtBins"] else "1HtBin",
-                                                    "expR" if switches()["exponentialBkg"] else "constantR",
-                                                    )
+    d["mergedFile"]     = "%s/"%d["outputDir"]
+    d["mergedFile"] += "_".join([switches()["method"],
+                                 switches()["signalModel"],
+                                 "nlo" if switches()["nlo"] else "lo",
+                                 "2HtBins" if switches()["twoHtBins"] else "1HtBin",
+                                 "expR" if switches()["exponentialBkg"] else "constantR",
+                                 ])
+
+    if switches()["Ra2SyncHack"] : d["mergedFile"] += "_Ra2SyncHack"
+    d["mergedFile"] += ".root"
     return d
 
 def strings(xBin, yBin, zBin) :
