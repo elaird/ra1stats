@@ -19,6 +19,7 @@ expected limit functionality
 log size plot
 tt etc map
 tempfile for output
+consider 95 vs 99 etc.
 
 Style
 -----
