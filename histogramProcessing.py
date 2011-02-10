@@ -187,6 +187,9 @@ def printOnce(canvas, fileName) :
     canvas.Print(fileName)
     epsToPdf(fileName)
 
+def warn(s = "(not specified)") :
+    print "Warning: range restricted for %s plot."%s
+    
 def makeEfficiencyPlots(item = "sig10") :
     fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], conf.switches()["signalModel"])
     c = squareCanvas()
@@ -203,6 +206,13 @@ def makeEfficiencyPlots(item = "sig10") :
 
     #output a pdf
     adjustHisto(h2, zTitle = "analysis efficiency")
+    model = conf.switches()["signalModel"]
+    if len(model)==2 :
+        print "content: ",h2.GetBinContent(h2.GetMaximumBin())
+        warn("%s efficiency"%model)
+        h2.SetMinimum(0.0)
+        h2.SetMaximum(0.31)
+        r.gStyle.SetNumberContours(31)
     h2.Draw("colz")
     printOnce(c, fileName)
     
@@ -215,16 +225,20 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    adjustHisto(h2, zTitle = "upper limit on #sigma (pb)")
+    adjustHisto(h2, zTitle = "95% C.L. upper limit on #sigma (pb)")
     h2.Draw("colz")
 
     if not logZ :
+        warn("xs limit")
+        h2.SetMinimum(0.0)
+        h2.SetMaximum(36.0)
+        r.gStyle.SetNumberContours(36)
         printOnce(c, fileName)
     else :
+        warn("xs limit")
         c.SetLogz()
-        #h2.GetZaxis().SetRangeUser(0.1, 40.0)
-        h2.SetMaximum(40.0)
-        h2.SetMinimum(0.1)
+        h2.GetZaxis().SetRangeUser(0.4, 40.0)
+        r.gStyle.SetNumberContours(36)
         printOnce(c, fileName.replace(".eps","_logZ.eps"))
     
 def makeValidationPlots() :
