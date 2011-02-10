@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import math
+import configuration as conf
 
 def numbers() :
     d = {}
@@ -30,11 +31,12 @@ def numbers() :
     d["mc_Zinv"]          = (  2.586,  1.492) #MC expectation in photon control sample
     d["sigma_Zinv"]       = 0.4     #systematic uncertainty on Zinv background estimation
 
-    ##changes to synchronize to RA2
-    #muF = 9.3/5.9
-    #d["n_muoncontrol"]    = (      5*muF,   2*muF) #number of events measured in muon control sample
-    #d["mc_muoncontrol"]   = (    4.1*muF, 1.9*muF) #MC expectation in muon control sample
-    #d["sigma_Zinv"]       = math.sqrt(0.172**2+0.2**2+0.2**2+0.05**2) #using box for theory uncertainty
+    #to synchronize with RA2
+    if conf.switches()["Ra2SyncHack"] :
+        muF = 9.3/5.9
+        d["n_muoncontrol"]    = (      5*muF,   2*muF) #number of events measured in muon control sample
+        d["mc_muoncontrol"]   = (    4.1*muF, 1.9*muF) #MC expectation in muon control sample
+        d["sigma_Zinv"]       = math.sqrt(0.172**2+0.2**2+0.2**2+0.05**2) #use box for theory uncertainty
 
     #place-holder values; used only when switches["ignoreSignalContamination"]=True; otherwise overridden
     d["sFrac"]         = (0.25, 0.75) #assumed fraction of signal in each bin (in case of no model)
