@@ -5,9 +5,10 @@ include Rob's method
 bayesian switch in setupLikelihood and modelConfig
 improve histo bin check
 investigate ng
-fix masterSignal duplication
 use muon variation directories?
 use sms variation directories?
+expected limit functionality
+log size plot
 
 Consistency
 -----------
