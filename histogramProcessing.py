@@ -249,11 +249,16 @@ def makeValidationPlots() :
     fileName = inFile.replace(".root",".ps")
     outFileName = fileName.replace(".ps",".pdf")
     canvas = r.TCanvas()
-
+    canvas.SetRightMargin(0.15)
+    
     canvas.Print(fileName+"[")
-    for key in f.GetListOfKeys() :
-        name = key.GetName()
-        h2 = threeToTwo(f.Get(key.GetName()))
+    first = ["ExclusionLimit", "UpperLimit"]
+    names = sorted([key.GetName() for key in f.GetListOfKeys()])
+    for item in first :
+        names.remove(item)
+
+    for name in first+names :
+        h2 = threeToTwo(f.Get(name))
         h2.SetStats(False)
         h2.SetTitle("%s%s"%(name, conf.histoTitle()))
         h2.Draw("colz")
