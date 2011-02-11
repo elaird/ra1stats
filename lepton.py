@@ -95,64 +95,72 @@ def feldmanCousins(modelConfig, wspace, dataName, signalVar) :
 #  //MCMC interval on s = [15.7628, 84.7266]
 #}
 
-def yields(specs, nlo, twoHtBins, lumi, m0, m12, mChi) :
-    func = hp.nloYieldHisto if nlo else hp.loYieldHisto
+def insert(y, name, value) :
+    assert name not in y
+    y[name] = value
+
+def d_s(y, tag, twoHtBins) :
+    if twoHtBins : return y["%s_1"%tag] + y["%s_2"%tag]
+    else :         return y["%s_2"%tag]
+
+def signalSys(y, switches, inputData) :
+    init = inputData["sigma_SigEff"]
+
+    if not switches["nlo"] : return init
+    ds       = d_s(y, "sig10", switches["twoHtBins"])
+    ds_sys05 = d_s(y, "sig05", switches["twoHtBins"])
+    ds_sys2  = d_s(y, "sig20", switches["twoHtBins"])
+    if ds==0.0 : return init
+        
+    masterPlus =  abs(max((max((ds_sys2 - ds),(ds_sys05 - ds))),0.))
+    masterMinus = abs(max((max((ds - ds_sys2),(ds - ds_sys05))),0.))
+    return math.sqrt( math.pow( max(masterMinus,masterPlus)/ds,2) + pow(init,2) + pow(inputData["pdfUncertainty"], 2) )
+
+def yields(specs, switches, inputData, m0, m12, mChi) :
+    func = hp.nloYieldHisto if switches["nlo"] else hp.loYieldHisto
     out = {}
     for item in specs :
         if item!="ht" :
-            if twoHtBins :
+            if switches["twoHtBins"] :
                 for tag,dir in zip(["1", "2"],["350Dirs", "450Dirs"]) :
-                    histo = func(specs[item], specs[item][dir], lumi)
+                    histo = func(specs[item], specs[item][dir], inputData["lumi"])
                     if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
             else :
-                histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], lumi)
+                histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], inputData["lumi"])
                 if histo : out["%s_2"%item] = histo.GetBinContent(m0, m12, mChi)
 
         else :
             for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
-                histo = func(specs[item], specs[item][dir], lumi, beforeSpec = specs["sig10"])
+                histo = func(specs[item], specs[item][dir], inputData["lumi"], beforeSpec = specs["sig10"])
                 if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+
+    insert(out, "ds", d_s(out, "sig10", switches["twoHtBins"]))
+    insert(out, "signalSys", signalSys(out, switches, inputData))
     return out
 
 def setSFrac(wspace, sFrac) :
     wspace.var("BR_1").setVal(sFrac[0])
     wspace.var("BR_2").setVal(sFrac[1])
     
-def setSignalVars(y, switches, specs, strings, wspace, sigma_SigEff, pdfUncertainty) :
-    def d_s(y, tag, twoHtBins) :
-        if twoHtBins : return y["%s_1"%tag] + y["%s_2"%tag]
-        else :         return y["%s_2"%tag]
-
-    def signalSys(init, y, twoHtBins) :
-        ds       = d_s(y, "sig10", twoHtBins)
-        ds_sys05 = d_s(y, "sig05", twoHtBins)
-        ds_sys2  = d_s(y, "sig20", twoHtBins)
-        masterPlus =  abs(max((max((ds_sys2 - ds),(ds_sys05 - ds))),0.))
-        masterMinus = abs(max((max((ds - ds_sys2),(ds - ds_sys05))),0.))
-        return math.sqrt( math.pow( max(masterMinus,masterPlus)/ds,2) + pow(init,2) + pow(pdfUncertainty, 2) )
-
-    ds = d_s(y, "sig10", switches["twoHtBins"])
-
-    if ds>0.0 :
-        wspace.var("signal_sys").setVal(sigma_SigEff if not switches["nlo"] else signalSys(sigma_SigEff, y, switches["twoHtBins"]))
-        wspace.var("muon_cont_2").setVal(y["muon_2"]/ds)
-        wspace.var("lowHT_cont_1").setVal(y["ht_1"]/ds)
-        wspace.var("lowHT_cont_2").setVal(y["ht_2"]/ds)
+def setSignalVars(y, switches, specs, strings, wspace) :
+    def setAndInsert(y, var, value) :
+        wspace.var(var).setVal(value)
+        insert(y, var, value)
+        
+    if y["ds"]>0.0 :
+        wspace.var("signal_sys").setVal(y["signalSys"])
+        setAndInsert(y, "muon_cont_2", y["muon_2"]/y["ds"])
+        setAndInsert(y, "lowHT_cont_1", y["ht_1"]/y["ds"])
+        setAndInsert(y, "lowHT_cont_2", y["ht_2"]/y["ds"])
         
         if switches["twoHtBins"] :
-            wspace.var("BR_1").setVal(y["sig10_1"]/ds)
-            wspace.var("BR_2").setVal(y["sig10_2"]/ds)
-            wspace.var("muon_cont_1").setVal(y["muon_1"]/ds)
+            setAndInsert(y, "BR_1", y["sig10_1"]/y["ds"])
+            setAndInsert(y, "BR_2", y["sig10_2"]/y["ds"])
+            setAndInsert(y, "muon_cont_1", y["muon_1"]/y["ds"])
 
-    return ds
-
-def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, upperLimit = None, ds = None, y = None) :
-    def insert(name, value) :
-        assert name not in y
-        y[name] = value
-
-    insert("UpperLimit", upperLimit)
-    insert("ExclusionLimit", 2*(ds<upperLimit)-1)
+def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, upperLimit = None, y = None) :
+    insert(y, "UpperLimit", upperLimit)
+    insert(y, "ExclusionLimit", 2*(y["ds"]<upperLimit)-1)
 
     outFile = open(fileName, "w")
     cPickle.dump([m0, m12, mChi, y], outFile)
@@ -258,13 +266,13 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     
     if switches["ignoreSignalContamination"] :
         y = {}
-        ds = None
+        y["ds"] = None
         setSFrac(wspace, inputData["sFrac"])
     else :
-        y = yields(specs, switches["nlo"], switches["twoHtBins"], inputData["lumi"], m0, m12, mChi)
-        ds = setSignalVars(y, switches, specs, strings, wspace, inputData["sigma_SigEff"], inputData["pdfUncertainty"])
+        y = yields(specs, switches, inputData, m0, m12, mChi)
+        setSignalVars(y, switches, specs, strings, wspace)
 
     func = eval(switches["method"])
     upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"])
-    writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = upperLimit, ds = ds, y = y)
+    writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = upperLimit, y = y)
     #printStuff(y, m0, m12, mChi)
