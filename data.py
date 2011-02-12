@@ -6,8 +6,8 @@ def numbers() :
     d = {}
     d["seed"]             = 4357 #seed for RooRandom::randomGenerator()
     d["lumi"]             = 35.0 #/pb
-    d["_lumi"]            = 1.0
     d["_lumi_sys"]        = 0.11
+    d["icfDefaultLumi"]   = 100.0 #/pb
                           
     d["n_signal"]         = (8, 5) #number of events measured at HT > 350 GeV and alphaT > 0.55
     d["sigma_SigEff"]     = 0.12    #systematic uncertainty on signal acceptance*efficiency*luminosity //added single uncertainties quadratically
