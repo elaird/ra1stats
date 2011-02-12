@@ -8,11 +8,6 @@ investigate ng
 use muon variation directories?
 use sms variation directories?
 
-Consistency
------------
-0.95
-"Combine"
-
 Upgrades
 --------
 expected limit functionality
