@@ -168,15 +168,18 @@ def upperLimit(modelConfig, wspace, strings, switches, dataIn = None) :
     func = eval(switches["method"])
     return func(modelConfig, wspace, data(wspace, strings, dataIn), strings["signalVar"], switches["CL"])
 
-def computeExpectedLimit(modelConfig, wspace, strings, switches) :
-    h = r.TH1D("upperLimit", "", 40, 0, 10)
+def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
+    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 40, 0, 10)
     wspace.var(strings["signalVar"]).setVal(0.0)
     for iToy in range(switches["nToys"]) :
         data = wspace.pdf(strings["pdfName"]).generate(wspace.set("obs"), 1)
         if switches["debugOutput"] : data.Print("v")
         #getattr(wspace, "import")(data)
         h.Fill(upperLimit(modelConfig, wspace, strings, switches, data))
-    h.Print("all")
+
+    hp.setupRoot()
+    h.Draw()
+    hp.printOnce(r.gPad, "expectedLimit.eps")
     
 def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, upperLimit = None, y = None) :
     insert(y, "UpperLimit", upperLimit)
@@ -286,8 +289,8 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     if switches["constrainParameters"] : constrainParams(wspace, strings["pdfName"], strings["dataName"])
 
     if switches["computeExpectedLimit"] :
-        computeExpectedLimit(modelConfig, wspace, strings, switches)
-    elif switches["ignoreSignalContamination"] :
+        computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
+    elif switches["hardCodedSignalContamination"] :
         setSFrac(wspace, inputData["sFrac"])
         upperLimit(modelConfig, wspace, strings, switches)
     else :
