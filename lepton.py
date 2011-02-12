@@ -31,8 +31,14 @@ def constrainParams(wspace, pdfName, dataName) :
             spar.setMin( newMin(par) )
             spar.setMax( newMin(par) )
 
-def profileLikelihood(modelConfig, wspace, dataName, signalVar, cl) :
-    plc = r.RooStats.ProfileLikelihoodCalculator(wspace.data(dataName), modelConfig)
+def data(wspace, strings, dataIn) :
+    if not dataIn :
+        return wspace.data(strings["dataName"])
+    else :
+        return dataIn
+
+def profileLikelihood(modelConfig, wspace, data, signalVar, cl) :
+    plc = r.RooStats.ProfileLikelihoodCalculator(data, modelConfig)
     plc.SetConfidenceLevel(cl)
     plInt = plc.GetInterval()
     print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
@@ -40,8 +46,8 @@ def profileLikelihood(modelConfig, wspace, dataName, signalVar, cl) :
     #lrplot.Draw();
     return plInt.UpperLimit(wspace.var(signalVar))
 
-def feldmanCousins(modelConfig, wspace, dataName, signalVar, cl) :
-    fc = r.RooStats.FeldmanCousins(wspace.data(dataName), modelConfig)
+def feldmanCousins(modelConfig, wspace, data, signalVar, cl) :
+    fc = r.RooStats.FeldmanCousins(data, modelConfig)
     fc.SetConfidenceLevel(cl)
     fc.FluctuateNumDataEntries(False) #number counting: dataset always has 1 entry with N events observed
     fc.UseAdaptiveSampling(True)
@@ -158,6 +164,20 @@ def setSignalVars(y, switches, specs, strings, wspace) :
             setAndInsert(y, "BR_2", y["sig10_2"]/y["ds"])
             setAndInsert(y, "muon_cont_1", y["muon_1"]/y["ds"])
 
+def upperLimit(modelConfig, wspace, strings, switches, dataIn = None) :
+    func = eval(switches["method"])
+    return func(modelConfig, wspace, data(wspace, strings, dataIn), strings["signalVar"], switches["CL"])
+
+def computeExpectedLimit(modelConfig, wspace, strings, switches) :
+    h = r.TH1D("upperLimit", "", 40, 0, 10)
+    wspace.var(strings["signalVar"]).setVal(0.0)
+    for iToy in range(switches["nToys"]) :
+        data = wspace.pdf(strings["pdfName"]).generate(wspace.set("obs"), 1)
+        if switches["debugOutput"] : data.Print("v")
+        #getattr(wspace, "import")(data)
+        h.Fill(upperLimit(modelConfig, wspace, strings, switches, data))
+    h.Print("all")
+    
 def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, upperLimit = None, y = None) :
     insert(y, "UpperLimit", upperLimit)
     insert(y, "ExclusionLimit", 2*(y["ds"]<upperLimit)-1)
@@ -243,7 +263,8 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     
     summedData = summed(inputData, switches["twoHtBins"])
     
-    r.AddDataSideband_Combi(array.array('d', summedData["n_htcontrol"]),
+    r.AddDataSideband_Combi(switches["debugOutput"],
+                            array.array('d', summedData["n_htcontrol"]),
                             array.array('d', summedData["n_bar_htcontrol"]),
                             len(summedData["n_bar_htcontrol"]),
                             
@@ -263,16 +284,15 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
 
     if switches["writeWorkspaceFile"] : wspace.writeToFile(strings["outputWorkspaceFileName"])
     if switches["constrainParameters"] : constrainParams(wspace, strings["pdfName"], strings["dataName"])
-    
-    if switches["ignoreSignalContamination"] :
-        y = {}
-        y["ds"] = None
+
+    if switches["computeExpectedLimit"] :
+        computeExpectedLimit(modelConfig, wspace, strings, switches)
+    elif switches["ignoreSignalContamination"] :
         setSFrac(wspace, inputData["sFrac"])
+        upperLimit(modelConfig, wspace, strings, switches)
     else :
         y = yields(specs, switches, inputData, m0, m12, mChi)
         setSignalVars(y, switches, specs, strings, wspace)
-
-    func = eval(switches["method"])
-    upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"], switches["CL"])
-    writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = upperLimit, y = y)
+        ul = upperLimit(modelConfig, wspace, strings, switches)
+        writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = ul, y = y)
     #printStuff(y, m0, m12, mChi)
