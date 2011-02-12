@@ -17,7 +17,7 @@ def switches() :
     #d["signalModel"] = "T1"
     d["signalModel"] = "tanBeta3"
 
-    d["testPointsOnly"] = False
+    d["testPointsOnly"] = True
     d["twoHtBins"] = True
     d["exponentialBkg"] = False
 
@@ -109,7 +109,10 @@ def stringsNoArgs() :
     d = {}
 
     d["sourceFiles"] = ["RooMyPdf.cxx", "SlimPdfFactory.C"]
+
     #internal names
+    d["workspaceName"]   = "Combine"
+    d["modelConfigName"] = "Combine"
     if switches()["twoHtBins"] :
         d["pdfName"] = "TopLevelPdf"
         d["dataName"] = "ObservedNumberCountingDataWithSideband"
@@ -123,7 +126,7 @@ def stringsNoArgs() :
     d["outputDir"]      = "output"
     d["logDir"]         = "log"
     d["plotStem"]       = "%s/Significance"%d["outputDir"]
-    d["workspaceStem"]  = "%s/Combine"%d["outputDir"]
+    d["workspaceStem"]  = "%s/%s"%(d["outputDir"], d["workspaceName"])
     d["logStem"]        = "%s/job"%d["logDir"]
     d["mergedFile"]     = "%s/"%d["outputDir"]
     d["mergedFile"] += "_".join([switches()["method"],
