@@ -20,8 +20,4 @@ log size plot
 tt etc map
 tempfile for output
 consider 95 vs 99 etc.
-
-Style
------
-hard-coded 100
-info level
+switchable info level

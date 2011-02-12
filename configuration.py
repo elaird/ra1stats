@@ -22,6 +22,10 @@ def switches() :
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
 
+    d["CL"] = 0.95
+    d["minSignalEventsForConsideration"] =  1.0
+    d["maxSignalEventsForConsideration"] = 50.0
+
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
     if len(d["signalModel"])==2 : d["nlo"] = False
     return d
