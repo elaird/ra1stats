@@ -7,6 +7,10 @@ def checkAndAdjust(d) :
         d["minSignalEventsForConsideration"] = None
         d["maxSignalEventsForConsideration"] = None
 
+def singleJobOnly() :
+    d = switches()
+    return any([d[item] for item in ["computeExpectedLimit", "hardCodedSignalContamination"]])
+
 def switches() :
     d = {}
 
@@ -23,9 +27,9 @@ def switches() :
     d["exponentialBkg"] = False
 
     d["computeExpectedLimit"] = False
-    d["nToys"] = 200
+    d["nToys"] = 20
 
-    d["ignoreSignalContamination"] = False
+    d["hardCodedSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
     d["constrainParameters"] = False
 
