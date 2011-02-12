@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+def checkAndAdjust(d) :
+    assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
+    if len(d["signalModel"])==2 :
+        d["nlo"] = False
+        d["minSignalEventsForConsideration"] = None
+        d["maxSignalEventsForConsideration"] = None
+
 def switches() :
     d = {}
 
@@ -10,7 +17,7 @@ def switches() :
     #d["signalModel"] = "T1"
     d["signalModel"] = "tanBeta3"
 
-    d["testPointsOnly"] = True
+    d["testPointsOnly"] = False
     d["twoHtBins"] = True
     d["exponentialBkg"] = False
 
@@ -26,8 +33,7 @@ def switches() :
     d["minSignalEventsForConsideration"] =  1.0
     d["maxSignalEventsForConsideration"] = 50.0
 
-    assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
-    if len(d["signalModel"])==2 : d["nlo"] = False
+    checkAndAdjust(d)
     return d
 
 def histoSpecs() :
