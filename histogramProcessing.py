@@ -55,7 +55,7 @@ def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
             h.Add(hOld)
             
     h.SetDirectory(0)
-    h.Scale(lumi/100.0) #100/pb is the default normalization
+    h.Scale(lumi/data["icfDefaultLumi"])
     f.Close()
     return h
 
@@ -94,7 +94,8 @@ def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
 
 def exampleHisto() :
     func = nloYieldHisto if conf.switches()["nlo"] else loYieldHisto
-    return func(conf.histoSpecs()["sig10"], conf.histoSpecs()["sig10"]["350Dirs"], data.numbers()["lumi"])
+    s = conf.histoSpecs()["sig10"]
+    return func(s, s["350Dirs"]+s["450Dirs"], data.numbers()["lumi"])
 
 def mergePickledFiles() :
     example = exampleHisto()
@@ -129,7 +130,10 @@ def fullPoints() :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 content = h.GetBinContent(iBinX, iBinY, iBinZ)
-                if content==0.0 : continue
+                min = conf.switches()["minSignalEventsForConsideration"]
+                max = conf.switches()["maxSignalEventsForConsideration"]
+                if min!=None and content<min : continue
+                if max!=None and content>max : continue
                 out.append( (iBinX, iBinY, iBinZ) )
     return out
 
@@ -227,7 +231,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    adjustHisto(h2, zTitle = "95% C.L. upper limit on #sigma (pb)")
+    adjustHisto(h2, zTitle = "%g% C.L. upper limit on #sigma (pb)"%(100.0*conf.switches()["CL"]))
     h2.Draw("colz")
 
     if not logZ :

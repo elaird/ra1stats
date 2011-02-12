@@ -31,18 +31,18 @@ def constrainParams(wspace, pdfName, dataName) :
             spar.setMin( newMin(par) )
             spar.setMax( newMin(par) )
 
-def profileLikelihood(modelConfig, wspace, dataName, signalVar) :
+def profileLikelihood(modelConfig, wspace, dataName, signalVar, cl) :
     plc = r.RooStats.ProfileLikelihoodCalculator(wspace.data(dataName), modelConfig)
-    plc.SetConfidenceLevel(0.95)
+    plc.SetConfidenceLevel(cl)
     plInt = plc.GetInterval()
     print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
     #lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
     #lrplot.Draw();
     return plInt.UpperLimit(wspace.var(signalVar))
 
-def feldmanCousins(modelConfig, wspace, dataName, signalVar) :
+def feldmanCousins(modelConfig, wspace, dataName, signalVar, cl) :
     fc = r.RooStats.FeldmanCousins(wspace.data(dataName), modelConfig)
-    fc.SetConfidenceLevel(0.95)
+    fc.SetConfidenceLevel(cl)
     fc.FluctuateNumDataEntries(False) #number counting: dataset always has 1 entry with N events observed
     fc.UseAdaptiveSampling(True)
     fc.AdditionalNToysFactor(4)
@@ -273,6 +273,6 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
         setSignalVars(y, switches, specs, strings, wspace)
 
     func = eval(switches["method"])
-    upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"])
+    upperLimit = func(modelConfig, wspace, strings["dataName"], strings["signalVar"], switches["CL"])
     writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = upperLimit, y = y)
     #printStuff(y, m0, m12, mChi)
