@@ -18,7 +18,7 @@ def opts() :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
 ############################################
-def jobCmds(nSlices = None, useCompiled = True) :
+def jobCmds(nSlices = None) :
     def logFileName(iSlice) :
         return "%s_%d.log"%(conf.stringsNoArgs()["logStem"], iSlice)
 
@@ -35,10 +35,14 @@ def jobCmds(nSlices = None, useCompiled = True) :
         s += " %s"%(" ".join(args))                      #2
         s += " >& %s/%s"%(pwd, logFileName(iSlice))
         out.append(s)
-    return out
+
+    if conf.singleJobOnly() :
+        return out[:1]
+    else :
+        return out
 ############################################
 def batch(nSlices) :
-    for jobCmd in jobCmds(nSlices, useCompiled = False) :
+    for jobCmd in jobCmds(nSlices) :
         subCmd = "bsub %s"%jobCmd
         os.system(subCmd)
 ############################################
