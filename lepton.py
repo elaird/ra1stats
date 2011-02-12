@@ -3,8 +3,8 @@ import ROOT as r
 import math,array,cPickle
 import histogramProcessing as hp
 
-def modelConfiguration(wspace, pdfName)  :
-    modelConfig = r.RooStats.ModelConfig("Combine")
+def modelConfiguration(wspace, pdfName, modelConfigName)  :
+    modelConfig = r.RooStats.ModelConfig(modelConfigName)
     modelConfig.SetWorkspace(wspace)
     modelConfig.SetPdf(wspace.pdf(pdfName))
     #modelConfig.SetPriorPdf(wspace.pdf("prior"))
@@ -213,7 +213,7 @@ def loadLibraries(sourceFiles) :
 def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
 
     r.RooRandom.randomGenerator().SetSeed(inputData["seed"]) #set RooFit random seed for reproducible results
-    wspace = r.RooWorkspace("Combine")
+    wspace = r.RooWorkspace(strings["workspaceName"])
     loadLibraries(strings["sourceFiles"])
     r.AddModel(lumi(switches, inputData),
                inputData["_lumi_sys"],
@@ -259,7 +259,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
                             strings["dataName"]
                             )
     
-    modelConfig = modelConfiguration(wspace, strings["pdfName"])
+    modelConfig = modelConfiguration(wspace, strings["pdfName"], strings["modelConfigName"])
 
     if switches["writeWorkspaceFile"] : wspace.writeToFile(strings["outputWorkspaceFileName"])
     if switches["constrainParameters"] : constrainParams(wspace, strings["pdfName"], strings["dataName"])
