@@ -17,9 +17,13 @@ def switches() :
     #d["signalModel"] = "T1"
     d["signalModel"] = "tanBeta3"
 
+    d["debugOutput"] = False
     d["testPointsOnly"] = True
     d["twoHtBins"] = True
     d["exponentialBkg"] = False
+
+    d["computeExpectedLimit"] = False
+    d["nToys"] = 200
 
     d["ignoreSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
