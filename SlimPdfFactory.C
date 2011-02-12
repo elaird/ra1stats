@@ -325,7 +325,8 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 }
 
 
-void AddDataSideband_Combi(Double_t* meas,
+void AddDataSideband_Combi(bool debug,
+			   Double_t* meas,
 			   Double_t* meas_bar,
 			   Int_t nbins_incl,
 			   Double_t* muon_sideband,
@@ -362,7 +363,7 @@ void AddDataSideband_Combi(Double_t* meas,
 
   ws->var("bbar")->setVal(meas_bar_lastbin);
 
-  cout << " nbinx_incl " << nbins_incl << endl;
+  if (debug) cout << " nbinx_incl " << nbins_incl << endl;
   //loop over channels
   for(Int_t i = 0; i < nbins_incl; ++i){
 
@@ -376,7 +377,7 @@ void AddDataSideband_Combi(Double_t* meas,
     else str<<"_"<<i+1;
     
   
-    cout << " i " << i << endl;
+    if (debug) cout << " i " << i << endl;
    
     //need to be careful
     RooRealVar* bkgdMeas = SafeObservableCreation(ws,("meas"+str.str()).c_str(),meas[i]);
@@ -400,7 +401,7 @@ void AddDataSideband_Combi(Double_t* meas,
     if( i < nbins_incl - 1){
       Double_t _tau = (meas_bar[i]/meas_bar_lastbin);
 
-      cout << " _tau " << _tau << endl;
+      if (debug) cout << " _tau " << _tau << endl;
 
       RooRealVar* tau = SafeObservableCreation(ws, ("tau"+str.str()).c_str(),_tau);
       RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -410,7 +411,7 @@ void AddDataSideband_Combi(Double_t* meas,
 
   }
 
-  cout << " nbins_EWK " << nbins_EWK << endl;
+  if (debug) cout << " nbins_EWK " << nbins_EWK << endl;
    //loop over channels
   for(Int_t i = 0; i < nbins_EWK; ++i){
 
@@ -420,7 +421,7 @@ void AddDataSideband_Combi(Double_t* meas,
     if(!twobins)str << "_" << nbins_EWK+1;
     else str<<"_"<<i+1;
 
-    cout << " i " << str.str() << endl;
+    if (debug) cout << " i " << str.str() << endl;
     
     Double_t _tauTTW = tau_ttWForTree[i];
     RooRealVar* tauTTW = SafeObservableCreation(ws, ("tau_ttW"+str.str()).c_str(),_tauTTW);
@@ -434,7 +435,7 @@ void AddDataSideband_Combi(Double_t* meas,
     Double_t ttW = (muon_sideband[i]/_tauTTW);
     Double_t Zinv = (photon_sideband[i]/_tauZinv);
 
-    cout << " calc zinv " << Zinv << " photon sid " << photon_sideband[i] << endl;
+    if (debug) cout << " calc zinv " << Zinv << " photon sid " << photon_sideband[i] << endl;
 
     RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
     ws->import(*((RooRealVar*)tauTTW->clone(( string(tauTTW->GetName())+string(dsName)).c_str() ) ));
@@ -471,11 +472,11 @@ void AddDataSideband_Combi(Double_t* meas,
   tree->Fill();
 
   RooArgList* observableList = new RooArgList(observablesCollection);
-  observableList->Print();
+  if (debug) observableList->Print();
 
   RooDataSet* data = new RooDataSet(dsName,"Number Counting Data",tree,*observableList);
   //data->Scan();
-  data->Print("v");
+  if (debug) data->Print("v");
  
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   ws->import(*data);
