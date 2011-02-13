@@ -43,7 +43,7 @@ def jobCmds(nSlices = None) :
 ############################################
 def batch(nSlices) :
     for jobCmd in jobCmds(nSlices) :
-        subCmd = "%s %s"%("bsub" if "cern.ch" in os.environ["HOSTNAME"] else "qsub", jobCmd)
+        subCmd = "%s %s"%(conf.stringsNoArgs()["subCmd"], jobCmd)
         os.system(subCmd)
 ############################################
 def local(nWorkers) :
