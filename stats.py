@@ -32,7 +32,8 @@ def jobCmds(nSlices = None) :
         args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
-        s += " %s"%(" ".join(args))                      #2
+        s += " %s"%strings["envScript"]                  #2
+        s += " %s"%(" ".join(args))                      #3
         s += " >& %s/%s"%(pwd, logFileName(iSlice))
         out.append(s)
 
