@@ -37,6 +37,7 @@ def switches() :
     d["Ra2SyncHack"] = False
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
+    d["writeGraphVizTree"] = True
 
     d["CL"] = 0.95
     d["minSignalEventsForConsideration"] =  1.0
@@ -122,6 +123,7 @@ def stringsNoArgs() :
 
     d["sourceFiles"] = ["RooMyPdf.cxx", "SlimPdfFactory.C"]
     d["subCmd"] = "bsub" if isCern() else "qsub"
+    d["envScript"] = "env.sh" if isCern() else "envIC.sh"
 
     #internal names
     d["workspaceName"]   = "Combine"
