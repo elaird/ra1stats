@@ -1,5 +1,5 @@
 #!/bin/sh
 
 cd $1
-source env.sh
+source $2
 ./job.py $*
