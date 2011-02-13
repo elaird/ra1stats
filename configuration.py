@@ -37,7 +37,7 @@ def switches() :
     d["Ra2SyncHack"] = False
     d["printCovarianceMatrix"] = False
     d["writeWorkspaceFile"] = False
-    d["writeGraphVizTree"] = True
+    d["writeGraphVizTree"] = False
 
     d["CL"] = 0.95
     d["minSignalEventsForConsideration"] =  1.0
