@@ -4,7 +4,7 @@ import configuration as conf
 import data,lepton
 
 def points() :
-    return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(2, len(sys.argv), 3)]
+    return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(3, len(sys.argv), 3)]
 
 for point in points() :
     lepton.Lepton(conf.switches(),
