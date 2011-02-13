@@ -53,7 +53,7 @@ def feldmanCousins(modelConfig, wspace, data, signalVar, cl) :
     fc.UseAdaptiveSampling(True)
     fc.AdditionalNToysFactor(4)
     fc.SetNBins(40)
-
+    #fc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
     fcInt = fc.GetInterval()
     print "Feldman Cousins interval on s = [%g, %g]"%(fcInt.LowerLimit(wspace.var(signalVar)), fcInt.UpperLimit(wspace.var(signalVar)))
     return fcInt.UpperLimit(wspace.var(signalVar))
@@ -169,10 +169,11 @@ def upperLimit(modelConfig, wspace, strings, switches, dataIn = None) :
     return func(modelConfig, wspace, data(wspace, strings, dataIn), strings["signalVar"], switches["CL"])
 
 def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
-    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 40, 0, 10)
     wspace.var(strings["signalVar"]).setVal(0.0)
-    for iToy in range(switches["nToys"]) :
-        data = wspace.pdf(strings["pdfName"]).generate(wspace.set("obs"), 1)
+    datasets = [wspace.pdf(strings["pdfName"]).generate(wspace.set("obs"), 1) for i in range(switches["nToys"])]
+
+    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 40, 0, 10)
+    for data in datasets :
         if switches["debugOutput"] : data.Print("v")
         #getattr(wspace, "import")(data)
         h.Fill(upperLimit(modelConfig, wspace, strings, switches, data))
