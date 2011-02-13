@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import ROOT as r
-import math,array,cPickle
+import math,array,cPickle,os
 import histogramProcessing as hp
 
 def modelConfiguration(wspace, pdfName, modelConfigName)  :
@@ -31,6 +31,12 @@ def constrainParams(wspace, pdfName, dataName) :
             spar.setMin( newMin(par) )
             spar.setMax( newMin(par) )
 
+def writeGraphVizTree(wspace, strings) :
+    dotFile = "%s/%s.dot"%(strings["outputDir"], strings["pdfName"])
+    wspace.pdf(strings["pdfName"]).graphVizTree(dotFile)
+    cmd = "dot -Tps %s -o %s"%(dotFile, dotFile.replace(".dot", ".ps"))
+    os.system(cmd)
+    
 def data(wspace, strings, dataIn) :
     if not dataIn :
         return wspace.data(strings["dataName"])
@@ -287,6 +293,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     modelConfig = modelConfiguration(wspace, strings["pdfName"], strings["modelConfigName"])
 
     if switches["writeWorkspaceFile"] : wspace.writeToFile(strings["outputWorkspaceFileName"])
+    if switches["writeGraphVizTree"] : writeGraphVizTree(wspace, strings)
     if switches["constrainParameters"] : constrainParams(wspace, strings["pdfName"], strings["dataName"])
 
     if switches["computeExpectedLimit"] :
