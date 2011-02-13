@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
@@ -44,8 +45,11 @@ def switches() :
     checkAndAdjust(d)
     return d
 
+def isCern() :
+    return ("cern.ch" in os.environ["HOSTNAME"])
+
 def histoSpecs() :
-    dir = "/afs/cern.ch/user/e/elaird/public/20_yieldHistograms"
+    dir = "/afs/cern.ch/user/e/elaird/public/20_yieldHistograms" if isCern() else "/vols/cms02/elaird1/20_yieldHistograms"
 
     d = {}
     for model in ["tanBeta3", "tanBeta10", "tanBeta50"] :
@@ -117,6 +121,7 @@ def stringsNoArgs() :
     d = {}
 
     d["sourceFiles"] = ["RooMyPdf.cxx", "SlimPdfFactory.C"]
+    d["subCmd"] = "bsub" if isCern() else "qsub"
 
     #internal names
     d["workspaceName"]   = "Combine"
