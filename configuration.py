@@ -27,8 +27,8 @@ def switches() :
     d["twoHtBins"] = True
     d["exponentialBkg"] = False
 
-    d["computeExpectedLimit"] = True
-    d["nToys"] = 5
+    d["computeExpectedLimit"] = False
+    d["nToys"] = 20
 
     d["hardCodedSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
