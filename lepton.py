@@ -37,12 +37,6 @@ def writeGraphVizTree(wspace, strings) :
     cmd = "dot -Tps %s -o %s"%(dotFile, dotFile.replace(".dot", ".ps"))
     os.system(cmd)
     
-def data(wspace, strings, dataIn) :
-    if not dataIn :
-        return wspace.data(strings["dataName"])
-    else :
-        return dataIn
-
 def profileLikelihood(modelConfig, wspace, data, signalVar, cl) :
     plc = r.RooStats.ProfileLikelihoodCalculator(data, modelConfig)
     plc.SetConfidenceLevel(cl)
@@ -171,19 +165,21 @@ def setSignalVars(y, switches, specs, strings, wspace) :
             setAndInsert(y, "muon_cont_1", y["muon_1"]/y["ds"])
 
 def upperLimit(modelConfig, wspace, strings, switches, dataIn = None) :
+    data = wspace.data(strings["dataName"]) if not dataIn else dataIn
     func = eval(switches["method"])
-    return func(modelConfig, wspace, data(wspace, strings, dataIn), strings["signalVar"], switches["CL"])
+    return func(modelConfig, wspace, data, strings["signalVar"], switches["CL"])
 
 def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
     wspace.var(strings["signalVar"]).setVal(0.0)
-    datasets = [wspace.pdf(strings["pdfName"]).generate(wspace.set("obs"), 1) for i in range(switches["nToys"])]
-
-    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 40, 0, 10)
-    for data in datasets :
+    dataset = wspace.pdf(strings["pdfName"]).generate(wspace.set("obs"), switches["nToys"])
+    
+    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 40, 0, 20)
+    for i in range(int(dataset.sumEntries())) :
+        data = r.RooDataSet(strings["dataName"]+str(i), "title", dataset.get(i))
+        data.add(argSet)
         if switches["debugOutput"] : data.Print("v")
-        #getattr(wspace, "import")(data)
-        h.Fill(upperLimit(modelConfig, wspace, strings, switches, data))
-
+        h.Fill(upperLimit(modelConfig, wspace, strings, switches, dataIn = data))
+    
     hp.setupRoot()
     h.Draw()
     hp.printOnce(r.gPad, "expectedLimit.eps")
@@ -296,14 +292,16 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     if switches["writeGraphVizTree"] : writeGraphVizTree(wspace, strings)
     if switches["constrainParameters"] : constrainParams(wspace, strings["pdfName"], strings["dataName"])
 
-    if switches["computeExpectedLimit"] :
-        computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
-    elif switches["hardCodedSignalContamination"] :
+    if switches["hardCodedSignalContamination"] :
         setSFrac(wspace, inputData["sFrac"])
         upperLimit(modelConfig, wspace, strings, switches)
     else :
         y = yields(specs, switches, inputData, m0, m12, mChi)
         setSignalVars(y, switches, specs, strings, wspace)
-        ul = upperLimit(modelConfig, wspace, strings, switches)
-        writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = ul, y = y)
+
+        if switches["computeExpectedLimit"] :
+            computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
+        else :
+            ul = upperLimit(modelConfig, wspace, strings, switches)
+            writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = ul, y = y)
     #printStuff(y, m0, m12, mChi)
