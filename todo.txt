@@ -10,6 +10,7 @@ use sms variation directories?
 
 Upgrades
 --------
+consider lognormal vs. gaussian
 expected limit functionality
 log size plot
 tt etc map
