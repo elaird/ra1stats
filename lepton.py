@@ -175,7 +175,8 @@ def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
     
     h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 40, 0, 20)
     for i in range(int(dataset.sumEntries())) :
-        data = r.RooDataSet(strings["dataName"]+str(i), "title", dataset.get(i))
+        argSet = dataset.get(i)
+        data = r.RooDataSet(strings["dataName"]+str(i),"title",argSet)
         data.add(argSet)
         if switches["debugOutput"] : data.Print("v")
         h.Fill(upperLimit(modelConfig, wspace, strings, switches, dataIn = data))
