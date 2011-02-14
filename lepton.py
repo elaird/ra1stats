@@ -2,6 +2,7 @@
 import ROOT as r
 import math,array,cPickle,os
 import histogramProcessing as hp
+import utils
 
 def modelConfiguration(wspace, pdfName, modelConfigName)  :
     modelConfig = r.RooStats.ModelConfig(modelConfigName)
@@ -44,7 +45,9 @@ def profileLikelihood(modelConfig, wspace, data, signalVar, cl) :
     print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
     #lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
     #lrplot.Draw();
-    return plInt.UpperLimit(wspace.var(signalVar))
+    out = plInt.UpperLimit(wspace.var(signalVar))
+    utils.delete(plInt)
+    return out
 
 def feldmanCousins(modelConfig, wspace, data, signalVar, cl) :
     fc = r.RooStats.FeldmanCousins(data, modelConfig)
