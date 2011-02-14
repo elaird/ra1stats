@@ -59,7 +59,9 @@ def feldmanCousins(modelConfig, wspace, data, signalVar, cl) :
     #fc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
     fcInt = fc.GetInterval()
     print "Feldman Cousins interval on s = [%g, %g]"%(fcInt.LowerLimit(wspace.var(signalVar)), fcInt.UpperLimit(wspace.var(signalVar)))
-    return fcInt.UpperLimit(wspace.var(signalVar))
+    out = fcInt.UpperLimit(wspace.var(signalVar))
+    utils.delete(fcInt)
+    return out
 
 #void bayesian(RooDataSet* data, RooStats::ModelConfig* modelConfig, RooWorkspace* wspace) {
 #  RooStats::BayesianCalculator bc(*data, *modelConfig);
