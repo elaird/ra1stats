@@ -256,11 +256,14 @@ def makeValidationPlots() :
     canvas.SetRightMargin(0.15)
     
     canvas.Print(fileName+"[")
-    first = ["ExclusionLimit", "UpperLimit"]
+    special = ["ExclusionLimit", "UpperLimit"]
+    first = []
     names = sorted([key.GetName() for key in f.GetListOfKeys()])
-    for item in first :
-        names.remove(item)
-
+    for item in special :
+        if item in names :
+            names.remove(item)
+            first.append(item)
+            
     for name in first+names :
         h2 = threeToTwo(f.Get(name))
         h2.SetStats(False)
