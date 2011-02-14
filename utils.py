@@ -4,6 +4,10 @@ from multiprocessing import Process,JoinableQueue
 import os,subprocess
 import ROOT as r
 #####################################
+def delete(thing) :
+    #free up memory (http://wlav.web.cern.ch/wlav/pyroot/memory.html)
+    thing.IsA().Destructor( thing )
+#####################################
 def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::pair<std::string,std::string>","string")
     r.gInterpreter.GenerateDictionary("std::map<std::string,std::string>","string;map")
