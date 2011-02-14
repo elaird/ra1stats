@@ -6,10 +6,15 @@ import data,lepton
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(3, len(sys.argv), 3)]
 
-for point in points() :
-    lepton.Lepton(conf.switches(),
-                  conf.histoSpecs(),
-                  conf.strings(*point),
-                  data.numbers(),
-                  *point
-                  )
+def go() :
+    for point in points() :
+        lepton.Lepton(conf.switches(),
+                      conf.histoSpecs(),
+                      conf.strings(*point),
+                      data.numbers(),
+                      *point
+                      )
+
+if False :
+    import cProfile
+    cProfile.run("go()", "resultProfile.out")
