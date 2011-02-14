@@ -15,6 +15,9 @@ def go() :
                       *point
                       )
 
-if False :
+profile = False
+if profile :
     import cProfile
     cProfile.run("go()", "resultProfile.out")
+else :
+    go()
