@@ -180,17 +180,19 @@ def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
         data.add(argSet)
         if switches["debugOutput"] : data.Print("v")
         h.Fill(upperLimit(modelConfig, wspace, strings, switches, dataIn = data))
-    
-    hp.setupRoot()
-    h.Draw()
-    hp.printOnce(r.gPad, "expectedLimit.eps")
-    
-def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, upperLimit = None, y = None) :
-    insert(y, "UpperLimit", upperLimit)
-    insert(y, "ExclusionLimit", 2*(y["ds"]<upperLimit)-1)
 
+    x = (1.0-0.6827)/2.0
+    probSum = array.array('d', [x, 0.5, 1.0-x])
+    q = array.array('d', [0.0]*len(probSum))
+    h.GetQuantiles(len(probSum), q, probSum)
+    #hp.setupRoot()
+    #h.Draw()
+    #hp.printOnce(r.gPad, "expectedLimit.eps")
+    return q
+    
+def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, d = None) :
     outFile = open(fileName, "w")
-    cPickle.dump([m0, m12, mChi, y], outFile)
+    cPickle.dump([m0, m12, mChi, d], outFile)
     outFile.close()
 
 def taus(num, den) :
@@ -299,10 +301,16 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     else :
         y = yields(specs, switches, inputData, m0, m12, mChi)
         setSignalVars(y, switches, specs, strings, wspace)
-
         if switches["computeExpectedLimit"] :
-            computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
+            dictToWrite = {}
+            q = computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
+            insert(dictToWrite, "MedianMinusOneSigma", q[0])
+            insert(dictToWrite, "Median",              q[1])
+            insert(dictToWrite, "MedianPlusOneSigma",  q[2])
         else :
-            ul = upperLimit(modelConfig, wspace, strings, switches)
-            writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, upperLimit = ul, y = y)
+            upperLimit = upperLimit(modelConfig, wspace, strings, switches)
+            insert(y, "UpperLimit", upperLimit)
+            insert(y, "ExclusionLimit", 2*(y["ds"]<upperLimit)-1)
+            dictToWrite = y
+        writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, d = dictToWrite)
     #printStuff(y, m0, m12, mChi)
