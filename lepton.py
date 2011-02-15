@@ -221,7 +221,7 @@ def accXeff(specs, m0, m12, mChi) :
     num.Divide(den)
     return num.GetBinContent(m0, m12, mChi)
 
-def xsLimitRatherThanYieldLimit() :
+def xsLimitRatherThanYieldLimit(switches) :
     return len(switches["signalModel"])==2
 
 def summed(inputData, twoHtBins) :
