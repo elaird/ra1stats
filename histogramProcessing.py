@@ -275,3 +275,51 @@ def makeValidationPlots() :
     os.system("ps2pdf %s %s"%(fileName, outFileName))
     os.remove(fileName)
     print "%s has been written."%outFileName
+
+def expectedLimit(obsFile, expFile) :
+    def histo(file, name) :
+        f = r.TFile(file)
+        out = f.Get(name).Clone(name+"2")
+        out.SetDirectory(0)
+        out.SetName(name)
+        f.Close()
+        return out
+
+    def check(h1, h2) :
+        def a(h, x) :
+            return getattr(h, "Get%saxis"%x)
+        for x in ["X", "Y"] :
+            for attr in ["GetXmin", "GetXmax", "GetNbins"] :
+                assert getattr(a(h1, x)(), attr)()==getattr(a(h2, x)(), attr)()
+        
+    def compare(h1, h2) :
+        check(h1, h2)
+        out = h2.Clone(h1.GetName()+h2.GetName())
+        out.SetTitle(h2.GetName())
+        out.Reset()
+        for iX in range(1, 1+h1.GetNbinsX()) :
+            for iY in range(1, 1+h1.GetNbinsY()) :
+                c1 = h1.GetBinContent(iX, iY)
+                c2 = h2.GetBinContent(iX, iY)
+                if (not c1) or (not c2) :
+                    out.SetBinContent(iX, iY, 0.0)
+                else :
+                    out.SetBinContent(iX, iY, 2.0*(c1<c2)-1.0)
+        return out
+
+    fileName = "foo.ps"
+    canvas = r.TCanvas()
+    canvas.SetRightMargin(0.15)
+    canvas.Print(fileName+"[")    
+    ds = histo(obsFile, "ds")
+    for item in ["Median", "MedianPlusOneSigma", "MedianMinusOneSigma"] :
+        h = compare(ds, histo(expFile, item))
+        h.Draw("colz")
+        h.SetStats(False)
+        canvas.Print(fileName)
+    
+    canvas.Print(fileName+"]")
+    outFileName = fileName.replace(".ps", ".pdf")
+    os.system("ps2pdf %s %s"%(fileName, outFileName))
+    os.remove(fileName)
+    print "%s has been written."%outFileName
