@@ -115,7 +115,7 @@ def d_s(y, tag, twoHtBins) :
     else :         return y["%s_2"%tag]
 
 def signalSys(y, switches, inputData) :
-    init = inputData["sigma_SigEff"]
+    init = inputData["accXeff_sigma"]
 
     if not switches["nlo"] : return init
     ds       = d_s(y, "sig10", switches["twoHtBins"])
@@ -214,21 +214,15 @@ def printStuff(y, m0, m12, mChi) :
     print "m12",m12
     print "mChi",mChi
 
-def accXeff(switches, specs, inputData, m0, m12, mChi) :
-    if len(switches["signalModel"])==2 :
-        s = specs["sig10"]
-        num = hp.loYieldHisto(s, s["350Dirs"] + s["450Dirs"], inputData["lumi"])
-        den = hp.loYieldHisto(s, [s["beforeDir"]]           , inputData["lumi"])
-        num.Divide(den)
-        return num.GetBinContent(m0, m12, mChi)
-    else :
-        return inputData["_accXeff"]
+def accXeff(specs, m0, m12, mChi) :
+    s = specs["sig10"]
+    num = hp.loYieldHisto(s, s["350Dirs"] + s["450Dirs"], lumi = 1.0) #dummy lumi; cancels in ratio
+    den = hp.loYieldHisto(s, [s["beforeDir"]]           , lumi = 1.0) #dummy lumi; cancels in ratio
+    num.Divide(den)
+    return num.GetBinContent(m0, m12, mChi)
 
-def lumi(switches, inputData) :
-    if len(switches["signalModel"])==2 :
-        return inputData["lumi"]
-    else :
-        return 1.0
+def xsLimitRatherThanYieldLimit() :
+    return len(switches["signalModel"])==2
 
 def summed(inputData, twoHtBins) :
     if twoHtBins : return inputData
@@ -249,10 +243,13 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     r.RooRandom.randomGenerator().SetSeed(inputData["seed"]) #set RooFit random seed for reproducible results
     wspace = r.RooWorkspace(strings["workspaceName"])
     loadLibraries(strings["sourceFiles"])
-    r.AddModel(lumi(switches, inputData),
-               inputData["_lumi_sys"],
-               accXeff(switches, specs, inputData, m0, m12, mChi),
-               inputData["_accXeff_sys"],
+    r.AddModel(inputData["lumi"],
+               inputData["lumi_sigma"],
+               
+               accXeff(specs, m0, m12, mChi),
+               inputData["accXeff_sigma"],
+
+               xsLimitRatherThanYieldLimit(switches),
                
                inputData["sigma_ttW"],
                inputData["sigma_Zinv"],
@@ -306,6 +303,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     else :
         y = yields(specs, switches, inputData, m0, m12, mChi)
         setSignalVars(y, switches, specs, strings, wspace)
+        #wspace.allVars().Print("v")
         if switches["computeExpectedLimit"] :
             dictToWrite = {}
             q = computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
