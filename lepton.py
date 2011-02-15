@@ -317,5 +317,5 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
             insert(y, "UpperLimit", upperLimit)
             insert(y, "ExclusionLimit", 2*(y["ds"]<upperLimit)-1)
             dictToWrite = y
-        writeNumbers(fileName = strings["plotFileName"], m0 = m0, m12 = m12, mChi = mChi, d = dictToWrite)
+        writeNumbers(fileName = strings["pickledFileName"], m0 = m0, m12 = m12, mChi = mChi, d = dictToWrite)
     #printStuff(y, m0, m12, mChi)

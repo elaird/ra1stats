@@ -102,7 +102,7 @@ def mergePickledFiles() :
     histos = {}
 
     for point in points() :
-        fileName = conf.strings(*point)["plotFileName"]
+        fileName = conf.strings(*point)["pickledFileName"]
         if not os.path.exists(fileName) :
             print "skipping file",fileName            
         else :
