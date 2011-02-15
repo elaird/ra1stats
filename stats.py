@@ -130,3 +130,6 @@ if options.merge or options.validation :
 if options.efficiency :
     hp.makeEfficiencyPlots()
     hp.makeTopologyXsLimitPlots()
+
+if not any([getattr(options,item) for item in ["clean", "batch", "local", "merge", "validation", "efficiency"]]) :
+    print "nPoints = %s"%len(hp.points())
