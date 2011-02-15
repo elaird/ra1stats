@@ -15,6 +15,7 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
 #####################################
 def compile(sourceFile) :
+    r.gSystem.SetAclicMode(r.TSystem.kDebug)
     r.gROOT.LoadMacro("%s+"%sourceFile)
 #####################################
 def operateOnListUsingQueue(nCores, workerFunc, inList) :
