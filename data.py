@@ -10,7 +10,7 @@ def numbers() :
     d["lumi_sigma"]       = 0.11
     d["icfDefaultLumi"]   = 100.0 #/pb
                           
-    d["accXeff_sigma"]    = math.sqrt(0.03**2+0.025**2+0.025**2) #systematic uncertainty on signal acceptance*efficiency
+    d["accXeff_sigma"]    = math.sqrt(0.03**2+0.025**2+0.025**2) #sys. unc. on signal a*e (deadECAL + lep/phot vetoes + jes/res)
     d["pdfUncertainty"]   = 0.1
     
     d["n_signal"]         = (8, 5) #number of events measured at HT > 350 GeV and alphaT > 0.55
