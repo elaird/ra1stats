@@ -5,16 +5,16 @@ import configuration as conf
 def numbers() :
     d = {}
     d["seed"]             = 4357 #seed for RooRandom::randomGenerator()
+
     d["lumi"]             = 35.0 #/pb
-    d["_lumi_sys"]        = 0.11
+    d["lumi_sigma"]       = 0.11
     d["icfDefaultLumi"]   = 100.0 #/pb
                           
-    d["n_signal"]         = (8, 5) #number of events measured at HT > 350 GeV and alphaT > 0.55
-    d["sigma_SigEff"]     = 0.12    #systematic uncertainty on signal acceptance*efficiency*luminosity //added single uncertainties quadratically
-    d["_accXeff"]         = 1.0
-    d["_accXeff_sys"]     = 0.1
+    d["accXeff_sigma"]    = math.sqrt(0.03**2+0.025**2+0.025**2) #systematic uncertainty on signal acceptance*efficiency
     d["pdfUncertainty"]   = 0.1
     
+    d["n_signal"]         = (8, 5) #number of events measured at HT > 350 GeV and alphaT > 0.55
+
     d["n_htcontrol"]      = (33, 11, 8, 5)
     d["n_bar_htcontrol"]  = (844459, 331948, 225649, 110034)
     d["sigma_x"]          = 0.11 #systematic uncertainty on inclusive background estimation (uncertainty on the assumpotion that rhoprime = rho*rho)
