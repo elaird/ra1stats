@@ -28,7 +28,7 @@ def switches() :
     d["exponentialBkg"] = False
 
     d["computeExpectedLimit"] = False
-    d["nToys"] = 20
+    d["nToys"] = 200
 
     d["hardCodedSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
@@ -118,6 +118,19 @@ def histoTitle() :
     else :
         return ";m_{0} (GeV);m_{1/2} (GeV)"
 
+def mergedFile(outputDir, switches) :
+    out  = "%s/"%outputDir
+    out += "_".join([switches["method"],
+                     switches["signalModel"],
+                     "nlo" if switches["nlo"] else "lo",
+                     "2HtBins" if switches["twoHtBins"] else "1HtBin",
+                     "expR" if switches["exponentialBkg"] else "constantR",
+                     ])
+    for item in ["Ra2SyncHack", "computeExpectedLimit"] :
+        if switches[item] : out += "_%s"%item
+    out += ".root"
+    return out
+
 def stringsNoArgs() :
     d = {}
 
@@ -143,23 +156,14 @@ def stringsNoArgs() :
     d["plotStem"]       = "%s/Significance"%d["outputDir"]
     d["workspaceStem"]  = "%s/%s"%(d["outputDir"], d["workspaceName"])
     d["logStem"]        = "%s/job"%d["logDir"]
-    d["mergedFile"]     = "%s/"%d["outputDir"]
-    d["mergedFile"] += "_".join([switches()["method"],
-                                 switches()["signalModel"],
-                                 "nlo" if switches()["nlo"] else "lo",
-                                 "2HtBins" if switches()["twoHtBins"] else "1HtBin",
-                                 "expR" if switches()["exponentialBkg"] else "constantR",
-                                 ])
-
-    if switches()["Ra2SyncHack"] : d["mergedFile"] += "_Ra2SyncHack"
-    d["mergedFile"] += ".root"
+    d["mergedFile"]     = mergedFile(d["outputDir"], switches())
     return d
 
 def strings(xBin, yBin, zBin) :
     d = stringsNoArgs()
     #output name options
     d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
-    d["plotFileName"]      = "%s_%s.pickled"%(d["plotStem"], d["tag"])
+    d["pickledFileName"]   = "%s_%s.pickled"%(d["plotStem"], d["tag"])
     d["workspaceFileName"] = "%s_%s.root"%(d["workspaceStem"], d["tag"])
     return d
 
