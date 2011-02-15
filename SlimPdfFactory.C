@@ -36,6 +36,7 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
 
 void AddModel(Double_t _lumi, Double_t _lumi_sys,
 	      Double_t _accXeff, Double_t _accXeff_sys,
+	      bool xsLimitRatherThanYieldLimit,
 	      Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
 	      Double_t _muon_cont_1,Double_t _muon_cont_2,
 	      Double_t _lowHT_cont_1,Double_t _lowHT_cont_2,
@@ -43,6 +44,11 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 	      bool twobins,
 	      bool sys_uncorr,
 	      RooWorkspace* ws,const char* pdfName,const char* muName){
+
+  if (!xsLimitRatherThanYieldLimit) {
+    _lumi = 1.0;
+    _accXeff = 1.0;
+  }
 
   TList likelihoodFactors;
 
@@ -68,7 +74,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooRealVar* meas_bar_4 = new RooRealVar("meas_bar_4","meas_bar_4",110034.,50000., 9000000.);
 
   //define common variables
-  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,20.);//POI
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,50.);//POI
   RooRealVar* lumi = new RooRealVar("lumi","lumi",_lumi);
   RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff);
   
@@ -84,7 +90,6 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
 
   RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*lumi,*accXeff,*masterSignal,*BR1,*signal_sys));
   RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*lumi,*accXeff,*masterSignal,*BR2,*signal_sys));
-   
 
   //Easy variables for low HT inclusive method
   RooRealVar* bbar = new RooRealVar("bbar","bbar",110034.,0.,10000000.);
