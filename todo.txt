@@ -8,6 +8,8 @@ investigate ng
 use muon variation directories?
 use sms variation directories?
 masks
+take care with passing x or exp(x)
+tau_1ObservedNumberCountingDataWithSideband
 
 Upgrades
 --------
