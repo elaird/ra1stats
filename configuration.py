@@ -23,7 +23,7 @@ def switches() :
     d["signalModel"] = "tanBeta3"
 
     d["debugOutput"] = False
-    d["testPointsOnly"] = True
+    d["testPointOnly"] = True
     d["twoHtBins"] = True
     d["exponentialBkg"] = False
 
