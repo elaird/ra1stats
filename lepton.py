@@ -114,8 +114,8 @@ def d_s(y, tag, twoHtBins) :
     if twoHtBins : return y["%s_1"%tag] + y["%s_2"%tag]
     else :         return y["%s_2"%tag]
 
-def signalSys(y, switches, inputData) :
-    init = inputData["accXeff_sigma"]
+def signal_sys_sigma(y, switches, inputData) :
+    init = math.sqrt(inputData["accXeff_sigma"]**2 + pow(inputData["lumi_sigma"], 2))
 
     if not switches["nlo"] : return init
     ds       = d_s(y, "sig10", switches["twoHtBins"])
@@ -125,7 +125,7 @@ def signalSys(y, switches, inputData) :
         
     masterPlus =  abs(max((max((ds_sys2 - ds),(ds_sys05 - ds))),0.))
     masterMinus = abs(max((max((ds - ds_sys2),(ds - ds_sys05))),0.))
-    return math.sqrt( math.pow( max(masterMinus,masterPlus)/ds,2) + pow(init,2) + pow(inputData["pdfUncertainty"], 2) )
+    return math.sqrt( pow(init, 2) + pow( max(masterMinus,masterPlus)/ds, 2) + pow(inputData["pdfUncertainty"], 2) )
 
 def yields(specs, switches, inputData, m0, m12, mChi) :
     func = hp.nloYieldHisto if switches["nlo"] else hp.loYieldHisto
@@ -146,7 +146,7 @@ def yields(specs, switches, inputData, m0, m12, mChi) :
                 if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
 
     insert(out, "ds", d_s(out, "sig10", switches["twoHtBins"]))
-    insert(out, "signalSys", signalSys(out, switches, inputData))
+    insert(out, "signal_sys_sigma", signal_sys_sigma(out, switches, inputData))
     return out
 
 def setSFrac(wspace, sFrac) :
@@ -159,7 +159,7 @@ def setSignalVars(y, switches, specs, strings, wspace) :
         insert(y, var, value)
         
     if y["ds"]>0.0 :
-        wspace.var("signal_sys").setVal(y["signalSys"])
+        wspace.var("signal_sys_sigma").setVal(math.exp(y["signal_sys_sigma"])) #exp needed because of log-normal
         setAndInsert(y, "muon_cont_2", y["muon_2"]/y["ds"])
         setAndInsert(y, "lowHT_cont_1", y["ht_1"]/y["ds"])
         setAndInsert(y, "lowHT_cont_2", y["ht_2"]/y["ds"])
