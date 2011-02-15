@@ -55,7 +55,7 @@ def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
             h.Add(hOld)
             
     h.SetDirectory(0)
-    h.Scale(lumi/data["icfDefaultLumi"])
+    h.Scale(lumi/data.numbers()["icfDefaultLumi"])
     f.Close()
     return h
 
@@ -143,6 +143,7 @@ def cachedPoints() :
         l = 20
         u = 30
         return [(l, l, 1), (l, u, 1), (u, l, 1), (u, u, 1)]
+        #return [(l, l, 1)]
     else :
         return fullPoints()
 
