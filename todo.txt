@@ -10,6 +10,7 @@ use sms variation directories?
 masks
 take care with passing x or exp(x)
 tau_1ObservedNumberCountingDataWithSideband
+update to v6 files on CERN AFS
 
 Upgrades
 --------
