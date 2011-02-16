@@ -305,19 +305,25 @@ def expectedLimit(obsFile, expFile) :
                     out.SetBinContent(iX, iY, 2.0*(c1<c2)-1.0)
         return out
 
-    fileName = "foo.ps"
+    psFileName = expFile.replace(".root", "_results.ps")
+    rootFileName = psFileName.replace(".ps", ".root")
+    outFile = r.TFile(rootFileName, "RECREATE")
     canvas = r.TCanvas()
     canvas.SetRightMargin(0.15)
-    canvas.Print(fileName+"[")    
+    canvas.Print(psFileName+"[")
     ds = histo(obsFile, "ds")
     for item in ["Median", "MedianPlusOneSigma", "MedianMinusOneSigma"] :
         h = compare(ds, histo(expFile, item))
+        outFile.cd()
+        h.Write()
         h.Draw("colz")
         h.SetStats(False)
-        canvas.Print(fileName)
-    
-    canvas.Print(fileName+"]")
-    outFileName = fileName.replace(".ps", ".pdf")
-    os.system("ps2pdf %s %s"%(fileName, outFileName))
-    os.remove(fileName)
-    print "%s has been written."%outFileName
+        canvas.Print(psFileName)
+
+    outFile.Close()
+    canvas.Print(psFileName+"]")
+    pdfFileName = psFileName.replace(".ps", ".pdf")
+    os.system("ps2pdf %s %s"%(psFileName, pdfFileName))
+    os.remove(psFileName)
+    print "%s has been written."%pdfFileName
+    print "%s has been written."%rootFileName
