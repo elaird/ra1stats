@@ -5,7 +5,7 @@ def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
     if len(d["signalModel"])==2 :
         d["nlo"] = False
-        d["minSignalEventsForConsideration"] = None
+        d["minSignalEventsForConsideration"] = 1.0e-18
         d["maxSignalEventsForConsideration"] = None
 
 def singleJobOnly() :
@@ -58,7 +58,7 @@ def histoSpecs() :
     
         f = "AK5Calo_PhysicsProcesses_mSUGRA_%s.root"%(model.lower())
         d[model]["sig10"]  = {"file": "%s/v5/Signal/%s"%(dir, f)}
-        d[model]["muon"]   = {"file": ("%s/v5/muon/%s"%(dir, f) ).replace(".root", "_Muon.root")}
+        d[model]["muon"]   = {"file": ("%s/v6/muon/%s"%(dir, f) ).replace(".root", "_Muon.root")}
         d[model]["sig05"]  = {"file": "%s/v5/Signal/%s"%(dir, f)}
         d[model]["sig20"]  = {"file": "%s/v5/Signal/%s"%(dir, f)}
         d[model]["ht"]     = {"file": "%s/v5/QCD/QcdBkgdEst_%s.root"%(dir, model.lower())}
