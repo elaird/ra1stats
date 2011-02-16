@@ -28,13 +28,17 @@ def jobCmds(nSlices = None) :
     out = []
 
     strings = conf.stringsNoArgs()
+    expectedLimit = conf.swtiches()["computeExpectedLimit"]
     for iSlice in range(nSlices) :
         args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
         s += " %s"%strings["envScript"]                  #2
         s += " %s"%(" ".join(args))                      #3
-        s += " >& %s/%s"%(pwd, logFileName(iSlice))
+        if expectedLimit :
+            s += " >& /dev/null"
+        else :
+            s += " >& %s/%s"%(pwd, logFileName(iSlice))
         out.append(s)
 
     if conf.singleJobOnly() :
