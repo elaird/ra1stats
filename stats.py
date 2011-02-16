@@ -28,7 +28,7 @@ def jobCmds(nSlices = None) :
     out = []
 
     strings = conf.stringsNoArgs()
-    expectedLimit = conf.swtiches()["computeExpectedLimit"]
+    expectedLimit = conf.switches()["computeExpectedLimit"]
     for iSlice in range(nSlices) :
         args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
