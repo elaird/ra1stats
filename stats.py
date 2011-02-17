@@ -34,11 +34,8 @@ def jobCmds(nSlices = None) :
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
         s += " %s"%strings["envScript"]                  #2
-        s += " %s"%(" ".join(args))                      #3
-        if expectedLimit :
-            s += " >& /dev/null"
-        else :
-            s += " >& %s/%s"%(pwd, logFileName(iSlice))
+        s += " %s"%("/dev/null" if expectedLimit else "%s/%s"%(pwd, logFileName(iSlice))) #3
+        s += " %s"%(" ".join(args))                      #4
         out.append(s)
 
     if conf.singleJobOnly() :
