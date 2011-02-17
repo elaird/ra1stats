@@ -139,8 +139,9 @@ def fullPoints() :
 
 def cachedPoints() :
     if conf.switches()["testPointOnly"] :
-        l = 20
-        return [(l, l, 1)]
+        lx = 26
+        ly = 16
+        return [(lx, ly, 1)]
     else :
         return fullPoints()
 
@@ -229,7 +230,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    adjustHisto(h2, zTitle = "%g% C.L. upper limit on #sigma (pb)"%(100.0*conf.switches()["CL"]))
+    adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*conf.switches()["CL"]))
     h2.Draw("colz")
 
     if not logZ :
