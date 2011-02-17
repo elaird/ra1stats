@@ -161,8 +161,8 @@ def setSignalVars(y, switches, specs, strings, wspace) :
     if y["ds"]>0.0 :
         wspace.var("signal_sys_sigma").setVal(math.exp(y["signal_sys_sigma"])) #exp needed because of log-normal
         setAndInsert(y, "muon_cont_2", y["muon_2"]/y["ds"])
-        setAndInsert(y, "lowHT_cont_1", y["ht_1"]/y["ds"])
-        setAndInsert(y, "lowHT_cont_2", y["ht_2"]/y["ds"])
+        setAndInsert(y, "lowHT_cont_1", max(0.01, y["ht_1"]/y["ds"]))
+        setAndInsert(y, "lowHT_cont_2", max(0.02, y["ht_2"]/y["ds"]))
         
         if switches["twoHtBins"] :
             setAndInsert(y, "BR_1", y["sig10_1"]/y["ds"])
