@@ -160,14 +160,14 @@ def setSignalVars(y, switches, specs, strings, wspace) :
         
     if y["ds"]>0.0 :
         wspace.var("signal_sys_sigma").setVal(math.exp(y["signal_sys_sigma"])) #exp needed because of log-normal
-        setAndInsert(y, "muon_cont_2", y["muon_2"]/y["ds"])
+        setAndInsert(y, "muon_cont_2", max(0.01, y["muon_2"]/y["ds"]))
         setAndInsert(y, "lowHT_cont_1", max(0.01, y["ht_1"]/y["ds"]))
         setAndInsert(y, "lowHT_cont_2", max(0.02, y["ht_2"]/y["ds"]))
         
         if switches["twoHtBins"] :
             setAndInsert(y, "BR_1", y["sig10_1"]/y["ds"])
             setAndInsert(y, "BR_2", y["sig10_2"]/y["ds"])
-            setAndInsert(y, "muon_cont_1", y["muon_1"]/y["ds"])
+            setAndInsert(y, "muon_cont_1", max(0.01, y["muon_1"]/y["ds"]))
 
 def upperLimit(modelConfig, wspace, strings, switches, dataIn = None) :
     data = wspace.data(strings["dataName"]) if not dataIn else dataIn
@@ -178,7 +178,7 @@ def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
     wspace.var(strings["signalVar"]).setVal(0.0)
     dataset = wspace.pdf(strings["pdfName"]).generate(wspace.set("obs"), switches["nToys"])
     
-    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 40, 0, 20)
+    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 98, 1, 50)
     for i in range(int(dataset.sumEntries())) :
         argSet = dataset.get(i)
         data = r.RooDataSet(strings["dataName"]+str(i),"title",argSet)
@@ -190,9 +190,13 @@ def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
     probSum = array.array('d', [x, 0.5, 1.0-x])
     q = array.array('d', [0.0]*len(probSum))
     h.GetQuantiles(len(probSum), q, probSum)
-    #hp.setupRoot()
-    #h.Draw()
-    #hp.printOnce(r.gPad, "expectedLimit.eps")
+
+    if switches["debugMedianHisto"] :
+        hp.setupRoot()
+        h.Draw()
+        hp.printOnce(r.gPad, "expectedLimit.eps")
+        print probSum
+        print q
     return q
     
 def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, d = None) :
