@@ -236,8 +236,8 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     if not logZ :
         warn("xs limit")
         h2.SetMinimum(0.0)
-        h2.SetMaximum(36.0)
-        r.gStyle.SetNumberContours(36)
+        h2.SetMaximum(40.0)
+        r.gStyle.SetNumberContours(40)
         printOnce(c, fileName)
     else :
         warn("xs limit")
