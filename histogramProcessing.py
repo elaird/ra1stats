@@ -217,8 +217,8 @@ def makeEfficiencyPlots(item = "sig10") :
         warn("%s efficiency"%model)
         h2.SetMinimum(0.0)
         h2.SetMaximum(0.31)
-        h2.GetXaxis().SetRangeUser(100.0, 999.9)
-        h2.GetYaxis().SetRangeUser(100.0, 999.9)
+        if "smsXRange" in conf.switches() : h2.GetXaxis().SetRangeUser(*conf.switches()["smsXRange"])
+        if "smsYRange" in conf.switches() : h2.GetYaxis().SetRangeUser(*conf.switches()["smsYRange"])
         r.gStyle.SetNumberContours(31)
     h2.Draw("colz")
     printOnce(c, fileName)
@@ -234,8 +234,9 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     h2 = threeToTwo(f.Get(name))
     adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*conf.switches()["CL"]))
 
-    for a in [h2.GetXaxis(), h2.GetYaxis()] :
-        a.SetRangeUser(100.0, 999.9)
+    if "smsXRange" in conf.switches() : h2.GetXaxis().SetRangeUser(*conf.switches()["smsXRange"])
+    if "smsYRange" in conf.switches() : h2.GetYaxis().SetRangeUser(*conf.switches()["smsYRange"])
+        
     h2.Draw("colz")
 
     if not logZ :

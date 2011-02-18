@@ -45,6 +45,8 @@ def switches() :
     d["minSignalEventsForConsideration"] =  1.0
     d["maxSignalEventsForConsideration"] = 50.0
 
+    d["smsXRange"] = (400.0, 999.9)
+    d["smsYRange"] = (100.0, 999.9)
     checkAndAdjust(d)
     return d
 
