@@ -3,38 +3,43 @@
 import ROOT as r
 import math,array,os
 
-htLower       = (250,       300,    350,    450)
-#countsTail    = (33,         11,      8,      5)
-countsBulkRaw = (844459, 331948, 225649, 110034)
-countsBulkInc = tuple([sum(countsBulkRaw[i:]) for i in range(len(countsBulkRaw))])
+htLower    = (250,       300,    350,    450)
+countsBulk = (844459, 331948, 225649, 110034)
+#countsTail = (33,         11,      8,      5)
 
 def deltaHt(index) :
-    return htLower[index]-htLower[index+1]
+    return htLower[index+1]-htLower[index]
 
-def f(x = None, index = None, bOfIndexPlusOne = None) :
-    return x*math.exp(x*deltaHt(index)) - countsBulkInc[index+1]*bOfIndexPlusOne/countsBulkInc[index]
+def l(index, bOfIndexPlusOne, cOfIndexPlusOne) :
+    return cOfIndexPlusOne*math.exp(-bOfIndexPlusOne*htLower[index+1])
 
-def fPrime(x = None, index = None) :
-    return ( 1.0 + (x*(deltaHt(index))) )*math.exp(x*(deltaHt(index)))
+def f(x, index, bOfIndexPlusOne, cOfIndexPlusOne) :
+    return l(index, bOfIndexPlusOne, cOfIndexPlusOne)*(math.exp(x*deltaHt(index))-1.0) - countsBulk[index]*x
 
-def newton(index = None, bOfIndexPlusOne = None, initialGuess = None, nMax = 20) :
+def fPrime(x, index, bOfIndexPlusOne, cOfIndexPlusOne) :
+    return l(index, bOfIndexPlusOne, cOfIndexPlusOne)*deltaHt(index)*math.exp(x*deltaHt(index)) - countsBulk[index]
+
+def newton(index, bOfIndexPlusOne, cOfIndexPlusOne, nMax = 20) :
     debug = False
-    if debug : print "newton",index,bOfIndexPlusOne
-    x = bOfIndexPlusOne #initial guess
+    if debug : print "newton",index,bOfIndexPlusOne,cOfIndexPlusOne
+    x = 10.0*bOfIndexPlusOne #initial guess
     for i in range(nMax) :
-        x = x - f(x = x, index = index, bOfIndexPlusOne = bOfIndexPlusOne)/fPrime(x = x, index = index)
+        x -= f(x, index, bOfIndexPlusOne, cOfIndexPlusOne)/fPrime(x, index, bOfIndexPlusOne, cOfIndexPlusOne)
         if debug : print x
     if debug : print
     return x
 
-def B(index = None, bOfIndexPlusOne = None) :
-    if index==len(htLower)-1 :
-        return math.log((countsBulkInc[index-1]/countsBulkInc[index])) / (htLower[-1]-htLower[-2])
+def B(index, bOfIndexPlusOne, cOfIndexPlusOne) :
+    if index>=len(htLower)-2 :
+        return math.log(1.0 + float(countsBulk[-2])/countsBulk[-1]) / deltaHt(-2)
     else :
-        return newton(index = index, bOfIndexPlusOne = bOfIndexPlusOne)
+        return newton(index, bOfIndexPlusOne, cOfIndexPlusOne)
 
-def C(index = None, bThisIndex = None) :
-    return countsBulkInc[index]*bThisIndex/math.exp(-bThisIndex*htLower[index])
+def C(index, bThisIndex) :
+    d = math.exp(-bThisIndex*htLower[index])
+    if index!=len(htLower)-1 :
+        d-= math.exp(-bThisIndex*htLower[index+1])
+    return countsBulk[index]*bThisIndex/d
 
 def expectedBackground(A, k, index) :
     b = B(index = index)
@@ -44,10 +49,12 @@ def go() :
     b = {}
     c = {}
     for i in range(len(htLower)-1, -1, -1) :
-        b[i] = B(index = i, bOfIndexPlusOne = b[i+1] if i!=len(htLower)-1 else None)
-        c[i] = C(index = i, bThisIndex = b[i])
-    print b
-    print c
+        bOfIndexPlusOne = b[i+1] if i!=len(htLower)-1 else None
+        cOfIndexPlusOne = c[i+1] if i!=len(htLower)-1 else None
+        b[i] = B(i, bOfIndexPlusOne, cOfIndexPlusOne)
+        c[i] = C(i, b[i])
+    print "b=",b
+    print "c=",c
     return b,c
     
 def plot(b, c) :
@@ -55,16 +62,17 @@ def plot(b, c) :
         out = r.TGraph()
         out.SetMarkerStyle(20)
         for i,ht in enumerate(htLower) :
-            out.SetPoint(i, ht, countsBulkRaw[i])
+            out.SetPoint(i, ht, countsBulk[i])
         return out
 
-    def integralGraph(f) :
+    def integralGraph(integrals) :
         out = r.TGraph()
         out.SetMarkerStyle(20)
-        points = list(htLower)+[1000.0]
-        for i in range(len(points)-1) :
-            out.SetPoint(i, points[i], f.Integral(points[i], points[i+1]))
+        for i,integral in enumerate(integrals) :
+            out.SetPoint(i, htLower[i], integral)
         return out
+
+    bogusHtEndPoint = 3000.0
     
     r.gROOT.SetStyle("Plain")
 
@@ -86,16 +94,19 @@ def plot(b, c) :
     r.gPad.SetTicky()
     h1 = r.TH1D("h1", "differential distribution determined from input data;HT (GeV);dN/dHT (/GeV)", 1, htLower[0], htLower[-1]+100.0)
     h1.SetStats(False)
-    h1.GetYaxis().SetRangeUser(0.0, h.GetMaximum()/100.0)
+    h1.GetYaxis().SetRangeUser(0.0, h.GetMaximum()/30.0)
     h1.GetYaxis().SetTitleOffset(1.4)
     h1.Draw()
-    stuff = []
-    for i in b.keys() :
-        func = r.TF1("func%d"%i, "[0]*exp(-[1]*x)", htLower[i], htLower[i+1] if i!=len(b)-1 else 1000.0)
+    funcs = []
+    integrals = []
+    points = list(htLower)+[bogusHtEndPoint]
+    for i in sorted(b.keys()) :
+        func = r.TF1("func%d"%i, "[0]*exp(-[1]*x)", htLower[i], htLower[i+1] if i!=len(b)-1 else bogusHtEndPoint)
         func.SetParameter(0, c[i])
         func.SetParameter(1, b[i])
         func.Draw("same")
-        stuff.append(func)
+        funcs.append(func)
+        integrals.append(func.Integral(points[i], points[i+1]))
 
     canvas.cd(3)
     r.gPad.SetTickx()
@@ -104,14 +115,19 @@ def plot(b, c) :
     h2.Draw()
     h2.SetTitle("diff. dist. integrated in bins;HT bin lower edge (GeV);events / bin")
     h2.GetYaxis().SetTitleOffset(1.3)
-    ig = integralGraph(func)
+    ig = integralGraph(integrals)
     ig.Draw("p")
     ig.Print()
 
+    canvas.cd(0)
+    text = r.TText()
+    text.SetTextSize(0.6*text.GetTextSize())
+    text.DrawText(0.1, 0.92, r.TDatime().AsString())
+    
     fileName = "foo.eps"
     canvas.Print(fileName)
     os.system("epstopdf %s"%fileName)
     os.remove(fileName)
-    return [canvas, cg, stuff, ig]
+    return [canvas, cg, funcs, ig]
 
 l = plot(*go())
