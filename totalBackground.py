@@ -46,6 +46,8 @@ def expectedBackground(A, k, index) :
     return A*C(index)/(b+k)*(math.exp(-htLower[index]*(b+k)) - math.exp(-htLower[index+1]*(b+k)))
 
 def go() :
+    def tup(a) :
+        return tuple([a[i] for i in range(len(a))])
     b = {}
     c = {}
     for i in range(len(htLower)-1, -1, -1) :
@@ -53,11 +55,11 @@ def go() :
         cOfIndexPlusOne = c[i+1] if i!=len(htLower)-1 else None
         b[i] = B(i, bOfIndexPlusOne, cOfIndexPlusOne)
         c[i] = C(i, b[i])
-    print "b=",b
-    print "c=",c
+    print "b=",tup(b)
+    print "c=",tup(c)
     return b,c
     
-def plot(b, c) :
+def plot(b, c, timeStamp) :
     def countGraph() :
         out = r.TGraph()
         out.SetMarkerStyle(20)
@@ -85,6 +87,7 @@ def plot(b, c) :
     cg.Draw("ap")
     cg.SetTitle("input data;HT bin lower edge (GeV);events / bin")
     cg.GetYaxis().SetTitleOffset(1.3)
+    print "input:"
     cg.Print()
     h = cg.GetHistogram()
     print
@@ -117,12 +120,15 @@ def plot(b, c) :
     h2.GetYaxis().SetTitleOffset(1.3)
     ig = integralGraph(integrals)
     ig.Draw("p")
+    print "integrals:"
     ig.Print()
 
     canvas.cd(0)
-    text = r.TText()
-    text.SetTextSize(0.6*text.GetTextSize())
-    text.DrawText(0.1, 0.92, r.TDatime().AsString())
+
+    if timeStamp :
+        text = r.TText()
+        text.SetTextSize(0.6*text.GetTextSize())
+        text.DrawText(0.1, 0.92, r.TDatime().AsString())
     
     fileName = "foo.eps"
     canvas.Print(fileName)
@@ -130,4 +136,4 @@ def plot(b, c) :
     os.remove(fileName)
     return [canvas, cg, funcs, ig]
 
-l = plot(*go())
+l = plot(*go(), timeStamp = False)
