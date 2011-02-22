@@ -1,0 +1,17 @@
+\section{Electroweak Background Constraints}
+In each bin of $H_T$ with lower edge $\ge$ 350 GeV, we have two measurements: $N_{phot}$, and $N_{muon}$,
+representing the event counts in the photon and muon control samples.  Each of these measurements has a 
+corresponding Monte Carlo expectation: $MC_{phot}$, and $MC_{muon}$.  The Monte Carlo also gives
+expected amounts of $Z_{inv}$ and $t\bar{t}+W$ in the hadronically-selected sample: $MC_{Z_{inv}}$ and $MC_{t\bar{t}+W}$.
+
+Then we write the likelihoods in this way:
+
+\begin{equation}
+L_{phot}=\prod_i \mathrm{Gaus}( \frac{MC_{phot}^i}{MC_{Z_{inv}}^i}    |\,\tau_{phot}^i, \sigma_{phot}) \mathrm{Pois}(N_{phot}^i |\, \tau_{phot}^{i}\times Z_{inv}^{i})
+\end{equation}
+\begin{equation}
+L_{muon}=\prod_i \mathrm{Gaus}( \frac{MC_{muon}^i}{MC_{t\bar{t}+W}^i} |\,\tau_{muon}^i, \sigma_{muon}) \mathrm{Pois}(N_{muon}^i |\, \tau_{muon}^{i}\times(t\bar{t}^i+W^i) + s_{muon}^i)
+\end{equation}
+
+where the index $i$ labels the $H_T$ bin, and $s_{muon}$ represents signal contamination in the muon control sample.
+
