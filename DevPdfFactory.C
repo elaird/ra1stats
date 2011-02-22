@@ -18,8 +18,12 @@
 
 RooPoisson* makePoisson(RooRealVar& meas,RooRealVar& masterSignal,RooRealVar& A,RooRealVar& B,RooRealVar& C,RooRealVar& K,RooRealVar& HT1,RooRealVar& HT2,RooRealVar& signal_cont,TString bin){
 
-  RooFormulaVar* bkgd_HTbin = new RooFormulaVar("bkgd_"+bin+"HTbin","","@0*@2/(@1+@3)*(exp(-@4*(@1+@3)) - exp(-@5*(@1+@3)))",RooArgList(A,B,C,K,HT1,HT2));
+  // RooFormulaVar* bkgd_HTbin = new RooFormulaVar("bkgd_"+bin+"HTbin","","@0*@2/(@1+@3)*(exp(-@4*(@1+@3)) - exp(-@5*(@1+@3)))",RooArgList(A,B,C,K,HT1,HT2));
+
+  RooFormulaVar* bkgd_HTbin = new RooFormulaVar("bkgd_"+bin+"HTbin","","(@0+@1)/(@2+@3)*(exp(-250*(@2+@3))-exp(-300*(@2+@3)))",RooArgList(A,C,B,K,HT1));
  
+  // RooAddition* bkgd_HTbin = new RooAddition("bkgd_"+bin+"HTbin","bkgd_"+bin+"HTbin",RooArgList(A,K));
+
   RooProduct* signal_HTbin = new RooProduct("signal_"+bin+"HTbin","masterSignal*signal_cont_"+bin,RooArgList(masterSignal,signal_cont));
 
   RooAddition* exp_HTbin = new RooAddition("exp_"+bin+"HTbin","bkgd_"+bin+"HTbin+signal_"+bin+"HTbin",RooArgList(*bkgd_HTbin,*signal_HTbin));
@@ -39,17 +43,19 @@ void DevModel(RooWorkspace *ws,
 	      Double_t* _signal_cont,
 	      Double_t _A,
 	      Double_t _K,
-	      Int_t nbins){
+	      Int_t nbins,
+	      TString pdfName){
 
   
   RooRealVar* masterSignal = new RooRealVar("masterSignal","masterSignal",0.5,0,50);
 
  
   //background stuff
-  RooRealVar* A = new RooRealVar("A","A",_A,0,_A*10);
+  RooRealVar* A = new RooRealVar("A","A",_A,0,_A*100);
   RooRealVar* K = new RooRealVar("K","K",_K,0,_K*10);
 
   TList likelihoodFactors;
+  TList observablesCollection;
 
   for(int i = 0; i < nbins;++i){
 
@@ -70,15 +76,19 @@ void DevModel(RooWorkspace *ws,
     RooPoisson* P_HTbin = makePoisson(*meas,*masterSignal,*A,*B,*C,*K,*HT_low,*HT_up,*signal_cont,(str.str()).c_str());
     
     likelihoodFactors.Add(P_HTbin);
+    observablesCollection.Add(meas);   
   }
 
-
-
+  RooArgList observableList(observablesCollection,"obs");
   RooArgSet likelihoodFactorSet(likelihoodFactors);
-  RooProdPdf joint("pdfName","joint",likelihoodFactorSet);
+
+  RooProdPdf joint(pdfName,pdfName,likelihoodFactorSet);
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   ws->import(joint);
+  ws->defineSet("obs",observableList);
+  ws->defineSet("poi","masterSignal");
+  ws->defineSet("nuis","A,K");
   RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
   
 }
