@@ -1,7 +1,4 @@
-Correctness
------------
 lolargs
-include Rob's method
 bayesian switch in setupLikelihood and modelConfig
 improve histo bin check
 investigate ng
@@ -10,12 +7,8 @@ use sms variation directories?
 masks
 take care with passing x or exp(x)
 tau_1ObservedNumberCountingDataWithSideband
-update to v6 files on CERN AFS
 
-Upgrades
---------
 consider lognormal vs. gaussian
-expected limit functionality
 log size plot
 tt etc map
 tempfile for output
