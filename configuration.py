@@ -142,7 +142,7 @@ def stringsNoArgs() :
     d = {}
 
     d["sourceFiles"] = ["RooMyPdf.cxx", "SlimPdfFactory.C"]
-    d["subCmd"] = "bsub" if isCern() else "qsub"
+    d["subCmd"] = "bsub" if isCern() else "qsub -q hepmedium.q"
     d["envScript"] = "env.sh" if isCern() else "envIC.sh"
 
     #internal names
