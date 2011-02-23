@@ -15,17 +15,17 @@ def singleJobOnly() :
 def switches() :
     d = {}
 
-    d["method"] = "profileLikelihood"
-    #d["method"] = "feldmanCousins"
+    #d["method"] = "profileLikelihood"
+    d["method"] = "feldmanCousins"
 
     d["nlo"] = True
     #d["signalModel"] = "T1"
     d["signalModel"] = "tanBeta3"
 
     d["debugOutput"] = False
-    d["testPointOnly"] = True
-    d["twoHtBins"] = True
-    d["exponentialBkg"] = False
+    d["testPointOnly"] = False
+    d["twoHtBins"] = False
+    d["exponentialBkg"] = True
 
     d["computeExpectedLimit"] = False
     d["nToys"] = 200
@@ -79,7 +79,7 @@ def histoSpecs() :
         d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll_10"
         d[model]["muon"]["350Dirs"] = ["mSuGraScan_350_10"]
         d[model]["muon"]["450Dirs"] = ["mSuGraScan_450_10"]
-            
+     
         d[model]["ht"]["beforeDir"] = None
         d[model]["ht"]["250Dirs"]   = ["Reco_Bin_250_HT_300"]
         d[model]["ht"]["300Dirs"]   = ["Reco_Bin_300_HT_350"]
@@ -92,6 +92,9 @@ def histoSpecs() :
         d[model]["sig10"]  = {"file": "%s/v5/SMSFinal/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
         d[model]["muon"]   = {"file": "%s/v5/MuonSMSsamples/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
         d[model]["ht"]     = {"file": "%s/v5/QCD/QcdBkgdEst_%s.root"%(dir, model.lower())}
+        d[model]["jes-"]   = {"file": "%s/v5/SMSPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
+        d[model]["jes+"]   = {"file": "%s/v5/SMSMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
+        
         
         for key in d[model] :
             tag = key[-2:]
