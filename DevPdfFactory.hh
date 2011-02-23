@@ -22,7 +22,7 @@
 
 class DevPdfFactory {
 public:
-
+  
   //constructor takes as input (measured values in HT alphaT > 0.55(meas),measured values in HT alphaT < 0.55 (meas_low),calculated B,calculated C, HT borders, mean of HT bins, frac of total signal in each bin, starting guess for A and K, number of HT bins
   DevPdfFactory(Double_t* _meas,
 		Double_t* _meas_low,
@@ -34,10 +34,10 @@ public:
 		Double_t _A,
 		Double_t _K,
 		Int_t nbins);
-
+  
   //destructor
-  virtual ~DevPdfFactory();
- 
+  ~DevPdfFactory() {}
+  
   //calls DevPdf and setWorkspace to be called from outside
   void makeModel(RooWorkspace* ws,TString pdfName,bool exp);
 
