@@ -10,7 +10,7 @@ Let $n_i$ represent the number of events observed with $\alpha_{T} > 0.55$ in ea
 Let $m_i$ represent the number of events observed with $\alpha_{T} \le 0.55$ in each $H_T$ bin $i$.
 Then we write the likelihood for the observations in the tail this way:
 \begin{equation}
-L=\prod_i \mathrm{Pois}(n_i |\, b_i + s_i)
+L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, b_i + s_i)
 \end{equation}
 
 where $b_i$ represents the expected Standard Model background in bin $i$, 
@@ -110,13 +110,13 @@ and are validated in Figure \ref{fig:validationPlots}.
 The systematic uncertainty on the assumption that $R_{\alpha_T}$ is exponential can be treated either as 
 fully correlated among the bins:
 \begin{equation}
-L=\mathrm{Gaus}(1.0 |\,\tau, \sigma)\prod_i \mathrm{Pois}(n_i |\, \tau b_i + s_i)
+L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + s_i)\mathrm{Gaus}(\tau_i^{nominal} |\,\tau_i, \sigma)
 \end{equation}
 
 or as fully uncorrelated among the bins:
 
 \begin{equation}
-L=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + s_i)\mathrm{Gaus}(1.0 |\,\tau_i, \sigma_i)
+L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + s_i)\mathrm{Gaus}(\tau_i^{nominal} |\,\tau_i, \sigma_i)
 \end{equation}
 
 or perhaps as somewhat correlated using an $N \times N$ correlation matrix.
