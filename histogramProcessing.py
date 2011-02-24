@@ -139,7 +139,7 @@ def fullPoints() :
 
 def cachedPoints() :
     if conf.switches()["testPointOnly"] :
-        lx = 26
+        lx = 18
         ly = 16
         return [(lx, ly, 1)]
     else :

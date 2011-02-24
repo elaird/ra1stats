@@ -115,17 +115,34 @@ def d_s(y, tag, twoHtBins) :
     else :         return y["%s_2"%tag]
 
 def signal_sys_sigma(y, switches, inputData) :
-    init = math.sqrt(inputData["accXeff_sigma"]**2 + pow(inputData["lumi_sigma"], 2))
+    def maxDiff(default, var1, var2) :
+        return max(abs(var1-default), abs(var2-default))
+        
+    l = ["lumi_sigma","deadEcal_sigma","lepPhotVeto_sigma"]
+    out = math.sqrt(sum([inputData[item]**2 for item in l]))
 
-    if not switches["nlo"] : return init
+    #add jes/res uncertainty
+    if not isSimplifiedModel(switches) :
+        out = math.sqrt(out**2 + inputData["jesRes_sigma"]**2)
+    else :
+        print "isSimplifiedModel!"
+        default = d_s(y, "sig10", switches["twoHtBins"])
+        if default<=0.0 : return out
+            
+        var1    = d_s(y, "jes-", switches["twoHtBins"])
+        var2    = d_s(y, "jes+", switches["twoHtBins"])
+        print "jes/res unc. =",maxDiff(default, var1, var2)/default
+        out = math.sqrt(out**2 + pow(maxDiff(default, var1, var2)/default, 2))
+
+    if not switches["nlo"] : return out
+
+    #add scale uncertainty for k-factors and pdf uncertainty
     ds       = d_s(y, "sig10", switches["twoHtBins"])
     ds_sys05 = d_s(y, "sig05", switches["twoHtBins"])
     ds_sys2  = d_s(y, "sig20", switches["twoHtBins"])
-    if ds==0.0 : return init
-        
-    masterPlus =  abs(max((max((ds_sys2 - ds),(ds_sys05 - ds))),0.))
-    masterMinus = abs(max((max((ds - ds_sys2),(ds - ds_sys05))),0.))
-    return math.sqrt( pow(init, 2) + pow( max(masterMinus,masterPlus)/ds, 2) + pow(inputData["pdfUncertainty"], 2) )
+    if ds==0.0 : return out
+
+    return math.sqrt( pow(out, 2) + pow(maxDiff(ds, ds_sys05, ds_sys2)/ds, 2) + pow(inputData["pdfUncertainty"], 2) )
 
 def yields(specs, switches, inputData, m0, m12, mChi) :
     func = hp.nloYieldHisto if switches["nlo"] else hp.loYieldHisto
@@ -225,8 +242,11 @@ def accXeff(specs, m0, m12, mChi) :
     num.Divide(den)
     return num.GetBinContent(m0, m12, mChi)
 
-def xsLimitRatherThanYieldLimit(switches) :
+def isSimplifiedModel(switches) :
     return len(switches["signalModel"])==2
+
+def xsLimitRatherThanYieldLimit(switches) :
+    return isSimplifiedModel(switches)
 
 def summed(inputData, twoHtBins) :
     if twoHtBins : return inputData
@@ -248,10 +268,8 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     wspace = r.RooWorkspace(strings["workspaceName"])
     loadLibraries(strings["sourceFiles"])
     r.AddModel(inputData["lumi"],
-               inputData["lumi_sigma"],
-               
                accXeff(specs, m0, m12, mChi),
-               inputData["accXeff_sigma"],
+               inputData["_signal_sys_sigma"],
 
                xsLimitRatherThanYieldLimit(switches),
                

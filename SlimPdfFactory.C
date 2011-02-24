@@ -34,8 +34,7 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
 
 
 
-void AddModel(Double_t _lumi, Double_t _lumi_sys,
-	      Double_t _accXeff, Double_t _accXeff_sys,
+void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys,
 	      bool xsLimitRatherThanYieldLimit,
 	      Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
 	      Double_t _muon_cont_1,Double_t _muon_cont_2,
@@ -78,8 +77,6 @@ void AddModel(Double_t _lumi, Double_t _lumi_sys,
   RooRealVar* lumi = new RooRealVar("lumi","lumi",_lumi);
   RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff);
   
-  Double_t d_signal_sys = sqrt( pow(_lumi_sys,2) + pow(_accXeff_sys,2));
-
   RooRealVar* signal_sys = new RooRealVar("signal_sys","signal_sys",1.,0.,10.);
   RooRealVar* signal_sys_nom = new RooRealVar("signal_sys_nom","signal_sys_nom",1.);
   RooRealVar* signal_sys_sigma = new RooRealVar("signal_sys_sigma","signal_sys_sigma",TMath::Exp(d_signal_sys));

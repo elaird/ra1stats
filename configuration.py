@@ -15,22 +15,22 @@ def singleJobOnly() :
 def switches() :
     d = {}
 
-    #d["method"] = "profileLikelihood"
-    d["method"] = "feldmanCousins"
+    d["method"] = "profileLikelihood"
+    #d["method"] = "feldmanCousins"
 
     d["nlo"] = True
-    #d["signalModel"] = "T1"
-    d["signalModel"] = "tanBeta3"
+    d["signalModel"] = "T1"
+    #d["signalModel"] = "tanBeta3"
 
     d["debugOutput"] = False
-    d["testPointOnly"] = False
+    d["testPointOnly"] = True
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
 
     d["computeExpectedLimit"] = False
     d["nToys"] = 200
     d["debugMedianHisto"] = False
-    d["suppressJobOutput"] = True
+    d["suppressJobOutput"] = False
 
     d["hardCodedSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
@@ -92,8 +92,8 @@ def histoSpecs() :
         d[model]["sig10"]  = {"file": "%s/v5/SMSFinal/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
         d[model]["muon"]   = {"file": "%s/v5/MuonSMSsamples/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
         d[model]["ht"]     = {"file": "%s/v5/QCD/QcdBkgdEst_%s.root"%(dir, model.lower())}
-        d[model]["jes-"]   = {"file": "%s/v5/SMSPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
-        d[model]["jes+"]   = {"file": "%s/v5/SMSMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
+        d[model]["jes-"]   = {"file": "%s/v5/SMSFinal_JESMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
+        d[model]["jes+"]   = {"file": "%s/v5/SMSFinal_JESPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
         
         
         for key in d[model] :
@@ -105,10 +105,15 @@ def histoSpecs() :
             d[model][key]["450Dirs"  ] = ["mSuGraScan_450_%s"%tag]
             d[model][key]["loYield"  ] = "m0_m12_mChi_0"
             
-            d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
-            d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
-            d[model]["muon"]["450Dirs"] = ["mSuGraScan_450"]
+        for key in ["jes-","jes+"] :
+            d[model][key]["beforeDir"] = "mSuGraScan_beforeAll_10"
+            d[model][key]["350Dirs"] = ["mSuGraScan_350_10"]
+            d[model][key]["450Dirs"] = ["mSuGraScan_450_10"]
             
+        d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
+        d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
+        d[model]["muon"]["450Dirs"] = ["mSuGraScan_450"]
+
         d[model]["ht"]["beforeDir"] = None
         d[model]["ht"]["250Dirs"]   = ["Reco_Bin_250_HT_300"]
         d[model]["ht"]["300Dirs"]   = ["Reco_Bin_300_HT_350"]
