@@ -125,13 +125,11 @@ def signal_sys_sigma(y, switches, inputData) :
     if not isSimplifiedModel(switches) :
         out = math.sqrt(out**2 + inputData["jesRes_sigma"]**2)
     else :
-        print "isSimplifiedModel!"
         default = d_s(y, "sig10", switches["twoHtBins"])
         if default<=0.0 : return out
             
         var1    = d_s(y, "jes-", switches["twoHtBins"])
         var2    = d_s(y, "jes+", switches["twoHtBins"])
-        print "jes/res unc. =",maxDiff(default, var1, var2)/default
         out = math.sqrt(out**2 + pow(maxDiff(default, var1, var2)/default, 2))
 
     if not switches["nlo"] : return out
