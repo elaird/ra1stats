@@ -1,17 +1,38 @@
 \section{Electroweak Background Constraints}
-In each bin of $H_T$ with lower edge $\ge$ 350 GeV, we have two measurements: $N_{phot}$, and $N_{muon}$,
+In each bin of $H_T$ with lower edge $\ge$ 350 GeV, we have two measurements: $N_{ph}$, and $N_{mu}$,
 representing the event counts in the photon and muon control samples.  Each of these measurements has a 
-corresponding Monte Carlo expectation: $MC_{phot}$, and $MC_{muon}$.  The Monte Carlo also gives
+corresponding Monte Carlo expectation: $MC_{ph}$, and $MC_{mu}$.  The Monte Carlo also gives
 expected amounts of $Z_{inv}$ and $t\bar{t}+W$ in the hadronically-selected sample: $MC_{Z_{inv}}$ and $MC_{t\bar{t}+W}$.
+Let $i$ label the $H_T$ bin, let $\sigma_{phZ}^{inp}$ and $\sigma_{muW}^{inp}$ represent the relative 
+systematic uncertainties for the control sample constraints, and let $s_{mu}$ represent the expected signal contamination in the muon control sample.
+Define 
+\begin{equation}
+r_{ph}^i = \frac{MC_{ph}^i}{MC_{Z_{inv}}^i};\, r_{mu}^i = \frac{MC_{mu}^i}{MC_{t\bar{t}+W}^i}
+\end{equation}
+There are (at least) two ways to write the likelihoods, treating the systematics as fully correlated among the $H_T$ bins.
 
-Then we write the likelihoods in this way:
+\subsection{One}
 
 \begin{equation}
-L_{phot}=\prod_i \mathrm{Gaus}( \frac{MC_{phot}^i}{MC_{Z_{inv}}^i}    |\,\tau_{phot}^i, \sigma_{phot}) \mathrm{Pois}(N_{phot}^i |\, \tau_{phot}^{i}\times Z_{inv}^{i})
+L_{constraint}=\prod_i \mathrm{Gaus}( 0.0 |\, b^{i}(A,k)-QCD^{i}-(t\bar{t}^i+W^i) - Z_{inv}^{i}, 0.001)
 \end{equation}
 \begin{equation}
-L_{muon}=\prod_i \mathrm{Gaus}( \frac{MC_{muon}^i}{MC_{t\bar{t}+W}^i} |\,\tau_{muon}^i, \sigma_{muon}) \mathrm{Pois}(N_{muon}^i |\, \tau_{muon}^{i}\times(t\bar{t}^i+W^i) + s_{muon}^i)
+L_{ph}=\prod_i \mathrm{Gaus}( r_{ph}^i |\,\rho_{phZ} r_{ph}^i, r_{ph}^i \sigma_{phZ}^{inp}) \times \mathrm{Pois}(N_{ph}^i |\, \rho_{phZ} r_{ph}^{i} Z_{inv}^{i})
+\end{equation}
+\begin{equation}
+L_{mu}=\prod_i \mathrm{Gaus}( r_{mu}^i |\,\rho_{muW} r_{mu}^i, r_{mu}^i \sigma_{muW}^{inp}) \times \mathrm{Pois}(N_{mu}^i |\, \rho_{muW} r_{mu}^{i} (t\bar{t}^i+W^i) + s_{mu}^i)
 \end{equation}
 
-where the index $i$ labels the $H_T$ bin, and $s_{muon}$ represents signal contamination in the muon control sample.
+\subsection{Two}
+\begin{eqnarray*}
+L_{constraint}=\mathrm{Gaus}( 1.0 |\,\rho_{phZ},\sigma_{phZ}^{inp}) \times \mathrm{Gaus}( 1.0 |\,\rho_{muW},\sigma_{muW}^{inp}) \times \\
+{} \prod_i \mathrm{Gaus}( 0.0 |\, b^{i}(A,k) - QCD^{i} - \rho_{muW} (t\bar{t}^i+W^i) - \rho_{phZ} Z_{inv}^{i}, 0.001)
+\end{eqnarray*}
+\begin{equation}
+L_{ph}= \prod_i \mathrm{Pois}(N_{ph}^i |\, r_{ph}^{i} Z_{inv}^{i})
+\end{equation}
+\begin{equation}
+L_{mu}= \prod_i \mathrm{Pois}(N_{mu}^i |\, r_{mu}^{i} (t\bar{t}^i+W^i) + s_{mu}^i)
+\end{equation}
 
+The expectations for the total background,  $\{b^{i}\}$, are discussed in the next section.
