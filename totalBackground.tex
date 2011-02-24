@@ -107,16 +107,18 @@ and are validated in Figure \ref{fig:validationPlots}.
 
 \subsection{Systematic Uncertainties}
 \label{sec:sysUnc}
+We take the uncertainty on the signal efficiency to be correlated among the bins, given that the uncertainty in the luminosity currently dominates.
 The systematic uncertainty on the assumption that $R_{\alpha_T}$ is exponential can be treated either as 
 fully correlated among the bins:
 \begin{equation}
-L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + s_i)\mathrm{Gaus}(\tau_i^{nominal} |\,\tau_i, \sigma)
+L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau b_i + \rho_{sig}s_i)\mathrm{Gaus}(1.0 |\,\tau, \sigma_i)\mathrm{Gaus}(1.0 |\,\rho_{sig}, \delta)
 \end{equation}
 
 or as fully uncorrelated among the bins:
 
 \begin{equation}
-L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + s_i)\mathrm{Gaus}(\tau_i^{nominal} |\,\tau_i, \sigma_i)
+L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + \rho_{sig}s_i)\mathrm{Gaus}(1.0 |\,\tau_i, \sigma_i)\mathrm{Gaus}(1.0 |\,\rho_{sig}, \delta)
 \end{equation}
 
-or perhaps as somewhat correlated using an $N \times N$ correlation matrix.
+or perhaps as somewhat correlated using an $N \times N$ correlation matrix.  $\delta$ represents the relative uncertainty on the signal efficiency.
+
