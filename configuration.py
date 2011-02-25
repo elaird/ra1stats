@@ -1,17 +1,6 @@
 #!/usr/bin/env python
 import os
 
-def checkAndAdjust(d) :
-    assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
-    if len(d["signalModel"])==2 :
-        d["nlo"] = False
-        d["minSignalEventsForConsideration"] = 1.0e-18
-        d["maxSignalEventsForConsideration"] = None
-
-def singleJobOnly() :
-    d = switches()
-    return any([d[item] for item in ["hardCodedSignalContamination"]])
-
 def switches() :
     d = {}
 
@@ -19,18 +8,20 @@ def switches() :
     #d["method"] = "feldmanCousins"
 
     d["nlo"] = True
-    d["signalModel"] = "T1"
+    d["signalModel"] = "T2"
     #d["signalModel"] = "tanBeta3"
 
     d["debugOutput"] = False
-    d["testPointOnly"] = True
+    d["testPointsOnly"] = True
+    d["listOfTestPoints"] = [( 14, 19, 1)]
+    
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
 
     d["computeExpectedLimit"] = False
     d["nToys"] = 200
     d["debugMedianHisto"] = False
-    d["suppressJobOutput"] = False
+    d["suppressJobOutput"] = d["computeExpectedLimit"]
 
     d["hardCodedSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
@@ -45,13 +36,28 @@ def switches() :
     d["minSignalEventsForConsideration"] =  1.0
     d["maxSignalEventsForConsideration"] = 50.0
 
-    d["smsXRange"] = (400.0, 999.9)
+    d["smsXRange"] = (400.0, 999.9) #(min, max)
     d["smsYRange"] = (100.0, 999.9)
+    d["smsXsZRangeLin"] = (0.0, 40.0, 40) #(zMin, zMax, nContours)
+    d["smsXsZRangeLog"] = (0.4, 40.0, 36)
+    d["smsEffZRange"]   = (0.0, 0.31, 31)
+    
     checkAndAdjust(d)
     return d
 
 def isCern() :
     return ("cern.ch" in os.environ["HOSTNAME"])
+
+def checkAndAdjust(d) :
+    assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
+    if len(d["signalModel"])==2 :
+        d["nlo"] = False
+        d["minSignalEventsForConsideration"] = 1.0e-18
+        d["maxSignalEventsForConsideration"] = None
+
+def singleJobOnly() :
+    d = switches()
+    return any([d[item] for item in ["hardCodedSignalContamination"]])
 
 def histoSpecs() :
     dir = "/afs/cern.ch/user/e/elaird/public/20_yieldHistograms" if isCern() else "/vols/cms02/elaird1/20_yieldHistograms"
@@ -147,7 +153,7 @@ def stringsNoArgs() :
     d = {}
 
     d["sourceFiles"] = ["RooMyPdf.cxx", "SlimPdfFactory.C"]
-    d["subCmd"] = "bsub" if isCern() else "qsub -q hepmedium.q"
+    d["subCmd"] = "bsub" if isCern() else "qsub -q hepshort.q"
     d["envScript"] = "env.sh" if isCern() else "envIC.sh"
 
     #internal names
