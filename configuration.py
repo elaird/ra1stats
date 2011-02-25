@@ -21,7 +21,7 @@ def switches() :
     d["computeExpectedLimit"] = False
     d["nToys"] = 200
     d["debugMedianHisto"] = False
-    d["suppressJobOutput"] = d["computeExpectedLimit"]
+    d["suppressJobOutput"] = d["computeExpectedLimit"] and not d["debugMedianHisto"]
 
     d["hardCodedSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
