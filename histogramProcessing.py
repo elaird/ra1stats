@@ -138,10 +138,8 @@ def fullPoints() :
     return out
 
 def cachedPoints() :
-    if conf.switches()["testPointOnly"] :
-        lx = 18
-        ly = 16
-        return [(lx, ly, 1)]
+    if conf.switches()["testPointsOnly"] :
+        return conf.switches()["listOfTestPoints"]
     else :
         return fullPoints()
 
@@ -192,11 +190,26 @@ def printOnce(canvas, fileName) :
     canvas.Print(fileName)
     epsToPdf(fileName)
 
-def warn(s = "(not specified)") :
-    print "Warning: range restricted for %s plot."%s
+def printHoles(h) :
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            hole = h.GetBinContent(iBinX, iBinY)==0.0 and h.GetBinContent(iBinX, iBinY+1)!=0.0 and h.GetBinContent(iBinX, iBinY-1)!=0.0
+            if hole : print "found hole: (%d, %d) = (%g, %g)"%(iBinX, iBinY, h.GetXaxis().GetBinCenter(iBinX), h.GetYaxis().GetBinCenter(iBinY))
+    return
     
+def setRange(var, switches, histo, axisString) :
+    if var not in switches : return
+    nums = switches[var]
+    getattr(histo,"Get%saxis"%axisString)().SetRangeUser(*nums[:2])
+    if len(nums)==3 : r.gStyle.SetNumberContours(nums[2])
+    if axisString=="Z" :
+        maxContent = histo.GetBinContent(histo.GetMaximumBin())
+        if maxContent>nums[1] :
+            print "WARNING: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s"%(maxContent, nums[1], histo.GetName())
+
 def makeEfficiencyPlots(item = "sig10") :
-    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], conf.switches()["signalModel"])
+    s = conf.switches()    
+    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"])
     c = squareCanvas()
     spec = conf.histoSpecs()[item]
     num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
@@ -211,20 +224,18 @@ def makeEfficiencyPlots(item = "sig10") :
 
     #output a pdf
     adjustHisto(h2, zTitle = "analysis efficiency")
-    model = conf.switches()["signalModel"]
+    model = s["signalModel"]
     if len(model)==2 :
-        print "content: ",h2.GetBinContent(h2.GetMaximumBin())
-        warn("%s efficiency"%model)
-        h2.SetMinimum(0.0)
-        h2.SetMaximum(0.31)
-        if "smsXRange" in conf.switches() : h2.GetXaxis().SetRangeUser(*conf.switches()["smsXRange"])
-        if "smsYRange" in conf.switches() : h2.GetYaxis().SetRangeUser(*conf.switches()["smsYRange"])
-        r.gStyle.SetNumberContours(31)
+        setRange("smsXRange", s, h2, "X")
+        setRange("smsYRange", s, h2, "Y")
+        setRange("smsEffZRange", s, h2, "Z")
     h2.Draw("colz")
     printOnce(c, fileName)
-    
+    printHoles(h2)
+
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
-    if not (conf.switches()["signalModel"] in ["T1","T2"]) : return
+    s = conf.switches()
+    if not (s["signalModel"] in ["T1","T2"]) : return
     
     inFile = conf.stringsNoArgs()["mergedFile"]
     f = r.TFile(inFile)
@@ -232,25 +243,22 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*conf.switches()["CL"]))
+    adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"]))
 
-    if "smsXRange" in conf.switches() : h2.GetXaxis().SetRangeUser(*conf.switches()["smsXRange"])
-    if "smsYRange" in conf.switches() : h2.GetYaxis().SetRangeUser(*conf.switches()["smsYRange"])
+    setRange("smsXRange", s, h2, "X")
+    setRange("smsYRange", s, h2, "Y")
         
     h2.Draw("colz")
 
     if not logZ :
-        warn("xs limit")
-        h2.SetMinimum(0.0)
-        h2.SetMaximum(40.0)
-        r.gStyle.SetNumberContours(40)
+        setRange("smsXsZRangeLin", s, h2, "Z")
         printOnce(c, fileName)
     else :
-        warn("xs limit")
         c.SetLogz()
-        h2.GetZaxis().SetRangeUser(0.4, 40.0)
-        r.gStyle.SetNumberContours(36)
+        setRange("smsXsZRangeLog", s, h2, "Z")
         printOnce(c, fileName.replace(".eps","_logZ.eps"))
+
+    printHoles(h2)
     
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
