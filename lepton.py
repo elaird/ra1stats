@@ -201,8 +201,12 @@ def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
         if switches["debugOutput"] : data.Print("v")
         h.Fill(upperLimit(modelConfig, wspace, strings, switches, dataIn = data))
 
-    x = (1.0-0.6827)/2.0
-    probSum = array.array('d', [x, 0.5, 1.0-x])
+    oneSigmaFrac = r.TMath.Erf(1.0/math.sqrt(2.0)) #6.82689492137085852e-01
+    twoSigmaFrac = r.TMath.Erf(2.0/math.sqrt(2.0)) #9.54499736103641583e-01
+
+    xOne = (1.0-oneSigmaFrac)/2.0
+    xTwo = (1.0-twoSigmaFrac)/2.0
+    probSum = array.array('d', [xTwo, xOne, 0.5, 1.0-xOne, 1.0-xTwo])
     q = array.array('d', [0.0]*len(probSum))
     h.GetQuantiles(len(probSum), q, probSum)
 
@@ -327,13 +331,16 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
         if switches["computeExpectedLimit"] :
             dictToWrite = {}
             q = computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
-            insert(dictToWrite, "MedianMinusOneSigma", q[0])
-            insert(dictToWrite, "Median",              q[1])
-            insert(dictToWrite, "MedianPlusOneSigma",  q[2])
+            for label,value in zip(["MedianMinusTwoSigma",
+                                    "MedianMinusOneSigma",
+                                    "Median",
+                                    "MedianPlusOneSigma",
+                                    "MedianPlusTwoSigma"], q) :
+                insert(dictToWrite, label, value)
         else :
             ul = upperLimit(modelConfig, wspace, strings, switches)
             insert(y, "UpperLimit", ul)
             insert(y, "ExclusionLimit", 2*(y["ds"]<ul)-1)
             dictToWrite = y
         writeNumbers(fileName = strings["pickledFileName"], m0 = m0, m12 = m12, mChi = mChi, d = dictToWrite)
-    #printStuff(y, m0, m12, mChi)
+    printStuff(y, m0, m12, mChi)
