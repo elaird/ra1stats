@@ -8,9 +8,12 @@ def switches() :
     #d["method"] = "feldmanCousins"
 
     d["nlo"] = True
-    d["signalModel"] = "T2"
-    #d["signalModel"] = "tanBeta3"
+    #d["signalModel"] = "T2"
+    d["signalModel"] = "tanBeta3"
 
+    #d["icQueue"] = "hepshort.q"
+    d["icQueue"] = "hepmedium.q"
+    
     d["debugOutput"] = False
     d["testPointsOnly"] = True
     d["listOfTestPoints"] = [( 14, 19, 1)]
@@ -21,7 +24,6 @@ def switches() :
     d["computeExpectedLimit"] = False
     d["nToys"] = 200
     d["debugMedianHisto"] = False
-    d["suppressJobOutput"] = d["computeExpectedLimit"] and not d["debugMedianHisto"]
 
     d["hardCodedSignalContamination"] = False
     d["assumeUncorrelatedLowHtSystematics"] = True
@@ -54,6 +56,15 @@ def checkAndAdjust(d) :
         d["nlo"] = False
         d["minSignalEventsForConsideration"] = 1.0e-18
         d["maxSignalEventsForConsideration"] = None
+
+    d["suppressJobOutput"] = d["computeExpectedLimit"] and not d["debugMedianHisto"]
+    if d["method"]=="feldmanCousins" :
+        d["fiftyGeVStepsOnly"] = True
+        d["minSignalEventsForConsideration"] =  8.0
+        d["maxSignalEventsForConsideration"] = 30.0
+    else :
+        d["fiftyGeVStepsOnly"] = False
+    return
 
 def singleJobOnly() :
     d = switches()
@@ -153,7 +164,7 @@ def stringsNoArgs() :
     d = {}
 
     d["sourceFiles"] = ["RooMyPdf.cxx", "SlimPdfFactory.C"]
-    d["subCmd"] = "bsub" if isCern() else "qsub -q hepshort.q"
+    d["subCmd"] = "bsub" if isCern() else "qsub -q %s"%switches()["icQueue"]
     d["envScript"] = "env.sh" if isCern() else "envIC.sh"
 
     #internal names
