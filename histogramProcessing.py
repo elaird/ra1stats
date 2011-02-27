@@ -125,15 +125,17 @@ def mergePickledFiles() :
 
 def fullPoints() :
     out = []
+    s = conf.switches()
     h = exampleHisto()
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 content = h.GetBinContent(iBinX, iBinY, iBinZ)
-                min = conf.switches()["minSignalEventsForConsideration"]
-                max = conf.switches()["maxSignalEventsForConsideration"]
+                min = s["minSignalEventsForConsideration"]
+                max = s["maxSignalEventsForConsideration"]
                 if min!=None and content<min : continue
                 if max!=None and content>max : continue
+                if s["fiftyGeVStepsOnly"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/50.0)%1 != 0.0) : continue
                 out.append( (iBinX, iBinY, iBinZ) )
     return out
 
