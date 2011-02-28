@@ -7,8 +7,9 @@ def switches() :
     #d["method"] = "profileLikelihood"
     d["method"] = "feldmanCousins"
 
-    d["fcMoreToysMoreBins"] = False
-    d["fcUseProof"] = True
+    d["fcMoreToys"] = True
+    d["fcMoreBins"] = True
+    d["fcUseProof"] = False
 
     d["nlo"] = True
     #d["signalModel"] = "T2"
@@ -18,7 +19,7 @@ def switches() :
     d["icQueue"] = "hepmedium.q"
     
     d["debugOutput"] = False
-    d["testPointsOnly"] = True
+    d["testPointsOnly"] = False
     d["listOfTestPoints"] = [( 21, 14, 1)] #example where FC gets stuck for TB50
     #d["listOfTestPoints"] = [( 14, 19, 1)]
     
