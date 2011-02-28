@@ -54,8 +54,9 @@ def feldmanCousins(modelConfig, wspace, data, signalVar, switches) :
     fc.SetConfidenceLevel(switches["CL"])
     fc.FluctuateNumDataEntries(False) #number counting: dataset always has 1 entry with N events observed
     fc.UseAdaptiveSampling(True)
-    if switches["fcMoreToysMoreBins"] :
+    if switches["fcMoreToys"] :
         fc.AdditionalNToysFactor(4)
+    if switches["fcMoreBins"] :
         fc.SetNBins(40)
     if switches["fcUseProof"] :
         fc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
