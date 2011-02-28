@@ -38,9 +38,9 @@ def writeGraphVizTree(wspace, strings) :
     cmd = "dot -Tps %s -o %s"%(dotFile, dotFile.replace(".dot", ".ps"))
     os.system(cmd)
     
-def profileLikelihood(modelConfig, wspace, data, signalVar, cl) :
+def profileLikelihood(modelConfig, wspace, data, signalVar, switches) :
     plc = r.RooStats.ProfileLikelihoodCalculator(data, modelConfig)
-    plc.SetConfidenceLevel(cl)
+    plc.SetConfidenceLevel(switches["CL"])
     plInt = plc.GetInterval()
     print "Profile Likelihood interval on s = [%g, %g]"%(plInt.LowerLimit(wspace.var(signalVar)), plInt.UpperLimit(wspace.var(signalVar)))
     #lrplot = r.RooStats.LikelihoodIntervalPlot(plInt)
@@ -49,14 +49,16 @@ def profileLikelihood(modelConfig, wspace, data, signalVar, cl) :
     utils.delete(plInt)
     return out
 
-def feldmanCousins(modelConfig, wspace, data, signalVar, cl) :
+def feldmanCousins(modelConfig, wspace, data, signalVar, switches) :
     fc = r.RooStats.FeldmanCousins(data, modelConfig)
-    fc.SetConfidenceLevel(cl)
+    fc.SetConfidenceLevel(switches["CL"])
     fc.FluctuateNumDataEntries(False) #number counting: dataset always has 1 entry with N events observed
     fc.UseAdaptiveSampling(True)
-    fc.AdditionalNToysFactor(4)
-    fc.SetNBins(40)
-    #fc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
+    if switches["fcMoreToysMoreBins"] :
+        fc.AdditionalNToysFactor(4)
+        fc.SetNBins(40)
+    if switches["fcUseProof"] :
+        fc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
     fcInt = fc.GetInterval()
     print "Feldman Cousins interval on s = [%g, %g]"%(fcInt.LowerLimit(wspace.var(signalVar)), fcInt.UpperLimit(wspace.var(signalVar)))
     out = fcInt.UpperLimit(wspace.var(signalVar))
@@ -187,7 +189,7 @@ def setSignalVars(y, switches, specs, strings, wspace) :
 def upperLimit(modelConfig, wspace, strings, switches, dataIn = None) :
     data = wspace.data(strings["dataName"]) if not dataIn else dataIn
     func = eval(switches["method"])
-    return func(modelConfig, wspace, data, strings["signalVar"], switches["CL"])
+    return func(modelConfig, wspace, data, strings["signalVar"], switches)
 
 def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
     wspace.var(strings["signalVar"]).setVal(0.0)
