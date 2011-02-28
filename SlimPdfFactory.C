@@ -318,10 +318,12 @@ void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys,
     if(sys_uncorr) ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
     else  ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
   }
-  else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2"); 
+  //else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2"); 
+  else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2,rho,tau_1,tau_2"); 
 
   if(twobins)ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3,meas_bar_4,muonMeas_1,muonMeas_2,photMeas_1,photMeas_2");
-  else ws->defineSet("obs","meas_1,meas_2,meas_4,meas_bar_1,meas_bar_2,meas_bar_4,muonMeas_2,photMeas_2");
+  //else ws->defineSet("obs","meas_1,meas_2,meas_4,meas_bar_1,meas_bar_2,meas_bar_4,muonMeas_2,photMeas_2");
+  else ws->defineSet("obs","meas_1,meas_2,meas_4,meas_bar_1,meas_bar_2,meas_bar_4,muonMeas_2,photMeas_2,bbar");
   ws->defineSet("poi",muName);
 
 }
