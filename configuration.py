@@ -4,19 +4,23 @@ import os
 def switches() :
     d = {}
 
-    d["method"] = "profileLikelihood"
-    #d["method"] = "feldmanCousins"
+    #d["method"] = "profileLikelihood"
+    d["method"] = "feldmanCousins"
+
+    d["fcMoreToysMoreBins"] = False
+    d["fcUseProof"] = True
 
     d["nlo"] = True
     #d["signalModel"] = "T2"
-    d["signalModel"] = "tanBeta3"
+    d["signalModel"] = "tanBeta50"
 
     #d["icQueue"] = "hepshort.q"
     d["icQueue"] = "hepmedium.q"
     
     d["debugOutput"] = False
     d["testPointsOnly"] = True
-    d["listOfTestPoints"] = [( 14, 19, 1)]
+    d["listOfTestPoints"] = [( 21, 14, 1)] #example where FC gets stuck for TB50
+    #d["listOfTestPoints"] = [( 14, 19, 1)]
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
@@ -60,8 +64,8 @@ def checkAndAdjust(d) :
     d["suppressJobOutput"] = d["computeExpectedLimit"] and not d["debugMedianHisto"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
-        d["minSignalEventsForConsideration"] =  8.0
-        d["maxSignalEventsForConsideration"] = 30.0
+        d["minSignalEventsForConsideration"] = 10.0
+        d["maxSignalEventsForConsideration"] = 26.0
     else :
         d["fiftyGeVStepsOnly"] = False
     return
