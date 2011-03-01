@@ -54,11 +54,9 @@ def feldmanCousins(modelConfig, wspace, data, signalVar, switches) :
     fc.SetConfidenceLevel(switches["CL"])
     fc.FluctuateNumDataEntries(False) #number counting: dataset always has 1 entry with N events observed
     fc.UseAdaptiveSampling(True)
-    if switches["fcMoreToys"] :
-        fc.AdditionalNToysFactor(4)
-    if switches["fcMoreBins"] :
-        fc.SetNBins(40)
-    if switches["fcUseProof"] :
+    if "fcAdditionalNToysFactor" in switches : fc.AdditionalNToysFactor(switches["fcAdditionalNToysFactor"])
+    if "fcSetNBins" in switches : fc.SetNBins(switches["fcSetNBins"])        
+    if "fcUseProof" in switches and switches["fcUseProof"] :
         fc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
     fcInt = fc.GetInterval()
     print "Feldman Cousins interval on s = [%g, %g]"%(fcInt.LowerLimit(wspace.var(signalVar)), fcInt.UpperLimit(wspace.var(signalVar)))
@@ -149,7 +147,14 @@ def yields(specs, switches, inputData, m0, m12, mChi) :
     func = hp.nloYieldHisto if switches["nlo"] else hp.loYieldHisto
     out = {}
     for item in specs :
-        if item!="ht" :
+        if item=="ht" :
+            for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
+                histo = func(specs[item], specs[item][dir], inputData["lumi"], beforeSpec = specs["sig10"])
+                if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
+        elif item=="pdfUnc" :
+            histo = hp.pdfUncHisto(specs[item])
+            if histo : out["pdfUnc"] = histo.GetBinContent(m0, m12)
+        else :
             if switches["twoHtBins"] :
                 for tag,dir in zip(["1", "2"],["350Dirs", "450Dirs"]) :
                     histo = func(specs[item], specs[item][dir], inputData["lumi"])
@@ -158,10 +163,6 @@ def yields(specs, switches, inputData, m0, m12, mChi) :
                 histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], inputData["lumi"])
                 if histo : out["%s_2"%item] = histo.GetBinContent(m0, m12, mChi)
 
-        else :
-            for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
-                histo = func(specs[item], specs[item][dir], inputData["lumi"], beforeSpec = specs["sig10"])
-                if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
 
     insert(out, "ds", d_s(out, "sig10", switches["twoHtBins"]))
     insert(out, "signal_sys_sigma", signal_sys_sigma(out, switches, inputData))
