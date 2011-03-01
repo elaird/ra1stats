@@ -69,6 +69,20 @@ def weights1DHisto(threeD) :
                 out.Fill(threeD.GetBinContent(iBinX, iBinY, iBinZ))
     return out
 
+def weights2DHisto(threeD) :
+    out = r.TH2D("weights", "weights",
+                 threeD.GetNbinsX(), threeD.GetXaxis().GetXmin(), threeD.GetXaxis().GetXmax(),
+                 threeD.GetNbinsY(), threeD.GetYaxis().GetXmin(), threeD.GetYaxis().GetXmax())
+
+    for iBinX in range(1, 1+threeD.GetNbinsX()) :
+        for iBinY in range(1, 1+threeD.GetNbinsY()) :
+            mean = 0.0
+            for iBinZ in range(1, 1+threeD.GetNbinsZ()) :
+                mean += threeD.GetBinContent(iBinX, iBinY, iBinZ)
+            mean/=threeD.GetNbinsZ()
+            out.SetBinContent(iBinX, iBinY, mean)
+    return out
+
 def threeDHisto(sms) :
     histos0 = collectHistos(sms, subDir = "gen0")
     histos3 = collectHistos(sms, subDir = "gen3")
@@ -82,12 +96,25 @@ def writeHisto(fileName, histo) :
     histo.Write()
     f.Close()
 
-def weightPlot(epsFileName, threeD) :
+def weightPlot1D(epsFileName, threeD) :
     canvas = r.TCanvas("canvas")
     canvas.SetLogy()
     r.gStyle.SetOptStat(111111)
     oneD = weights1DHisto(threeD)
+    oneD.SetTitle(";weight;entries / bin")
     oneD.Draw()
+    canvas.Print(epsFileName)
+    os.system("epstopdf %s"%epsFileName)
+    os.remove(epsFileName)
+
+def weightPlot2D(epsFileName, threeD) :
+    canvas = r.TCanvas("canvas")
+    canvas.SetRightMargin(0.15)
+    twoD = weights2DHisto(threeD)
+    twoD.SetTitle(";m_{mother} (GeV);m_{LSP} (GeV);mean weight from ISR variation")
+    twoD.SetStats(False)
+    twoD.Draw("colz")
+    twoD.GetZaxis().SetRangeUser(0.5, 1.5)
     canvas.Print(epsFileName)
     os.system("epstopdf %s"%epsFileName)
     os.remove(epsFileName)
@@ -95,4 +122,5 @@ def weightPlot(epsFileName, threeD) :
 sms = model()
 threeD = threeDHisto(sms)
 writeHisto(fileName(sms), threeD)
-weightPlot(fileName(sms).replace(".root",".eps"), threeD)
+weightPlot1D(fileName(sms).replace(".root","_1D.eps"), threeD)
+weightPlot2D(fileName(sms).replace(".root","_2D.eps"), threeD)
