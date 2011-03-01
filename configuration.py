@@ -7,20 +7,21 @@ def switches() :
     d["method"] = "profileLikelihood"
     #d["method"] = "feldmanCousins"
 
-    d["fcMoreToys"] = True
-    d["fcMoreBins"] = True
+    d["fcAdditionalNToysFactor"] = 4
+    d["fcSetNBins"] = 40
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    d["signalModel"] = "T2"
+    d["signalModel"] = "T1"
     #d["signalModel"] = "tanBeta50"
 
     d["icQueue"] = "hepshort.q"
     #d["icQueue"] = "hepmedium.q"
     
     d["debugOutput"] = False
-    d["testPointsOnly"] = False
-    d["listOfTestPoints"] = [( 14, 19, 1)]
+    d["testPointsOnly"] = True
+    #d["listOfTestPoints"] = [( 14, 19, 1)]
+    d["listOfTestPoints"] = [( 14, 20, 1)]
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
@@ -119,7 +120,6 @@ def histoSpecs() :
         d[model]["jes-"]   = {"file": "%s/v5/SMSFinal_JESMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
         d[model]["jes+"]   = {"file": "%s/v5/SMSFinal_JESPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
         
-        
         for key in d[model] :
             tag = key[-2:]
             d[model][key]["beforeDir"] = "mSuGraScan_beforeAll_%s"%tag
@@ -133,6 +133,8 @@ def histoSpecs() :
             d[model][key]["beforeDir"] = "mSuGraScan_beforeAll_10"
             d[model][key]["350Dirs"] = ["mSuGraScan_350_10"]
             d[model][key]["450Dirs"] = ["mSuGraScan_450_10"]
+
+        #d[model]["pdfUnc"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v1/PdfUnc_%s.root"%model, "350Dirs": ["/"], "loYield": "MSTW_effi"} #warning: non-intuitive keys
             
         d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
         d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
