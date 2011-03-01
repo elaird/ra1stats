@@ -42,6 +42,17 @@ def checkHistoBinning() :
                 print h,properties([h])
             assert False
 
+def pdfUncHisto(spec) :
+    f = r.TFile(spec["file"])
+    assert not f.IsZombie()
+
+    dir = spec["350Dirs"][0]
+    hOld = f.Get("%s/%s"%(dir, spec["loYield"]))
+    h = hOld.Clone("%s_%s_%s"%(spec["file"], dir, spec["loYield"]))
+    h.SetDirectory(0)
+    f.Close()
+    return h
+
 def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f = r.TFile(spec["file"])
     assert not f.IsZombie()
