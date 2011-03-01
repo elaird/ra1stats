@@ -4,24 +4,23 @@ import os
 def switches() :
     d = {}
 
-    #d["method"] = "profileLikelihood"
-    d["method"] = "feldmanCousins"
+    d["method"] = "profileLikelihood"
+    #d["method"] = "feldmanCousins"
 
     d["fcMoreToys"] = True
     d["fcMoreBins"] = True
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    #d["signalModel"] = "T2"
-    d["signalModel"] = "tanBeta50"
+    d["signalModel"] = "T2"
+    #d["signalModel"] = "tanBeta50"
 
-    #d["icQueue"] = "hepshort.q"
-    d["icQueue"] = "hepmedium.q"
+    d["icQueue"] = "hepshort.q"
+    #d["icQueue"] = "hepmedium.q"
     
     d["debugOutput"] = False
     d["testPointsOnly"] = False
-    d["listOfTestPoints"] = [( 21, 14, 1)] #example where FC gets stuck for TB50
-    #d["listOfTestPoints"] = [( 14, 19, 1)]
+    d["listOfTestPoints"] = [( 14, 19, 1)]
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
@@ -43,13 +42,16 @@ def switches() :
     d["minSignalEventsForConsideration"] =  1.0
     d["maxSignalEventsForConsideration"] = 50.0
 
+    checkAndAdjust(d)
+    return d
+
+def smsRanges() :
+    d = {}
     d["smsXRange"] = (400.0, 999.9) #(min, max)
     d["smsYRange"] = (100.0, 999.9)
     d["smsXsZRangeLin"] = (0.0, 40.0, 40) #(zMin, zMax, nContours)
     d["smsXsZRangeLog"] = (0.4, 40.0, 36)
     d["smsEffZRange"]   = (0.0, 0.31, 31)
-    
-    checkAndAdjust(d)
     return d
 
 def isCern() :
@@ -151,6 +153,15 @@ def histoTitle() :
         return ";m_{squark} (GeV);m_{LSP} (GeV)"
     else :
         return ";m_{0} (GeV);m_{1/2} (GeV)"
+
+def referenceXsHistogram() :
+    d = {}
+    d["file"] = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root"
+    if switches()["signalModel"]=="T1" :
+        d["histo"] = "gluino"
+    if switches()["signalModel"]=="T2" :
+        d["histo"] = "squark"
+    return d
 
 def mergedFile(outputDir, switches) :
     out  = "%s/"%outputDir
