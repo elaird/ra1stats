@@ -1,3 +1,4 @@
+3rd dimension in pdfUnc histos
 lolargs
 bayesian switch in setupLikelihood and modelConfig
 improve histo bin check
