@@ -22,8 +22,10 @@ def checkHistoBinning() :
             try:
                 f = r.TFile(handle[0])
                 h = f.Get("%s/%s"%(handle[1], handle[2]))
+                out["type"].append(type(h))
                 out["x"].append(axisStuff(h.GetXaxis()))
                 out["y"].append(axisStuff(h.GetYaxis()))
+                out["z"].append(axisStuff(h.GetZaxis()))
                 f.Close()
             except AttributeError as ae :
                 print handle
