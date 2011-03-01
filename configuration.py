@@ -12,8 +12,8 @@ def switches() :
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    d["signalModel"] = "T1"
-    #d["signalModel"] = "tanBeta50"
+    #d["signalModel"] = "T1"
+    d["signalModel"] = "tanBeta3"
 
     d["icQueue"] = "hepshort.q"
     #d["icQueue"] = "hepmedium.q"
@@ -27,7 +27,7 @@ def switches() :
     d["exponentialBkg"] = True
 
     d["computeExpectedLimit"] = False
-    d["nToys"] = 200
+    d["nToys"] = 1000
     d["debugMedianHisto"] = False
 
     d["hardCodedSignalContamination"] = False
