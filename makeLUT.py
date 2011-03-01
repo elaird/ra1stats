@@ -37,15 +37,16 @@ def example1DHisto(collection) :
     return collection[collection.keys()[0]]
 
 def output3DHisto(sms, numCollection = None, denCollection = None) :
-    xy = example2DHisto()
-    z = example1DHisto(numCollection)
-    
-    name = "%s_weight"%sms
-    out = r.TH3F(name, name,
-                 xy.GetNbinsX(), xy.GetXaxis().GetXmin(), xy.GetXaxis().GetXmax(),
-                 xy.GetNbinsY(), xy.GetYaxis().GetXmin(), xy.GetYaxis().GetXmax(),
-                 z.GetNbinsX(),   z.GetXaxis().GetXmin(),  z.GetXaxis().GetXmax())
+    def initHisto(exampleCollection) :
+        xy = example2DHisto()
+        z = example1DHisto(exampleCollection)
+        name = "%s_weight"%sms
+        return r.TH3F(name, name,
+                      xy.GetNbinsX(), xy.GetXaxis().GetXmin(), xy.GetXaxis().GetXmax(),
+                      xy.GetNbinsY(), xy.GetYaxis().GetXmin(), xy.GetYaxis().GetXmax(),
+                      z.GetNbinsX(),   z.GetXaxis().GetXmin(),  z.GetXaxis().GetXmax())
 
+    out = initHisto(numCollection)
     for iBinX in range(1, 1+out.GetNbinsX()) :
         x = out.GetXaxis().GetBinLowEdge(iBinX)
         for iBinY in range(1, 1+out.GetNbinsY()) :
@@ -59,8 +60,39 @@ def output3DHisto(sms, numCollection = None, denCollection = None) :
                 content = num/den if (den and num) else 1.0
                 out.SetBinContent(iBinX, iBinY, iBinZ, content)
     return out
-    
+
+def weights1DHisto(threeD) :
+    out = r.TH1D("weights", "weights", 100, 0.0, 2.0)
+    for iBinX in range(1, 1+threeD.GetNbinsX()) :
+        for iBinY in range(1, 1+threeD.GetNbinsY()) :
+            for iBinZ in range(1, 1+threeD.GetNbinsZ()) :
+                out.Fill(threeD.GetBinContent(iBinX, iBinY, iBinZ))
+    return out
+
+def threeDHisto(sms) :
+    histos0 = collectHistos(sms, subDir = "gen0")
+    histos3 = collectHistos(sms, subDir = "gen3")
+    return output3DHisto(sms, numCollection = histos3, denCollection = histos0)
+
+def fileName(sms) :
+    return "%s_weights.root"%sms
+
+def writeHisto(fileName, histo) :
+    f = r.TFile(fileName, "RECREATE")
+    histo.Write()
+    f.Close()
+
+def weightPlot(epsFileName, threeD) :
+    canvas = r.TCanvas("canvas")
+    canvas.SetLogy()
+    r.gStyle.SetOptStat(111111)
+    oneD = weights1DHisto(threeD)
+    oneD.Draw()
+    canvas.Print(epsFileName)
+    os.system("epstopdf %s"%epsFileName)
+    os.remove(epsFileName)
+
 sms = model()
-histos0 = collectHistos(sms, subDir = "gen0")
-histos3 = collectHistos(sms, subDir = "gen3")
-print output3DHisto(sms, numCollection = histos3, denCollection = histos0)
+threeD = threeDHisto(sms)
+writeHisto(fileName(sms), threeD)
+weightPlot(fileName(sms).replace(".root",".eps"), threeD)
