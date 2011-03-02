@@ -115,23 +115,27 @@ def d_s(y, tag, twoHtBins) :
     if twoHtBins : return y["%s_1"%tag] + y["%s_2"%tag]
     else :         return y["%s_2"%tag]
 
+#returns the relative systematic error on signal yield
 def signal_sys_sigma(y, switches, inputData) :
     def maxDiff(default, var1, var2) :
         return max(abs(var1-default), abs(var2-default))
-        
+
+    def quadAdd(l) :
+        return math.sqrt(sum([x**2 for x in l]))
+    
     l = ["lumi_sigma","deadEcal_sigma","lepPhotVeto_sigma"]
-    out = math.sqrt(sum([inputData[item]**2 for item in l]))
+    out = quadAdd([inputData[item] for item in l])
 
     #add jes/res uncertainty
     if not isSimplifiedModel(switches) :
-        out = math.sqrt(out**2 + inputData["jesRes_sigma"]**2)
+        out = quaddAdd([out, inputData["jesRes_sigma"]])
     else :
         default = d_s(y, "sig10", switches["twoHtBins"])
         if default<=0.0 : return out
             
         var1    = d_s(y, "jes-", switches["twoHtBins"])
         var2    = d_s(y, "jes+", switches["twoHtBins"])
-        out = math.sqrt(out**2 + pow(maxDiff(default, var1, var2)/default, 2))
+        out = quadAdd([out, maxDiff(default, var1, var2)/default, y["effUncRelPdf"]])
 
     if not switches["nlo"] : return out
 
@@ -151,9 +155,9 @@ def yields(specs, switches, inputData, m0, m12, mChi) :
             for tag,dir in zip(["1", "2"],["250Dirs", "300Dirs"]) :
                 histo = func(specs[item], specs[item][dir], inputData["lumi"], beforeSpec = specs["sig10"])
                 if histo : out["%s_%s"%(item,tag)] = histo.GetBinContent(m0, m12, mChi)
-        elif item=="pdfUnc" :
+        elif item=="effUncRelPdf" :
             histo = hp.pdfUncHisto(specs[item])
-            if histo : out["pdfUnc"] = histo.GetBinContent(m0, m12)
+            if histo : out[item] = histo.GetBinContent(m0, m12, mChi)
         else :
             if switches["twoHtBins"] :
                 for tag,dir in zip(["1", "2"],["350Dirs", "450Dirs"]) :
