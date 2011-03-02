@@ -135,7 +135,7 @@ def histoSpecs() :
             d[model][key]["450Dirs"] = ["mSuGraScan_450_10"]
 
         #warning: non-intuitive keys chosen to use histo bin check "for free"
-        #d[model]["pdfUnc"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v1/PdfUnc_%s.root"%model, "350Dirs": ["/"], "loYield": "MSTW_effi"}
+        d[model]["pdfUnc"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v2/PdfUnc_%s.root"%model, "350Dirs": ["/"], "loYield": "Effi_pdf_unc"}
             
         d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
         d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
