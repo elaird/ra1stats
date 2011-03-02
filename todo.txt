@@ -1,11 +1,11 @@
-3rd dimension in pdfUnc histos
+masks for holes in input files
+reduce 0.01 minimum
 lolargs
 bayesian switch in setupLikelihood and modelConfig
 improve histo bin check
 investigate ng
 use muon variation directories?
 use sms variation directories?
-masks
 take care with passing x or exp(x)
 tau_1ObservedNumberCountingDataWithSideband
 consider pdfUncertainty for LO
