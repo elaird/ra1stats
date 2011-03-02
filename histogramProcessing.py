@@ -230,6 +230,10 @@ def adjustHisto(h, zTitle = "") :
     h.GetZaxis().SetTitleOffset(1.5)
 
 def printOnce(canvas, fileName) :
+    text = r.TText()
+    text.SetNDC()
+    text.SetTextAlign(22)
+    text.DrawText(0.5, 0.85, "CMS Preliminary")
     canvas.Print(fileName)
     epsToPdf(fileName)
 
@@ -331,6 +335,17 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
     return
 
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
+    def drawGraphs(graphs) :
+        legend = r.TLegend(0.2, 0.7, 0.5, 0.8)
+        legend.SetBorderSize(0)
+        legend.SetFillStyle(0)
+        for d in graphs :
+            g = d["graph"]
+            legend.AddEntry(g, d["label"], "l")
+            if g.GetN() : g.Draw("lsame")
+        legend.Draw("same")
+        return legend
+    
     s = conf.switches()
     if not (s["signalModel"] in ["T1","T2"]) : return
     
@@ -361,21 +376,14 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
         setRange("smsXsZRangeLin", ranges, h2, "Z")
         printOnce(c, fileName)
 
-        legend = r.TLegend(0.2, 0.7, 0.5, 0.8)
-        legend.SetBorderSize(0)
-        legend.SetFillStyle(0)
-        for d in graphs :
-            g = d["graph"]
-            legend.AddEntry(g, d["label"], "l")
-            if g.GetN() : g.Draw("lsame")
-        legend.Draw("same")
+        stuff = drawGraphs(graphs)
         printOnce(c, fileName.replace(".eps", "_refXs.eps"))
     else :
         c.SetLogz()
         setRange("smsXsZRangeLog", ranges, h2, "Z")
         printOnce(c, fileName.replace(".eps","_logZ.eps"))
 
-        g.Draw("same")
+        stuff = drawGraphs(graphs)
         printOnce(c, fileName.replace(".eps", "_refXs_logZ.eps"))
 
     printHoles(h2)
