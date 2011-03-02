@@ -120,6 +120,7 @@ def histoSpecs() :
         d[model]["ht"]     = {"file": "%s/v5/QCD/QcdBkgdEst_%s.root"%(dir, model.lower())}
         d[model]["jes-"]   = {"file": "%s/v5/SMSFinal_JESMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
         d[model]["jes+"]   = {"file": "%s/v5/SMSFinal_JESPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
+        d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/AK5Calo_mySUSYTopo%s.root"%(dir, model[-1])}
         
         for key in d[model] :
             tag = key[-2:]
@@ -135,6 +136,12 @@ def histoSpecs() :
             d[model][key]["350Dirs"] = ["mSuGraScan_350_10"]
             d[model][key]["450Dirs"] = ["mSuGraScan_450_10"]
 
+        for key in ["isr-"] :
+            d[model][key]["beforeDir"] = "isr_unc_before"
+            d[model][key]["350Dirs"  ] = ["isr_unc_350"]
+            d[model][key]["450Dirs"  ] = ["isr_unc_450"]
+            d[model][key]["loYield"  ] = "m0_m12"
+            
         #warning: non-intuitive keys chosen to use histo bin check "for free"
         d[model]["effUncRelPdf"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v4/Plots_%s.root"%model, "350Dirs": ["/"], "loYield": "Effi_pdf_unc_rel"}
             

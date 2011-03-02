@@ -117,8 +117,8 @@ def d_s(y, tag, twoHtBins) :
 
 #returns the relative systematic error on signal yield
 def signal_sys_sigma(y, switches, inputData) :
-    def maxDiff(default, var1, var2) :
-        return max(abs(var1-default), abs(var2-default))
+    def maxDiffRel(default, listOfVariations) :
+        return max([abs(var-default) for var in listOfVariations])/default
 
     def quadAdd(l) :
         return math.sqrt(sum([x**2 for x in l]))
@@ -132,10 +132,11 @@ def signal_sys_sigma(y, switches, inputData) :
     else :
         default = d_s(y, "sig10", switches["twoHtBins"])
         if default<=0.0 : return out
-            
-        var1    = d_s(y, "jes-", switches["twoHtBins"])
-        var2    = d_s(y, "jes+", switches["twoHtBins"])
-        out = quadAdd([out, maxDiff(default, var1, var2)/default, y["effUncRelPdf"]])
+
+        isr = maxDiffRel(default, [d_s(y, "isr-", switches["twoHtBins"])])
+        jes = maxDiffRel(default, [d_s(y, "jes-", switches["twoHtBins"]),
+                                   d_s(y, "jes+", switches["twoHtBins"])])
+        out = quadAdd([out, jes, isr, y["effUncRelPdf"]])
 
     if not switches["nlo"] : return out
 
