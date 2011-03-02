@@ -12,17 +12,22 @@ def switches() :
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    d["signalModel"] = "T1"
+    d["signalModel"] = "T2"
     #d["signalModel"] = "tanBeta3"
 
-    d["icQueue"] = "hepshort.q"
-    #d["icQueue"] = "hepmedium.q"
+    #d["icQueue"] = "hepshort.q"
+    d["icQueue"] = "hepmedium.q"
     #d["icQueue"] = "heplong.q"
+
+    d["fillHolesInEffUncRelPdf"] = True
+    d["fillHolesInEfficiencyPlot"] = True
+    d["fillHolesInXsLimitPlot"] = True
     
     d["debugOutput"] = False
-    d["testPointsOnly"] = True
+    d["testPointsOnly"] = False
     #d["listOfTestPoints"] = [( 14, 19, 1)]
-    d["listOfTestPoints"] = [( 14, 20, 1)]
+    #d["listOfTestPoints"] = [( 14, 20, 1)]
+    d["listOfTestPoints"] = [( 19, 12, 1)]
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
@@ -120,7 +125,7 @@ def histoSpecs() :
         d[model]["ht"]     = {"file": "%s/v5/QCD/QcdBkgdEst_%s.root"%(dir, model.lower())}
         d[model]["jes-"]   = {"file": "%s/v5/SMSFinal_JESMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
         d[model]["jes+"]   = {"file": "%s/v5/SMSFinal_JESPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
-        d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/AK5Calo_mySUSYTopo%s.root"%(dir, model[-1])}
+        d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/v2/AK5Calo_mySUSYTopo%s_ISR.root"%(dir, model)}
         
         for key in d[model] :
             tag = key[-2:]
