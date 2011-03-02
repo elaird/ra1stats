@@ -290,11 +290,6 @@ def excludedGraph(h, factor = None, color = r.kBlack, lineStyle = 1) :
     f.Close()
 
     out = r.TGraph()
-    out.SetLineColor(color)
-    out.SetLineStyle(lineStyle)
-    out.SetMarkerColor(color)
-    out.SetMarkerStyle(20)
-    out.SetFillStyle(1)
     index = 0
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = h.GetXaxis().GetBinLowEdge(iBinX)
@@ -310,11 +305,30 @@ def excludedGraph(h, factor = None, color = r.kBlack, lineStyle = 1) :
     return out
 
 def reordered(g) :
-    x = g.GetX()
-    y = g.GetY()
-    print x
-    return g
-#1,3,5,7,6,4,2,0
+    N = g.GetN()
+    assert not N%2, "reordering assumes even N (N=%d)"%N
+    
+    l1 = []
+    l2 = []
+    for i in range(N/2) :
+        j = 2*i+1
+        l1.append(j)
+        l2.append(N-j-1)
+
+    gOut = r.TGraph()
+    #e.g., 1,3,5,7,6,4,2,0
+    print l1+l2
+    for i,j in enumerate(l1+l2) :
+        gOut.SetPoint(i, g.GetX()[j], g.GetY()[j])
+    return gOut
+
+def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = None) :
+    g.SetLineColor(color)
+    g.SetLineStyle(lineStyle)
+    g.SetLineWidth(lineWidth)
+    g.SetMarkerColor(color)
+    g.SetMarkerStyle(markerStyle)
+    return
 
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     s = conf.switches()
@@ -335,17 +349,26 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     setRange("smsYRange", ranges, h2, "Y")
         
     h2.Draw("colz")
-    g03 = excludedGraph(h2, factor = 1/3., color = r.kGreen, lineStyle = 1)
-    g10 = excludedGraph(h2, factor = 1.0,  color = r.kBlack, lineStyle = 1)
-    g30 = excludedGraph(h2, factor = 3.0,  color = r.kRed,   lineStyle = 1)
+    graphs = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
+              {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
+              {"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
+              ]
+    for d in graphs :
+        d["graph"] = reordered(excludedGraph(h2, d["factor"]))
+        stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
 
-    
     if not logZ :
         setRange("smsXsZRangeLin", ranges, h2, "Z")
         printOnce(c, fileName)
 
-        for g in [g30]:#, g10, g03] :
-            reordered(g).Draw("fpsame")
+        legend = r.TLegend(0.2, 0.7, 0.5, 0.8)
+        legend.SetBorderSize(0)
+        legend.SetFillStyle(0)
+        for d in graphs :
+            g = d["graph"]
+            legend.AddEntry(g, d["label"], "l")
+            if g.GetN() : g.Draw("lsame")
+        legend.Draw("same")
         printOnce(c, fileName.replace(".eps", "_refXs.eps"))
     else :
         c.SetLogz()
