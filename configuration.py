@@ -12,11 +12,12 @@ def switches() :
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    #d["signalModel"] = "T1"
-    d["signalModel"] = "tanBeta3"
+    d["signalModel"] = "T1"
+    #d["signalModel"] = "tanBeta3"
 
     d["icQueue"] = "hepshort.q"
     #d["icQueue"] = "hepmedium.q"
+    #d["icQueue"] = "heplong.q"
     
     d["debugOutput"] = False
     d["testPointsOnly"] = True
@@ -135,7 +136,7 @@ def histoSpecs() :
             d[model][key]["450Dirs"] = ["mSuGraScan_450_10"]
 
         #warning: non-intuitive keys chosen to use histo bin check "for free"
-        d[model]["pdfUnc"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v2/PdfUnc_%s.root"%model, "350Dirs": ["/"], "loYield": "Effi_pdf_unc"}
+        d[model]["effUncRelPdf"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v4/Plots_%s.root"%model, "350Dirs": ["/"], "loYield": "Effi_pdf_unc_rel"}
             
         d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
         d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
