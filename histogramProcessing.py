@@ -44,6 +44,30 @@ def checkHistoBinning() :
                 print h,properties([h])
             assert False
 
+def fillHoles(h, nZeroNeighborsAllowed = 0) :
+    def avg(items) :
+        out = sum(items)
+        n = len(items) - items.count(0.0)
+        if n : return out/n
+        return None
+
+    for iBinX in range(2, h.GetNbinsX()) :
+        for iBinY in range(2, h.GetNbinsY()) :
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :                
+                if h.GetBinContent(iBinX, iBinY, iBinZ) : continue
+                l = h.GetBinContent(iBinX-1, iBinY  , iBinZ)
+                r = h.GetBinContent(iBinX+1, iBinY  , iBinZ)
+                u = h.GetBinContent(iBinX  , iBinY+1, iBinZ)
+                d = h.GetBinContent(iBinX  , iBinY-1, iBinZ)
+                items = [l, r, u, d]
+                if items.count(0.0)>nZeroNeighborsAllowed : continue #require at least n neighbors
+                value = avg(items)
+                if value!=None :
+                    h.SetBinContent(iBinX, iBinY, iBinZ, value)
+                    print "WARNING: hole in histo %s at bin (%3d, %3d, %3d) has been filled with %g.  (%2d zero neighbors)"%\
+                          (h.GetName(), iBinX, iBinY, iBinZ, value, items.count(0.0))
+    return h
+        
 def pdfUncHisto(spec) :
     f = r.TFile(spec["file"])
     assert not f.IsZombie()
@@ -53,8 +77,12 @@ def pdfUncHisto(spec) :
     h = hOld.Clone("%s_%s_%s"%(spec["file"], dir, spec["loYield"]))
     h.SetDirectory(0)
     f.Close()
-    return h
 
+    if conf.switches()["fillHolesInEffUncRelPdf"] :
+        return fillHoles(h, 2)
+    else :
+        return h
+    
 def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f = r.TFile(spec["file"])
     assert not f.IsZombie()
@@ -223,13 +251,16 @@ def setRange(var, ranges, histo, axisString) :
             print "WARNING: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s"%(maxContent, nums[1], histo.GetName())
 
 def makeEfficiencyPlots(item = "sig10") :
-    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], conf.switches()["signalModel"])
+    s = conf.switches()
+    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"])
     c = squareCanvas()
     spec = conf.histoSpecs()[item]
     num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
     den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
     num.Divide(den)
     h2 = threeToTwo(num)
+
+    if s["fillHolesInEfficiencyPlot"] : h2 = fillHoles(h2, 0)
 
     #output a root file
     f = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
@@ -238,7 +269,7 @@ def makeEfficiencyPlots(item = "sig10") :
 
     #output a pdf
     adjustHisto(h2, zTitle = "analysis efficiency")
-    model = conf.switches()["signalModel"]
+    model = s["signalModel"]
     ranges = conf.smsRanges()
     if len(model)==2 :
         setRange("smsXRange", ranges, h2, "X")
@@ -248,7 +279,10 @@ def makeEfficiencyPlots(item = "sig10") :
     printOnce(c, fileName)
     printHoles(h2)
 
-def excludedGraph(h) :
+def excludedGraph(h, factor = None, color = r.kBlack, lineStyle = 1) :
+    def fail(xs, xsLimit) :
+        return xs<=xsLimit or not xsLimit
+    
     refXs = conf.referenceXsHistogram()
     f = r.TFile(refXs["file"])
     refHisto = f.Get(refXs["histo"]).Clone("%s_clone"%refXs["histo"])
@@ -256,37 +290,31 @@ def excludedGraph(h) :
     f.Close()
 
     out = r.TGraph()
+    out.SetLineColor(color)
+    out.SetLineStyle(lineStyle)
+    out.SetMarkerColor(color)
+    out.SetMarkerStyle(20)
+    out.SetFillStyle(1)
     index = 0
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = h.GetXaxis().GetBinLowEdge(iBinX)
-        xs = refHisto.GetBinContent(refHisto.FindBin(x))
-        for iBinY in range(1+h.GetNbinsY(), 1, -1) :
+        xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
+        for iBinY in range(1, 1+h.GetNbinsY()) :
             y = h.GetYaxis().GetBinLowEdge(iBinY)
             xsLimit     = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
-            if xs>xsLimit and xs<=xsLimitPrev :
+            xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
+            if (not fail(xs, xsLimit)) and (fail(xs, xsLimitPrev) or fail(xs, xsLimitNext)) :
                 out.SetPoint(index, x, y)
                 index +=1
     return out
 
-def excludedHisto(h) :
-    refXs = conf.referenceXsHistogram()
-    f = r.TFile(refXs["file"])
-    refHisto = f.Get(refXs["histo"]).Clone("%s_clone"%refXs["histo"])
-    refHisto.SetDirectory(0)
-    f.Close()
-
-    out = h.Clone("%s_clone"%h.GetName())
-    out.Reset()
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetXaxis().GetBinLowEdge(iBinX)
-        xs = refHisto.GetBinContent(refHisto.FindBin(x))
-        for iBinY in range(1+h.GetNbinsY(), 1, -1) :
-            y = h.GetYaxis().GetBinLowEdge(iBinY)
-            xsLimit = h.GetBinContent(iBinX, iBinY)
-            #out.SetBinContent(iBinX, iBinY, 2.0*(xs>xsLimit)-1.0)
-            out.SetBinContent(iBinX, iBinY, xs)
-    return out
+def reordered(g) :
+    x = g.GetX()
+    y = g.GetY()
+    print x
+    return g
+#1,3,5,7,6,4,2,0
 
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     s = conf.switches()
@@ -298,6 +326,8 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
+    if s["fillHolesInXsLimitPlot"] : h2 = fillHoles(h2, 0)
+    
     adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"]))
 
     ranges = conf.smsRanges()
@@ -305,14 +335,17 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     setRange("smsYRange", ranges, h2, "Y")
         
     h2.Draw("colz")
-    g = excludedGraph(h2)
-    hExcl = excludedHisto(h2)
+    g03 = excludedGraph(h2, factor = 1/3., color = r.kGreen, lineStyle = 1)
+    g10 = excludedGraph(h2, factor = 1.0,  color = r.kBlack, lineStyle = 1)
+    g30 = excludedGraph(h2, factor = 3.0,  color = r.kRed,   lineStyle = 1)
+
     
     if not logZ :
         setRange("smsXsZRangeLin", ranges, h2, "Z")
         printOnce(c, fileName)
 
-        hExcl.Draw("colz")
+        for g in [g30]:#, g10, g03] :
+            reordered(g).Draw("fpsame")
         printOnce(c, fileName.replace(".eps", "_refXs.eps"))
     else :
         c.SetLogz()
