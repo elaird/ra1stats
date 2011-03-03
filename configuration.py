@@ -16,11 +16,11 @@ def switches() :
     #d["signalModel"] = "tanBeta3"
 
     #d["icQueue"] = "hepshort.q"
-    d["icQueue"] = "hepmedium.q"
-    #d["icQueue"] = "heplong.q"
+    #d["icQueue"] = "hepmedium.q"
+    d["icQueue"] = "heplong.q"
 
     d["fillHolesInEffUncRelPdf"] = True
-    d["fillHolesInEfficiencyPlot"] = True
+    d["fillHolesInEfficiencyPlots"] = True
     d["fillHolesInXsLimitPlot"] = True
     
     d["debugOutput"] = False
@@ -59,6 +59,9 @@ def smsRanges() :
     d["smsXsZRangeLin"] = (0.0, 40.0, 40) #(zMin, zMax, nContours)
     d["smsXsZRangeLog"] = (0.4, 40.0, 36)
     d["smsEffZRange"]   = (0.0, 0.31, 31)
+
+    d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
+    d["smsEffUncThZRange"] = (0.0, 0.36, 36)
     return d
 
 def isCern() :
@@ -148,7 +151,7 @@ def histoSpecs() :
             d[model][key]["loYield"  ] = "m0_m12"
             
         #warning: non-intuitive keys chosen to use histo bin check "for free"
-        d[model]["effUncRelPdf"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v4/Plots_%s.root"%model, "350Dirs": ["/"], "loYield": "Effi_pdf_unc_rel"}
+        d[model]["effUncRelPdf"] = {"file": "/vols/cms02/elaird1/27_pdf_unc_from_tanja/v5/Plots_%s.root"%model, "350Dirs": ["/"], "loYield": "final_pdf_unc_error"}
             
         d[model]["muon"]["beforeDir"] = "mSuGraScan_beforeAll"
         d[model]["muon"]["350Dirs"] = ["mSuGraScan_350"]
