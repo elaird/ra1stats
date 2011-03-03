@@ -235,6 +235,7 @@ def printOnce(canvas, fileName) :
     text.SetTextAlign(22)
     text.DrawText(0.5, 0.85, "CMS Preliminary")
     canvas.Print(fileName)
+    canvas.Print(fileName.replace(".eps",".C"))
     epsToPdf(fileName)
 
 def printHoles(h) :
@@ -397,7 +398,7 @@ def makeEfficiencyUncertaintyPlots() :
     ranges = conf.smsRanges()
 
     def go(name, suffix, zTitle, zRangeKey) :
-        fileName = inFile.replace(".root","_%s.eps"%suffix)
+        fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
         c = squareCanvas()
         h2 = threeToTwo(f.Get(name))
         if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
