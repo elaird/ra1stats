@@ -136,6 +136,10 @@ def signal_sys_sigma(y, switches, inputData) :
         isr = maxDiffRel(default, [d_s(y, "isr-", switches["twoHtBins"])])
         jes = maxDiffRel(default, [d_s(y, "jes-", switches["twoHtBins"]),
                                    d_s(y, "jes+", switches["twoHtBins"])])
+        insert(y, "effUncRelIsr", isr)
+        insert(y, "effUncRelJes", jes)
+        insert(y, "effUncExperimental", quadAdd([inputData["deadEcal_sigma"], inputData["lepPhotVeto_sigma"], jes]))
+        insert(y, "effUncTheoretical", quadAdd([isr, y["effUncRelPdf"]]))
         out = quadAdd([out, jes, isr, y["effUncRelPdf"]])
 
     if not switches["nlo"] : return out
