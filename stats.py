@@ -130,6 +130,7 @@ if options.merge or options.validation :
     hp.makeValidationPlots()
 if options.efficiency :
     hp.makeEfficiencyPlots()
+    hp.makeEfficiencyUncertaintyPlots()
     hp.makeTopologyXsLimitPlots()
 
 if not any([getattr(options,item) for item in ["clean", "batch", "local", "merge", "validation", "efficiency"]]) :

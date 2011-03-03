@@ -205,10 +205,10 @@ def threeToTwo(h3) :
             h2.SetBinContent(iX, iY, content)
     return h2
 
-def squareCanvas() :
+def squareCanvas(margin = 0.18) :
     canvas = r.TCanvas("canvas","canvas",2)
     for side in ["Left", "Right", "Top", "Bottom"] :
-        getattr(canvas, "Set%sMargin"%side)(0.18)
+        getattr(canvas, "Set%sMargin"%side)(margin)
     return canvas
 
 def epsToPdf(fileName, tight = True) :
@@ -264,7 +264,7 @@ def makeEfficiencyPlots(item = "sig10") :
     num.Divide(den)
     h2 = threeToTwo(num)
 
-    if s["fillHolesInEfficiencyPlot"] : h2 = fillHoles(h2, 0)
+    if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
 
     #output a root file
     f = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
@@ -388,6 +388,29 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     printHoles(h2)
     
+def makeEfficiencyUncertaintyPlots() :
+    s = conf.switches()
+    if not (s["signalModel"] in ["T1","T2"]) : return
+
+    inFile = conf.stringsNoArgs()["mergedFile"]
+    f = r.TFile(inFile)
+    ranges = conf.smsRanges()
+
+    def go(name, suffix, zTitle, zRangeKey) :
+        fileName = inFile.replace(".root","_%s.eps"%suffix)
+        c = squareCanvas()
+        h2 = threeToTwo(f.Get(name))
+        if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
+        adjustHisto(h2, zTitle = zTitle)
+        setRange("smsXRange", ranges, h2, "X")
+        setRange("smsYRange", ranges, h2, "Y")
+        h2.Draw("colz")
+        setRange(zRangeKey, ranges, h2, "Z")
+        printOnce(c, fileName)
+
+    go(name = "effUncExperimental", suffix = "effUncExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncExpZRange")
+    go(name = "effUncTheoretical", suffix = "effUncTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncThZRange")
+
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
     f = r.TFile(inFile)
