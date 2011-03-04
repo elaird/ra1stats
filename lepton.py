@@ -284,6 +284,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
 
                accXeff(specs, m0, m12, mChi),
                inputData["_accXeff_sigma"],
+               switches["masterSignalMax"],
 
                xsLimitRatherThanYieldLimit(switches),
                
