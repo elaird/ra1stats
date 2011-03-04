@@ -116,15 +116,12 @@ def d_s(y, tag, twoHtBins) :
     else :         return y["%s_2"%tag]
 
 #returns the relative systematic error on signal yield
-def signal_sys_sigma(y, switches, inputData) :
+def accXeff_sigma(y, switches, inputData) :
     def maxDiffRel(default, listOfVariations) :
         return max([abs(var-default) for var in listOfVariations])/default
 
-    def quadAdd(l) :
-        return math.sqrt(sum([x**2 for x in l]))
-    
-    l = ["lumi_sigma","deadEcal_sigma","lepPhotVeto_sigma"]
-    out = quadAdd([inputData[item] for item in l])
+    l = ["deadEcal_sigma","lepPhotVeto_sigma"]
+    out = utils.quadSum([inputData[item] for item in l])
 
     #add jes/res uncertainty
     if not isSimplifiedModel(switches) :
@@ -138,9 +135,9 @@ def signal_sys_sigma(y, switches, inputData) :
                                    d_s(y, "jes+", switches["twoHtBins"])])
         insert(y, "effUncRelIsr", isr)
         insert(y, "effUncRelJes", jes)
-        insert(y, "effUncExperimental", quadAdd([inputData["deadEcal_sigma"], inputData["lepPhotVeto_sigma"], jes]))
-        insert(y, "effUncTheoretical", quadAdd([isr, y["effUncRelPdf"]]))
-        out = quadAdd([out, jes, isr, y["effUncRelPdf"]])
+        insert(y, "effUncExperimental", utils.quadSum([inputData["deadEcal_sigma"], inputData["lepPhotVeto_sigma"], jes]))
+        insert(y, "effUncTheoretical", utils.quadSum([isr, y["effUncRelPdf"]]))
+        out = utils.quadSum([out, jes, isr, y["effUncRelPdf"]])
 
     if not switches["nlo"] : return out
 
@@ -174,7 +171,7 @@ def yields(specs, switches, inputData, m0, m12, mChi) :
 
 
     insert(out, "ds", d_s(out, "sig10", switches["twoHtBins"]))
-    insert(out, "signal_sys_sigma", signal_sys_sigma(out, switches, inputData))
+    insert(out, "accXeff_sigma", accXeff_sigma(out, switches, inputData))
     return out
 
 def setSFrac(wspace, sFrac) :
@@ -187,7 +184,7 @@ def setSignalVars(y, switches, specs, strings, wspace) :
         insert(y, var, value)
         
     if y["ds"]>0.0 :
-        wspace.var("signal_sys_sigma").setVal(math.exp(y["signal_sys_sigma"])) #exp needed because of log-normal
+        wspace.var("accXeff_sigma").setVal(y["accXeff_sigma"])
         setAndInsert(y, "muon_cont_2", max(0.01, y["muon_2"]/y["ds"]))
         setAndInsert(y, "lowHT_cont_1", max(0.01, y["ht_1"]/y["ds"]))
         setAndInsert(y, "lowHT_cont_2", max(0.02, y["ht_2"]/y["ds"]))
@@ -283,16 +280,18 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     wspace = r.RooWorkspace(strings["workspaceName"])
     loadLibraries(strings["sourceFiles"])
     r.AddModel(inputData["lumi"],
+               inputData["lumi_sigma"],
+
                accXeff(specs, m0, m12, mChi),
-               inputData["_signal_sys_sigma"],
+               inputData["_accXeff_sigma"],
 
                xsLimitRatherThanYieldLimit(switches),
                
                inputData["sigma_ttW"],
                inputData["sigma_Zinv"],
                
-               inputData["_lowHT_sys_1"],
-               inputData["_lowHT_sys_2"],
+               inputData["lowHT_sys_1"],
+               inputData["lowHT_sys_2"],
                
                inputData["_muon_cont_1"],
                inputData["_muon_cont_2"],
@@ -335,7 +334,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     if switches["constrainParameters"] : constrainParams(wspace, strings["pdfName"], strings["dataName"])
 
     if switches["hardCodedSignalContamination"] :
-        setSFrac(wspace, inputData["sFrac"])
+        setSFrac(wspace, inputData["_sFrac"])
         upperLimit(modelConfig, wspace, strings, switches)
     else :
         y = yields(specs, switches, inputData, m0, m12, mChi)
