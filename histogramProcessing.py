@@ -431,6 +431,8 @@ def makeValidationPlots() :
             
     for name in first+names :
         h2 = threeToTwo(f.Get(name))
+        if name=="UpperLimit" :
+            printHoles(h2)
         h2.SetStats(False)
         h2.SetTitle("%s%s"%(name, conf.histoTitle()))
         h2.Draw("colz")
