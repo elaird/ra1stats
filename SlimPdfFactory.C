@@ -34,6 +34,7 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
 
 
 void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t _accXeff_sigma,
+	      Double_t _masterSignalMax,
 	      bool xsLimitRatherThanYieldLimit,
 	      Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
 	      Double_t _muon_cont_1,Double_t _muon_cont_2,
@@ -72,7 +73,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t 
   RooRealVar* meas_bar_4 = new RooRealVar("meas_bar_4","meas_bar_4",110034.,50000., 9000000.);
 
   //define common variables
-  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,50.);//POI
+  RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,_masterSignalMax);//POI
   RooRealVar* lumi = new RooRealVar("lumi","lumi", _lumi, _lumi/10.0, _lumi*10.0);
   RooRealVar* lumi_nom = new RooRealVar("lumi_nom","lumi_nom",_lumi);
   RooRealVar* lumi_sigma = new RooRealVar("lumi_sigma","lumi_sigma",_lumi*_lumi_sigma);
@@ -157,7 +158,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t 
   //Now the awful combination part
   RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
 
-  RooRealVar* rho = new RooRealVar("rho","rho",1.05,0.0,10.0);
+  RooRealVar* rho = new RooRealVar("rho","rho",1.05,0.01,10.0);
 
   RooProduct* bkgd_1;
   RooProduct* bkgd_2;
