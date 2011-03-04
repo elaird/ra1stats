@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import math
+import math,utils
 import configuration as conf
 
 def numbers() :
@@ -9,9 +9,9 @@ def numbers() :
 
     #recorded lumi for analyzed sample
     d["lumi"]              = 35.0 #/pb
+    d["lumi_sigma"]        = 0.11 #relative
 
     #signal-related uncertainties (all are relative)
-    d["lumi_sigma"]        = 0.11
     d["deadEcal_sigma"]    = 0.03
     d["lepPhotVeto_sigma"] = 0.025
     d["jesRes_sigma"]      = 0.025
@@ -32,8 +32,8 @@ def numbers() :
 
     #uncertainties for control sample constraints
     d["sigma_x"]           = 0.11 #systematic uncertainty on inclusive background estimation (uncertainty on the assumpotion that rhoprime = rho*rho)
-    d["_lowHT_sys_1"]      = 0.08
-    d["_lowHT_sys_2"]      = 0.14
+    d["lowHT_sys_1"]       = 0.08
+    d["lowHT_sys_2"]       = 0.14
     d["sigma_ttW"]         = 0.3               #systematic uncertainty on tt+W background estimation
     d["sigma_Zinv"]        = 0.4     #systematic uncertainty on Zinv background estimation
 
@@ -44,12 +44,12 @@ def numbers() :
         d["mc_muoncontrol"]   = (    4.1*muF, 1.9*muF) #MC expectation in muon control sample
         d["sigma_Zinv"]       = math.sqrt(0.172**2+0.2**2+0.2**2+0.05**2) #use box for theory uncertainty
 
-    #place-holder values; used only when switches["ignoreSignalContamination"]=True; otherwise overridden
-    d["sFrac"]             = (0.25, 0.75) #assumed fraction of signal in each bin (in case of no model)
+    #place-holder values; used only when switches["hardCodedSignalContamination"]=True; otherwise overridden     
+    d["_sFrac"]            = (0.25, 0.75) #assumed fraction of signal in each bin (in case of no model)
     d["_muon_cont_1"]      = 0.2
     d["_muon_cont_2"]      = 0.2
     d["_lowHT_cont_1"]     = 0.2
     d["_lowHT_cont_2"]     = 0.2
-    d["_signal_sys_sigma"] = math.sqrt(sum([d[item]**2 for item in ["lumi_sigma","deadEcal_sigma","lepPhotVeto_sigma","jesRes_sigma"]]))
+    d["_accXeff_sigma"]    = utils.quadSum([d[item] for item in ["deadEcal_sigma", "lepPhotVeto_sigma", "jesRes_sigma"]])
     
     return d
