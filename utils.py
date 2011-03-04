@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #####################################
 from multiprocessing import Process,JoinableQueue
-import os,subprocess
+import os,subprocess,math
 import ROOT as r
 #####################################
 def delete(thing) :
@@ -61,4 +61,7 @@ def stdMap_String_VectorDoubles(d) :
             v.push_back(value)
         out[key] = v
     return out
+#####################################
+def quadSum(l) :
+    return math.sqrt(sum([x**2 for x in l]))
 #####################################
