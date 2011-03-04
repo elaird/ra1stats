@@ -33,8 +33,7 @@ RooRealVar* SafeObservableCreation(RooWorkspace* ws,const char* varName,Double_t
 
 
 
-
-void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys_sigma,
+void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t _accXeff_sigma,
 	      bool xsLimitRatherThanYieldLimit,
 	      Double_t _muon_sys,Double_t _phot_sys,Double_t _lowHT_sys1,Double_t _lowHT_sys2,
 	      Double_t _muon_cont_1,Double_t _muon_cont_2,
@@ -74,19 +73,20 @@ void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys_sigma,
 
   //define common variables
   RooRealVar* masterSignal = new RooRealVar(muName,"masterSignal",10.,0.,50.);//POI
-  RooRealVar* lumi = new RooRealVar("lumi","lumi",_lumi);
-  RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff);
+  RooRealVar* lumi = new RooRealVar("lumi","lumi", _lumi, _lumi/10.0, _lumi*10.0);
+  RooRealVar* lumi_nom = new RooRealVar("lumi_nom","lumi_nom",_lumi);
+  RooRealVar* lumi_sigma = new RooRealVar("lumi_sigma","lumi_sigma",_lumi*_lumi_sigma);
   
-  RooRealVar* signal_sys = new RooRealVar("signal_sys","signal_sys",1.,0.,10.);
-  RooRealVar* signal_sys_nom = new RooRealVar("signal_sys_nom","signal_sys_nom",1.);
-  RooRealVar* signal_sys_sigma = new RooRealVar("signal_sys_sigma","signal_sys_sigma",TMath::Exp(d_signal_sys_sigma));
- 
- 
+  RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff, _accXeff/10.0, _accXeff*10.0);
+  RooRealVar* accXeff_nom = new RooRealVar("accXeff_nom","accXeff_nom",_accXeff);
+  RooRealVar* accXeff_sigma = new RooRealVar("accXeff_sigma","accXeff_sigma",_accXeff*_accXeff_sigma);
+  RooFormulaVar* accXeff_sigma_exp = new RooFormulaVar("accXeff_sigma_exp","accXeff_sigma_exp","exp(@0)",RooArgList(*accXeff_sigma));
+
   RooRealVar* BR1 = new RooRealVar("BR_1","BR_1",1.);
   RooRealVar* BR2 = new RooRealVar("BR_2","BR_2",1.);
 
-  RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*lumi,*accXeff,*masterSignal,*BR1,*signal_sys));
-  RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*lumi,*accXeff,*masterSignal,*BR2,*signal_sys));
+  RooProduct* sig_exp1 = new RooProduct("sig_exp1","sig_exp1",RooArgSet(*lumi,*accXeff,*masterSignal,*BR1));
+  RooProduct* sig_exp2 = new RooProduct("sig_exp2","sig_exp2",RooArgSet(*lumi,*accXeff,*masterSignal,*BR2));
 
   //Easy variables for low HT inclusive method
   RooRealVar* bbar = new RooRealVar("bbar","bbar",110034.,0.,10000000.);
@@ -157,7 +157,7 @@ void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys_sigma,
   //Now the awful combination part
   RooAddition* b = new RooAddition("b","b",RooArgSet(*ttW_tot_2,*Zinv_tot_2,*QCD_2));
 
-  RooRealVar* rho = new RooRealVar("rho","rho",1.05,0.,10.);
+  RooRealVar* rho = new RooRealVar("rho","rho",1.05,0.0,10.0);
 
   RooProduct* bkgd_1;
   RooProduct* bkgd_2;
@@ -228,11 +228,11 @@ void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys_sigma,
   RooRealVar* lowHT_cont_1 = new RooRealVar("lowHT_cont_1","lowHT_cont_1",_lowHT_cont_1); 
   RooRealVar* lowHT_cont_2 = new RooRealVar("lowHT_cont_2","lowHT_cont_2",_lowHT_cont_2); 
 
-  RooProduct* signal_in_muon_1 = new RooProduct("signal_in_muon_1","signal_in_muon_1",RooArgSet(*masterSignal,*muon_cont_1));
-  RooProduct* signal_in_muon_2 = new RooProduct("signal_in_muon_2","signal_in_muon_2",RooArgSet(*masterSignal,*muon_cont_2));
+  RooProduct* signal_in_muon_1 = new RooProduct("signal_in_muon_1","signal_in_muon_1",RooArgSet(*lumi,*accXeff,*masterSignal,*muon_cont_1));
+  RooProduct* signal_in_muon_2 = new RooProduct("signal_in_muon_2","signal_in_muon_2",RooArgSet(*lumi,*accXeff,*masterSignal,*muon_cont_2));
 
-  RooProduct* signal_in_lowHT_1 = new RooProduct("signal_in_lowHT_1","signal_in_lowHT_1",RooArgSet(*masterSignal,*lowHT_cont_1));
-  RooProduct* signal_in_lowHT_2 = new RooProduct("signal_in_lowHT_2","signal_in_lowHT_2",RooArgSet(*masterSignal,*lowHT_cont_2));
+  RooProduct* signal_in_lowHT_1 = new RooProduct("signal_in_lowHT_1","signal_in_lowHT_1",RooArgSet(*lumi,*accXeff,*masterSignal,*lowHT_cont_1));
+  RooProduct* signal_in_lowHT_2 = new RooProduct("signal_in_lowHT_2","signal_in_lowHT_2",RooArgSet(*lumi,*accXeff,*masterSignal,*lowHT_cont_2));
 
   RooAddition* sPlusb_muon_1 = new RooAddition("sPlusb_muon_1","sPlusb_muon_1",RooArgSet(*signal_in_muon_1,*ttWTau_1));
   RooAddition* sPlusb_muon_2 = new RooAddition("sPlusb_muon_2","sPlusb_muon_2",RooArgSet(*signal_in_muon_2,*ttWTau_2));
@@ -246,7 +246,9 @@ void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys_sigma,
   RooLognormal *sys_ttW_Cons = new RooLognormal("sys_ttW_Cons","sys_ttW_Cons",*sys_ttW_nom,*sys_ttW,*sys_ttW_sigma);
   RooLognormal *sys_Zinv_Cons = new RooLognormal("sys_Zinv_Cons","sys_Zinv_Cons",*sys_Zinv_nom,*sys_Zinv,*sys_Zinv_sigma);
  
-  RooLognormal *sys_signal_Cons = new RooLognormal("sys_signal_Cons","sys_signal_Cons",*signal_sys_nom,*signal_sys,*signal_sys_sigma);
+  RooLognormal *accXeff_Cons = new RooLognormal("accXeff_Cons","accXeff_Cons",*accXeff_nom,*accXeff,*accXeff_sigma_exp);
+  RooGaussian *lumi_Cons = new RooGaussian("lumi_Cons","lumi_Cons",*lumi_nom,*lumi,*lumi_sigma);
+
   RooLognormal *sys_lowHT_Cons_1 = new RooLognormal("sys_lowHT_Cons_1","sys_lowHT_Cons_1",*lowHT_sys1_nom,*lowHT_sys1,*lowHT_sys1_sigma);
   RooLognormal *sys_lowHT_Cons_2 = new RooLognormal("sys_lowHT_Cons_2","sys_lowHT_Cons_2",*lowHT_sys2_nom,*lowHT_sys2,*lowHT_sys2_sigma);
 
@@ -291,7 +293,8 @@ void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys_sigma,
 
   likelihoodFactors.Add(sys_ttW_Cons);
   likelihoodFactors.Add(sys_Zinv_Cons);
-  likelihoodFactors.Add(sys_signal_Cons);
+  likelihoodFactors.Add(accXeff_Cons);
+  likelihoodFactors.Add(lumi_Cons);
 
  
   likelihoodFactors.Add(muonRegion_2);
@@ -315,15 +318,13 @@ void AddModel(Double_t _lumi, Double_t _accXeff, Double_t d_signal_sys_sigma,
   RooMsgService::instance().setGlobalKillBelow(RooFit::DEBUG);
 
   if(twobins){
-    if(sys_uncorr) ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
-    else  ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys1,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
+    if(sys_uncorr) ws->defineSet("nuis","lumi,accXeff,sys_ttW,lowHT_sys1,lowHT_sys2,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
+    else  ws->defineSet("nuis","lumi,accXeff,sys_ttW,lowHT_sys1,sys_Zinv,ttW_1,ttW_2,Zinv_1,Zinv_2,QCD_2"); 
   }
-  //else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2"); 
-  else ws->defineSet("nuis","signal_sys,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2,rho,tau_1,tau_2"); 
+  else ws->defineSet("nuis","lumi,accXeff,sys_ttW,lowHT_sys2,sys_Zinv,ttW_2,Zinv_2,QCD_2,rho,tau_1,tau_2"); 
 
   if(twobins)ws->defineSet("obs","meas_1,meas_2,meas_3,meas_4,meas_bar_1,meas_bar_2,meas_bar_3,meas_bar_4,muonMeas_1,muonMeas_2,photMeas_1,photMeas_2");
   else ws->defineSet("obs","meas_1,meas_2,meas_4,meas_bar_1,meas_bar_2,meas_bar_4,muonMeas_2,photMeas_2");
-  //else ws->defineSet("obs","meas_1,meas_2,meas_4,meas_bar_1,meas_bar_2,meas_bar_4,muonMeas_2,photMeas_2,bbar");
   ws->defineSet("poi",muName);
 
 }
