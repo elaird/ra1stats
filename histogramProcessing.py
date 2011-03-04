@@ -245,6 +245,14 @@ def printHoles(h) :
             if hole : print "found hole: (%d, %d) = (%g, %g)"%(iBinX, iBinY, h.GetXaxis().GetBinCenter(iBinX), h.GetYaxis().GetBinCenter(iBinY))
     return
     
+def printMaxes(h) :
+    s = conf.switches()
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            max = abs(h.GetBinContent(iBinX, iBinY)-s["masterSignalMax"])<5.0
+            if max : print "found max: (%d, %d) = (%g, %g)"%(iBinX, iBinY, h.GetXaxis().GetBinCenter(iBinX), h.GetYaxis().GetBinCenter(iBinY))
+    return
+    
 def setRange(var, ranges, histo, axisString) :
     if var not in ranges : return
     nums = ranges[var]
@@ -433,6 +441,7 @@ def makeValidationPlots() :
         h2 = threeToTwo(f.Get(name))
         if name=="UpperLimit" :
             printHoles(h2)
+            printMaxes(h2)
         h2.SetStats(False)
         h2.SetTitle("%s%s"%(name, conf.histoTitle()))
         h2.Draw("colz")
