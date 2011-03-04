@@ -25,9 +25,7 @@ def switches() :
     
     d["debugOutput"] = False
     d["testPointsOnly"] = False
-    #d["listOfTestPoints"] = [( 14, 19, 1)]
-    #d["listOfTestPoints"] = [( 14, 20, 1)]
-    d["listOfTestPoints"] = [( 19, 12, 1)]
+    d["listOfTestPoints"] = [(17, 7, 1)]
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
@@ -46,6 +44,7 @@ def switches() :
     d["writeGraphVizTree"] = False
 
     d["CL"] = 0.95
+    d["masterSignalMax"] = 50.0
     d["minSignalEventsForConsideration"] =  1.0
     d["maxSignalEventsForConsideration"] = 50.0
 
