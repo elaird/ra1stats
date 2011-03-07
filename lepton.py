@@ -147,7 +147,7 @@ def accXeff_sigma(y, switches, inputData) :
     ds_sys2  = d_s(y, "sig20", switches["twoHtBins"])
     if ds==0.0 : return out
 
-    return math.sqrt( pow(out, 2) + pow(maxDiff(ds, ds_sys05, ds_sys2)/ds, 2) + pow(inputData["pdfUncertainty"], 2) )
+    return utils.quadSum([out, maxDiffRel(ds, [ds_sys05, ds_sys2]), inputData["pdfUncertainty"]])
 
 def yields(specs, switches, inputData, m0, m12, mChi) :
     func = hp.nloYieldHisto if switches["nlo"] else hp.loYieldHisto
