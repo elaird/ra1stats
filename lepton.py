@@ -26,11 +26,11 @@ def constrainParams(wspace, pdfName, dataName) :
         par.setMin( newMin(par) )
         par.setMax( newMax(par) )
 
-        poipar = r.RooArgList(wspace.set("poi"))
-        for i in range(poipar.getSize()) :
-            spar = poipar[i]
-            spar.setMin( newMin(par) )
-            spar.setMax( newMin(par) )
+    poipar = r.RooArgList(wspace.set("poi"))
+    for i in range(poipar.getSize()) :
+        spar = poipar[i]
+        spar.setMin( newMin(spar) )
+        spar.setMax( newMax(spar) )
 
 def writeGraphVizTree(wspace, strings) :
     dotFile = "%s/%s.dot"%(strings["outputDir"], strings["pdfName"])
@@ -125,7 +125,7 @@ def accXeff_sigma(y, switches, inputData) :
 
     #add jes/res uncertainty
     if not isSimplifiedModel(switches) :
-        out = quaddAdd([out, inputData["jesRes_sigma"]])
+        out = utils.quadSum([out, inputData["jesRes_sigma"]])
     else :
         default = d_s(y, "sig10", switches["twoHtBins"])
         if default<=0.0 : return out
