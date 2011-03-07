@@ -419,6 +419,9 @@ def makeEfficiencyUncertaintyPlots() :
 
     go(name = "effUncExperimental", suffix = "effUncExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncExpZRange")
     go(name = "effUncTheoretical", suffix = "effUncTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncThZRange")
+    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelIsrZRange")
+    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelPdfZRange")
+    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelJesZRange")
 
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
