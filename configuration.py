@@ -23,10 +23,11 @@ def switches() :
     d["fillHolesInEfficiencyPlots"] = True
     d["fillHolesInXsLimitPlot"] = True
     
-    d["debugOutput"] = False
+    d["debugOutput"] = True
     d["testPointsOnly"] = False
     d["listOfTestPoints"] = [(17, 7, 1)]
     d["hardCodeAccXeffToOne"] = True
+    d["hardCodeLumiToOne"] = True
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
