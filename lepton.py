@@ -211,12 +211,24 @@ def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
         if switches["debugOutput"] : data.Print("v")
         h.Fill(upperLimit(modelConfig, wspace, strings, switches, dataIn = data))
 
-    oneSigmaFrac = r.TMath.Erf(1.0/math.sqrt(2.0)) #6.82689492137085852e-01
-    twoSigmaFrac = r.TMath.Erf(2.0/math.sqrt(2.0)) #9.54499736103641583e-01
+    def probList() :
+        def lo(nSigma) : return ( 1.0-r.TMath.Erf(nSigma/math.sqrt(2.0)) )/2.0
+        def hi(nSigma) : return 1.0-lo(nSigma)
+        out = []
+        out.append( (0.5, "Median") )
+        for key,n in switches["expectedPlusMinus"].iteritems() :
+            out.append( (lo(n), "MedianMinus%s"%key) )
+            out.append( (hi(n), "MedianPlus%s"%key)  )
+        return sorted(out)
 
-    xOne = (1.0-oneSigmaFrac)/2.0
-    xTwo = (1.0-twoSigmaFrac)/2.0
-    probSum = array.array('d', [xTwo, xOne, 0.5, 1.0-xOne, 1.0-xTwo])
+    def oneElement(i, l) :
+        return map(lambda x:x[i], l)
+    
+    pl = probList()
+    probs = oneElement(0, pl)
+    names = oneElement(1, pl)
+    
+    probSum = array.array('d', probs)
     q = array.array('d', [0.0]*len(probSum))
     h.GetQuantiles(len(probSum), q, probSum)
 
@@ -226,7 +238,8 @@ def computeExpectedLimit(modelConfig, wspace, strings, switches, lumi) :
         hp.printOnce(r.gPad, "expectedLimit.eps")
         print probSum
         print q
-    return q
+
+    return dict(zip(names, q))
     
 def writeNumbers(fileName = None, m0 = None, m12 = None, mChi = None, d = None) :
     outFile = open(fileName, "w")
@@ -279,12 +292,10 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     r.RooRandom.randomGenerator().SetSeed(inputData["seed"]) #set RooFit random seed for reproducible results
     wspace = r.RooWorkspace(strings["workspaceName"])
     loadLibraries(strings["sourceFiles"])
-    r.AddModel(
-               1.0 if switches["hardCodeLumiToOne"] else inputData["lumi"],
-        # inputData["lumi"],
+    r.AddModel(inputData["lumi"],
                inputData["lumi_sigma"],
-               1.0 if switches["hardCodeAccXeffToOne"] else accXeff(specs, m0, m12, mChi),
-              # accXeff(specs, m0, m12, mChi),
+
+               accXeff(specs, m0, m12, mChi),
                inputData["_accXeff_sigma"],
                switches["masterSignalMax"],
 
@@ -346,16 +357,10 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
         if switches["computeExpectedLimit"] :
             dictToWrite = {}
             q = computeExpectedLimit(modelConfig, wspace, strings, switches, inputData["lumi"])
-            for label,value in zip(["MedianMinusTwoSigma",
-                                    "MedianMinusOneSigma",
-                                    "Median",
-                                    "MedianPlusOneSigma",
-                                    "MedianPlusTwoSigma"], q) :
+            for label,value in q.iteritems() :
                 insert(dictToWrite, label, value)
         else :
-            ul =  upperLimit(modelConfig, wspace, strings, switches)
-            if switches["hardCodeLumiToOne"] : ul = ul/inputData["lumi"]
-            if switches["hardCodeAccXeffToOne"] : ul = ul/accXeff(specs, m0, m12, mChi)
+            ul = upperLimit(modelConfig, wspace, strings, switches)
             insert(y, "UpperLimit", ul)
             insert(y, "ExclusionLimit", 2*(y["ds"]<ul)-1)
             dictToWrite = y
