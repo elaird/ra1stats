@@ -79,7 +79,7 @@ void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t 
   RooRealVar* lumi_nom = new RooRealVar("lumi_nom","lumi_nom",_lumi);
   RooRealVar* lumi_sigma = new RooRealVar("lumi_sigma","lumi_sigma",_lumi*_lumi_sigma);
   
-  RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff, _accXeff/10.0, _accXeff*10.0);
+  RooRealVar* accXeff = new RooRealVar("accXeff","accXeff",_accXeff, _accXeff/3.0, _accXeff*3.0);
   RooRealVar* accXeff_nom = new RooRealVar("accXeff_nom","accXeff_nom",_accXeff);
   RooRealVar* accXeff_sigma = new RooRealVar("accXeff_sigma","accXeff_sigma",_accXeff_sigma);
   //RooFormulaVar* accXeff_sigma_exp = new RooFormulaVar("accXeff_sigma_exp","accXeff_sigma_exp","exp(@0*@1)",RooArgList(*accXeff_sigma, *accXeff_nom));
@@ -120,8 +120,8 @@ void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t 
   RooRealVar* sys_ttW_nom = new RooRealVar("sys_ttW_nom","sys_ttW_nom",1.);
   RooRealVar* sys_Zinv_nom = new RooRealVar("sys_Zinv_nom","sys_Zinv_nom",1.);
 
-  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",TMath::Exp(_muon_sys));
-  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",TMath::Exp(_phot_sys));
+  RooRealVar* sys_ttW_sigma = new RooRealVar("sys_ttW_sigma","sys_ttW_sigma",_muon_sys);
+  RooRealVar* sys_Zinv_sigma = new RooRealVar("sys_Zinv_sigma","sys_Zinv_sigma",_phot_sys);
   
  
  
@@ -169,11 +169,11 @@ void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t 
 
   RooRealVar* lowHT_sys1 = new RooRealVar("lowHT_sys1","lowHT_sys1",1.0,0.1,5.);
   RooRealVar* lowHT_sys1_nom = new RooRealVar("lowHT_sys1_nom","lowHT_sys1_nom",1.0);
-  RooRealVar* lowHT_sys1_sigma = new RooRealVar("lowHT_sys1_sigma","lowHT_sys1_sigma",TMath::Exp(_lowHT_sys1));
+  RooRealVar* lowHT_sys1_sigma = new RooRealVar("lowHT_sys1_sigma","lowHT_sys1_sigma",_lowHT_sys1);
       
   RooRealVar* lowHT_sys2 = new RooRealVar("lowHT_sys2","lowHT_sys2",1.0,0.1,5.);    
   RooRealVar* lowHT_sys2_nom = new RooRealVar("lowHT_sys2_nom","lowHT_sys2_nom",1.0);
-  RooRealVar* lowHT_sys2_sigma = new RooRealVar("lowHT_sys2_sigma","lowHT_sys2_sigma",TMath::Exp(_lowHT_sys2));
+  RooRealVar* lowHT_sys2_sigma = new RooRealVar("lowHT_sys2_sigma","lowHT_sys2_sigma",_lowHT_sys2);
   
   RooRealVar* lowHT_sys_corr = new RooRealVar("lowHT_sys_corr","lowHT_sys_corr",_lowHT_sys2/_lowHT_sys1);
 
@@ -246,15 +246,19 @@ void AddModel(Double_t _lumi, Double_t _lumi_sigma, Double_t _accXeff, Double_t 
 
   //Define all the necessary pdf
   //Gaussian
-  RooLognormal *sys_ttW_Cons = new RooLognormal("sys_ttW_Cons","sys_ttW_Cons",*sys_ttW_nom,*sys_ttW,*sys_ttW_sigma);
-  RooLognormal *sys_Zinv_Cons = new RooLognormal("sys_Zinv_Cons","sys_Zinv_Cons",*sys_Zinv_nom,*sys_Zinv,*sys_Zinv_sigma);
+  //RooLognormal *sys_ttW_Cons = new RooLognormal("sys_ttW_Cons","sys_ttW_Cons",*sys_ttW_nom,*sys_ttW,*sys_ttW_sigma);
+  //RooLognormal *sys_Zinv_Cons = new RooLognormal("sys_Zinv_Cons","sys_Zinv_Cons",*sys_Zinv_nom,*sys_Zinv,*sys_Zinv_sigma);
+  RooGaussian *sys_ttW_Cons  = new RooGaussian("sys_ttW_Cons","sys_ttW_Cons",*sys_ttW_nom,*sys_ttW,*sys_ttW_sigma);
+  RooGaussian *sys_Zinv_Cons = new RooGaussian("sys_Zinv_Cons","sys_Zinv_Cons",*sys_Zinv_nom,*sys_Zinv,*sys_Zinv_sigma);
  
   //RooLognormal *accXeff_Cons = new RooLognormal("accXeff_Cons","accXeff_Cons",*accXeff_nom,*accXeff,*accXeff_sigma_exp);
   RooGaussian *accXeff_Cons = new RooGaussian("accXeff_Cons","accXeff_Cons",*accXeff_nom,*accXeff,*accXeff_sigma_prod);
   RooGaussian *lumi_Cons = new RooGaussian("lumi_Cons","lumi_Cons",*lumi_nom,*lumi,*lumi_sigma);
 
-  RooLognormal *sys_lowHT_Cons_1 = new RooLognormal("sys_lowHT_Cons_1","sys_lowHT_Cons_1",*lowHT_sys1_nom,*lowHT_sys1,*lowHT_sys1_sigma);
-  RooLognormal *sys_lowHT_Cons_2 = new RooLognormal("sys_lowHT_Cons_2","sys_lowHT_Cons_2",*lowHT_sys2_nom,*lowHT_sys2,*lowHT_sys2_sigma);
+  //RooLognormal *sys_lowHT_Cons_1 = new RooLognormal("sys_lowHT_Cons_1","sys_lowHT_Cons_1",*lowHT_sys1_nom,*lowHT_sys1,*lowHT_sys1_sigma);
+  //RooLognormal *sys_lowHT_Cons_2 = new RooLognormal("sys_lowHT_Cons_2","sys_lowHT_Cons_2",*lowHT_sys2_nom,*lowHT_sys2,*lowHT_sys2_sigma);
+  RooGaussian *sys_lowHT_Cons_1 = new RooGaussian("sys_lowHT_Cons_1","sys_lowHT_Cons_1",*lowHT_sys1_nom,*lowHT_sys1,*lowHT_sys1_sigma);
+  RooGaussian *sys_lowHT_Cons_2 = new RooGaussian("sys_lowHT_Cons_2","sys_lowHT_Cons_2",*lowHT_sys2_nom,*lowHT_sys2,*lowHT_sys2_sigma);
 
 
   //Poisson
