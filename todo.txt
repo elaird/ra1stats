@@ -1,3 +1,4 @@
+output 1D histo for expectedLimit jobs
 consider signal sys for contamination samples
 masks for holes in input files
 reduce 0.01 minimum
