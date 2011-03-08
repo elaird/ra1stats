@@ -23,16 +23,15 @@ def switches() :
     d["fillHolesInEfficiencyPlots"] = True
     d["fillHolesInXsLimitPlot"] = True
     
-    d["debugOutput"] = True
+    d["debugOutput"] = False
     d["testPointsOnly"] = False
     d["listOfTestPoints"] = [(17, 7, 1)]
-    d["hardCodeAccXeffToOne"] = True
-    d["hardCodeLumiToOne"] = True
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
 
     d["computeExpectedLimit"] = False
+    d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
     d["nToys"] = 1000
     d["debugMedianHisto"] = False
 
