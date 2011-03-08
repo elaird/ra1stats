@@ -26,6 +26,7 @@ def switches() :
     d["debugOutput"] = False
     d["testPointsOnly"] = False
     d["listOfTestPoints"] = [(17, 7, 1)]
+    d["hardCodeAccXeffToOne"] = True
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True

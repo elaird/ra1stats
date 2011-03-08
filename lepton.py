@@ -26,11 +26,11 @@ def constrainParams(wspace, pdfName, dataName) :
         par.setMin( newMin(par) )
         par.setMax( newMax(par) )
 
-    poipar = r.RooArgList(wspace.set("poi"))
-    for i in range(poipar.getSize()) :
-        spar = poipar[i]
-        spar.setMin( newMin(spar) )
-        spar.setMax( newMax(spar) )
+   # poipar = r.RooArgList(wspace.set("poi"))
+   # for i in range(poipar.getSize()) :
+   #     spar = poipar[i]
+   #     spar.setMin( newMin(spar) )
+   #     spar.setMax( newMax(spar) )
 
 def writeGraphVizTree(wspace, strings) :
     dotFile = "%s/%s.dot"%(strings["outputDir"], strings["pdfName"])
@@ -281,8 +281,8 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     loadLibraries(strings["sourceFiles"])
     r.AddModel(inputData["lumi"],
                inputData["lumi_sigma"],
-
-               accXeff(specs, m0, m12, mChi),
+               1.0 if switches["hardCodeAccXeffToOne"] else accXeff(specs, m0, m12, mChi),
+              # accXeff(specs, m0, m12, mChi),
                inputData["_accXeff_sigma"],
                switches["masterSignalMax"],
 
