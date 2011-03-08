@@ -486,6 +486,13 @@ def expectedLimit(obsFile, expFile) :
                     out.SetBinContent(iX, iY, 2.0*(c1<c2)-1.0)
         return out
 
+    def items() :
+        keys = conf.switches()["expectedPlusMinus"].keys()
+        out = ["Median"]
+        for key in keys :
+            out += ["MedianPlus%s"%key, "MedianMinus%s"%key]
+        return out
+    
     psFileName = expFile.replace(".root", "_results.ps")
     rootFileName = psFileName.replace(".ps", ".root")
     outFile = r.TFile(rootFileName, "RECREATE")
@@ -493,7 +500,7 @@ def expectedLimit(obsFile, expFile) :
     canvas.SetRightMargin(0.15)
     canvas.Print(psFileName+"[")
     ds = histo(obsFile, "ds")
-    for item in ["Median", "MedianPlusOneSigma", "MedianMinusOneSigma"] :
+    for item in items() :
         h = compare(ds, histo(expFile, item))
         outFile.cd()
         h.Write()
