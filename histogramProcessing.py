@@ -156,11 +156,9 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     for iBinX in range(1, 1+out.GetNbinsX()) :
         for iBinY in range(1, 1+out.GetNbinsY()) :
             for iBinZ in range(1, 1+out.GetNbinsZ()) :
-                content = 1.0
                 n = float(before.GetBinContent(iBinX, iBinY, iBinZ))
-                if n :
-                    p = after.GetBinContent(iBinX, iBinY, iBinZ) / n
-                    if p : content = math.sqrt(p*(1-p)/n)
+                m = float(after.GetBinContent(iBinX, iBinY, iBinZ))
+                content = 1.0 if not m else 1.0/math.sqrt(m)
                 out.SetBinContent(iBinX, iBinY, iBinZ, content)
 
     f.Close()
