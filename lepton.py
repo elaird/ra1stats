@@ -135,9 +135,9 @@ def accXeff_sigma(y, switches, inputData) :
                                    d_s(y, "jes+", switches["twoHtBins"])])
         insert(y, "effUncRelIsr", isr)
         insert(y, "effUncRelJes", jes)
-        insert(y, "effUncRelExperimental", utils.quadSum([inputData["deadEcal_sigma"], inputData["lepPhotVeto_sigma"], jes]))
+        insert(y, "effUncRelExperimental", utils.quadSum([inputData["deadEcal_sigma"], inputData["lepPhotVeto_sigma"], jes, y["effUncRelMcStats"]]))
         insert(y, "effUncRelTheoretical", utils.quadSum([isr, y["effUncRelPdf"]]))
-        out = utils.quadSum([out, jes, isr, y["effUncRelPdf"]])
+        out = utils.quadSum([out, jes, isr, y["effUncRelPdf"], y["effUncRelMcStats"]])
 
     if not switches["nlo"] : return out
 
