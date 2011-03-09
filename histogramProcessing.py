@@ -280,7 +280,7 @@ def printMaxes(h) :
     s = conf.switches()
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
-            max = abs(h.GetBinContent(iBinX, iBinY)-s["masterSignalMax"])<5.0
+            max = abs(h.GetBinContent(iBinX, iBinY)-s["masterSignalMax"])<2.0
             if max : print "found max: (%d, %d) = (%g, %g)"%(iBinX, iBinY, h.GetXaxis().GetBinCenter(iBinX), h.GetYaxis().GetBinCenter(iBinY))
     return
     
