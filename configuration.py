@@ -12,7 +12,7 @@ def switches() :
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    d["signalModel"] = "T1"
+    d["signalModel"] = "T2"
     #d["signalModel"] = "tanBeta3"
 
     d["icQueue"] = "hepshort.q"
@@ -24,7 +24,7 @@ def switches() :
     d["fillHolesInXsLimitPlot"] = True
     
     d["debugOutput"] = False
-    d["testPointsOnly"] = False
+    d["testPointsOnly"] = True
     d["listOfTestPoints"] = [(14, 9, 1)]
     
     d["twoHtBins"] = False
@@ -124,13 +124,24 @@ def histoSpecs() :
 
     for model in ["T1", "T2"] :
         d[model] = {}
-    
-        d[model]["sig10"]  = {"file": "%s/v5/SMSFinal/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
-        d[model]["muon"]   = {"file": "%s/v5/MuonSMSsamples/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
-        d[model]["ht"]     = {"file": "%s/v5/QCD/QcdBkgdEst_%s.root"%(dir, model.lower())}
-        d[model]["jes-"]   = {"file": "%s/v5/SMSFinal_JESMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
-        d[model]["jes+"]   = {"file": "%s/v5/SMSFinal_JESPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
-        d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/v2/AK5Calo_mySUSYTopo%s_ISR.root"%(dir, model)}
+
+    model = "T1"
+    d[model]["sig10"]  = {"file": "%s/v5/SMSFinal/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
+    d[model]["muon"]   = {"file": "%s/v5/MuonSMSsamples/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
+    d[model]["ht"]     = {"file": "%s/v5/QCD/QcdBkgdEst_%s.root"%(dir, model.lower())}
+    d[model]["jes-"]   = {"file": "%s/v5/SMSFinal_JESMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
+    d[model]["jes+"]   = {"file": "%s/v5/SMSFinal_JESPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
+    d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/v2/AK5Calo_mySUSYTopo%s_ISR.root"%(dir, model)}
+
+    model = "T2"
+    d[model]["sig10"]  = {"file": "%s/v7/signal-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir,model)}
+    d[model]["muon"]   = {"file": "%s/v5/MuonSMSsamples/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
+    d[model]["ht"]     = {"file": "%s/v7/lowHT-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir, model)}
+    d[model]["jes-"]   = {"file": "%s/v7/JESminus-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir, model)}
+    d[model]["jes+"]   = {"file": "%s/v7/JESplus-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir, model)}
+    d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/v2/AK5Calo_mySUSYTopo%s_ISR.root"%(dir, model)}
+
+    for model in ["T1", "T2"] :
         
         for key in d[model] :
             tag = key[-2:]
