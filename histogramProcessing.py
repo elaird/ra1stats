@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import collections,cPickle,os
+import collections,cPickle,os,math
 import configuration as conf
 import data
 import ROOT as r
@@ -132,6 +132,39 @@ def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f.Close()
     if beforeSpec : beforeFile.Close()
     return all
+
+def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
+    def counts(dirs) :
+        out = None
+        for dir in dirs :
+            name = "%s/m0_m12_mChi_noweight_0"%dir
+            if out is None :
+                out = f.Get(name)
+            else :
+                out.Add(f.Get(name))
+        return out
+
+    f = r.TFile(spec["file"])
+    if f.IsZombie() : return None
+
+    before = counts(beforeDirs)
+    after  = counts(afterDirs)
+    out = before.Clone("%s_%s"%(spec["file"], beforeDirs[0]))
+    out.SetDirectory(0)
+    out.Reset()
+
+    for iBinX in range(1, 1+out.GetNbinsX()) :
+        for iBinY in range(1, 1+out.GetNbinsY()) :
+            for iBinZ in range(1, 1+out.GetNbinsZ()) :
+                content = 1.0
+                n = float(before.GetBinContent(iBinX, iBinY, iBinZ))
+                if n :
+                    p = after.GetBinContent(iBinX, iBinY, iBinZ) / n
+                    if p : content = math.sqrt(p*(1-p)/n)
+                out.SetBinContent(iBinX, iBinY, iBinZ, content)
+
+    f.Close()
+    return out
 
 def exampleHisto() :
     func = nloYieldHisto if conf.switches()["nlo"] else loYieldHisto
@@ -417,8 +450,8 @@ def makeEfficiencyUncertaintyPlots() :
         setRange(zRangeKey, ranges, h2, "Z")
         printOnce(c, fileName)
 
-    go(name = "effUncExperimental", suffix = "effUncExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncExpZRange")
-    go(name = "effUncTheoretical", suffix = "effUncTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncThZRange")
+    go(name = "effUncRelExperimental", suffix = "effUncExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncExpZRange")
+    go(name = "effUncRelTheoretical", suffix = "effUncTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncThZRange")
     go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelIsrZRange")
     go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelPdfZRange")
     go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelJesZRange")

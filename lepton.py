@@ -135,8 +135,8 @@ def accXeff_sigma(y, switches, inputData) :
                                    d_s(y, "jes+", switches["twoHtBins"])])
         insert(y, "effUncRelIsr", isr)
         insert(y, "effUncRelJes", jes)
-        insert(y, "effUncExperimental", utils.quadSum([inputData["deadEcal_sigma"], inputData["lepPhotVeto_sigma"], jes]))
-        insert(y, "effUncTheoretical", utils.quadSum([isr, y["effUncRelPdf"]]))
+        insert(y, "effUncRelExperimental", utils.quadSum([inputData["deadEcal_sigma"], inputData["lepPhotVeto_sigma"], jes]))
+        insert(y, "effUncRelTheoretical", utils.quadSum([isr, y["effUncRelPdf"]]))
         out = utils.quadSum([out, jes, isr, y["effUncRelPdf"]])
 
     if not switches["nlo"] : return out
@@ -169,8 +169,16 @@ def yields(specs, switches, inputData, m0, m12, mChi) :
                 histo = func(specs[item], specs[item]["350Dirs"] + specs[item]["450Dirs"], inputData["lumi"])
                 if histo : out["%s_2"%item] = histo.GetBinContent(m0, m12, mChi)
 
-
+    #signal yield
     insert(out, "ds", d_s(out, "sig10", switches["twoHtBins"]))
+
+    #rel. unc. on sig. eff. from MC stats.
+    spec = specs["sig10"]
+    insert(out, "effUncRelMcStats", hp.effUncRelMcStatHisto(spec = spec,
+                                                            beforeDirs = [spec["beforeDir"]],
+                                                            afterDirs = spec["350Dirs"] + spec["450Dirs"]).GetBinContent(m0, m12, mChi))
+    
+    #rel unc. on sig. eff. from all sources
     insert(out, "accXeff_sigma", accXeff_sigma(out, switches, inputData))
     return out
 
