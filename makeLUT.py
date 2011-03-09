@@ -13,7 +13,7 @@ def fetchHisto(file, dir, histo) :
     f.Close()
     return h
 
-def collectHistos(model = None, dir = "/vols/cms02/elaird1/24_sms_isr_from_riccardo", subDir = "") :
+def collectHistos(model = None, dir = "/vols/cms02/elaird1/24_sms_isr_from_riccardo/v2", subDir = "") :
     out = {}
     dir = "%s/%s"%(dir, subDir)
     for file in os.listdir(dir) :
