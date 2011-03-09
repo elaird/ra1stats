@@ -12,7 +12,7 @@ def switches() :
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    d["signalModel"] = "T2"
+    d["signalModel"] = "T1"
     #d["signalModel"] = "tanBeta3"
 
     d["icQueue"] = "hepshort.q"
@@ -25,7 +25,7 @@ def switches() :
     
     d["debugOutput"] = False
     d["testPointsOnly"] = False
-    d["listOfTestPoints"] = [(17, 7, 1)]
+    d["listOfTestPoints"] = [(14, 9, 1)]
     
     d["twoHtBins"] = False
     d["exponentialBkg"] = True
@@ -45,7 +45,7 @@ def switches() :
     d["writeGraphVizTree"] = False
 
     d["CL"] = 0.95
-    d["masterSignalMax"] = 50.0
+    d["masterSignalMax"] = 80.0
     d["minSignalEventsForConsideration"] =  1.0
     d["maxSignalEventsForConsideration"] = 50.0
 
@@ -69,10 +69,12 @@ def isCern() :
 
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
+    d["lateDivision"] = False
     if len(d["signalModel"])==2 :
         d["nlo"] = False
         d["minSignalEventsForConsideration"] = 1.0e-18
         d["maxSignalEventsForConsideration"] = None
+        d["lateDivision"] = True
 
     d["suppressJobOutput"] = d["computeExpectedLimit"] and not d["debugMedianHisto"]
     if d["method"]=="feldmanCousins" :
