@@ -300,10 +300,10 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
     r.RooRandom.randomGenerator().SetSeed(inputData["seed"]) #set RooFit random seed for reproducible results
     wspace = r.RooWorkspace(strings["workspaceName"])
     loadLibraries(strings["sourceFiles"])
-    r.AddModel(inputData["lumi"],
+    r.AddModel(inputData["lumi"] if not switches["lateDivision"] else 1.0,
                inputData["lumi_sigma"],
 
-               accXeff(specs, m0, m12, mChi),
+               accXeff(specs, m0, m12, mChi) if not switches["lateDivision"] else 1.0,
                inputData["_accXeff_sigma"],
                switches["masterSignalMax"],
 
@@ -369,6 +369,7 @@ def Lepton(switches, specs, strings, inputData, m0, m12, mChi) :
                 insert(dictToWrite, label, value)
         else :
             ul = upperLimit(modelConfig, wspace, strings, switches)
+            if switches["lateDivision"] : ul /= (inputData["lumi"]*accXeff(specs, m0, m12, mChi))
             insert(y, "UpperLimit", ul)
             insert(y, "ExclusionLimit", 2*(y["ds"]<ul)-1)
             dictToWrite = y
