@@ -12,7 +12,7 @@ def switches() :
     d["fcUseProof"] = False
 
     d["nlo"] = True
-    d["signalModel"] = "T2"
+    d["signalModel"] = "T1"
     #d["signalModel"] = "tanBeta3"
 
     d["icQueue"] = "hepshort.q"
@@ -24,7 +24,7 @@ def switches() :
     d["fillHolesInXsLimitPlot"] = True
     
     d["debugOutput"] = False
-    d["testPointsOnly"] = True
+    d["testPointsOnly"] = False
     d["listOfTestPoints"] = [(14, 9, 1)]
     
     d["twoHtBins"] = False
@@ -54,14 +54,17 @@ def switches() :
 
 def smsRanges() :
     d = {}
+
+    d["xsFactor"] = 0.8 if switches()["signalModel"]=="T2" else 1.0
+    
     d["smsXRange"] = (400.0, 999.9) #(min, max)
     d["smsYRange"] = (100.0, 999.9)
     d["smsXsZRangeLin"] = (0.0, 40.0, 40) #(zMin, zMax, nContours)
-    d["smsXsZRangeLog"] = (0.4, 40.0, 36)
-    d["smsEffZRange"]   = (0.0, 0.31, 31)
+    d["smsXsZRangeLog"] = (0.4, 40.0, 40)
+    d["smsEffZRange"]   = (0.0, 0.35, 35)
 
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
-    d["smsEffUncThZRange"] = (0.0, 0.36, 36)
+    d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
 def isCern() :
@@ -132,14 +135,15 @@ def histoSpecs() :
     d[model]["jes-"]   = {"file": "%s/v5/SMSFinal_JESMinus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
     d[model]["jes+"]   = {"file": "%s/v5/SMSFinal_JESPlus/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir, model)}
     d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/v2/AK5Calo_mySUSYTopo%s_ISR.root"%(dir, model)}
-
+    #d[model]["isr-"]   = {"file": "%s/v7/ISR-nofilter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi.root"%(dir, model)}
+    
     model = "T2"
     d[model]["sig10"]  = {"file": "%s/v7/signal-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir,model)}
     d[model]["muon"]   = {"file": "%s/v5/MuonSMSsamples/AK5Calo_PhysicsProcesses_Topology%s.root"%(dir,model)}
     d[model]["ht"]     = {"file": "%s/v7/lowHT-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir, model)}
     d[model]["jes-"]   = {"file": "%s/v7/JESminus-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir, model)}
     d[model]["jes+"]   = {"file": "%s/v7/JESplus-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir, model)}
-    d[model]["isr-"]   = {"file": "%s/v5/SMS_ISR_variation/v2/AK5Calo_mySUSYTopo%s_ISR.root"%(dir, model)}
+    d[model]["isr-"]   = {"file": "%s/v7/ISR-filter/AK5Calo_PhysicsProcesses_Topology%s_38xFall10_spadhi_new.root"%(dir, model)}
 
     for model in ["T1", "T2"] :
         
