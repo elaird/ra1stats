@@ -292,7 +292,7 @@ def setRange(var, ranges, histo, axisString) :
     if axisString=="Z" :
         maxContent = histo.GetBinContent(histo.GetMaximumBin())
         if maxContent>nums[1] :
-            print "WARNING: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s"%(maxContent, nums[1], histo.GetName())
+            print "ERROR: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s"%(maxContent, nums[1], histo.GetName())
 
 def makeEfficiencyPlots(item = "sig10") :
     s = conf.switches()
@@ -395,7 +395,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    if s["fillHolesInXsLimitPlot"] : h2 = fillHoles(h2, 0)
+    if s["fillHolesInXsLimitPlot"] : h2 = fillHoles(h2, 1)
     
     adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"]))
 
@@ -404,9 +404,9 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     setRange("smsYRange", ranges, h2, "Y")
         
     h2.Draw("colz")
-    graphs = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
-              {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
-              {"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
+    graphs = [{"factor": 1.0 *ranges["xsFactor"], "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
+              {"factor": 3.0 *ranges["xsFactor"], "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
+              {"factor": 1/3.*ranges["xsFactor"], "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
               ]
     for d in graphs :
         d["graph"] = reordered(excludedGraph(h2, d["factor"]))
@@ -448,11 +448,12 @@ def makeEfficiencyUncertaintyPlots() :
         setRange(zRangeKey, ranges, h2, "Z")
         printOnce(c, fileName)
 
-    go(name = "effUncRelExperimental", suffix = "effUncExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncExpZRange")
-    go(name = "effUncRelTheoretical", suffix = "effUncTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncThZRange")
-    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelIsrZRange")
-    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelPdfZRange")
-    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon_{total}", zRangeKey = "smsEffUncRelJesZRange")
+    go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncExpZRange")
+    go(name = "effUncRelTheoretical", suffix = "effUncRelTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncThZRange")
+    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelIsrZRange")
+    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelPdfZRange")
+    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelJesZRange")
+    go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelMcStatsZRange")
 
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
