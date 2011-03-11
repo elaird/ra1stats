@@ -55,8 +55,6 @@ def switches() :
 def smsRanges() :
     d = {}
 
-    d["xsFactor"] = 0.8 if switches()["signalModel"]=="T2" else 1.0
-    
     d["smsXRange"] = (400.0, 999.9) #(min, max)
     d["smsYRange"] = (100.0, 999.9)
     d["smsXsZRangeLin"] = (0.0, 40.0, 40) #(zMin, zMax, nContours)
@@ -189,15 +187,6 @@ def histoTitle() :
         return ";m_{squark} (GeV);m_{LSP} (GeV)"
     else :
         return ";m_{0} (GeV);m_{1/2} (GeV)"
-
-def referenceXsHistogram() :
-    d = {}
-    d["file"] = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root"
-    if switches()["signalModel"]=="T1" :
-        d["histo"] = "gluino"
-    if switches()["signalModel"]=="T2" :
-        d["histo"] = "squark"
-    return d
 
 def mergedFile(outputDir, switches) :
     out  = "%s/"%outputDir

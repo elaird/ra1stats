@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import collections,cPickle,os,math
 import configuration as conf
+import refXsProcessing as rxs
 import data
 import ROOT as r
 
@@ -323,69 +324,7 @@ def makeEfficiencyPlots(item = "sig10") :
     printOnce(c, fileName)
     printHoles(h2)
 
-def excludedGraph(h, factor = None, color = r.kBlack, lineStyle = 1) :
-    def fail(xs, xsLimit) :
-        return xs<=xsLimit or not xsLimit
-    
-    refXs = conf.referenceXsHistogram()
-    f = r.TFile(refXs["file"])
-    refHisto = f.Get(refXs["histo"]).Clone("%s_clone"%refXs["histo"])
-    refHisto.SetDirectory(0)
-    f.Close()
-
-    out = r.TGraph()
-    index = 0
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetXaxis().GetBinLowEdge(iBinX)
-        xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            y = h.GetYaxis().GetBinLowEdge(iBinY)
-            xsLimit     = h.GetBinContent(iBinX, iBinY)
-            xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
-            xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
-            if (not fail(xs, xsLimit)) and (fail(xs, xsLimitPrev) or fail(xs, xsLimitNext)) :
-                out.SetPoint(index, x, y)
-                index +=1
-    return out
-
-def reordered(g) :
-    N = g.GetN()
-    assert not N%2, "reordering assumes even N (N=%d)"%N
-    
-    l1 = []
-    l2 = []
-    for i in range(N/2) :
-        j = 2*i+1
-        l1.append(j)
-        l2.append(N-j-1)
-
-    gOut = r.TGraph()
-    #e.g., 1,3,5,7,6,4,2,0
-    print l1+l2
-    for i,j in enumerate(l1+l2) :
-        gOut.SetPoint(i, g.GetX()[j], g.GetY()[j])
-    return gOut
-
-def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = None) :
-    g.SetLineColor(color)
-    g.SetLineStyle(lineStyle)
-    g.SetLineWidth(lineWidth)
-    g.SetMarkerColor(color)
-    g.SetMarkerStyle(markerStyle)
-    return
-
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
-    def drawGraphs(graphs) :
-        legend = r.TLegend(0.2, 0.7, 0.5, 0.8)
-        legend.SetBorderSize(0)
-        legend.SetFillStyle(0)
-        for d in graphs :
-            g = d["graph"]
-            legend.AddEntry(g, d["label"], "l")
-            if g.GetN() : g.Draw("lsame")
-        legend.Draw("same")
-        return legend
-    
     s = conf.switches()
     if not (s["signalModel"] in ["T1","T2"]) : return
     
@@ -399,31 +338,30 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     
     adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"]))
 
+    #output a root file
+    g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
+    h2.Write()
+    g.Close()
+    
     ranges = conf.smsRanges()
     setRange("smsXRange", ranges, h2, "X")
     setRange("smsYRange", ranges, h2, "Y")
         
     h2.Draw("colz")
-    graphs = [{"factor": 1.0 *ranges["xsFactor"], "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
-              {"factor": 3.0 *ranges["xsFactor"], "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
-              {"factor": 1/3.*ranges["xsFactor"], "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
-              ]
-    for d in graphs :
-        d["graph"] = reordered(excludedGraph(h2, d["factor"]))
-        stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
+    graphs = rxs.graphs(h2, s["signalModel"], "LowEdge")
 
     if not logZ :
         setRange("smsXsZRangeLin", ranges, h2, "Z")
         printOnce(c, fileName)
 
-        stuff = drawGraphs(graphs)
+        stuff = rxs.drawGraphs(graphs)
         printOnce(c, fileName.replace(".eps", "_refXs.eps"))
     else :
         c.SetLogz()
         setRange("smsXsZRangeLog", ranges, h2, "Z")
         printOnce(c, fileName.replace(".eps","_logZ.eps"))
 
-        stuff = drawGraphs(graphs)
+        stuff = rxs.drawGraphs(graphs)
         printOnce(c, fileName.replace(".eps", "_refXs_logZ.eps"))
 
     printHoles(h2)
@@ -446,6 +384,12 @@ def makeEfficiencyUncertaintyPlots() :
         setRange("smsYRange", ranges, h2, "Y")
         h2.Draw("colz")
         setRange(zRangeKey, ranges, h2, "Z")
+
+        #output a root file
+        g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
+        h2.Write()
+        g.Close()
+        
         printOnce(c, fileName)
 
     go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncExpZRange")
