@@ -95,7 +95,7 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
     return
 
 def drawGraphs(graphs) :
-    legend = r.TLegend(0.2, 0.7, 0.5, 0.8)
+    legend = r.TLegend(0.15, 0.7, 0.75, 0.85)
     legend.SetBorderSize(0)
     legend.SetFillStyle(0)
     for d in graphs :
