@@ -132,7 +132,7 @@ def adjust(h) :
     h.UseCurrentStyle()
     h.SetStats(False)
     h.GetXaxis().SetTitleOffset(1.0)
-    h.GetYaxis().SetTitleOffset(1.0)
+    h.GetYaxis().SetTitleOffset(1.05)
     h.GetZaxis().SetTitleOffset(1.0)
     h.GetXaxis().CenterTitle(False)
     h.GetYaxis().CenterTitle(False)
