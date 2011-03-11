@@ -47,7 +47,7 @@ def specs() :
                   "T2_Eff": ("%s/razor/v2/t2_eff.root"%dir,"hist"),
                   "T1_Lim": ("%s/razor/v2/t1_limit.root"%dir,"hist"),
                   "T2_Lim": ("%s/razor/v2/t2_limit.root"%dir,"hist"),
-                  "extra": "",
+                  "name": "Razor",
                   "shiftX": False,
                   "shiftY": False,
                   }
@@ -60,7 +60,8 @@ def specs() :
                 "T2_EffUncExp": ("%s/ra2/v2/t2_effUncExp.root"%dir,"ExpRelUnc_squark_T2_MHT"),
                 "T1_EffUncTh":  ("%s/ra2/v2/t1_effUncTh.root"%dir,"theoryUnc_gluino_T1_MHT"),
                 "T2_EffUncTh":  ("%s/ra2/v2/t2_effUncTh.root"%dir,"theoryUnc_squark_T2_MHT"),
-                "extra": "(high MHT selection)",
+                "name": "Jets +",
+                "name2": "Missing HT",
                 "shiftX": False,
                 "shiftY": True,
                 }
@@ -73,7 +74,7 @@ def specs() :
                 "T2_EffUncExp": ("%s/ra1/T2_effUncRelExp.root"%dir,"effUncRelExperimental_2D"),
                 "T1_EffUncTh":  ("%s/ra1/T1_effUncRelTh.root"%dir,"effUncRelTheoretical_2D"),
                 "T2_EffUncTh":  ("%s/ra1/T2_effUncRelTh.root"%dir,"effUncRelTheoretical_2D"),
-                "extra": "",
+                "name": "#alpha_{T}",
                 "shiftX": True,
                 "shiftY": True,
                 }
@@ -131,12 +132,16 @@ def adjust(h) :
     h.UseCurrentStyle()
     h.SetStats(False)
     h.GetXaxis().SetTitleOffset(1.0)
-    h.GetYaxis().SetTitleOffset(1.5)
-    h.GetZaxis().SetTitleOffset(1.3)
+    h.GetYaxis().SetTitleOffset(1.0)
+    h.GetZaxis().SetTitleOffset(1.0)
     h.GetXaxis().CenterTitle(False)
     h.GetYaxis().CenterTitle(False)
     h.GetZaxis().CenterTitle(False)
 
+    for a,s in zip([h.GetXaxis(), h.GetYaxis(), h.GetZaxis()], [1.5, 1.5, 1.3]) :
+        a.SetTitleSize(s*a.GetTitleSize())
+        #a.CenterTitle()
+    
 def printText(h, tag, ana) :
     out = open("%s_%s.txt"%(tag, ana), "w")
     for iBinX in range(1, 1+h.GetNbinsX()) :
@@ -171,7 +176,7 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         h = fetchHisto(t[0], "/", t[1], name = "%s_%s"%(tag, ana))
         h = shifted(h, d["shiftX"], d["shiftY"])
         adjust(h)
-        h.SetTitle("%s %s %s;m_{%s} (GeV); m_{LSP} (GeV);%s"%(model, ana.upper(), d["extra"], mother(model), zAxisLabel))
+        h.SetTitle(";m_{%s} (GeV); m_{LSP} (GeV);%s"%(mother(model), zAxisLabel))
         h.Draw("colz")
 
         if specs()["printTxt"] : printText(h, tag, ana.upper())
@@ -181,19 +186,51 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         if suffix=="Lim" :
             stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center"))
             out.append(stuff)
+        out.append(stampCmsPrel())
+        out.append(stampName(d["name"], d["name2"] if "name2" in d else ""))
         out.append(h)
+    printOnce(c, "%s.eps"%tag)
 
-    eps = "%s.eps"%tag
-    c.Print(eps)
-    if specs()["printC"] : c.Print(eps.replace(".eps", ".C"))
-    os.system("epstopdf %s"%eps)
-    os.remove(eps)
-    
+def epsToPdf(fileName, tight = True) :
+    if not tight : #make pdf
+        os.system("epstopdf "+fileName)
+        os.system("rm       "+fileName)
+    else : #make pdf with tight bounding box
+        epsiFile = fileName.replace(".eps",".epsi")
+        os.system("ps2epsi "+fileName+" "+epsiFile)
+        os.system("epstopdf "+epsiFile)
+        os.system("rm       "+epsiFile)
+        os.system("rm       "+fileName)
+    #print "%s has been written."%fileName.replace(".eps",".pdf")
+
+def stampCmsPrel() :
+    text = r.TText()
+    text.SetNDC()
+    text.SetTextAlign(22)
+    text.DrawText(0.5, 0.9, "CMS Preliminary")
+    return text
+
+def stampName(name, name2) :
+    text = r.TLatex()
+    text.SetNDC()
+    text.SetTextAlign(11)
+    text.SetTextSize(1.3*text.GetTextSize())
+    if name2 :
+        text.DrawLatex(0.18, 0.66, name)
+        text.DrawLatex(0.18, 0.60, name2)
+    else :
+        text.DrawLatex(0.18, 0.63, name)        
+    return text
+
+def printOnce(canvas, fileName) :
+    canvas.Print(fileName)
+    if specs()["printC"] : canvas.Print(fileName.replace(".eps",".C"))
+    epsToPdf(fileName)
 
 setup()
 for model in ["T1", "T2"] :
     #plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = specs()["analyses"])
-    ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "XS limit (pb)", analyses = specs()["analyses"], logZ = False)
-    plotMulti(model = model, suffix = "Lim", zAxisLabel = "XS limit (pb)", analyses = specs()["analyses"], logZ = True)
+    ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = specs()["analyses"], logZ = False)
+    plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = specs()["analyses"], logZ = True)
     #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "experimental unc.", analyses = specs()["analyses"])
     #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "theoretical unc.", analyses = specs()["analyses"])
