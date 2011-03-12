@@ -10,13 +10,13 @@ def histoSpec(model) :
         factor = 0.8
     return {"file": "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root", "histo": histo, "factor": factor}
 
-def graphs(h, model, interBin, pruneAndExtrapolate = False) :
+def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
            {"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
            ]
     for d in out :
-        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate)
+        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate, yValueToPrune)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
     return out
 
@@ -24,10 +24,17 @@ def binWidth(h, axisString) :
     a = getattr(h, "Get%saxis"%axisString)()
     return (a.GetXmax()-a.GetXmin())/getattr(h, "GetNbins%s"%axisString)()
 
-def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False) :
+def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
+    def allMatch(value, y, threshold, iStart, N) :
+        count = 0
+        for i in range(iStart, N) :
+            if abs(y[i]-value)<threshold :
+                count +=1
+        return count==(N-iStart)
+            
     def extrapolatedGraph(h, gr) :
         grOut = r.TGraph()
         grOut.SetName("%s_extrapolated"%gr.GetName())
@@ -36,8 +43,12 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
         N = gr.GetN()
         if N :
             grOut.SetPoint(0, X[0] - binWidth(h, "X")/2.0, Y[0] - binWidth(h, "Y")/2.0)
-            for i in range(N) : grOut.SetPoint(i+1, X[i], Y[i])
-            grOut.SetPoint(N+1, X[N-1], h.GetYaxis().GetXmin())
+            index = 1
+            for i in range(N) :
+                if allMatch(value = yValueToPrune, y = Y, threshold = 0.1, iStart = i, N = N) : continue #prune points if "y=100.0 from here to end"
+                grOut.SetPoint(index, X[index-1], Y[index-1])
+                index +=1
+            grOut.SetPoint(index, X[index-1], h.GetYaxis().GetXmin())
         return grOut
     
     refXs = histoSpec(model)

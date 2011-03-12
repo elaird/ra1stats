@@ -22,7 +22,7 @@ def ranges(model) :
     d["smsEffZRange"]            = (0.0, 0.60, 30)
     d["smsLimZRange"]            = (0.0, 40.0, 40)
     d["smsLimLogZRange"]         = (0.1, 80.0, 40)
-    d["smsLim_NoThUncLogZRange"] = (0.1, 80.0, 40)
+    d["smsLim_NoThUncLogZRange"] = (0.1, 20.0, 20)
 
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
     d["smsEffUncThZRange"]  = (0.0, 0.50, 50)
@@ -30,9 +30,10 @@ def ranges(model) :
 
 def specs() :
     d = {}
-    d["printC"] = False
+    d["printC"] = True
     d["printTxt"] = False
     d["pruneAndExtrapolateGraphs"] = True
+    d["yValueToPrune"] = 100.0
     
     dir = "/home/hep/elaird1/60_ra_comparison"
     d["razor"] = {"T1_Eff": ("%s/razor/v2/t1_eff.root"%dir,"hist"),
@@ -50,8 +51,8 @@ def specs() :
                 "T2_Eff": ("%s/ra2/v2/t2_eff.root"%dir,"DefaultAcceptance"),
                 "T1_Lim": ("%s/ra2/v3/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
                 "T2_Lim": ("%s/ra2/v3/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
-                "T1_Lim_NoThUnc": ("%s/ra2/v3/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
-                "T2_Lim_NoThUnc": ("%s/ra2/v3/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
+                "T1_Lim_NoThUnc": ("%s/ra2/v4_NoThUnc/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
+                "T2_Lim_NoThUnc": ("%s/ra2/v4_NoThUnc/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
                 "T1_EffUncExp": ("%s/ra2/v2/t1_effUncExp.root"%dir,"ExpRelUnc_gluino_T1_MHT"),
                 "T2_EffUncExp": ("%s/ra2/v2/t2_effUncExp.root"%dir,"ExpRelUnc_squark_T2_MHT"),
                 "T1_EffUncTh":  ("%s/ra2/v2/t1_effUncTh.root"%dir,"theoryUnc_gluino_T1_MHT"),
@@ -207,7 +208,7 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         setRange("smsYRange", rangeDict, h, "Y")
         setRange("sms%s%sZRange"%(suffix, "Log" if logZ else ""), rangeDict, h, "Z")
         if suffix[:3]=="Lim" :
-            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"]))
+            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"] ))
             out.append(stuff)
         out.append(stampCmsPrel())
         d = specs()[ana]
@@ -264,11 +265,11 @@ def go(models, analyses, combined) :
         #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "theoretical unc.", analyses = analyses)
         ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = False)
         plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
-        #plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
     return
 
 setup()
 go(models = ["T1", "T2"],
    analyses = ["ra1", "ra2", "razor"],
-   combined = False,
+   combined = True,
    )
