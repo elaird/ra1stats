@@ -11,42 +11,35 @@ def setup() :
     r.gStyle.SetPalette(1)
 
 def mother(model) :
-    d = {}
-    d["T1"] = "gluino"
-    d["T2"] = "squark"
-    return d[model]
+    return {"T1": "gluino", "T2": "squark"}[model]
 
 def ranges(model) :
     d = {}
-
     d["smsXRange"] = (400.0, 999.9) #(min, max)
     d["smsYRange"] = (100.0, 975.0)
-    d["smsXsZRangeLin"] = (0.0, 40.0, 40) #(zMin, zMax, nContours)
-    d["smsXsZRangeLog"] = (0.4, 40.0, 40)
-    d["smsEffZRange"]   = (0.0, 0.60, 30)
-    d["smsLimZRange"]   = (0.0, 40.0, 40)
-    d["smsLimLogZRange"]= (0.1, 80.0, 40)
+    d["smsXsZRangeLin"]          = (0.0, 40.0, 40) #(zMin, zMax, nContours)
+    d["smsXsZRangeLog"]          = (0.4, 40.0, 40)
+    d["smsEffZRange"]            = (0.0, 0.60, 30)
+    d["smsLimZRange"]            = (0.0, 40.0, 40)
+    d["smsLimLogZRange"]         = (0.1, 80.0, 40)
+    d["smsLim_NoThUncLogZRange"] = (0.1, 80.0, 40)
 
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
-    d["smsEffUncThZRange"] = (0.0, 0.50, 50)
+    d["smsEffUncThZRange"]  = (0.0, 0.50, 50)
     return d
 
 def specs() :
     d = {}
+    d["printC"] = False
+    d["printTxt"] = False
+    
     dir = "/home/hep/elaird1/60_ra_comparison"
-    #d["razor"] = {"T1_Eff": ("%s/razor/razor.root"%dir,"T1_EFF"),
-    #              "T2_Eff": ("%s/razor/razor.root"%dir,"T2_EFF"),
-    #              "T1_Lim": ("%s/razor/razor.root"%dir,"T1_LIMIT"),
-    #              "T2_Lim": ("%s/razor/razor.root"%dir,"T2_LIMIT"),
-    #              "extra": "",
-    #              "shiftX": False,
-    #              "shiftY": False,
-    #              }
-
     d["razor"] = {"T1_Eff": ("%s/razor/v2/t1_eff.root"%dir,"hist"),
                   "T2_Eff": ("%s/razor/v2/t2_eff.root"%dir,"hist"),
                   "T1_Lim": ("%s/razor/v2/t1_limit.root"%dir,"hist"),
                   "T2_Lim": ("%s/razor/v2/t2_limit.root"%dir,"hist"),
+                  "T1_Lim_NoThUnc": ("%s/razor/v3_noThUnc/t1_limit.root"%dir,"LimitT1"),
+                  "T2_Lim_NoThUnc": ("%s/razor/v3_noThUnc/t2_limit.root"%dir,"LimitT2"),
                   "name": "Razor",
                   "shiftX": False,
                   "shiftY": False,
@@ -56,6 +49,8 @@ def specs() :
                 "T2_Eff": ("%s/ra2/v2/t2_eff.root"%dir,"DefaultAcceptance"),
                 "T1_Lim": ("%s/ra2/v3/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
                 "T2_Lim": ("%s/ra2/v3/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
+                "T1_Lim_NoThUnc": ("%s/ra2/v3/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
+                "T2_Lim_NoThUnc": ("%s/ra2/v3/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
                 "T1_EffUncExp": ("%s/ra2/v2/t1_effUncExp.root"%dir,"ExpRelUnc_gluino_T1_MHT"),
                 "T2_EffUncExp": ("%s/ra2/v2/t2_effUncExp.root"%dir,"ExpRelUnc_squark_T2_MHT"),
                 "T1_EffUncTh":  ("%s/ra2/v2/t1_effUncTh.root"%dir,"theoryUnc_gluino_T1_MHT"),
@@ -70,6 +65,8 @@ def specs() :
                 "T2_Eff": ("%s/ra1/v1/T2_eff.root"%dir,"m0_m12_0"),
                 "T1_Lim": ("%s/ra1/v1/profileLikelihood_T1_lo_1HtBin_expR_xsLimit.root"%dir,"UpperLimit_2D"),
                 "T2_Lim": ("%s/ra1/v1/profileLikelihood_T2_lo_1HtBin_expR_xsLimit.root"%dir,"UpperLimit_2D"),
+                "T1_Lim_NoThUnc": ("%s/ra1/v1_noThUnc/profileLikelihood_T1_lo_1HtBin_expR_xsLimit.root"%dir,"UpperLimit_2D"),
+                "T2_Lim_NoThUnc": ("%s/ra1/v1_noThUnc/profileLikelihood_T2_lo_1HtBin_expR_xsLimit.root"%dir,"UpperLimit_2D"),
                 "T1_EffUncExp": ("%s/ra1/v1/T1_effUncRelExp.root"%dir,"effUncRelExperimental_2D"),
                 "T2_EffUncExp": ("%s/ra1/v1/T2_effUncRelExp.root"%dir,"effUncRelExperimental_2D"),
                 "T1_EffUncTh":  ("%s/ra1/v1/T1_effUncRelTh.root"%dir,"effUncRelTheoretical_2D"),
@@ -79,16 +76,30 @@ def specs() :
                 "shiftY": True,
                 }
 
-    d["analyses"] = ["ra1", "ra2", "razor"]
-    d["printC"] = False
-    d["printTxt"] = False
-    
+    d["combined"] = {
+                "name": "hadronic union",
+                }
     return d
 
+def binByBinMin(histos) :
+    def minContent(histos, x, y) :
+        return min(map(lambda h:h.GetBinContent(h.FindBin(x, y)), histos))
+
+    h = histos[0]
+    out = h.Clone("combined_min")
+    out.Reset()
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        x = h.GetXaxis().GetBinCenter(iBinX)
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            y = h.GetYaxis().GetBinCenter(iBinY)
+            out.Fill(x, y, minContent(histos, x, y))
+    return out
+    
 def shifted(h, shiftX, shiftY) :
     binWidthX = (h.GetXaxis().GetXmax() - h.GetXaxis().GetXmin())/h.GetNbinsX() if shiftX else 0.0
     binWidthY = (h.GetYaxis().GetXmax() - h.GetYaxis().GetXmin())/h.GetNbinsY() if shiftY else 0.0
 
+    if binWidthX or binWidthY : print "INFO: shifting %s by (%g, %g)"%(h.GetName(), binWidthX, binWidthY)
     out = r.TH2D(h.GetName()+"_shifted","",
                  h.GetNbinsX(), h.GetXaxis().GetXmin() - binWidthX/2.0, h.GetXaxis().GetXmax() - binWidthX/2.0,
                  h.GetNbinsY(), h.GetYaxis().GetXmin() - binWidthY/2.0, h.GetYaxis().GetXmax() - binWidthY/2.0,
@@ -131,16 +142,13 @@ def setRange(var, ranges, histo, axisString) :
 def adjust(h) :
     h.UseCurrentStyle()
     h.SetStats(False)
-    h.GetXaxis().SetTitleOffset(1.0)
-    h.GetYaxis().SetTitleOffset(1.05)
-    h.GetZaxis().SetTitleOffset(1.0)
-    h.GetXaxis().CenterTitle(False)
-    h.GetYaxis().CenterTitle(False)
-    h.GetZaxis().CenterTitle(False)
-
-    for a,s in zip([h.GetXaxis(), h.GetYaxis(), h.GetZaxis()], [1.5, 1.5, 1.3]) :
-        a.SetTitleSize(s*a.GetTitleSize())
-        #a.CenterTitle()
+    for a,size,offset in zip([h.GetXaxis(), h.GetYaxis(), h.GetZaxis()],
+                             [1.5, 1.5,  1.3],
+                             [1.0, 1.05, 1.0],
+                             ) :
+        a.CenterTitle(False)
+        a.SetTitleSize(size*a.GetTitleSize())
+        a.SetTitleOffset(offset)
     
 def printText(h, tag, ana) :
     out = open("%s_%s.txt"%(tag, ana), "w")
@@ -152,13 +160,33 @@ def printText(h, tag, ana) :
             out.write("%g %g %g\n"%(x,y,c))
     out.close()
 
-
-def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False) :
-    tag = "%s_%s%s"%(model, suffix, "_logZ" if logZ else "")
-    rangeDict = ranges(model)
+def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, combined = False) :
+    def preparedHistograms(analyses, key, zAxisLabel) :
+        out = []
+        for ana in analyses :
+            d = specs()[ana]
+            if key not in d :
+                h = None
+            else :
+                h = fetchHisto(d[key][0], "/", d[key][1], name = "%s_%s"%(tag, ana))
+                h = shifted(h, d["shiftX"], d["shiftY"])
+                adjust(h)
+                h.SetTitle(";m_{%s} (GeV); m_{LSP} (GeV);%s"%(mother(model), zAxisLabel))
+            out.append(h)
+        return out
     
-    c = r.TCanvas("canvas_%s"%tag,"canvas", 1500, 500)
-    c.Divide(3,1)
+    rangeDict = ranges(model)
+    key = "%s_%s"%(model, suffix)
+    tag = "%s%s"%(key, "_logZ" if logZ else "")
+
+    histos = preparedHistograms(analyses, key, zAxisLabel)
+
+    if combined :
+        analyses = ["combined"]
+        histos = [binByBinMin(histos)]
+        
+    c = r.TCanvas("canvas_%s"%tag,"canvas", 500*len(analyses), 500)
+    c.Divide(len(analyses), 1)
 
     out = []
     for i,ana in enumerate(analyses) :
@@ -168,28 +196,22 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         r.gPad.SetLeftMargin(0.15)
         r.gPad.SetRightMargin(0.15)
         if logZ : r.gPad.SetLogz(True)
-        d = specs()[ana]
 
-        key = tag.replace("_logZ","")
-        if key not in d : continue
-        t = d[key]
-        h = fetchHisto(t[0], "/", t[1], name = "%s_%s"%(tag, ana))
-        h = shifted(h, d["shiftX"], d["shiftY"])
-        adjust(h)
-        h.SetTitle(";m_{%s} (GeV); m_{LSP} (GeV);%s"%(mother(model), zAxisLabel))
+        h = histos[i]
         h.Draw("colz")
 
         if specs()["printTxt"] : printText(h, tag, ana.upper())
         setRange("smsXRange", rangeDict, h, "X")
         setRange("smsYRange", rangeDict, h, "Y")
         setRange("sms%s%sZRange"%(suffix, "Log" if logZ else ""), rangeDict, h, "Z")
-        if suffix=="Lim" :
+        if suffix[:3]=="Lim" :
             stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center"))
             out.append(stuff)
         out.append(stampCmsPrel())
+        d = specs()[ana]
         out.append(stampName(d["name"], d["name2"] if "name2" in d else ""))
         out.append(h)
-    printOnce(c, "%s.eps"%tag)
+    printOnce(c, "%s%s.eps"%(tag, "_combined" if combined else ""))
 
 def epsToPdf(fileName, tight = True) :
     if not tight : #make pdf
@@ -227,10 +249,18 @@ def printOnce(canvas, fileName) :
     if specs()["printC"] : canvas.Print(fileName.replace(".eps",".C"))
     epsToPdf(fileName)
 
+def go(models, analyses, combined) :
+    for model in models :
+        #plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = analyses)
+        #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "experimental unc.", analyses = analyses)
+        #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "theoretical unc.", analyses = analyses)
+        ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = False)
+        plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        #plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+    return
+
 setup()
-for model in ["T1", "T2"] :
-    #plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = specs()["analyses"])
-    ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = specs()["analyses"], logZ = False)
-    plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = specs()["analyses"], logZ = True)
-    #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "experimental unc.", analyses = specs()["analyses"])
-    #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "theoretical unc.", analyses = specs()["analyses"])
+go(models = ["T1"],#, "T2"],
+   analyses = ["ra1", "ra2", "razor"],
+   combined = True,
+   )
