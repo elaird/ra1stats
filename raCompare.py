@@ -32,6 +32,7 @@ def specs() :
     d = {}
     d["printC"] = False
     d["printTxt"] = False
+    d["pruneAndExtrapolateGraphs"] = True
     
     dir = "/home/hep/elaird1/60_ra_comparison"
     d["razor"] = {"T1_Eff": ("%s/razor/v2/t1_eff.root"%dir,"hist"),
@@ -206,7 +207,7 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         setRange("smsYRange", rangeDict, h, "Y")
         setRange("sms%s%sZRange"%(suffix, "Log" if logZ else ""), rangeDict, h, "Z")
         if suffix[:3]=="Lim" :
-            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center"))
+            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"]))
             out.append(stuff)
         out.append(stampCmsPrel())
         d = specs()[ana]
@@ -248,7 +249,7 @@ def stampName(name, name2) :
         text.DrawLatex(0.18, 0.66, name)
         text.DrawLatex(0.18, 0.60, name2)
     else :
-        text.DrawLatex(0.18, 0.63, name)        
+        text.DrawLatex(0.18, 0.63, name)
     return text
 
 def printOnce(canvas, fileName) :

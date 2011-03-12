@@ -10,19 +10,35 @@ def histoSpec(model) :
         factor = 0.8
     return {"file": "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root", "histo": histo, "factor": factor}
 
-def graphs(h, model, interBin) :
+def graphs(h, model, interBin, pruneAndExtrapolate = False) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
            {"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
            ]
     for d in out :
-        d["graph"] = reordered(*excludedGraph(h, d["factor"], model, interBin))
+        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
     return out
 
-def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge") :
+def binWidth(h, axisString) :
+    a = getattr(h, "Get%saxis"%axisString)()
+    return (a.GetXmax()-a.GetXmin())/getattr(h, "GetNbins%s"%axisString)()
+
+def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
+
+    def extrapolatedGraph(h, gr) :
+        grOut = r.TGraph()
+        grOut.SetName("%s_extrapolated"%gr.GetName())
+        X = gr.GetX()
+        Y = gr.GetY()
+        N = gr.GetN()
+        if N :
+            grOut.SetPoint(0, X[0] - binWidth(h, "X")/2.0, Y[0] - binWidth(h, "Y")/2.0)
+            for i in range(N) : grOut.SetPoint(i+1, X[i], Y[i])
+            grOut.SetPoint(N+1, X[N-1], h.GetYaxis().GetXmin())
+        return grOut
     
     refXs = histoSpec(model)
     f = r.TFile(refXs["file"])
@@ -44,16 +60,21 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge") 
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
             if (not fail(xs, xsLimit)) and (fail(xs, xsLimitPrev) or fail(xs, xsLimitNext)) :
-                out.SetPoint(index, x, y)
+                lastHit = (x, y)
+                out.SetPoint(index, *lastHit)
                 index +=1
                 nHit +=1
-                lastHit = (index, x, y)
 
         if nHit==1 : #if "top" and "bottom" bin are the same
-            out.SetPoint(*lastHit)
+            out.SetPoint(index, *lastHit)
             index += 1
             print "INFO: %s (factor %g) hit iBinX = %d, nHit = %d, lastHit = %s repeated"%(out.GetName(), factor, iBinX, nHit, str(lastHit))
-    return out,factor
+
+    out = reordered(out, factor)
+    if pruneAndExtrapolate :
+        out = extrapolatedGraph(h, out)
+        
+    return out
 
 def reordered(inGraph, factor) :
     def truncated(gr) :
