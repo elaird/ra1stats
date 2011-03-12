@@ -77,7 +77,8 @@ def specs() :
                 }
 
     d["combined"] = {
-                "name": "hadronic union",
+                "name":  "Hadronic",
+                "name2": "Searches",
                 }
     return d
 
@@ -226,17 +227,23 @@ def epsToPdf(fileName, tight = True) :
     #print "%s has been written."%fileName.replace(".eps",".pdf")
 
 def stampCmsPrel() :
-    text = r.TText()
+    y = 0.87
+    text = r.TLatex()
+    text.SetTextSize(0.9*text.GetTextSize())
     text.SetNDC()
-    text.SetTextAlign(22)
-    text.DrawText(0.5, 0.9, "CMS Preliminary")
+    text.SetTextAlign(11)
+    text.DrawLatex(0.1, y, "CMS Preliminary")
+    text.SetTextAlign(21)
+    text.DrawLatex(0.55, y, "L = 35/pb")
+    text.SetTextAlign(31)
+    text.DrawLatex(0.9, y, "#sqrt{s} = 7 TeV")
     return text
 
 def stampName(name, name2) :
     text = r.TLatex()
     text.SetNDC()
     text.SetTextAlign(11)
-    text.SetTextSize(1.3*text.GetTextSize())
+    text.SetTextSize(1.0*text.GetTextSize())
     if name2 :
         text.DrawLatex(0.18, 0.66, name)
         text.DrawLatex(0.18, 0.60, name2)
@@ -260,7 +267,7 @@ def go(models, analyses, combined) :
     return
 
 setup()
-go(models = ["T1"],#, "T2"],
+go(models = ["T1", "T2"],
    analyses = ["ra1", "ra2", "razor"],
-   combined = True,
+   combined = False,
    )
