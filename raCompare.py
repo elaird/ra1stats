@@ -254,10 +254,60 @@ def stampName(name, name2) :
         text.DrawLatex(0.18, 0.63, name)
     return text
 
-def printOnce(canvas, fileName) :
+def printOnce(canvas, fileName, tight = False) :
     canvas.Print(fileName)
     if specs()["printC"] : canvas.Print(fileName.replace(".eps",".C"))
-    epsToPdf(fileName)
+    epsToPdf(fileName, tight)
+
+def plotRefXs(models) :
+    def graph(h, color) :
+        out = r.TGraph()
+        out.SetMarkerColor(color)
+        out.SetLineColor(color)
+        out.SetName("%s_graph"%h.GetName())
+        index = 0
+        for iBinX in range(1, 1+h.GetNbinsX()) :
+            x = h.GetBinLowEdge(iBinX)
+            y = h.GetBinContent(iBinX)
+            if not y : continue
+            out.SetPoint(index, x, y)
+            index += 1
+        return out
+
+    def graphs(models) :
+        colors = {}
+        colors["T1"] = r.kBlue
+        colors["T2"] = r.kRed
+
+        out = []
+        for model in models :
+            out.append(graph(rxs.refXsHisto(model), color = colors[model]))
+        return out
+
+    def gMax(inGraphs, axis) :
+        return max([getattr(g,"Get%s"%axis)()[0] for g in inGraphs])
+
+    def gMin(inGraphs, axis) :
+        return min([getattr(g,"Get%s"%axis)()[g.GetN()-1] for g in inGraphs])
+
+    g = graphs(models)
+    h = r.TH2D("null", ";particle mass (GeV); reference production #sigma (pb)", 1, 0.0, 1.0e3, 1, 0.5*gMin(g, "Y"), 2.0*gMax(g, "Y"))
+    h.SetStats(False)
+    h.Draw()
+    r.gPad.SetTickx()
+    r.gPad.SetTicky()
+    r.gPad.SetLogy()
+    leg = r.TLegend(0.7, 0.7, 0.9, 0.9)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    
+    for graph in g :
+        graph.SetMarkerStyle(20)
+        graph.Draw("psame")
+        label = "%s pair"%graph.GetName().replace("_graph","").replace("_clone","")
+        leg.AddEntry(graph, label, "p")
+    leg.Draw()
+    printOnce(r.gPad, "referenceXs.eps", tight = False)
 
 def go(models, analyses, combined) :
     for model in models :
@@ -270,7 +320,9 @@ def go(models, analyses, combined) :
     return
 
 setup()
-go(models = ["T1", "T2"],
+models = ["T1", "T2"]
+#plotRefXs(models = models)
+go(models = models,
    analyses = ["ra1", "ra2", "razor"],
    combined = True,
    )
