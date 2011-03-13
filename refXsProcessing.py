@@ -10,13 +10,22 @@ def histoSpec(model) :
         factor = 0.8
     return {"file": "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root", "histo": histo, "factor": factor}
 
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None) :
+def refXsHisto(model) :
+    hs = histoSpec(model)
+    f = r.TFile(hs["file"])
+    out = f.Get(hs["histo"]).Clone("%s_clone"%hs["histo"])
+    out.SetDirectory(0)
+    f.Close()
+    out.Scale(hs["factor"])
+    return out
+
+def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, oldBehavior = True) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
            {"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
            ]
     for d in out :
-        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate, yValueToPrune)
+        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate, yValueToPrune, oldBehavior)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
     return out
 
@@ -24,45 +33,60 @@ def binWidth(h, axisString) :
     a = getattr(h, "Get%saxis"%axisString)()
     return (a.GetXmax()-a.GetXmin())/getattr(h, "GetNbins%s"%axisString)()
 
-def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80) :
+def allMatch(value, y, threshold, iStart, N) :
+    count = 0
+    for i in range(iStart, N) :
+        if abs(y[i]-value)<threshold :
+            count +=1
+    return count==(N-iStart)
+
+def extrapolatedGraphOld(h, gr, yValueToPrune) :
+    grOut = r.TGraph()
+    grOut.SetName("%s_extrapolated"%gr.GetName())
+    X = gr.GetX()
+    Y = gr.GetY()
+    N = gr.GetN()
+    if N :
+        grOut.SetPoint(0, X[0] - binWidth(h, "X")/2.0, Y[0] - binWidth(h, "Y")/2.0)
+        index = 1
+        for i in range(N) :
+            if allMatch(value = yValueToPrune, y = Y, threshold = 0.1, iStart = i, N = N) : continue #prune points if "y=100.0 from here to end"
+            grOut.SetPoint(index, X[index-1], Y[index-1])
+            index +=1
+        grOut.SetPoint(index, X[index-1], h.GetYaxis().GetXmin())
+    return grOut
+
+def extrapolatedGraphNew(h, gr, yValueToPrune) :
+    grOut = r.TGraph()
+    grOut.SetName("%s_extrapolated"%gr.GetName())
+    X = gr.GetX()
+    Y = gr.GetY()
+    N = gr.GetN()
+    if N :
+        grOut.SetPoint(0, X[0] - binWidth(h, "X")/2.0, Y[0] - binWidth(h, "Y")/2.0)
+        index = 1
+        more = True
+        for i in range(N) :
+            if not more : continue
+            if allMatch(value = yValueToPrune, y = Y, threshold = 0.1, iStart = i, N = N) :
+                more = False #prune points if "y=100.0 from here to end"
+            grOut.SetPoint(index, X[index-1], Y[index-1])
+            index +=1
+        grOut.SetPoint(index, X[index-2], yValueToPrune - binWidth(h, "Y")/2.0)
+    return grOut
+    
+def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80, oldBehavior = True) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
-    def allMatch(value, y, threshold, iStart, N) :
-        count = 0
-        for i in range(iStart, N) :
-            if abs(y[i]-value)<threshold :
-                count +=1
-        return count==(N-iStart)
-            
-    def extrapolatedGraph(h, gr) :
-        grOut = r.TGraph()
-        grOut.SetName("%s_extrapolated"%gr.GetName())
-        X = gr.GetX()
-        Y = gr.GetY()
-        N = gr.GetN()
-        if N :
-            grOut.SetPoint(0, X[0] - binWidth(h, "X")/2.0, Y[0] - binWidth(h, "Y")/2.0)
-            index = 1
-            for i in range(N) :
-                if allMatch(value = yValueToPrune, y = Y, threshold = 0.1, iStart = i, N = N) : continue #prune points if "y=100.0 from here to end"
-                grOut.SetPoint(index, X[index-1], Y[index-1])
-                index +=1
-            grOut.SetPoint(index, X[index-1], h.GetYaxis().GetXmin())
-        return grOut
-    
-    refXs = histoSpec(model)
-    f = r.TFile(refXs["file"])
-    refHisto = f.Get(refXs["histo"]).Clone("%s_clone"%refXs["histo"])
-    refHisto.SetDirectory(0)
-    f.Close()
+    refHisto = refXsHisto(model)
 
     out = r.TGraph()
     out.SetName("%s_graph"%h.GetName())
     index = 0
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
-        xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))*refXs["factor"]
+        xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
         nHit = 0
         lastHit = None
         for iBinY in range(1, 1+h.GetNbinsY()) :
@@ -83,8 +107,10 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
 
     out = reordered(out, factor)
     if pruneAndExtrapolate :
-        out = extrapolatedGraph(h, out)
-        
+        if oldBehavior :
+            out = extrapolatedGraphOld(h, out, yValueToPrune)
+        else :
+            out = extrapolatedGraphNew(h, out, yValueToPrune)
     return out
 
 def reordered(inGraph, factor) :

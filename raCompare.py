@@ -33,6 +33,7 @@ def specs() :
     d["printC"] = True
     d["printTxt"] = False
     d["pruneAndExtrapolateGraphs"] = True
+    d["oldBehavior"] = True
     d["yValueToPrune"] = 100.0
     
     dir = "/home/hep/elaird1/60_ra_comparison"
@@ -208,7 +209,7 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         setRange("smsYRange", rangeDict, h, "Y")
         setRange("sms%s%sZRange"%(suffix, "Log" if logZ else ""), rangeDict, h, "Z")
         if suffix[:3]=="Lim" :
-            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"] ))
+            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["oldBehavior"] ))
             out.append(stuff)
         out.append(stampCmsPrel())
         d = specs()[ana]
@@ -264,7 +265,7 @@ def go(models, analyses, combined) :
         #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "experimental unc.", analyses = analyses)
         #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "theoretical unc.", analyses = analyses)
         ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = False)
-        plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        #plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
         plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
     return
 
