@@ -17,12 +17,11 @@ def ranges(model) :
     d = {}
     d["smsXRange"] = (400.0, 999.9) #(min, max)
     d["smsYRange"] = (100.0, 975.0)
-    d["smsXsZRangeLin"]          = (0.0, 40.0, 40) #(zMin, zMax, nContours)
-    d["smsXsZRangeLog"]          = (0.4, 40.0, 40)
-    d["smsEffZRange"]            = (0.0, 0.60, 30)
+    d["smsEffZRange"]            = (0.0, 0.60, 30) #(zMin, zMax[, nContours])
     d["smsLimZRange"]            = (0.0, 40.0, 40)
-    d["smsLimLogZRange"]         = (0.1, 80.0, 40)
-    d["smsLim_NoThUncLogZRange"] = (0.1, 20.0, 20)
+    d["smsLimLogZRange"]         = (0.1, 40.0)
+    d["smsLim_NoThUncLogZRange"] = (0.1, 40.0)
+    d["smsLim_NoThUncLogZRangeCombined"] = (0.1, 20.0)
 
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
     d["smsEffUncThZRange"]  = (0.0, 0.50, 50)
@@ -30,8 +29,9 @@ def ranges(model) :
 
 def specs() :
     d = {}
-    d["printC"] = True
+    d["printC"] = False
     d["printTxt"] = False
+    d["printPng"] = False
     d["pruneAndExtrapolateGraphs"] = True
     d["oldBehavior"] = False
     d["yValueToPrune"] = 100.0
@@ -50,8 +50,8 @@ def specs() :
 
     d["ra2"] = {"T1_Eff": ("%s/ra2/v2/t1_eff.root"%dir,"DefaultAcceptance"),
                 "T2_Eff": ("%s/ra2/v2/t2_eff.root"%dir,"DefaultAcceptance"),
-                "T1_Lim": ("%s/ra2/v3/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
-                "T2_Lim": ("%s/ra2/v3/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
+                "T1_Lim": ("%s/ra2/v4/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
+                "T2_Lim": ("%s/ra2/v4/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
                 "T1_Lim_NoThUnc": ("%s/ra2/v4_NoThUnc/t1_limit.root"%dir,"hlimit_gluino_T1_MHT"),
                 "T2_Lim_NoThUnc": ("%s/ra2/v4_NoThUnc/t2_limit.root"%dir,"hlimit_squark_T2_MHT"),
                 "T1_EffUncExp": ("%s/ra2/v2/t1_effUncExp.root"%dir,"ExpRelUnc_gluino_T1_MHT"),
@@ -137,7 +137,7 @@ def setRange(var, ranges, histo, axisString) :
     if var not in ranges : return
     nums = ranges[var]
     getattr(histo,"Get%saxis"%axisString)().SetRangeUser(*nums[:2])
-    #if len(nums)==3 : r.gStyle.SetNumberContours(nums[2])
+    if len(nums)==3 : r.gStyle.SetNumberContours(nums[2])
     if axisString=="Z" :
         maxContent = histo.GetBinContent(histo.GetMaximumBin())
         if maxContent>nums[1] :
@@ -207,7 +207,7 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         if specs()["printTxt"] : printText(h, tag, ana.upper())
         setRange("smsXRange", rangeDict, h, "X")
         setRange("smsYRange", rangeDict, h, "Y")
-        setRange("sms%s%sZRange"%(suffix, "Log" if logZ else ""), rangeDict, h, "Z")
+        setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict, h, "Z")
         if suffix[:3]=="Lim" :
             stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["oldBehavior"] ))
             out.append(stuff)
@@ -227,7 +227,9 @@ def epsToPdf(fileName, tight = True) :
         os.system("epstopdf "+epsiFile)
         os.system("rm       "+epsiFile)
         os.system("rm       "+fileName)
-    #print "%s has been written."%fileName.replace(".eps",".pdf")
+
+    if specs()["printPng"] :
+        os.system("convert %s %s"%(fileName.replace(".eps", ".pdf"), fileName.replace(".eps", ".png")))
 
 def stampCmsPrel() :
     y = 0.87
@@ -258,7 +260,7 @@ def printOnce(canvas, fileName, tight = True) :
     canvas.Print(fileName)
     if specs()["printC"] : canvas.Print(fileName.replace(".eps",".C"))
     epsToPdf(fileName, tight)
-
+    
 def plotRefXs(models) :
     def graph(h, color) :
         out = r.TGraph()
@@ -315,7 +317,7 @@ def go(models, analyses, combined) :
         #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "experimental unc.", analyses = analyses)
         #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "theoretical unc.", analyses = analyses)
         ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = False)
-        #plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
         plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
     return
 
@@ -324,5 +326,5 @@ models = ["T1", "T2"]
 #plotRefXs(models = models)
 go(models = models,
    analyses = ["ra1", "ra2", "razor"],
-   combined = True,
+   combined = False,
    )
