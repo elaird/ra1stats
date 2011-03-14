@@ -33,7 +33,7 @@ def specs() :
     d["printC"] = True
     d["printTxt"] = False
     d["pruneAndExtrapolateGraphs"] = True
-    d["oldBehavior"] = True
+    d["oldBehavior"] = False
     d["yValueToPrune"] = 100.0
     
     dir = "/home/hep/elaird1/60_ra_comparison"
@@ -254,7 +254,7 @@ def stampName(name, name2) :
         text.DrawLatex(0.18, 0.63, name)
     return text
 
-def printOnce(canvas, fileName, tight = False) :
+def printOnce(canvas, fileName, tight = True) :
     canvas.Print(fileName)
     if specs()["printC"] : canvas.Print(fileName.replace(".eps",".C"))
     epsToPdf(fileName, tight)
