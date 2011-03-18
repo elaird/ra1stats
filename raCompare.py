@@ -15,20 +15,30 @@ def mother(model) :
 
 def ranges(model) :
     d = {}
-    d["smsXRange"] = (400.0, 999.9) #(min, max)
-    d["smsYRange"] = (100.0, 975.0)
-    d["smsEffZRange"]            = (0.0, 0.60, 30) #(zMin, zMax[, nContours])
-    d["smsLimZRange"]            = (0.0, 40.0, 40)
-    d["smsLimLogZRange"]         = (0.1, 40.0)
-    d["smsLim_NoThUncLogZRange"] = (0.1, 40.0)
-    d["smsLim_NoThUncLogZRangeCombined"] = (0.1, 20.0)
 
+    #2-tuples have the form (min, max)
+    #3-tuples have the form (zMin, zMax[, nContours][, zTitleOffset])
+    
+    #common ranges    
+    d["smsXRange"] = (400.0, 999.9)
+    d["smsYRange"] = (100.0, 975.0)
+    d["smsLimZRange"] = (0.0, 40.0, 40)
+    d["smsLimLogZRange"] = (0.1, 40.0)
+    d["smsLim_NoThUncLogZRange"] = (0.1, 40.0)
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
-    d["smsEffUncThZRange"]  = (0.0, 0.50, 50)
+    d["smsEffUncThZRange"] = (0.0, 0.40, 40)
+    d["smsLim_NoThUncLogZRangeCombined"] = (0.1, 20.0) #combined
+    
+    #specific ranges
+    if specs()["ra1Specific"] : d["smsEffZRange"] = (0.0, 0.40, 40) #ra1
+    else : d["smsEffZRange"] = (0.0, 0.60, 30) #trio
+
     return d
 
 def specs() :
     d = {}
+
+    d["ra1Specific"] = True
     d["printC"] = False
     d["printTxt"] = False
     d["printPng"] = False
@@ -137,18 +147,19 @@ def setRange(var, ranges, histo, axisString) :
     if var not in ranges : return
     nums = ranges[var]
     getattr(histo,"Get%saxis"%axisString)().SetRangeUser(*nums[:2])
-    if len(nums)==3 : r.gStyle.SetNumberContours(nums[2])
+    if len(nums)>2 : r.gStyle.SetNumberContours(nums[2])
+    if len(nums)>3 : histo.GetZaxis().SetTitleOffset(nums[3])
     if axisString=="Z" :
         maxContent = histo.GetBinContent(histo.GetMaximumBin())
         if maxContent>nums[1] :
             print "ERROR: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s"%(maxContent, nums[1], histo.GetName())
 
-def adjust(h) :
+def adjust(h, singleAnalysisTweaks) :
     h.UseCurrentStyle()
     h.SetStats(False)
     for a,size,offset in zip([h.GetXaxis(), h.GetYaxis(), h.GetZaxis()],
-                             [1.5, 1.5,  1.3],
-                             [1.0, 1.05, 1.0],
+                             [1.5, 1.5, 1.0 if singleAnalysisTweaks else 1.3],
+                             [1.0, 1.05, 1.5 if singleAnalysisTweaks else 1.0],
                              ) :
         a.CenterTitle(False)
         a.SetTitleSize(size*a.GetTitleSize())
@@ -164,7 +175,7 @@ def printText(h, tag, ana) :
             out.write("%g %g %g\n"%(x,y,c))
     out.close()
 
-def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, combined = False) :
+def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, combined = False, mcOnly = False, singleAnalysisTweaks = False) :
     def preparedHistograms(analyses, key, zAxisLabel) :
         out = []
         for ana in analyses :
@@ -174,7 +185,7 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
             else :
                 h = fetchHisto(d[key][0], "/", d[key][1], name = "%s_%s"%(tag, ana))
                 h = shifted(h, d["shiftX"], d["shiftY"])
-                adjust(h)
+                adjust(h, singleAnalysisTweaks)
                 h.SetTitle(";m_{%s} (GeV); m_{LSP} (GeV);%s"%(mother(model), zAxisLabel))
             out.append(h)
         return out
@@ -195,10 +206,11 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
     out = []
     for i,ana in enumerate(analyses) :
         c.cd(i+1)
-        r.gPad.SetTopMargin(0.15)
-        r.gPad.SetBottomMargin(0.15)
-        r.gPad.SetLeftMargin(0.15)
-        r.gPad.SetRightMargin(0.15)
+        value = 0.17 if singleAnalysisTweaks else 0.15
+        r.gPad.SetTopMargin(value)
+        r.gPad.SetBottomMargin(value)
+        r.gPad.SetLeftMargin(value)
+        r.gPad.SetRightMargin(value)
         if logZ : r.gPad.SetLogz(True)
 
         h = histos[i]
@@ -211,9 +223,9 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         if suffix[:3]=="Lim" :
             stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["oldBehavior"] ))
             out.append(stuff)
-        out.append(stampCmsPrel())
+        out.append(stampCmsPrel(mcOnly))
         d = specs()[ana]
-        out.append(stampName(d["name"], d["name2"] if "name2" in d else ""))
+        out.append(stampName(d["name"], d["name2"] if "name2" in d else "", singleAnalysisTweaks))
         out.append(h)
     printOnce(c, "%s%s.eps"%(tag, "_combined" if combined else ""))
 
@@ -231,29 +243,31 @@ def epsToPdf(fileName, tight = True) :
     if specs()["printPng"] :
         os.system("convert %s %s"%(fileName.replace(".eps", ".pdf"), fileName.replace(".eps", ".png")))
 
-def stampCmsPrel() :
+def stampCmsPrel(mcOnly) :
     y = 0.87
     text = r.TLatex()
     text.SetTextSize(0.9*text.GetTextSize())
     text.SetNDC()
     text.SetTextAlign(11)
     text.DrawLatex(0.1, y, "CMS Preliminary")
-    text.SetTextAlign(21)
-    text.DrawLatex(0.55, y, "L = 35/pb")
     text.SetTextAlign(31)
     text.DrawLatex(0.9, y, "#sqrt{s} = 7 TeV")
+    if mcOnly : return text
+    text.SetTextAlign(21)
+    text.DrawLatex(0.55, y, "L = 35/pb")
     return text
 
-def stampName(name, name2) :
+def stampName(name, name2, singleAnalysisTweaks) :
+    x = 0.18 if not singleAnalysisTweaks else 0.2
     text = r.TLatex()
     text.SetNDC()
     text.SetTextAlign(11)
     text.SetTextSize(1.0*text.GetTextSize())
     if name2 :
-        text.DrawLatex(0.18, 0.66, name)
-        text.DrawLatex(0.18, 0.60, name2)
+        text.DrawLatex(x, 0.66, name)
+        text.DrawLatex(x, 0.60, name2)
     else :
-        text.DrawLatex(0.18, 0.63, name)
+        text.DrawLatex(x, 0.63, name)
     return text
 
 def printOnce(canvas, fileName, tight = True) :
@@ -313,18 +327,20 @@ def plotRefXs(models) :
 
 def go(models, analyses, combined) :
     for model in models :
-        #plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = analyses)
-        #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "experimental unc.", analyses = analyses)
-        #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "theoretical unc.", analyses = analyses)
-        ##plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = False)
-        plotMulti(model = model, suffix = "Lim", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
-        plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
+        plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "#sigma^{exp} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
+        plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "#sigma^{theo} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
+        plotMulti(model = model, suffix = "Lim", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
     return
 
 setup()
 models = ["T1", "T2"]
+#analyses = ["ra1", "ra2", "razor"]
+analyses = ["ra1"]
+
 #plotRefXs(models = models)
 go(models = models,
-   analyses = ["ra1", "ra2", "razor"],
+   analyses = analyses,
    combined = False,
    )
