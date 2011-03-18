@@ -2,7 +2,7 @@
 
 import ROOT as r
 import refXsProcessing as rxs
-import os
+import os,copy
 
 def setup() :
     r.gROOT.SetBatch(True)
@@ -23,15 +23,23 @@ def ranges() :
     d["smsXRange"] = (400.0, 999.9)
     d["smsYRange"] = (100.0, 975.0)
     d["smsLimZRange"] = (0.0, 40.0, 40)
-    d["smsLimLogZRange"] = (1.0, 40.0)
-    d["smsLim_NoThUncLogZRange"] = (1.0, 40.0)
+    d["smsLimLogZRange"] = (0.1, 40.0)
+    d["smsLim_NoThUncLogZRange"] = (0.1, 40.0)
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     d["smsLim_NoThUncLogZRangeCombined"] = (0.1, 20.0) #combined
     
     #specific ranges
-    if specs()["ra1Specific"] :d["smsEffZRange"] = (0.0, 0.40, 40) #ra1
+    if specs()["ra1Specific"] :
+        d["smsEffZRange"] = (0.0, 0.40, 40)
+        d["smsLimLogZRange"] = (1.0, 40.0)
+        d["smsLim_NoThUncLogZRange"] = (1.0, 40.0)
+        
     else : d["smsEffZRange"] = (0.0, 0.60, 30) #trio
+
+    #special ranges
+    d["smsExclZRange"] = (-1.0, 1.0)
+    d["smsWhichAnaZRange"] = (0.0, 3.0, 3)
 
     return d
 
@@ -83,31 +91,44 @@ def specs() :
                 "T1_EffUncExp": ("%s/ra1/v1/T1_effUncRelExp.root"%dir,"effUncRelExperimental_2D"),
                 "T2_EffUncExp": ("%s/ra1/v1/T2_effUncRelExp.root"%dir,"effUncRelExperimental_2D"),
                 "T1_EffUncTh":  ("%s/ra1/v1/T1_effUncRelTh.root"%dir,"effUncRelTheoretical_2D"),
-                "T2_EffUncTh":  ("%s/ra1/v1/T2_effUncRelTh.root"%dir,"effUncRelTheoretical_2D"),
+                "T2_EffUncTh":  ("%s/ra1/v1/T2_effUncRelTh_patched.root"%dir,"effUncRelTheoretical_2D"),
                 "name": "#alpha_{T}",
                 "shiftX": True,
                 "shiftY": True,
                 }
 
-    d["combined"] = {
-                "name":  "Hadronic",
-                "name2": "Searches",
-                }
+    d["combined"] = {"name":  "Hadronic",
+                     "name2": "Searches",
+                     }
+    d["whichAna"] = {"name":  "Hadronic",
+                     "name2": "Searches",
+                     }
     return d
 
 def binByBinMin(histos) :
     def minContent(histos, x, y) :
-        return min(map(lambda h:h.GetBinContent(h.FindBin(x, y)), histos))
+        l = map(lambda h:h.GetBinContent(h.FindBin(x, y)), histos)
+        m = min(l)
+        return m, l.index(m)
 
+    def newHisto(h, name) :
+        out = h.Clone(name)
+        out.Reset()
+        return out
+    
     h = histos[0]
-    out = h.Clone("combined_min")
-    out.Reset()
+    combMin = newHisto(h, "combined_min")
+    combInd = newHisto(h, "combined_index")
+    combInd.GetZaxis().SetTitle("analysis with best XS limit")
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = h.GetXaxis().GetBinCenter(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = h.GetYaxis().GetBinCenter(iBinY)
-            out.Fill(x, y, minContent(histos, x, y))
-    return out
+            m,i = minContent(histos, x, y)
+            if not m : continue
+            combMin.Fill(x, y, m)
+            combInd.Fill(x, y, i+0.5)
+    return combMin,combInd
     
 def shifted(h, shiftX, shiftY) :
     binWidthX = (h.GetXaxis().GetXmax() - h.GetXaxis().GetXmin())/h.GetNbinsX() if shiftX else 0.0
@@ -175,7 +196,7 @@ def printText(h, tag, ana) :
             out.write("%g %g %g\n"%(x,y,c))
     out.close()
 
-def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, exclPlot = False, combined = False, mcOnly = False, singleAnalysisTweaks = False) :
+def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, exclPlotIndex = None, combined = False, minLimit = False, mcOnly = False, singleAnalysisTweaks = False) :
     def preparedHistograms(analyses, key, zAxisLabel) :
         out = []
         for ana in analyses :
@@ -190,23 +211,44 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
             out.append(h)
         return out
 
-    if exclPlot : logZ = False
+    if exclPlotIndex!=None or minLimit :
+        logZ = False
     
-    rangeDict = ranges()
     key = "%s_%s"%(model, suffix)
     tag = "%s%s"%(key, "_logZ" if logZ else "")
-
+    fileName = "%s%s.eps"%(tag, "_combined" if combined else "")
+    zKey = "sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else "")
+    if exclPlotIndex!=None : zKey = "smsExclZRange"
     histos = preparedHistograms(analyses, key, zAxisLabel)
 
-    if combined :
-        analyses = ["combined"]
-        histos = [binByBinMin(histos)]
-        
+    if not combined :
+        makePlot(histosToDraw = histos, histosForRefXsGraphs = histos, analysesToCompare = analyses, analysesForLabels = analyses,
+                 logZ = logZ, zKey = zKey, exclPlotIndex = exclPlotIndex, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
+                 model = model, suffix = suffix, tag = tag, fileName = fileName)
+    else :
+        minHisto,whichAnaHisto = binByBinMin(histos)
+        if minLimit :
+            analyses = ["whichAna"]
+            makePlot(histosToDraw = [whichAnaHisto], histosForRefXsGraphs = [minHisto], analysesToCompare = analyses, analysesForLabels = analyses,
+                     logZ = logZ, zKey = "smsWhichAnaZRange", exclPlotIndex = exclPlotIndex, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
+                     model = model, suffix = suffix, tag = tag, fileName = fileName)
+        else :
+            analyses = ["combined"]
+            makePlot(histosToDraw = [minHisto], histosForRefXsGraphs = [minHisto], analysesToCompare = analyses, analysesForLabels = analyses,
+                     logZ = logZ, zKey = zKey, exclPlotIndex = exclPlotIndex, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
+                     model = model, suffix = suffix, tag = tag, fileName = fileName)
+
+def makePlot(histosToDraw = None, histosForRefXsGraphs = None, analysesToCompare = None, analysesForLabels = None,
+             logZ = None, zKey = None, exclPlotIndex = None, mcOnly = None, singleAnalysisTweaks = None,
+             model = None, suffix = None, tag = None, fileName = None) :
+    
+    rangeDict = ranges()
+
     c = r.TCanvas("canvas_%s"%tag,"canvas", 500*len(analyses), 500)
     c.Divide(len(analyses), 1)
 
     out = []
-    for i,ana in enumerate(analyses) :
+    for i,ana in enumerate(analysesToCompare) :
         c.cd(i+1)
         value = 0.17 if singleAnalysisTweaks else 0.15
         r.gPad.SetTopMargin(value)
@@ -215,31 +257,35 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         r.gPad.SetRightMargin(value)
         if logZ : r.gPad.SetLogz(True)
 
-        h = histos[i]
-        if not h : continue
-        h.Draw("colz")
-        setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict, h, "Z")
-
-        if exclPlot :
-            h = rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"])[0]["histo"]
-            h.Draw("colz")
-            rangeDict2 = {}
-            for key,value in rangeDict.iteritems() :
-                if "ZRange" in key :
-                    rangeDict2[key] = (-1.0, 1.0)
-            setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict2, h, "Z")
-            
-        if specs()["printTxt"] : printText(h, tag, ana.upper())
-        setRange("smsXRange", rangeDict, h, "X")
-        setRange("smsYRange", rangeDict, h, "Y")
+        histo = histosToDraw[i]
+        if not histo : continue
+        histo.Draw("colz")
+        
+        if exclPlotIndex!=None :
+            histo = rxs.graphs(histosForRefXsGraphs[i], model, "Center",
+                               specs()["pruneAndExtrapolateGraphs"],
+                               specs()["yValueToPrune"],
+                               specs()["noOneThird"])[exclPlotIndex]["histo"]
+            histo.Draw("colz")
+        
+        setRange("smsXRange", rangeDict, histo, "X")
+        setRange("smsYRange", rangeDict, histo, "Y")
+        setRange(zKey,        rangeDict, histo, "Z")
+        
         if suffix[:3]=="Lim" :
-            stuff = rxs.drawGraphs(rxs.graphs(histos[i], model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"] ))
+            stuff = rxs.drawGraphs(rxs.graphs(histosForRefXsGraphs[i], model, "Center",
+                                              specs()["pruneAndExtrapolateGraphs"],
+                                              specs()["yValueToPrune"],
+                                              specs()["noOneThird"])
+                                   )
             out.append(stuff)
+
+        if specs()["printTxt"] : printText(histo, tag, ana.upper())
         out.append(stampCmsPrel(mcOnly))
         d = specs()[ana]
         out.append(stampName(d["name"], d["name2"] if "name2" in d else "", singleAnalysisTweaks))
-        out.append(h)
-    printOnce(c, "%s%s.eps"%(tag, "_combined" if combined else ""))
+        out.append(histo)
+    printOnce(c, fileName)
 
 def epsToPdf(fileName, tight = True) :
     if not tight : #make pdf
@@ -337,13 +383,13 @@ def plotRefXs(models) :
     leg.Draw()
     printOnce(r.gPad, "referenceXs.eps", tight = False)
 
-def go(models, analyses, combined) :
+def go(models, analyses, combined, minLimit) :
     for model in models :
-        plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
-        plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "#sigma^{exp} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
-        plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "#sigma^{theo} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
-        plotMulti(model = model, suffix = "Lim", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
-        plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        #plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
+        #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "#sigma^{exp} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
+        #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "#sigma^{theo} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
+        #plotMulti(model = model, suffix = "Lim", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
+        plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined, minLimit = minLimit)
     return
 
 setup()
@@ -354,5 +400,6 @@ if specs()["ra1Specific"] : analyses = ["ra1"]
 #plotRefXs(models = models)
 go(models = models,
    analyses = analyses,
-   combined = False,
+   combined = True,
+   minLimit = True,
    )
