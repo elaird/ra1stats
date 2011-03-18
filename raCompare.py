@@ -23,14 +23,14 @@ def ranges(model) :
     d["smsXRange"] = (400.0, 999.9)
     d["smsYRange"] = (100.0, 975.0)
     d["smsLimZRange"] = (0.0, 40.0, 40)
-    d["smsLimLogZRange"] = (0.1, 40.0)
-    d["smsLim_NoThUncLogZRange"] = (0.1, 40.0)
+    d["smsLimLogZRange"] = (1.0, 40.0)
+    d["smsLim_NoThUncLogZRange"] = (1.0, 40.0)
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     d["smsLim_NoThUncLogZRangeCombined"] = (0.1, 20.0) #combined
     
     #specific ranges
-    if specs()["ra1Specific"] : d["smsEffZRange"] = (0.0, 0.40, 40) #ra1
+    if specs()["ra1Specific"] :d["smsEffZRange"] = (0.0, 0.40, 40) #ra1
     else : d["smsEffZRange"] = (0.0, 0.60, 30) #trio
 
     return d
@@ -39,11 +39,11 @@ def specs() :
     d = {}
 
     d["ra1Specific"] = True
+    d["noOneThird"] = d["ra1Specific"]
     d["printC"] = False
     d["printTxt"] = False
     d["printPng"] = False
     d["pruneAndExtrapolateGraphs"] = True
-    d["oldBehavior"] = False
     d["yValueToPrune"] = 100.0
     
     dir = "/home/hep/elaird1/60_ra_comparison"
@@ -221,7 +221,7 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         setRange("smsYRange", rangeDict, h, "Y")
         setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict, h, "Z")
         if suffix[:3]=="Lim" :
-            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["oldBehavior"] ))
+            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"] ))
             out.append(stuff)
         out.append(stampCmsPrel(mcOnly))
         d = specs()[ana]
@@ -254,7 +254,7 @@ def stampCmsPrel(mcOnly) :
     text.DrawLatex(0.9, y, "#sqrt{s} = 7 TeV")
     if mcOnly : return text
     text.SetTextAlign(21)
-    text.DrawLatex(0.55, y, "L = 35/pb")
+    text.DrawLatex(0.55, y, "L_{int} = 35 pb^{-1}")
     return text
 
 def stampName(name, name2, singleAnalysisTweaks) :
