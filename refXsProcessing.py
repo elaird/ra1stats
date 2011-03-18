@@ -19,13 +19,14 @@ def refXsHisto(model) :
     out.Scale(hs["factor"])
     return out
 
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, oldBehavior = True) :
+def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
-           {"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20},
            ]
+    if not noOneThird :
+        out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
     for d in out :
-        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate, yValueToPrune, oldBehavior)
+        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate, yValueToPrune)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
     return out
 
@@ -75,7 +76,7 @@ def extrapolatedGraphNew(h, gr, yValueToPrune) :
         grOut.SetPoint(index, X[index-2], yValueToPrune - binWidth(h, "Y")/2.0)
     return grOut
     
-def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80, oldBehavior = True) :
+def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80, oldBehavior = False) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
@@ -153,7 +154,7 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
     return
 
 def drawGraphs(graphs) :
-    legend = r.TLegend(0.15, 0.7, 0.75, 0.85)
+    legend = r.TLegend(0.15, 0.7, 0.75, 0.7+0.05*len(graphs))
     legend.SetBorderSize(0)
     legend.SetFillStyle(0)
     for d in graphs :
