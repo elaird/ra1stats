@@ -216,11 +216,12 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
         if logZ : r.gPad.SetLogz(True)
 
         h = histos[i]
+        if not h : continue
         h.Draw("colz")
         setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict, h, "Z")
 
         if exclPlot :
-            h = rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"])[1]["histo"]
+            h = rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"])[0]["histo"]
             h.Draw("colz")
             rangeDict2 = {}
             for key,value in rangeDict.iteritems() :
