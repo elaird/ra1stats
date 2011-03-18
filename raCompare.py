@@ -13,7 +13,7 @@ def setup() :
 def mother(model) :
     return {"T1": "gluino", "T2": "squark"}[model]
 
-def ranges(model) :
+def ranges() :
     d = {}
 
     #2-tuples have the form (min, max)
@@ -38,7 +38,7 @@ def ranges(model) :
 def specs() :
     d = {}
 
-    d["ra1Specific"] = True
+    d["ra1Specific"] = False
     d["noOneThird"] = d["ra1Specific"]
     d["printC"] = False
     d["printTxt"] = False
@@ -175,7 +175,7 @@ def printText(h, tag, ana) :
             out.write("%g %g %g\n"%(x,y,c))
     out.close()
 
-def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, combined = False, mcOnly = False, singleAnalysisTweaks = False) :
+def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, exclPlot = False, combined = False, mcOnly = False, singleAnalysisTweaks = False) :
     def preparedHistograms(analyses, key, zAxisLabel) :
         out = []
         for ana in analyses :
@@ -189,8 +189,10 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
                 h.SetTitle(";m_{%s} (GeV); m_{LSP} (GeV);%s"%(mother(model), zAxisLabel))
             out.append(h)
         return out
+
+    if exclPlot : logZ = False
     
-    rangeDict = ranges(model)
+    rangeDict = ranges()
     key = "%s_%s"%(model, suffix)
     tag = "%s%s"%(key, "_logZ" if logZ else "")
 
@@ -215,13 +217,22 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
 
         h = histos[i]
         h.Draw("colz")
+        setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict, h, "Z")
 
+        if exclPlot :
+            h = rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"])[1]["histo"]
+            h.Draw("colz")
+            rangeDict2 = {}
+            for key,value in rangeDict.iteritems() :
+                if "ZRange" in key :
+                    rangeDict2[key] = (-1.0, 1.0)
+            setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict2, h, "Z")
+            
         if specs()["printTxt"] : printText(h, tag, ana.upper())
         setRange("smsXRange", rangeDict, h, "X")
         setRange("smsYRange", rangeDict, h, "Y")
-        setRange("sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else ""), rangeDict, h, "Z")
         if suffix[:3]=="Lim" :
-            stuff = rxs.drawGraphs(rxs.graphs(h, model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"] ))
+            stuff = rxs.drawGraphs(rxs.graphs(histos[i], model, "Center", specs()["pruneAndExtrapolateGraphs"], specs()["yValueToPrune"], specs()["noOneThird"] ))
             out.append(stuff)
         out.append(stampCmsPrel(mcOnly))
         d = specs()[ana]
@@ -336,8 +347,8 @@ def go(models, analyses, combined) :
 
 setup()
 models = ["T1", "T2"]
-#analyses = ["ra1", "ra2", "razor"]
-analyses = ["ra1"]
+analyses = ["ra1", "ra2", "razor"]
+if specs()["ra1Specific"] : analyses = ["ra1"]
 
 #plotRefXs(models = models)
 go(models = models,
