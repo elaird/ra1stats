@@ -2,7 +2,7 @@
 
 import ROOT as r
 import refXsProcessing as rxs
-import os,copy
+import os,copy,array
 
 def setup() :
     r.gROOT.SetBatch(True)
@@ -119,7 +119,7 @@ def binByBinMin(histos) :
     h = histos[0]
     combMin = newHisto(h, "combined_min")
     combInd = newHisto(h, "combined_index")
-    combInd.GetZaxis().SetTitle("analysis with best XS limit")
+    combInd.GetZaxis().SetTitle("")#analysis with best XS limit")
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = h.GetXaxis().GetBinCenter(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
@@ -196,21 +196,22 @@ def printText(h, tag, ana) :
             out.write("%g %g %g\n"%(x,y,c))
     out.close()
 
-def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False, exclPlotIndex = None, combined = False, minLimit = False, mcOnly = False, singleAnalysisTweaks = False) :
-    def preparedHistograms(analyses, key, zAxisLabel) :
-        out = []
-        for ana in analyses :
-            d = specs()[ana]
-            if key not in d :
-                h = None
-            else :
-                h = fetchHisto(d[key][0], "/", d[key][1], name = "%s_%s"%(tag, ana))
-                h = shifted(h, d["shiftX"], d["shiftY"])
-                adjust(h, singleAnalysisTweaks)
-                h.SetTitle(";m_{%s} (GeV); m_{LSP} (GeV);%s"%(mother(model), zAxisLabel))
-            out.append(h)
-        return out
+def preparedHistograms(model, analyses, key, tag, zAxisLabel, singleAnalysisTweaks) :
+    out = []
+    for ana in analyses :
+        d = specs()[ana]
+        if key not in d :
+            h = None
+        else :
+            h = fetchHisto(d[key][0], "/", d[key][1], name = "%s_%s"%(tag, ana))
+            h = shifted(h, d["shiftX"], d["shiftY"])
+            adjust(h, singleAnalysisTweaks)
+            h.SetTitle(";m_{%s} (GeV); m_{LSP} (GeV);%s"%(mother(model), zAxisLabel))
+        out.append(h)
+    return out
 
+def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = False,
+              exclPlotIndex = None, combined = False, minLimit = False, mcOnly = False, singleAnalysisTweaks = False) :
     if exclPlotIndex!=None or minLimit :
         logZ = False
     
@@ -219,33 +220,31 @@ def plotMulti(model = "", suffix = "", zAxisLabel = "", analyses = [], logZ = Fa
     fileName = "%s%s.eps"%(tag, "_combined" if combined else "")
     zKey = "sms%s%sZRange%s"%(suffix, "Log" if logZ else "", "Combined" if combined else "")
     if exclPlotIndex!=None : zKey = "smsExclZRange"
-    histos = preparedHistograms(analyses, key, zAxisLabel)
+    histos = preparedHistograms(model, analyses, key, tag, zAxisLabel, singleAnalysisTweaks)
 
     if not combined :
         makePlot(histosToDraw = histos, histosForRefXsGraphs = histos, analysesToCompare = analyses, analysesForLabels = analyses,
-                 logZ = logZ, zKey = zKey, exclPlotIndex = exclPlotIndex, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
+                 logZ = logZ, zKey = zKey, exclPlotIndex = exclPlotIndex, minLimit = minLimit, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
                  model = model, suffix = suffix, tag = tag, fileName = fileName)
     else :
         minHisto,whichAnaHisto = binByBinMin(histos)
         if minLimit :
-            analyses = ["whichAna"]
-            makePlot(histosToDraw = [whichAnaHisto], histosForRefXsGraphs = [minHisto], analysesToCompare = analyses, analysesForLabels = analyses,
-                     logZ = logZ, zKey = "smsWhichAnaZRange", exclPlotIndex = exclPlotIndex, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
+            makePlot(histosToDraw = [whichAnaHisto], histosForRefXsGraphs = [minHisto], analysesToCompare = ["whichAna"], analysesForLabels = analyses,
+                     logZ = logZ, zKey = "smsWhichAnaZRange", exclPlotIndex = exclPlotIndex, minLimit = minLimit, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
                      model = model, suffix = suffix, tag = tag, fileName = fileName)
         else :
-            analyses = ["combined"]
-            makePlot(histosToDraw = [minHisto], histosForRefXsGraphs = [minHisto], analysesToCompare = analyses, analysesForLabels = analyses,
-                     logZ = logZ, zKey = zKey, exclPlotIndex = exclPlotIndex, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
+            makePlot(histosToDraw = [minHisto], histosForRefXsGraphs = [minHisto], analysesToCompare = ["combined"], analysesForLabels = analyses,
+                     logZ = logZ, zKey = zKey, exclPlotIndex = exclPlotIndex, minLimit = minLimit, mcOnly = mcOnly, singleAnalysisTweaks = singleAnalysisTweaks,
                      model = model, suffix = suffix, tag = tag, fileName = fileName)
 
 def makePlot(histosToDraw = None, histosForRefXsGraphs = None, analysesToCompare = None, analysesForLabels = None,
-             logZ = None, zKey = None, exclPlotIndex = None, mcOnly = None, singleAnalysisTweaks = None,
+             logZ = None, zKey = None, exclPlotIndex = None, minLimit = None, mcOnly = None, singleAnalysisTweaks = None,
              model = None, suffix = None, tag = None, fileName = None) :
     
     rangeDict = ranges()
 
-    c = r.TCanvas("canvas_%s"%tag,"canvas", 500*len(analyses), 500)
-    c.Divide(len(analyses), 1)
+    c = r.TCanvas("canvas_%s"%tag,"canvas", 500*len(analysesToCompare), 500)
+    c.Divide(len(analysesToCompare), 1)
 
     out = []
     for i,ana in enumerate(analysesToCompare) :
@@ -271,7 +270,29 @@ def makePlot(histosToDraw = None, histosForRefXsGraphs = None, analysesToCompare
         setRange("smsXRange", rangeDict, histo, "X")
         setRange("smsYRange", rangeDict, histo, "Y")
         setRange(zKey,        rangeDict, histo, "Z")
-        
+
+        if minLimit :
+            def stampLoop(xs, ys, sizeFactor, analyses) :
+                out = []
+                for x,y,a in zip(xs, ys, analyses) :
+                    d = specs()[a]
+                    out.append(stampName(d["name"],
+                                         d["name2"].replace("Missing HT","H_{T} miss.") if "name2" in d else "",
+                                         singleAnalysisTweaks, x, y, sizeFactor = sizeFactor, align = 12))
+                return out
+                
+            colors = array.array('i', [r.kOrange, r.kBlue+1, r.kRed+1])
+            r.gStyle.SetPalette(len(colors), colors)
+            r.gPad.Update()
+            axis = histo.GetListOfFunctions().FindObject("palette").GetAxis()
+            axis.SetTickSize(0.0)
+            axis.SetLabelSize(0.0)
+            axis.SetLineColor(r.kWhite)
+            sizeFactor = 0.6
+            step = 0.7/3
+            stuff = stampLoop(xs = [0.9, 0.9, 0.9], ys = [0.5 - step, 0.5 + 0.03*sizeFactor, 0.5 + step], sizeFactor = sizeFactor, analyses = analysesForLabels)
+            out.append(stuff)
+            
         if suffix[:3]=="Lim" :
             stuff = rxs.drawGraphs(rxs.graphs(histosForRefXsGraphs[i], model, "Center",
                                               specs()["pruneAndExtrapolateGraphs"],
@@ -315,17 +336,19 @@ def stampCmsPrel(mcOnly) :
     text.DrawLatex(0.55, y, "L_{int} = 35 pb^{-1}")
     return text
 
-def stampName(name, name2, singleAnalysisTweaks) :
-    x = 0.18 if not singleAnalysisTweaks else 0.2
+def stampName(name, name2, singleAnalysisTweaks, x = None, y = None, sizeFactor = 1.0, align = 11) :
+    if x is None : x = 0.18 if not singleAnalysisTweaks else 0.2
+    if y is None : y = 0.66 if name2 else 0.63
+    
     text = r.TLatex()
     text.SetNDC()
-    text.SetTextAlign(11)
-    text.SetTextSize(1.0*text.GetTextSize())
+    text.SetTextAlign(align)
+    text.SetTextSize(sizeFactor * text.GetTextSize())
     if name2 :
-        text.DrawLatex(x, 0.66, name)
-        text.DrawLatex(x, 0.60, name2)
+        text.DrawLatex(x, y,                 name)
+        text.DrawLatex(x, y-0.06*sizeFactor, name2)
     else :
-        text.DrawLatex(x, 0.63, name)
+        text.DrawLatex(x, y, name)
     return text
 
 def printOnce(canvas, fileName, tight = True) :
@@ -393,13 +416,9 @@ def go(models, analyses, combined, minLimit) :
     return
 
 setup()
-models = ["T1", "T2"]
-analyses = ["ra1", "ra2", "razor"]
-if specs()["ra1Specific"] : analyses = ["ra1"]
-
-#plotRefXs(models = models)
-go(models = models,
-   analyses = analyses,
+#plotRefXs(models = ["T1", "T2"])
+go(models = ["T1", "T2"],
+   analyses = ["ra1", "ra2", "razor"] if not specs()["ra1Specific"] else ["ra1"],
    combined = True,
    minLimit = True,
    )
