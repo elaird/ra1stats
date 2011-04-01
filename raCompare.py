@@ -53,6 +53,7 @@ def specs() :
     d["printTxt"] = False
     d["printPng"] = False
     d["writeTGraphs"] = False
+    d["writeRootFiles"] = False
     d["pruneAndExtrapolateGraphs"] = True
     d["yValueToPrune"] = 100.0
     
@@ -208,6 +209,12 @@ def writeGraphs(graphs, tag, ana) :
         d["graph"].Write("refXs_%4.2f"%d["factor"])
     f.Close()
 
+def writeRootFile(h, tag, ana) :
+    f = r.TFile("%s_%s.root"%(tag.replace("_logZ",""), ana), "RECREATE")
+    name = h.GetName().replace("_logZ", "").replace("_fresh", "").replace("_shifted", "")
+    h.Write(name)
+    f.Close()
+
 def preparedHistograms(model, analyses, key, tag, zAxisLabel, singleAnalysisTweaks) :
     out = []
     for ana in analyses :
@@ -315,6 +322,7 @@ def makePlot(histosToDraw = None, histosForRefXsGraphs = None, analysesToCompare
             out.append(stuff)
 
         if specs()["printTxt"] : printText(histo, tag, ana.upper())
+        if specs()["writeRootFiles"] : writeRootFile(histo, tag, ana.upper())
         out.append(stampCmsPrel(mcOnly))
         d = specs()[ana]
         out.append(stampName(d["name"], d["name2"] if "name2" in d else "", singleAnalysisTweaks))
