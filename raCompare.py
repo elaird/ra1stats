@@ -28,6 +28,7 @@ def ranges() :
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     d["smsLim_NoThUncLogZRangeCombined"] = (0.1, 20.0) #combined
+    d["smsLimLogZRangeCombined"]         = (0.1, 20.0) #combined
     
     #specific ranges
     if specs()["ra1Specific"] :
@@ -51,14 +52,19 @@ def specs() :
     d["printC"] = False
     d["printTxt"] = False
     d["printPng"] = False
+    d["writeTGraphs"] = False
     d["pruneAndExtrapolateGraphs"] = True
     d["yValueToPrune"] = 100.0
     
     dir = "/home/hep/elaird1/60_ra_comparison"
     d["razor"] = {"T1_Eff": ("%s/razor/v2/t1_eff.root"%dir,"hist"),
                   "T2_Eff": ("%s/razor/v2/t2_eff.root"%dir,"hist"),
-                  "T1_Lim": ("%s/razor/v2/t1_limit.root"%dir,"hist"),
-                  "T2_Lim": ("%s/razor/v2/t2_limit.root"%dir,"hist"),
+                  #"T1_Lim": ("%s/razor/v2/t1_limit.root"%dir,"hist"),
+                  #"T2_Lim": ("%s/razor/v2/t2_limit.root"%dir,"hist"),
+                  "T1_Lim": ("%s/razor/v4/t1_limit.root"%dir,"LimitT1s"),
+                  "T2_Lim": ("%s/razor/v4/t2_limit.root"%dir,"LimitT2s"),
+                  "T1_Lim_NoSys": ("%s/razor/v4/t1_limit_noSys.root"%dir,"LimitT1"),
+                  "T2_Lim_NoSys": ("%s/razor/v4/t2_limit_noSys.root"%dir,"LimitT2"),
                   "T1_Lim_NoThUnc": ("%s/razor/v3_noThUnc/t1_limit.root"%dir,"LimitT1"),
                   "T2_Lim_NoThUnc": ("%s/razor/v3_noThUnc/t2_limit.root"%dir,"LimitT2"),
                   "name": "Razor",
@@ -196,6 +202,12 @@ def printText(h, tag, ana) :
             out.write("%g %g %g\n"%(x,y,c))
     out.close()
 
+def writeGraphs(graphs, tag, ana) :
+    f = r.TFile("%s_%s_graphs.root"%(tag.replace("_logZ",""), ana), "RECREATE")
+    for d in graphs :
+        d["graph"].Write("refXs_%4.2f"%d["factor"])
+    f.Close()
+
 def preparedHistograms(model, analyses, key, tag, zAxisLabel, singleAnalysisTweaks) :
     out = []
     for ana in analyses :
@@ -299,6 +311,7 @@ def makePlot(histosToDraw = None, histosForRefXsGraphs = None, analysesToCompare
                                               specs()["yValueToPrune"],
                                               specs()["noOneThird"])
                                    )
+            if specs()["writeTGraphs"] : writeGraphs(stuff[1], tag, ana.upper())
             out.append(stuff)
 
         if specs()["printTxt"] : printText(histo, tag, ana.upper())
@@ -411,14 +424,15 @@ def go(models, analyses, combined, minLimit) :
         #plotMulti(model = model, suffix = "Eff", zAxisLabel = "analysis efficiency", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
         #plotMulti(model = model, suffix = "EffUncExp", zAxisLabel = "#sigma^{exp} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
         #plotMulti(model = model, suffix = "EffUncTh", zAxisLabel = "#sigma^{theo} / #epsilon", analyses = analyses, mcOnly = True, singleAnalysisTweaks = specs()["ra1Specific"])
-        #plotMulti(model = model, suffix = "Lim", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined)
-        plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined, minLimit = minLimit)
+        plotMulti(model = model, suffix = "Lim",         zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined, minLimit = minLimit)
+        #plotMulti(model = model, suffix = "Lim_NoThUnc", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined, minLimit = minLimit)
+        #plotMulti(model = model, suffix = "Lim_NoSys", zAxisLabel = "95% C.L. limit on #sigma (pb)", analyses = analyses, logZ = True, combined = combined, minLimit = minLimit)
     return
 
 setup()
 #plotRefXs(models = ["T1", "T2"])
 go(models = ["T1", "T2"],
    analyses = ["ra1", "ra2", "razor"] if not specs()["ra1Specific"] else ["ra1"],
-   combined = True,
-   minLimit = True,
+   combined = False,
+   minLimit = False,
    )
