@@ -1,4 +1,5 @@
 \section{Total Background Method}
+\label{sec:totalBackground}
 The hypothesis that the $\alpha_{T}$ ratio falls exponentially in $H_T$ can be written this way:
 \begin{equation}
 R_{\alpha_{T}}(H_T) = A e^{-k H_T}
@@ -107,18 +108,19 @@ and are validated in Figure \ref{fig:validationPlots}.
 
 \subsection{Systematic Uncertainties}
 \label{sec:sysUnc}
-We take the uncertainty on the signal efficiency to be correlated among the bins, given that the uncertainty in the luminosity currently dominates.
+We take the uncertainty on the signal efficiency to be fully correlated among the bins, given that the uncertainty in the luminosity currently dominates.
+Let $\delta_{i}$ represent the relative uncertainty on the signal efficiency in a bin $i$.
 The systematic uncertainty on the assumption that $R_{\alpha_T}$ is exponential can be treated either as 
 fully correlated among the bins:
 \begin{equation}
-L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau b_i + \rho_{sig}s_i)\mathrm{Gaus}(1.0 |\,\tau, \sigma_i)\mathrm{Gaus}(1.0 |\,\rho_{sig}, \delta)
+L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau b_i + \rho_{sig}s_i)\mathrm{Gaus}(1.0 |\,\tau, \sigma_i)\mathrm{Gaus}(1.0 |\,\rho_{sig}, \delta_{i})
 \end{equation}
 
 or as fully uncorrelated among the bins:
 
 \begin{equation}
-L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + \rho_{sig}s_i)\mathrm{Gaus}(1.0 |\,\tau_i, \sigma_i)\mathrm{Gaus}(1.0 |\,\rho_{sig}, \delta)
+L_{hadronic}=\prod_i \mathrm{Pois}(n_i |\, \tau_i b_i + \rho_{sig}s_i)\mathrm{Gaus}(1.0 |\,\tau_i, \sigma_i)\mathrm{Gaus}(1.0 |\,\rho_{sig}, \delta_{i})
 \end{equation}
 
-or perhaps as somewhat correlated using an $N \times N$ correlation matrix.  $\delta$ represents the relative uncertainty on the signal efficiency.
+or perhaps as somewhat correlated using an $N \times N$ correlation matrix.
 
