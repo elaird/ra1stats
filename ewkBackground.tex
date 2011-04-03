@@ -9,9 +9,7 @@ Define
 \begin{equation}
 r_{ph}^i = \frac{MC_{ph}^i}{MC_{Z_{inv}}^i};\, r_{mu}^i = \frac{MC_{mu}^i}{MC_{t\bar{t}+W}^i}
 \end{equation}
-We treat the systematics as fully correlated among the $H_T$ bins.  There are (at least) two ways to write the likelihoods.  The expectations for the total background $\{b^{i}\}$ and systematic uncertainties $\{\tau^{i}\}$ are discussed in the next section.
-
-\subsection{One}
+We treat the systematics as fully correlated among the $H_T$ bins.  We use this likelihood:
 
 \begin{equation}
 \label{eq:photonOption1}
@@ -21,31 +19,29 @@ L_{ph}=\prod_i \mathrm{Gaus}( r_{ph}^i |\,\rho_{phZ} r_{ph}^i, r_{ph}^i \sigma_{
 L_{mu}=\prod_i \mathrm{Gaus}( r_{mu}^i |\,\rho_{muW} r_{mu}^i, r_{mu}^i \sigma_{muW}^{inp}) \times \mathrm{Pois}(N_{mu}^i |\, \rho_{muW} r_{mu}^{i} (t\bar{t}^i+W^i) + s_{mu}^i)
 \end{equation}
 
-There are two possibilities for a connection to the total background constraint.  Either more terms in the likelihood:
+To connect to the total background constraint (discussed in Section \ref{sec:totalBackground}), define
 \begin{equation}
-L_{constraint}=\prod_i \mathrm{Gaus}( 0.0 |\, \tau^i b^{i}(A,k) - QCD^{i} - (t\bar{t}^i+W^i) - Z_{inv}^{i}, 0.001)
+QCD^{i} = \tau^i b^{i}(A,k) - Z_{inv}^{i} - (t\bar{t}^i+W^i)
 \end{equation}
-or substitute for $Z_{inv}^i$ in Equation \ref{eq:photonOption1}:
+and include a term in the likelihood which requires $QCD^{i}$ to be positive:
 \begin{equation}
-Z_{inv}^{i} = \tau^i b^{i}(A,k) - QCD^{i} - (t\bar{t}^i+W^i)
-\end{equation}
-
-\subsection{Two}
-\begin{equation}
-\label{eq:photonOption2}
-L_{ph}= \prod_i \mathrm{Pois}(N_{ph}^i |\, r_{ph}^{i} Z_{inv}^{i})
-\end{equation}
-\begin{equation}
-L_{mu}= \prod_i \mathrm{Pois}(N_{mu}^i |\, r_{mu}^{i} (t\bar{t}^i+W^i) + s_{mu}^i)
+L_{constraint}=\prod_i \mathrm{\theta}(QCD^{i})
 \end{equation}
 
-There are two possibilities for a connection to the total background constraint.  Either more terms in the likelihood:
-\begin{eqnarray*}
-L_{constraint}=\mathrm{Gaus}( 1.0 |\,\rho_{phZ},\sigma_{phZ}^{inp}) \times \mathrm{Gaus}( 1.0 |\,\rho_{muW},\sigma_{muW}^{inp}) \times \\
-{} \prod_i \mathrm{Gaus}( 0.0 |\, b^{i}(A,k) - QCD^{i} - \rho_{muW} (t\bar{t}^i+W^i) - \rho_{phZ} Z_{inv}^{i}, 0.001)
-\end{eqnarray*}
-
-or substitute for $Z_{inv}^i$ in Equation \ref{eq:photonOption2}:
-\begin{equation}
-Z_{inv}^{i} = \frac{b^{i}(A,k) - QCD^{i} - \rho_{muW} (t\bar{t}^i+W^i)}{\rho_{phZ}}
-\end{equation}
+%%\subsection{Two}
+%%\begin{equation}
+%%\label{eq:photonOption2}
+%%L_{ph}= \prod_i \mathrm{Pois}(N_{ph}^i |\, r_{ph}^{i} Z_{inv}^{i})
+%%\end{equation}
+%%\begin{equation}
+%%L_{mu}= \prod_i \mathrm{Pois}(N_{mu}^i |\, r_{mu}^{i} (t\bar{t}^i+W^i) + s_{mu}^i)
+%%\end{equation}
+%%
+%%To connect to the total background constraint, define
+%%\begin{equation}
+%%QCD^{i} = \tau^i b^{i}(A,k) - \rho_{muW} (t\bar{t}^i+W^i) - \rho_{phZ} Z_{inv}^{i}
+%%\end{equation}
+%%and include a term in the likelihood which requires $QCD^{i}$ to be positive:
+%%\begin{equation}
+%%L_{constraint}=\mathrm{Gaus}( 1.0 |\,\rho_{phZ},\sigma_{phZ}^{inp}) \times \mathrm{Gaus}( 1.0 |\,\rho_{muW},\sigma_{muW}^{inp}) \times  \prod_i \mathrm{\theta}(QCD^{i})
+%%\end{equation}
