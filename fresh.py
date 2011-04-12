@@ -71,19 +71,15 @@ def hadTerms() :
     stuffToImport.append(r.RooProdPdf("hadTerms", "hadTerms", terms))
     return stuffToImport
 
-def importVariablesAndLikelihoods(w, stuffToImport) :
-    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING)
-    blackList = ["hadB", "hadPois"]
+def importVariablesAndLikelihoods(w, stuffToImport, blackList) :
+    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
     for item in stuffToImport :
-        bail = False
-        for blackItem in blackList :
-            if item.GetName()[:len(blackItem)]==blackItem : bail = True
-        if bail : continue #avoid "errors" about duplicates
+        if any(map(lambda x:item.GetName()[:len(x)]==x, blackList)) : continue #avoid "errors" about duplicates
         getattr(w, "import")(item)
-    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG)
+    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
 def setupLikelihood(w) :
-    importVariablesAndLikelihoods(w, hadTerms())
+    importVariablesAndLikelihoods(w, hadTerms(), ["hadB", "hadPois"])
     w.factory("PROD::model(hadTerms)")
     setSets(w)
 
