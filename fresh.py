@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-import math
+import math,array,os
 import ROOT as r
 
 def lumi() : #recorded lumi for analyzed sample
     return 35.0 #/pb
 
-def binLowerEdges() :
+def htBinLowerEdges() :
     return (250.0, 300.0, 350.0, 450.0)
 
 def observations() :
-    return {"htMean":( 265.0,  315.0,  375.0,  465.0),#place-holder values
+    return {"htMean":( 265.0,  315.0,  375.0,  475.0),#place-holder values
             "nBulk": (844459, 331948, 225649, 110034),
             "nSel":  (    33,     11,      8,      5),
             "nPhot": (    -1,     -1,      6,      1),
@@ -95,15 +95,90 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def computeInterval(dataset, modelconfig) :
+def interval(dataset, modelconfig) :
     plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
     #print "UpperLimit=",plInt.UpperLimit(wspace.var("s"))
+    #plot = r.RooStats.LikelihoodIntervalPlot(plInt)
+    #plot.Draw(); return plot
 
-r.RooRandom.randomGenerator().SetSeed(1)
-wspace = r.RooWorkspace("Workspace")
-setupLikelihood(wspace)
-data = dataset(wspace.set("obs"))
-modelConfig = modelConfiguration(wspace)
-computeInterval(data, modelConfig)
+def pValue(dataset, modelconfig) :
+    plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
+    plc.SetNullParameters(modelconfig.GetParametersOfInterest())
+    htr = plc.GetHypoTest()
+    print "p-value = %g +/- %g"%(htr.NullPValue(), htr.NullPValueError())
+    print "significance = %g"%htr.Significance()
+
+def writeGraphVizTree(wspace, pdfName = "model") :
+    dotFile = "%s.dot"%pdfName
+    wspace.pdf(pdfName).graphVizTree(dotFile, ":", True, False)
+    cmd = "dot -Tps %s -o %s"%(dotFile, dotFile.replace(".dot", ".ps"))
+    os.system(cmd)
+    
+def rooFitResults(wspace, data) :
+    return wspace.pdf("model").fitTo(data, r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))
+
+def errorsPlot(wspace, data) :
+    results = rooFitResults(wspace, data)
+    results.Print("v")
+    k = wspace.var("k")
+    A = wspace.var("A")
+    plot = r.RooPlot(k, A, 0.0, 1.0e-5, 0.0, 1.0e-4)
+    results.plotOn(plot, k, A, "ME12VHB")
+    plot.Draw()
+    return plot
+
+def validationPlot(wspace, data) :
+    def inputHisto() :
+        bins = array.array('d', list(htBinLowerEdges())+[600.0])
+        out = r.TH1D("inputData", ";H_{T} (GeV);counts / bin", len(bins)-1, bins)
+        out.Sumw2()
+        for i,content in enumerate(observations()["nSel"]) :
+            for count in range(content) : out.Fill(bins[i])
+        return out
+    
+    def fitResultsHisto(inp, wspace) :
+        out = inp.Clone("fitResults")
+        out.Reset()
+        for i in range(len(htBinLowerEdges())) :
+            out.SetBinContent(i+1, wspace.function("hadB%d"%i).getVal())
+        return out
+
+    results = rooFitResults(wspace, data)
+
+    r.gROOT.SetStyle("Plain")
+    leg = r.TLegend(0.5, 0.7, 0.9, 0.9)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    inp = inputHisto()
+    inp.SetStats(False)
+    fit = fitResultsHisto(inp, wspace)
+    fit.SetLineColor(r.kBlue)
+    inp.Draw()
+    fit.Draw("same")
+    leg.AddEntry(inp, "observed counts")
+    leg.AddEntry(fit, "expected counts from fit")
+    leg.Draw()
+    r.gPad.SetTickx()
+    r.gPad.SetTicky()
+    return inp,fit,leg
+    
+def go() :
+    out = []
+    r.RooRandom.randomGenerator().SetSeed(1)
+    wspace = r.RooWorkspace("Workspace")
+    setupLikelihood(wspace)
+    data = dataset(wspace.set("obs"))
+    modelConfig = modelConfiguration(wspace)
+
+    out.append(interval(data, modelConfig))
+    #out.append(pValue(data, modelConfig))
+
+    #writeGraphVizTree(wspace)
+    #ep = errorsPlot(wspace, data); return ep
+    #vp = validationPlot(wspace, data); return vp
+    #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
+    return out
+
+stuff = go()
