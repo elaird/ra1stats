@@ -15,7 +15,6 @@ def observations() :
             "nSel":  (    33,     11,      8,      5),
             "nPhot": (    -1,     -1,      6,      1),
             "nMuon": (    -1,     -1,      5,      2),
-            "mcMuon":(    -1,     -1,    4.1,    1.9),
             }
 
 def mcExpectations() : #events / lumi
@@ -71,23 +70,53 @@ def hadTerms() :
     stuffToImport.append(r.RooProdPdf("hadTerms", "hadTerms", terms))
     return stuffToImport
 
+def photTerms() :
+    terms = r.RooArgList("photTermsList")
+    stuffToImport = [] #keep references to objects to avoid seg-faults and later inform workspace
+
+    rhoPhotZ = r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 0.0, 2.0)
+    onePhot = r.RooRealVar("onePhot", "onePhot", 1.0)
+    sigmaPhotZ = r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", fixedParameters()["sigmaPhotZ"])
+    gaus = r.RooGaussian("photGaus", "photGaus", onePhot, rhoPhotZ, sigmaPhotZ)
+    stuffToImport += [rhoPhotZ, onePhot, sigmaPhotZ, gaus]
+    terms.add(gaus)
+
+    for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(observations()["nPhot"])), observations()["nPhot"], mcExpectations()["mcPhot"], mcExpectations()["mcZinv"]) :
+        if nPhotValue<0 : continue
+        nPhot = r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue)
+        rPhot = r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue)
+        zInv  = r.RooRealVar("zInv%d"%i,  "zInv%d"%i,  max(1, nPhotValue), 0.0, 10*max(1, nPhotValue))
+        stuffToImport += [nPhot, rPhot, zInv]
+
+        expPhot = r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(rhoPhotZ, rPhot, zInv) ); stuffToImport.append(expPhot)
+        pois = r.RooPoisson("photPois%d"%i, "photPois%d"%i, nPhot, expPhot); stuffToImport.append(pois)
+        terms.add(pois)
+    
+    stuffToImport.append(r.RooProdPdf("photTerms", "photTerms", terms))
+    return stuffToImport
+
 def importVariablesAndLikelihoods(w, stuffToImport, blackList) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
     for item in stuffToImport :
-        if any(map(lambda x:item.GetName()[:len(x)]==x, blackList)) : continue #avoid "errors" about duplicates
+        if any(map(lambda x:item.GetName()[:len(x)]==x, blackList)) : continue #avoid duplicates
         getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
 def setupLikelihood(w) :
     importVariablesAndLikelihoods(w, hadTerms(), ["hadB", "hadPois"])
-    w.factory("PROD::model(hadTerms)")
+    importVariablesAndLikelihoods(w, photTerms(), ["photExp", "photPois", "photGaus"])
+    w.factory("PROD::model(hadTerms,photTerms)")
     setSets(w)
 
 def setSets(wspace) :
     wspace.defineSet("poi","A,k")
     #wspace.defineSet("nuis","tau")
-    sels = ",".join(["nSel%d"%i for i in range(len(observations()["nSel"]))])
-    wspace.defineSet("obs", ",".join([sels]))
+    obs = ["onePhot"]
+    for item in ["nSel", "nPhot"] :
+        for i,value in enumerate(observations()[item]) :
+            if value<0 : continue
+            obs.append("%s%d"%(item,i))
+    wspace.defineSet("obs", ",".join(obs))
 
 def dataset(obsSet) :
     out = r.RooDataSet("dataName","dataTitle", obsSet)
@@ -169,6 +198,8 @@ def go() :
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
     setupLikelihood(wspace)
+    wspace.Print("v")
+
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace)
 
