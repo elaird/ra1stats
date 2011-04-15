@@ -19,7 +19,7 @@ def observations() :
 
 def mcExpectations() : #events / lumi
     return {"mcMuon":(    -1,     -1,    4.1,    1.9  ),
-            "mcTtW": (    -1,     -1,    3.415,  1.692),
+            "mcTtw": (    -1,     -1,    3.415,  1.692),
             "mcPhot":(    -1,     -1,    4.4,    2.1  ),
             "mcZinv":(    -1,     -1,    2.586,  1.492),
             }
@@ -27,7 +27,7 @@ def mcExpectations() : #events / lumi
 def fixedParameters() :
     return {"sigmaLumi":  0.04,
             "sigmaPhotZ": 0.40,
-            "sigmaMuTtW": 0.30,
+            "sigmaMuonW": 0.30,
             }
 
 def modelConfiguration(w) :
@@ -95,6 +95,31 @@ def photTerms() :
     stuffToImport.append(r.RooProdPdf("photTerms", "photTerms", terms))
     return stuffToImport
 
+def muonTerms() :
+    terms = r.RooArgList("muonTermsList")
+    stuffToImport = [] #keep references to objects to avoid seg-faults and later inform workspace
+
+    rhoMuonW = r.RooRealVar("rhoMuonW", "rhoMuonW", 1.0, 0.0, 2.0)
+    oneMuon = r.RooRealVar("oneMuon", "oneMuon", 1.0)
+    sigmaMuonW = r.RooRealVar("sigmaMuonW", "sigmaMuonW", fixedParameters()["sigmaMuonW"])
+    gaus = r.RooGaussian("muonGaus", "muonGaus", oneMuon, rhoMuonW, sigmaMuonW)
+    stuffToImport += [rhoMuonW, oneMuon, sigmaMuonW, gaus]
+    terms.add(gaus)
+
+    for i,nMuonValue,mcMuonValue,mcTtwValue in zip(range(len(observations()["nMuon"])), observations()["nMuon"], mcExpectations()["mcMuon"], mcExpectations()["mcTtw"]) :
+        if nMuonValue<0 : continue
+        nMuon = r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue)
+        rMuon = r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue)
+        ttw   = r.RooRealVar("ttw%d"%i,   "ttw%d"%i,   max(1, nMuonValue), 0.0, 10*max(1, nMuonValue))
+        stuffToImport += [nMuon, rMuon, ttw]
+
+        expMuon = r.RooFormulaVar("muonExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(rhoMuonW, rMuon, ttw) ); stuffToImport.append(expMuon)
+        pois = r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, nMuon, expMuon); stuffToImport.append(pois)
+        terms.add(pois)
+    
+    stuffToImport.append(r.RooProdPdf("muonTerms", "muonTerms", terms))
+    return stuffToImport
+
 def importVariablesAndLikelihoods(w, stuffToImport, blackList) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
     for item in stuffToImport :
@@ -105,14 +130,15 @@ def importVariablesAndLikelihoods(w, stuffToImport, blackList) :
 def setupLikelihood(w) :
     importVariablesAndLikelihoods(w, hadTerms(), ["hadB", "hadPois"])
     importVariablesAndLikelihoods(w, photTerms(), ["photExp", "photPois", "photGaus"])
-    w.factory("PROD::model(hadTerms,photTerms)")
+    importVariablesAndLikelihoods(w, muonTerms(),["muonExp", "muonPois", "muonGaus"])
+    w.factory("PROD::model(hadTerms,photTerms,muonTerms)")
     setSets(w)
 
 def setSets(wspace) :
     wspace.defineSet("poi","A,k")
     #wspace.defineSet("nuis","tau")
-    obs = ["onePhot"]
-    for item in ["nSel", "nPhot"] :
+    obs = ["onePhot", "oneMuon"]
+    for item in ["nSel", "nPhot", "nMuon"] :
         for i,value in enumerate(observations()[item]) :
             if value<0 : continue
             obs.append("%s%d"%(item,i))
@@ -198,7 +224,7 @@ def go() :
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
     setupLikelihood(wspace)
-    wspace.Print("v")
+    #wspace.Print("v")
 
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace)
