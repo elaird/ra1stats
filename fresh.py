@@ -193,31 +193,67 @@ def validationPlot(wspace, data) :
             for count in range(content) : out.Fill(bins[i])
         return out
     
-    def fitResultsHisto(inp, wspace) :
-        out = inp.Clone("fitResults")
+    def totalBackgroundHisto(inp, wspace, color) :
+        out = inp.Clone("totalBackground")
         out.Reset()
+        out.SetLineColor(color)
+        out.SetMarkerColor(color)
         for i in range(len(htBinLowerEdges())) :
             out.SetBinContent(i+1, wspace.function("hadB%d"%i).getVal())
+        return out
+
+    def varHisto(inp, wspace, varName, color) :
+        out = inp.Clone(varName)
+        out.Reset()
+        out.SetMarkerStyle(1)
+        out.SetLineColor(color)
+        out.SetMarkerColor(color)
+        for i in range(len(htBinLowerEdges())) :
+            var = wspace.var("%s%d"%(varName,i))
+            if not var : continue
+            out.SetBinContent(i+1, var.getVal())
         return out
 
     results = rooFitResults(wspace, data)
 
     r.gROOT.SetStyle("Plain")
-    leg = r.TLegend(0.5, 0.7, 0.9, 0.9)
+    leg = r.TLegend(0.3, 0.6, 0.9, 0.85)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
+
     inp = inputHisto()
+    inp.SetMarkerStyle(20)
     inp.SetStats(False)
-    fit = fitResultsHisto(inp, wspace)
-    fit.SetLineColor(r.kBlue)
-    inp.Draw()
-    fit.Draw("same")
-    leg.AddEntry(inp, "observed counts")
-    leg.AddEntry(fit, "expected counts from fit")
+    inp.Draw("p")
+    inp.SetMinimum(0.0)
+    leg.AddEntry(inp, "2010 hadronic data", "lp")
+
+    total = totalBackgroundHisto(inp, wspace, r.kBlue)
+    total.Draw("same")
+    leg.AddEntry(total, "best fit expected total background", "l")
+
+    stack = r.THStack("stack", "stack")
+
+    zInv = varHisto(inp, wspace, "zInv", r.kRed)
+    stack.Add(zInv)
+    leg.AddEntry(zInv, "best fit Z->inv (stacked)")
+
+    ttw = varHisto(inp, wspace, "ttw", r.kGreen)
+    stack.Add(ttw)
+    leg.AddEntry(ttw, "best fit t#bar{t} + W (stacked)", "l")
+
+    stack.Draw("same")
+
     leg.Draw()
     r.gPad.SetTickx()
     r.gPad.SetTicky()
-    return inp,fit,leg
+    r.gPad.Update()
+
+    fileName = "bestFit.eps"
+    r.gPad.Print(fileName)
+    os.system("epstopdf %s"%fileName)
+    os.remove(fileName)
+    return inp,total,zInv,ttw,stack,leg
     
 def go() :
     out = []
