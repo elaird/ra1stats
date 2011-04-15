@@ -120,6 +120,25 @@ def muonTerms() :
     stuffToImport.append(r.RooProdPdf("muonTerms", "muonTerms", terms))
     return stuffToImport
 
+def constraintTerms(wspace) :
+    terms = r.RooArgList("constraintTermsList")
+    stuffToImport = [] #keep references to objects to avoid seg-faults and later inform workspace
+
+    smallNeg = r.RooRealVar("smallNeg", "smallNeg", -1.0e-3)
+    stuffToImport.append(smallNeg)
+
+    for i in range(len(observations()["nSel"])) :
+        b    = wspace.function("hadB%d"%i)
+        zInv = wspace.var("zInv%d"%i)
+        ttw  = wspace.var("ttw%d"%i)
+        if not all([b, zInv, ttw]) : continue
+        qcd = r.RooFormulaVar("qcd%d"%i, "(@0)-(@1)-(@2)", r.RooArgList(b, zInv, ttw) ); stuffToImport.append(qcd)
+        constraint = r.RooExponential("qcdConstraint%d"%i, "qcdConstraint%d"%i, qcd, smallNeg); stuffToImport.append(constraint)
+        terms.add(constraint)
+    
+    stuffToImport.append(r.RooProdPdf("constraintTerms", "constraintTerms", terms))
+    return stuffToImport
+
 def importVariablesAndLikelihoods(w, stuffToImport, blackList) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
     for item in stuffToImport :
@@ -131,7 +150,10 @@ def setupLikelihood(w) :
     importVariablesAndLikelihoods(w, hadTerms(), ["hadB", "hadPois"])
     importVariablesAndLikelihoods(w, photTerms(), ["photExp", "photPois", "photGaus"])
     importVariablesAndLikelihoods(w, muonTerms(),["muonExp", "muonPois", "muonGaus"])
-    w.factory("PROD::model(hadTerms,photTerms,muonTerms)")
+    #w.factory("PROD::model(hadTerms,photTerms,muonTerms)")
+    importVariablesAndLikelihoods(w, constraintTerms(w), ["qcd"])
+    w.factory("PROD::model(hadTerms,photTerms,muonTerms,constraintTerms)")
+
     setSets(w)
 
 def setSets(wspace) :
