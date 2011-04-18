@@ -9,6 +9,9 @@ def lumi() : #recorded lumi for analyzed sample
 def htBinLowerEdges() :
     return (250.0, 300.0, 350.0, 450.0)
 
+def htMaxForPlot() :
+    return 600.0
+
 def observations() :
     return {"htMean":( 265.0,  315.0,  375.0,  475.0),#place-holder values
             "nBulk": (844459, 331948, 225649, 110034),
@@ -150,9 +153,9 @@ def setupLikelihood(w) :
     importVariablesAndLikelihoods(w, hadTerms(), ["hadB", "hadPois"])
     importVariablesAndLikelihoods(w, photTerms(), ["photExp", "photPois", "photGaus"])
     importVariablesAndLikelihoods(w, muonTerms(),["muonExp", "muonPois", "muonGaus"])
-    #w.factory("PROD::model(hadTerms,photTerms,muonTerms)")
-    importVariablesAndLikelihoods(w, constraintTerms(w), ["qcd"])
-    w.factory("PROD::model(hadTerms,photTerms,muonTerms,constraintTerms)")
+    w.factory("PROD::model(hadTerms,photTerms,muonTerms)")
+    #importVariablesAndLikelihoods(w, constraintTerms(w), ["qcd"])
+    #w.factory("PROD::model(hadTerms,photTerms,muonTerms,constraintTerms)")
 
     setSets(w)
 
@@ -206,39 +209,29 @@ def errorsPlot(wspace, data) :
     plot.Draw()
     return plot
 
-def validationPlot(wspace, data) :
+def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None, fitVars = []) :
     def inputHisto() :
-        bins = array.array('d', list(htBinLowerEdges())+[600.0])
+        bins = array.array('d', list(htBinLowerEdges())+[htMaxForPlot()])
         out = r.TH1D("inputData", ";H_{T} (GeV);counts / bin", len(bins)-1, bins)
         out.Sumw2()
-        for i,content in enumerate(observations()["nSel"]) :
+        for i,content in enumerate(observations()[obsKey]) :
             for count in range(content) : out.Fill(bins[i])
         return out
     
-    def totalBackgroundHisto(inp, wspace, color) :
-        out = inp.Clone("totalBackground")
-        out.Reset()
-        out.SetLineColor(color)
-        out.SetMarkerColor(color)
-        for i in range(len(htBinLowerEdges())) :
-            out.SetBinContent(i+1, wspace.function("hadB%d"%i).getVal())
-        return out
-
-    def varHisto(inp, wspace, varName, color) :
+    def varHisto(inp, wspace, varName, color, wspaceMemberFunc = "var") :
         out = inp.Clone(varName)
         out.Reset()
         out.SetMarkerStyle(1)
         out.SetLineColor(color)
         out.SetMarkerColor(color)
         for i in range(len(htBinLowerEdges())) :
-            var = wspace.var("%s%d"%(varName,i))
+            var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
             if not var : continue
             out.SetBinContent(i+1, var.getVal())
         return out
 
-    results = rooFitResults(wspace, data)
-
     r.gROOT.SetStyle("Plain")
+    stuff = []
     leg = r.TLegend(0.3, 0.6, 0.9, 0.85)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
@@ -248,21 +241,17 @@ def validationPlot(wspace, data) :
     inp.SetStats(False)
     inp.Draw("p")
     inp.SetMinimum(0.0)
-    leg.AddEntry(inp, "2010 hadronic data", "lp")
-
-    total = totalBackgroundHisto(inp, wspace, r.kBlue)
-    total.Draw("same")
-    leg.AddEntry(total, "best fit expected total background", "l")
+    leg.AddEntry(inp, obsLabel, "lp")
 
     stack = r.THStack("stack", "stack")
-
-    zInv = varHisto(inp, wspace, "zInv", r.kRed)
-    stack.Add(zInv)
-    leg.AddEntry(zInv, "best fit Z->inv (stacked)")
-
-    ttw = varHisto(inp, wspace, "ttw", r.kGreen)
-    stack.Add(ttw)
-    leg.AddEntry(ttw, "best fit t#bar{t} + W (stacked)", "l")
+    stuff += [leg,inp,stack]
+    for d in fitVars :
+        hist = varHisto(inp, wspace, d["var"], d["color"], d["type"])
+        stuff.append(hist)
+        more = " (stacked)" if d["stack"] else ""
+        leg.AddEntry(hist, d["desc"]+more, "l")
+        if d["stack"] : stack.Add(hist)
+        else : hist.Draw("same")
 
     stack.Draw("same")
 
@@ -271,11 +260,11 @@ def validationPlot(wspace, data) :
     r.gPad.SetTicky()
     r.gPad.Update()
 
-    fileName = "bestFit.eps"
+    fileName = "%s.eps"%obsKey
     r.gPad.Print(fileName)
     os.system("epstopdf %s"%fileName)
     os.remove(fileName)
-    return inp,total,zInv,ttw,stack,leg
+    return stuff
     
 def go() :
     out = []
@@ -287,12 +276,26 @@ def go() :
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace)
 
-    out.append(interval(data, modelConfig))
+    #out.append(interval(data, modelConfig))
     #out.append(pValue(data, modelConfig))
 
     #writeGraphVizTree(wspace)
     #ep = errorsPlot(wspace, data); return ep
-    #vp = validationPlot(wspace, data); return vp
+    results = rooFitResults(wspace, data)
+    #vp = validationPlot(wspace, results, obsKey = "nSel", obsLabel = "2010 hadronic data", fitVars = [
+    #        {"var":"hadB", "type":"function", "color":r.kBlue, "desc":"best fit expected total background", "stack":False},
+    #        {"var":"zInv", "type":"var",      "color":r.kRed,  "desc":"best fit Z->inv", "stack":True},
+    #        {"var":"ttw",  "type":"var",      "color":r.kGreen,"desc":"best fit t#bar{t} + W", "stack":True},
+    #        ]); return vp
+                        
+    #vp = validationPlot(wspace, results, obsKey = "nPhot", obsLabel = "2010 photon data", fitVars = [
+    #        {"var":"photExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
+    #        ]); return vp
+                        
+    vp = validationPlot(wspace, results, obsKey = "nMuon", obsLabel = "2010 muon data", fitVars = [
+            {"var":"muonExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
+            ]); return vp
+                        
     #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
     return out
 
