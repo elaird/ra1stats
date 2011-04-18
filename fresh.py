@@ -209,7 +209,7 @@ def errorsPlot(wspace, data) :
     plot.Draw()
     return plot
 
-def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None, fitVars = []) :
+def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None, otherVars = []) :
     def inputHisto() :
         bins = array.array('d', list(htBinLowerEdges())+[htMaxForPlot()])
         out = r.TH1D("inputData", ";H_{T} (GeV);counts / bin", len(bins)-1, bins)
@@ -218,19 +218,24 @@ def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None
             for count in range(content) : out.Fill(bins[i])
         return out
     
-    def varHisto(inp, wspace, varName, color, wspaceMemberFunc = "var") :
+    def varHisto(inp, wspace, varName, color, wspaceMemberFunc = None) :
         out = inp.Clone(varName)
         out.Reset()
         out.SetMarkerStyle(1)
         out.SetLineColor(color)
         out.SetMarkerColor(color)
         for i in range(len(htBinLowerEdges())) :
-            var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
-            if not var : continue
-            out.SetBinContent(i+1, var.getVal())
+            if wspaceMemberFunc :
+                var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
+                if not var : continue
+                out.SetBinContent(i+1, var.getVal())
+            else :
+                out.SetBinContent(i+1, mcExpectations()[varName][i])
+                
         return out
 
     r.gROOT.SetStyle("Plain")
+    r.gErrorIgnoreLevel = 2000
     stuff = []
     leg = r.TLegend(0.3, 0.6, 0.9, 0.85)
     leg.SetBorderSize(0)
@@ -245,7 +250,7 @@ def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None
 
     stack = r.THStack("stack", "stack")
     stuff += [leg,inp,stack]
-    for d in fitVars :
+    for d in otherVars :
         hist = varHisto(inp, wspace, d["var"], d["color"], d["type"])
         stuff.append(hist)
         more = " (stacked)" if d["stack"] else ""
@@ -282,18 +287,21 @@ def go() :
     #writeGraphVizTree(wspace)
     #ep = errorsPlot(wspace, data); return ep
     results = rooFitResults(wspace, data)
-    #vp = validationPlot(wspace, results, obsKey = "nSel", obsLabel = "2010 hadronic data", fitVars = [
-    #        {"var":"hadB", "type":"function", "color":r.kBlue, "desc":"best fit expected total background", "stack":False},
-    #        {"var":"zInv", "type":"var",      "color":r.kRed,  "desc":"best fit Z->inv", "stack":True},
-    #        {"var":"ttw",  "type":"var",      "color":r.kGreen,"desc":"best fit t#bar{t} + W", "stack":True},
-    #        ]); return vp
+
+    vp = validationPlot(wspace, results, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
+            {"var":"hadB", "type":"function", "color":r.kBlue, "desc":"best fit expected total background", "stack":False},
+            {"var":"zInv", "type":"var",      "color":r.kRed,  "desc":"best fit Z->inv", "stack":True},
+            {"var":"ttw",  "type":"var",      "color":r.kGreen,"desc":"best fit t#bar{t} + W", "stack":True},
+            ]); return vp
                         
-    #vp = validationPlot(wspace, results, obsKey = "nPhot", obsLabel = "2010 photon data", fitVars = [
-    #        {"var":"photExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
-    #        ]); return vp
-                        
-    vp = validationPlot(wspace, results, obsKey = "nMuon", obsLabel = "2010 muon data", fitVars = [
+    vp = validationPlot(wspace, results, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
+            {"var":"photExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
+            {"var":"mcPhot",  "type":None,       "color":r.kRed,  "desc":"MC",                   "stack":False},
+            ]); return vp
+
+    vp = validationPlot(wspace, results, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
             {"var":"muonExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
+            {"var":"mcMuon",  "type":None,       "color":r.kRed,  "desc":"MC",                   "stack":False},
             ]); return vp
                         
     #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
