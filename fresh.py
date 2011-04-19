@@ -52,122 +52,113 @@ def initialk() :
     rAlphaT = [(o["nSel"][i]+0.0)/o["nBulk"][i] for i in range(2)]
     return math.log(rAlphaT[1]/rAlphaT[0])/(o["htMean"][0]-o["htMean"][1])
 
-def hadTerms() :
-    terms = r.RooArgList("hadTermsList")
-    stuffToImport = [] #keep references to objects to avoid seg-faults and later inform workspace
-
-    A = r.RooRealVar("A", "A", initialA(), 0.0, 10.0*initialA())
-    k = r.RooRealVar("k", "k", initialk(), 0.0, 10.0*initialk())
-    stuffToImport += [A,k]
+def hadTerms(w, ewkOnly) :
+    terms = []
+    wimport(w, r.RooRealVar("A", "A", initialA(), 0.0, 10.0*initialA()))
+    wimport(w, r.RooRealVar("k", "k", initialk(), 0.0, 10.0*initialk()))
 
     o = observations()
     for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
         for item in ["htMean", "nBulk", "nSel"] :
-            exec('%s = r.RooRealVar("%s%d", "%s%d", %sValue)'%(item, item,i, item,i, item))
-            stuffToImport.append(eval(item))
-
-        b = r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(A, nBulk, k, htMean) ); stuffToImport.append(b)
-        pois = r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, nSel, b); stuffToImport.append(pois)
-        terms.add(pois)
+            wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
+        if not ewkOnly :
+            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("A"), w.var("nBulk%d"%i), w.var("k"), w.var("htMean%d"%i))))
+        elif all([w.var("zInv%d"%i), w.var("ttw%d"%i)]) :
+            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i))))
+        else :
+            continue
+        wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
+        terms.append("hadPois%d"%i)
     
-    stuffToImport.append(r.RooProdPdf("hadTerms", "hadTerms", terms))
-    return stuffToImport
+    w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
-def photTerms() :
-    terms = r.RooArgList("photTermsList")
-    stuffToImport = [] #keep references to objects to avoid seg-faults and later inform workspace
-
-    rhoPhotZ = r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 0.0, 2.0)
-    onePhot = r.RooRealVar("onePhot", "onePhot", 1.0)
-    sigmaPhotZ = r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", fixedParameters()["sigmaPhotZ"])
-    gaus = r.RooGaussian("photGaus", "photGaus", onePhot, rhoPhotZ, sigmaPhotZ)
-    stuffToImport += [rhoPhotZ, onePhot, sigmaPhotZ, gaus]
-    terms.add(gaus)
+def photTerms(w) :
+    terms = []
+    wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 0.0, 2.0))
+    wimport(w, r.RooRealVar("onePhot", "onePhot", 1.0))
+    wimport(w, r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", fixedParameters()["sigmaPhotZ"]))
+    wimport(w, r.RooGaussian("photGaus", "photGaus", w.var("onePhot"), w.var("rhoPhotZ"), w.var("sigmaPhotZ")))
+    terms.append("photGaus")
 
     for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(observations()["nPhot"])), observations()["nPhot"], mcExpectations()["mcPhot"], mcExpectations()["mcZinv"]) :
         if nPhotValue<0 : continue
-        nPhot = r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue)
-        rPhot = r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue)
-        zInv  = r.RooRealVar("zInv%d"%i,  "zInv%d"%i,  max(1, nPhotValue), 0.0, 10*max(1, nPhotValue))
-        stuffToImport += [nPhot, rPhot, zInv]
-
-        expPhot = r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(rhoPhotZ, rPhot, zInv) ); stuffToImport.append(expPhot)
-        pois = r.RooPoisson("photPois%d"%i, "photPois%d"%i, nPhot, expPhot); stuffToImport.append(pois)
-        terms.add(pois)
+        wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
+        wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue))
+        wimport(w, r.RooRealVar("zInv%d"%i,  "zInv%d"%i,  max(1, nPhotValue), 0.0, 10*max(1, nPhotValue)))
+        wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.var("zInv%d"%i))))
+        wimport(w, r.RooPoisson("photPois%d"%i, "photPois%d"%i, w.var("nPhot%d"%i), w.function("photExp%d"%i)))
+        terms.append("photPois%d"%i)
     
-    stuffToImport.append(r.RooProdPdf("photTerms", "photTerms", terms))
-    return stuffToImport
+    w.factory("PROD::photTerms(%s)"%",".join(terms))
 
-def muonTerms() :
-    terms = r.RooArgList("muonTermsList")
-    stuffToImport = [] #keep references to objects to avoid seg-faults and later inform workspace
-
-    rhoMuonW = r.RooRealVar("rhoMuonW", "rhoMuonW", 1.0, 0.0, 2.0)
-    oneMuon = r.RooRealVar("oneMuon", "oneMuon", 1.0)
-    sigmaMuonW = r.RooRealVar("sigmaMuonW", "sigmaMuonW", fixedParameters()["sigmaMuonW"])
-    gaus = r.RooGaussian("muonGaus", "muonGaus", oneMuon, rhoMuonW, sigmaMuonW)
-    stuffToImport += [rhoMuonW, oneMuon, sigmaMuonW, gaus]
-    terms.add(gaus)
+def muonTerms(w) :
+    terms = []
+    wimport(w, r.RooRealVar("rhoMuonW", "rhoMuonW", 1.0, 0.0, 2.0))
+    wimport(w, r.RooRealVar("oneMuon", "oneMuon", 1.0))
+    wimport(w, r.RooRealVar("sigmaMuonW", "sigmaMuonW", fixedParameters()["sigmaMuonW"]))
+    wimport(w, r.RooGaussian("muonGaus", "muonGaus", w.var("oneMuon"), w.var("rhoMuonW"), w.var("sigmaMuonW")))
+    terms.append("muonGaus")
 
     for i,nMuonValue,mcMuonValue,mcTtwValue in zip(range(len(observations()["nMuon"])), observations()["nMuon"], mcExpectations()["mcMuon"], mcExpectations()["mcTtw"]) :
         if nMuonValue<0 : continue
-        nMuon = r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue)
-        rMuon = r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue)
-        ttw   = r.RooRealVar("ttw%d"%i,   "ttw%d"%i,   max(1, nMuonValue), 0.0, 10*max(1, nMuonValue))
-        stuffToImport += [nMuon, rMuon, ttw]
-
-        expMuon = r.RooFormulaVar("muonExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(rhoMuonW, rMuon, ttw) ); stuffToImport.append(expMuon)
-        pois = r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, nMuon, expMuon); stuffToImport.append(pois)
-        terms.add(pois)
+        wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
+        wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue))
+        wimport(w, r.RooRealVar("ttw%d"%i,   "ttw%d"%i,   max(1, nMuonValue), 0.0, 10*max(1, nMuonValue)))
+        wimport(w, r.RooFormulaVar("muonExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.var("ttw%d"%i))))
+        wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonExp%d"%i)))
+        terms.append("muonPois%d"%i)
     
-    stuffToImport.append(r.RooProdPdf("muonTerms", "muonTerms", terms))
-    return stuffToImport
+    w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def constraintTerms(wspace) :
-    terms = r.RooArgList("constraintTermsList")
-    stuffToImport = [] #keep references to objects to avoid seg-faults and later inform workspace
+def constraintTerms(w) :
+    terms = []
 
-    smallNeg = r.RooRealVar("smallNeg", "smallNeg", -1.0e-3)
-    stuffToImport.append(smallNeg)
-
+    wimport(w, r.RooRealVar("smallNeg", "smallNeg", -1.0e-3))
     for i in range(len(observations()["nSel"])) :
-        b    = wspace.function("hadB%d"%i)
-        zInv = wspace.var("zInv%d"%i)
-        ttw  = wspace.var("ttw%d"%i)
+        b    = w.function("hadB%d"%i)
+        zInv = w.var("zInv%d"%i)
+        ttw  = w.var("ttw%d"%i)
         if not all([b, zInv, ttw]) : continue
-        qcd = r.RooFormulaVar("qcd%d"%i, "(@0)-(@1)-(@2)", r.RooArgList(b, zInv, ttw) ); stuffToImport.append(qcd)
-        constraint = r.RooExponential("qcdConstraint%d"%i, "qcdConstraint%d"%i, qcd, smallNeg); stuffToImport.append(constraint)
-        terms.add(constraint)
+        wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)-(@1)-(@2)", r.RooArgList(b, zInv, ttw)))
+        wimport(w, r.RooExponential("qcdConstraint%d"%i, "qcdConstraint%d"%i, w.function("qcd%d"%i), w.var("smallNeg")))
+        terms.append("qcdConstraint%d"%i)
     
-    stuffToImport.append(r.RooProdPdf("constraintTerms", "constraintTerms", terms))
-    return stuffToImport
+    w.factory("PROD::constraintTerms(%s)"%",".join(terms))
 
-def importVariablesAndLikelihoods(w, stuffToImport, blackList) :
+def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
-    for item in stuffToImport :
-        if any(map(lambda x:item.GetName()[:len(x)]==x, blackList)) : continue #avoid duplicates
-        getattr(w, "import")(item)
+    getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
-def setupLikelihood(w) :
-    importVariablesAndLikelihoods(w, hadTerms(), ["hadB", "hadPois"])
-    importVariablesAndLikelihoods(w, photTerms(), ["photExp", "photPois", "photGaus"])
-    importVariablesAndLikelihoods(w, muonTerms(),["muonExp", "muonPois", "muonGaus"])
-    w.factory("PROD::model(hadTerms,photTerms,muonTerms)")
-    #importVariablesAndLikelihoods(w, constraintTerms(w), ["qcd"])
-    #w.factory("PROD::model(hadTerms,photTerms,muonTerms,constraintTerms)")
+def setupLikelihood(w, htMethodOnly = False, ewkOnly = False) :
+    assert not all([htMethodOnly, ewkOnly])
+    terms = []
+    obs = []
+    items = []
 
-    setSets(w)
+    if not htMethodOnly :
+        photTerms(w)
+        muonTerms(w)
+        terms += ["photTerms", "muonTerms"]
+        obs += ["onePhot", "oneMuon"]
+        items += ["nPhot", "nMuon"]
 
-def setSets(wspace) :
-    wspace.defineSet("poi","A,k")
-    #wspace.defineSet("nuis","tau")
-    obs = ["onePhot", "oneMuon"]
-    for item in ["nSel", "nPhot", "nMuon"] :
+    hadTerms(w, ewkOnly)
+    terms.append("hadTerms")
+    items.append("nSel")
+
+    if not any([htMethodOnly, ewkOnly])  :
+        constraintTerms(w)
+        terms.append("constraintTerms")
+
+    w.factory("PROD::model(%s)"%",".join(terms))
+
+    w.defineSet("poi", "A,k")
+    for item in items :
         for i,value in enumerate(observations()[item]) :
             if value<0 : continue
             obs.append("%s%d"%(item,i))
-    wspace.defineSet("obs", ",".join(obs))
+    w.defineSet("obs", ",".join(obs))
 
 def dataset(obsSet) :
     out = r.RooDataSet("dataName","dataTitle", obsSet)
@@ -175,11 +166,14 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig) :
+def interval(dataset, modelconfig, wspace) :
     plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
-    #print "UpperLimit=",plInt.UpperLimit(wspace.var("s"))
+
+    #ul = plInt.UpperLimit(wspace.var("A"))
+    #print "UpperLimit =",ul
+
     #plot = r.RooStats.LikelihoodIntervalPlot(plInt)
     #plot.Draw(); return plot
 
@@ -209,10 +203,10 @@ def errorsPlot(wspace, data) :
     plot.Draw()
     return plot
 
-def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None, otherVars = []) :
+def validationPlot(wspace = None, results = None, canvas = None, psFileName = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
     def inputHisto() :
         bins = array.array('d', list(htBinLowerEdges())+[htMaxForPlot()])
-        out = r.TH1D("inputData", ";H_{T} (GeV);counts / bin", len(bins)-1, bins)
+        out = r.TH1D(obsKey, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
         out.Sumw2()
         for i,content in enumerate(observations()[obsKey]) :
             for count in range(content) : out.Fill(bins[i])
@@ -234,10 +228,8 @@ def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None
                 
         return out
 
-    r.gROOT.SetStyle("Plain")
-    r.gErrorIgnoreLevel = 2000
     stuff = []
-    leg = r.TLegend(0.3, 0.6, 0.9, 0.85)
+    leg = r.TLegend(legendX1, 0.6, 0.9, 0.85)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -265,45 +257,68 @@ def validationPlot(wspace = None, results = None, obsKey = None, obsLabel = None
     r.gPad.SetTicky()
     r.gPad.Update()
 
-    fileName = "%s.eps"%obsKey
-    r.gPad.Print(fileName)
-    os.system("epstopdf %s"%fileName)
-    os.remove(fileName)
+    canvas.Print(psFileName)
     return stuff
+    
+def validationPlots(wspace, data, htMethodOnly, ewkOnly) :
+    out = []
+    results = rooFitResults(wspace, data)
+    note = description(htMethodOnly, ewkOnly)
+
+    r.gROOT.SetStyle("Plain")
+    r.gErrorIgnoreLevel = 2000
+
+    canvas = r.TCanvas()
+    psFileName = "bestFit.ps"
+    canvas.Print(psFileName+"[")
+    
+    vp = validationPlot(wspace, results, canvas, psFileName, note = note, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
+            {"var":"hadB", "type":"function", "color":r.kBlue, "desc":"best fit expected total background", "stack":False},
+            {"var":"zInv", "type":"var",      "color":r.kRed,  "desc":"best fit Z->inv",                    "stack":True},
+            {"var":"ttw",  "type":"var",      "color":r.kGreen,"desc":"best fit t#bar{t} + W",              "stack":True},
+            ]); out.append(vp)
+    
+    if not htMethodOnly :
+        vp = validationPlot(wspace, results, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
+                {"var":"photExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
+                {"var":"mcPhot",  "type":None,       "color":r.kRed,  "desc":"2010 MC",              "stack":False},
+                ]); out.append(vp)
+
+        vp = validationPlot(wspace, results, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
+                {"var":"muonExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
+                {"var":"mcMuon",  "type":None,       "color":r.kRed,  "desc":"2010 MC",              "stack":False},
+                ]); out.append(vp)
+
+    canvas.Print(psFileName+"]")
+    os.system("ps2pdf %s"%psFileName)
+    os.remove(psFileName)
+    return out
+
+def description(htMethodOnly, ewkOnly) :
+    if not any([htMethodOnly, ewkOnly]) : return "HT method and photon & muon control samples"
+    if htMethodOnly : return "HT method ONLY (no photon nor muon control samples)"
+    if ewkOnly : return "photon & muon control samples ONLY (assume QCD=0#semicolon no HT method)"
     
 def go() :
     out = []
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
-    setupLikelihood(wspace)
+
+    htMethodOnly = False
+    ewkOnly = False
+    setupLikelihood(wspace, htMethodOnly, ewkOnly)
+
     #wspace.Print("v")
+    #writeGraphVizTree(wspace)
 
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace)
 
-    #out.append(interval(data, modelConfig))
+    out.append(interval(data, modelConfig, wspace))
     #out.append(pValue(data, modelConfig))
+    #out.append(errorsPlot(wspace, data))
+    #out.append(validationPlots(wspace, data, htMethodOnly, ewkOnly))
 
-    #writeGraphVizTree(wspace)
-    #ep = errorsPlot(wspace, data); return ep
-    results = rooFitResults(wspace, data)
-
-    vp = validationPlot(wspace, results, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
-            {"var":"hadB", "type":"function", "color":r.kBlue, "desc":"best fit expected total background", "stack":False},
-            {"var":"zInv", "type":"var",      "color":r.kRed,  "desc":"best fit Z->inv", "stack":True},
-            {"var":"ttw",  "type":"var",      "color":r.kGreen,"desc":"best fit t#bar{t} + W", "stack":True},
-            ]); return vp
-                        
-    vp = validationPlot(wspace, results, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
-            {"var":"photExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
-            {"var":"mcPhot",  "type":None,       "color":r.kRed,  "desc":"MC",                   "stack":False},
-            ]); return vp
-
-    vp = validationPlot(wspace, results, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
-            {"var":"muonExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
-            {"var":"mcMuon",  "type":None,       "color":r.kRed,  "desc":"MC",                   "stack":False},
-            ]); return vp
-                        
     #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
     return out
 
