@@ -112,15 +112,15 @@ def muonTerms(w) :
 
 def constraintTerms(w) :
     terms = []
-
-    wimport(w, r.RooRealVar("smallNeg", "smallNeg", -1.0e-3))
+    wimport(w, r.RooRealVar("one", "one", 1.0))
+    wimport(w, r.RooRealVar("small", "small", 0.1))
     for i in range(len(observations()["nSel"])) :
         b    = w.function("hadB%d"%i)
         zInv = w.var("zInv%d"%i)
         ttw  = w.var("ttw%d"%i)
         if not all([b, zInv, ttw]) : continue
-        wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)-(@1)-(@2)", r.RooArgList(b, zInv, ttw)))
-        wimport(w, r.RooExponential("qcdConstraint%d"%i, "qcdConstraint%d"%i, w.function("qcd%d"%i), w.var("smallNeg")))
+        wimport(w, r.RooFormulaVar("fqcd%d"%i, "fqcd%d"%i, "(@0)>=((@1)+(@2))", r.RooArgList(b, zInv, ttw)))
+        wimport(w, r.RooGaussian("qcdConstraint%d"%i, "qcdConstraint%d"%i, w.var("one"), w.function("fqcd%d"%i), w.var("small")))
         terms.append("qcdConstraint%d"%i)
     
     w.factory("PROD::constraintTerms(%s)"%",".join(terms))
@@ -149,6 +149,7 @@ def setupLikelihood(w, htMethodOnly = False, ewkOnly = False) :
 
     if not any([htMethodOnly, ewkOnly])  :
         constraintTerms(w)
+        obs.append("one")
         terms.append("constraintTerms")
 
     w.factory("PROD::model(%s)"%",".join(terms))
@@ -203,7 +204,7 @@ def errorsPlot(wspace, data) :
     plot.Draw()
     return plot
 
-def validationPlot(wspace = None, results = None, canvas = None, psFileName = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
+def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
     def inputHisto() :
         bins = array.array('d', list(htBinLowerEdges())+[htMaxForPlot()])
         out = r.TH1D(obsKey, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
@@ -212,11 +213,12 @@ def validationPlot(wspace = None, results = None, canvas = None, psFileName = No
             for count in range(content) : out.Fill(bins[i])
         return out
     
-    def varHisto(inp, wspace, varName, color, wspaceMemberFunc = None) :
+    def varHisto(inp, wspace, varName, color, style, wspaceMemberFunc = None) :
         out = inp.Clone(varName)
         out.Reset()
         out.SetMarkerStyle(1)
         out.SetLineColor(color)
+        out.SetLineStyle(style)
         out.SetMarkerColor(color)
         for i in range(len(htBinLowerEdges())) :
             if wspaceMemberFunc :
@@ -243,7 +245,7 @@ def validationPlot(wspace = None, results = None, canvas = None, psFileName = No
     stack = r.THStack("stack", "stack")
     stuff += [leg,inp,stack]
     for d in otherVars :
-        hist = varHisto(inp, wspace, d["var"], d["color"], d["type"])
+        hist = varHisto(inp, wspace, d["var"], d["color"], d["style"], d["type"])
         stuff.append(hist)
         more = " (stacked)" if d["stack"] else ""
         leg.AddEntry(hist, d["desc"]+more, "l")
@@ -272,21 +274,21 @@ def validationPlots(wspace, data, htMethodOnly, ewkOnly) :
     psFileName = "bestFit.ps"
     canvas.Print(psFileName+"[")
     
-    vp = validationPlot(wspace, results, canvas, psFileName, note = note, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
-            {"var":"hadB", "type":"function", "color":r.kBlue, "desc":"best fit expected total background", "stack":False},
-            {"var":"zInv", "type":"var",      "color":r.kRed,  "desc":"best fit Z->inv",                    "stack":True},
-            {"var":"ttw",  "type":"var",      "color":r.kGreen,"desc":"best fit t#bar{t} + W",              "stack":True},
+    vp = validationPlot(wspace, canvas, psFileName, note = note, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
+            {"var":"hadB", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expected total background", "stack":False},
+            {"var":"zInv", "type":"var",      "color":r.kRed,  "style":2, "desc":"best fit Z->inv",                    "stack":True},
+            {"var":"ttw",  "type":"var",      "color":r.kGreen,"style":3, "desc":"best fit t#bar{t} + W",              "stack":True},
             ]); out.append(vp)
     
     if not htMethodOnly :
-        vp = validationPlot(wspace, results, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
-                {"var":"photExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
-                {"var":"mcPhot",  "type":None,       "color":r.kRed,  "desc":"2010 MC",              "stack":False},
+        vp = validationPlot(wspace, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
+                {"var":"photExp", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expectation", "stack":False},
+                {"var":"mcPhot",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
                 ]); out.append(vp)
 
-        vp = validationPlot(wspace, results, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
-                {"var":"muonExp", "type":"function", "color":r.kBlue, "desc":"best fit expectation", "stack":False},
-                {"var":"mcMuon",  "type":None,       "color":r.kRed,  "desc":"2010 MC",              "stack":False},
+        vp = validationPlot(wspace, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
+                {"var":"muonExp", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expectation", "stack":False},
+                {"var":"mcMuon",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
                 ]); out.append(vp)
 
     canvas.Print(psFileName+"]")
@@ -314,10 +316,10 @@ def go() :
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace)
 
-    out.append(interval(data, modelConfig, wspace))
+    #out.append(interval(data, modelConfig, wspace))
     #out.append(pValue(data, modelConfig))
     #out.append(errorsPlot(wspace, data))
-    #out.append(validationPlots(wspace, data, htMethodOnly, ewkOnly))
+    out.append(validationPlots(wspace, data, htMethodOnly, ewkOnly))
 
     #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
     return out
