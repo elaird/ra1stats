@@ -52,7 +52,7 @@ def initialk() :
     rAlphaT = [(o["nSel"][i]+0.0)/o["nBulk"][i] for i in range(2)]
     return math.log(rAlphaT[1]/rAlphaT[0])/(o["htMean"][0]-o["htMean"][1])
 
-def hadTerms(w, ewkOnly) :
+def hadTerms(w, method) :
     terms = []
     wimport(w, r.RooRealVar("A", "A", initialA(), 0.0, 10.0*initialA()))
     wimport(w, r.RooRealVar("k", "k", initialk(), 0.0, 10.0*initialk()))
@@ -61,10 +61,14 @@ def hadTerms(w, ewkOnly) :
     for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
         for item in ["htMean", "nBulk", "nSel"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
-        if not ewkOnly :
+        if "HtMethod" in method :
             wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("A"), w.var("nBulk%d"%i), w.var("k"), w.var("htMean%d"%i))))
         elif all([w.var("zInv%d"%i), w.var("ttw%d"%i)]) :
-            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i))))
+            if "Qcd=0" in method :
+                wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i))))
+            else :
+                wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("A"), w.var("nBulk%d"%i), w.var("k"), w.var("htMean%d"%i))))
+                wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)+(@2)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i), w.function("qcd%d"%i))))
         else :
             continue
         wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
@@ -130,24 +134,23 @@ def wimport(w, item) :
     getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
-def setupLikelihood(w, htMethodOnly = False, ewkOnly = False) :
-    assert not all([htMethodOnly, ewkOnly])
+def setupLikelihood(w, method = "") :
     terms = []
     obs = []
     items = []
 
-    if not htMethodOnly :
+    if "Ewk" in method :
         photTerms(w)
         muonTerms(w)
         terms += ["photTerms", "muonTerms"]
         obs += ["onePhot", "oneMuon"]
         items += ["nPhot", "nMuon"]
 
-    hadTerms(w, ewkOnly)
+    hadTerms(w, method)
     terms.append("hadTerms")
     items.append("nSel")
 
-    if not any([htMethodOnly, ewkOnly])  :
+    if method=="HtMethod_Ewk" :
         constraintTerms(w)
         obs.append("one")
         terms.append("constraintTerms")
@@ -262,10 +265,9 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", l
     canvas.Print(psFileName)
     return stuff
     
-def validationPlots(wspace, data, htMethodOnly, ewkOnly) :
+def validationPlots(wspace, data, method) :
     out = []
     results = rooFitResults(wspace, data)
-    note = description(htMethodOnly, ewkOnly)
 
     r.gROOT.SetStyle("Plain")
     r.gErrorIgnoreLevel = 2000
@@ -274,19 +276,20 @@ def validationPlots(wspace, data, htMethodOnly, ewkOnly) :
     psFileName = "bestFit.ps"
     canvas.Print(psFileName+"[")
     
-    vp = validationPlot(wspace, canvas, psFileName, note = note, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
-            {"var":"hadB", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expected total background", "stack":False},
-            {"var":"zInv", "type":"var",      "color":r.kRed,  "style":2, "desc":"best fit Z->inv",                    "stack":True},
-            {"var":"ttw",  "type":"var",      "color":r.kGreen,"style":3, "desc":"best fit t#bar{t} + W",              "stack":True},
+    vp = validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
+            {"var":"hadB", "type":"function", "color":r.kBlue,    "style":1, "desc":"best fit expected total background", "stack":False},
+            {"var":"zInv", "type":"var",      "color":r.kRed,     "style":2, "desc":"best fit Z->inv",                    "stack":True},
+            {"var":"ttw",  "type":"var",      "color":r.kGreen,   "style":3, "desc":"best fit t#bar{t} + W",              "stack":True},
+            {"var":"qcd",  "type":"function", "color":r.kMagenta, "style":3, "desc":"best fit QCD",                       "stack":True},
             ]); out.append(vp)
     
-    if not htMethodOnly :
-        vp = validationPlot(wspace, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
+    if "Ewk" in method :
+        vp = validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
                 {"var":"photExp", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expectation", "stack":False},
                 {"var":"mcPhot",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
                 ]); out.append(vp)
 
-        vp = validationPlot(wspace, canvas, psFileName, note = note, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
+        vp = validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
                 {"var":"muonExp", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expectation", "stack":False},
                 {"var":"mcMuon",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
                 ]); out.append(vp)
@@ -296,19 +299,13 @@ def validationPlots(wspace, data, htMethodOnly, ewkOnly) :
     os.remove(psFileName)
     return out
 
-def description(htMethodOnly, ewkOnly) :
-    if not any([htMethodOnly, ewkOnly]) : return "HT method and photon & muon control samples"
-    if htMethodOnly : return "HT method ONLY (no photon nor muon control samples)"
-    if ewkOnly : return "photon & muon control samples ONLY (assume QCD=0#semicolon no HT method)"
-    
 def go() :
     out = []
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
 
-    htMethodOnly = False
-    ewkOnly = False
-    setupLikelihood(wspace, htMethodOnly, ewkOnly)
+    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][3]
+    setupLikelihood(wspace, method)
 
     #wspace.Print("v")
     #writeGraphVizTree(wspace)
@@ -319,7 +316,7 @@ def go() :
     #out.append(interval(data, modelConfig, wspace))
     #out.append(pValue(data, modelConfig))
     #out.append(errorsPlot(wspace, data))
-    out.append(validationPlots(wspace, data, htMethodOnly, ewkOnly))
+    out.append(validationPlots(wspace, data, method))
 
     #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
     return out
