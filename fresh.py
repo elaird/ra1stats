@@ -33,13 +33,20 @@ def mcExpectations() : #events / lumi
             "mcTtw": (    -1,     -1,    3.415,  1.692),
             "mcPhot":(    -1,     -1,    4.4,    2.1  ),
             "mcZinv":(    -1,     -1,    2.586,  1.492),
-            "signalEff":(0.0,    0.0,    0.02,   0.10),
             }
 
 def fixedParameters() :
     return {"sigmaLumi":  0.04,
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
+            }
+
+def signalXs() :
+    return 4.9 #pb
+
+def signalEff() :
+    return {"had":(0.0,    0.0,    0.02,   0.10),
+            "mu": (0.0,    0.0,    0.0,    0.0 ),
             }
 
 def modelConfiguration(w) :
@@ -68,7 +75,7 @@ def hadTerms(w, method) :
 
     o = observations()
     for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
-        for item in ["htMean", "nBulk", "nSel"] :
+        for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
         if "HtMethod" in method :
             wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("A"), w.var("nBulk%d"%i), w.var("k"), w.var("htMean%d"%i))))
@@ -80,6 +87,9 @@ def hadTerms(w, method) :
                 wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)+(@2)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i), w.function("qcd%d"%i))))
         else :
             continue
+
+        for item in ["nSel"] :
+            wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
         wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
         terms.append("hadPois%d"%i)
     
@@ -125,7 +135,7 @@ def muonTerms(w) :
 
 def constraintTerms(w) :
     terms = []
-    wimport(w, r.RooRealVar("one", "one", 1.0))
+    wimport(w, r.RooRealVar("one", "one", 1.0, 0.999, 1.001))
     wimport(w, r.RooRealVar("small", "small", 0.1))
     for i in range(len(observations()["nSel"])) :
         b    = w.function("hadB%d"%i)
@@ -146,18 +156,18 @@ def wimport(w, item) :
 def setupLikelihood(w, method = "") :
     terms = []
     obs = []
-    items = []
+    multiBinItems = []
 
     if "Ewk" in method :
         photTerms(w)
         muonTerms(w)
         terms += ["photTerms", "muonTerms"]
         obs += ["onePhot", "oneMuon"]
-        items += ["nPhot", "nMuon"]
+        multiBinItems += ["nPhot", "nMuon"]
 
     hadTerms(w, method)
     terms.append("hadTerms")
-    items.append("nSel")
+    multiBinItems.append("nSel")
 
     if method=="HtMethod_Ewk" :
         constraintTerms(w)
@@ -167,10 +177,11 @@ def setupLikelihood(w, method = "") :
     w.factory("PROD::model(%s)"%",".join(terms))
 
     #w.defineSet("poi", "A,k")
-    for item in items :
+    for item in multiBinItems :
         for i,value in enumerate(observations()[item]) :
-            if value<0 : continue
-            obs.append("%s%d"%(item,i))
+            name = "%s%d"%(item,i)
+            if not w.var(name) : continue
+            obs.append(name)
     w.defineSet("obs", ",".join(obs))
 
 def dataset(obsSet) :
@@ -378,7 +389,7 @@ def go() :
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
 
-    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][1]
+    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][0]
     setupLikelihood(wspace, method)
 
     #wspace.Print("v")
@@ -388,9 +399,9 @@ def go() :
     modelConfig = modelConfiguration(wspace)
 
     #out.append(interval(data, modelConfig, wspace))
-    out.append(pValue(wspace, data, nToys = 400, validate = False))
+    #out.append(pValue(wspace, data, nToys = 200, validate = True))
     #out.append(errorsPlot(wspace, data))
-    #out.append(validationPlots(wspace, data, method))
+    out.append(validationPlots(wspace, data, method))
 
     #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
     return out
