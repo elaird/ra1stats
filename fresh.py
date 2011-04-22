@@ -3,6 +3,14 @@
 import math,array,os
 import ROOT as r
 
+def rootSetup() :
+    r.gROOT.SetStyle("Plain")
+    r.gErrorIgnoreLevel = 2000
+
+def ps2pdf(psFileName) :
+    os.system("ps2pdf %s"%psFileName)
+    os.remove(psFileName)
+
 def lumi() : #recorded lumi for analyzed sample
     return 35.0 #/pb
 
@@ -25,6 +33,7 @@ def mcExpectations() : #events / lumi
             "mcTtw": (    -1,     -1,    3.415,  1.692),
             "mcPhot":(    -1,     -1,    4.4,    2.1  ),
             "mcZinv":(    -1,     -1,    2.586,  1.492),
+            "signalEff":(0.0,    0.0,    0.02,   0.10),
             }
 
 def fixedParameters() :
@@ -36,7 +45,7 @@ def fixedParameters() :
 def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(w.pdf("model"))
-    modelConfig.SetParametersOfInterest(w.set("poi"))
+    #modelConfig.SetParametersOfInterest(w.set("poi"))
     #modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
 
@@ -157,7 +166,7 @@ def setupLikelihood(w, method = "") :
 
     w.factory("PROD::model(%s)"%",".join(terms))
 
-    w.defineSet("poi", "A,k")
+    #w.defineSet("poi", "A,k")
     for item in items :
         for i,value in enumerate(observations()[item]) :
             if value<0 : continue
@@ -181,7 +190,76 @@ def interval(dataset, modelconfig, wspace) :
     #plot = r.RooStats.LikelihoodIntervalPlot(plInt)
     #plot.Draw(); return plot
 
-def pValue(dataset, modelconfig) :
+def pValue(wspace, data, nToys = 100, validate = False) :
+    def lMax(results) :
+        return math.exp(-results.minNll())
+    
+    def indexFraction(item, l) :
+        totalList = sorted(l+[item])
+        assert totalList.count(item)==1
+        return totalList.index(item)/(0.0+len(totalList))
+        
+    results = rooFitResults(wspace, data) #fit to data
+    #results.Print()
+    lMaxData = lMax(results)
+    dataset = wspace.pdf("model").generate(wspace.set("obs"), nToys) #make pseudo experiments with final parameter values
+
+    graph = r.TGraph()
+    lMaxs = []
+    for i in range(int(dataset.sumEntries())) :
+        argSet = dataset.get(i)
+        pseudoData = r.RooDataSet("pseudoData%d"%i, "title", argSet)
+        data.reset()
+        data.add(argSet)
+        #data.Print("v")
+        wspace.var("A").setVal(initialA())
+        wspace.var("k").setVal(initialk())
+        results = rooFitResults(wspace, data)
+        lMaxs.append(lMax(results))
+        graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
+    
+    out = indexFraction(lMaxData, lMaxs)
+    if validate :
+        print "pValue =",out
+
+        ps = "pValue.ps"
+        canvas = r.TCanvas("canvas")
+        canvas.SetTickx()
+        canvas.SetTicky()
+        canvas.Print(ps+"[")
+
+        graph.SetMarkerStyle(20)
+        graph.SetTitle(";toy number;p-value")
+        graph.Draw("ap")
+        canvas.Print(ps)
+
+        totalList = lMaxs+[lMaxData]
+        histo = r.TH1D("lMaxHisto",";L_{max};pseudo experiments / bin", 100, 0.0, max(totalList)*1.1)
+        for item in lMaxs :
+            histo.Fill(item)
+        histo.SetStats(False)
+        histo.SetMinimum(0.0)
+        histo.Draw()
+
+        line = r.TLine()
+        line.SetLineColor(r.kBlue)
+        line.SetLineWidth(2)
+        line = line.DrawLine(lMaxData, histo.GetMinimum(), lMaxData, histo.GetMaximum())
+
+        legend = r.TLegend(0.5, 0.7, 0.9, 0.9)
+        legend.SetFillStyle(0)
+        legend.SetBorderSize(0)
+        legend.AddEntry(histo, "L_{max} in pseudo-experiments", "l")
+        legend.AddEntry(line, "L_{max} observed", "l")
+        legend.Draw()
+
+        canvas.Print(ps)
+        canvas.Print(ps+"]")
+        ps2pdf(ps)
+
+    return out
+
+def pValueOld(dataset, modelconfig) :
     plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     plc.SetNullParameters(modelconfig.GetParametersOfInterest())
     htr = plc.GetHypoTest()
@@ -269,9 +347,6 @@ def validationPlots(wspace, data, method) :
     out = []
     results = rooFitResults(wspace, data)
 
-    r.gROOT.SetStyle("Plain")
-    r.gErrorIgnoreLevel = 2000
-
     canvas = r.TCanvas()
     psFileName = "bestFit.ps"
     canvas.Print(psFileName+"[")
@@ -295,8 +370,7 @@ def validationPlots(wspace, data, method) :
                 ]); out.append(vp)
 
     canvas.Print(psFileName+"]")
-    os.system("ps2pdf %s"%psFileName)
-    os.remove(psFileName)
+    ps2pdf(psFileName)
     return out
 
 def go() :
@@ -304,7 +378,7 @@ def go() :
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
 
-    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][3]
+    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][1]
     setupLikelihood(wspace, method)
 
     #wspace.Print("v")
@@ -314,11 +388,12 @@ def go() :
     modelConfig = modelConfiguration(wspace)
 
     #out.append(interval(data, modelConfig, wspace))
-    #out.append(pValue(data, modelConfig))
+    out.append(pValue(wspace, data, nToys = 400, validate = False))
     #out.append(errorsPlot(wspace, data))
-    out.append(validationPlots(wspace, data, method))
+    #out.append(validationPlots(wspace, data, method))
 
     #pars = rooFitResults(wspace, data).floatParsFinal(); pars.Print("v")
     return out
 
+rootSetup()
 stuff = go()
