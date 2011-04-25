@@ -62,8 +62,9 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", l
     stuff += [leg,inp,stacks]
     for d in otherVars :
         hist = varHisto(inp, wspace, d["var"], d["color"], d["style"], d["type"])
+        if not hist.GetEntries() : continue
         stuff.append(hist)
-        leg.AddEntry(hist, "%s %s"%(d["desc"],"(%s stack)"%d["stack"] if d["stack"] else ""), "l")
+        leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
         if d["stack"] :
             if d["stack"] not in stacks :
                 stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
@@ -87,32 +88,39 @@ def validationPlots(wspace, results, method, smOnly) :
     canvas = r.TCanvas()
     psFileName = "bestFit.ps"
     canvas.Print(psFileName+"[")
-    
+
+    akDesc = "A = %4.2e; k = %4.2e"%(wspace.var("A").getVal(), wspace.var("k").getVal())
+
     hadVars = [
-        {"var":"hadB", "type":"function", "color":r.kBlue,    "style":1, "desc":"expected total background", "stack":"total"},
+        {"var":"hadB", "type":"function", "desc":"expected total background", "desc2":(akDesc if "HtMethod" in method else ""),
+         "color":r.kBlue, "style":1, "stack":"total"},
         ]
     if "Ewk" in method :
         hadVars += [
-            {"var":"zInv", "type":"var",      "color":r.kRed,     "style":2, "desc":"Z->inv",                "stack":"background"},
-            {"var":"ttw",  "type":"var",      "color":r.kGreen,   "style":3, "desc":"t#bar{t} + W",          "stack":"background"},
-            {"var":"qcd",  "type":"function", "color":r.kMagenta, "style":3, "desc":"QCD",                   "stack":"background"},
+            {"var":"zInv", "type":"var", "desc":"Z->inv", "desc2": "#rho = %4.2f"%wspace.var("rhoPhotZ").getVal(),
+             "color":r.kRed, "style":2, "stack":"background"},
+            {"var":"ttw",  "type":"var", "desc":"t#bar{t} + W", "desc2": "#rho = %4.2f"%wspace.var("rhoMuonW").getVal(),
+             "color":r.kGreen, "style":3, "stack":"background"},
+            {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":(akDesc if "ExpQcd" in method else ""),
+             "color":r.kMagenta, "style":3, "stack":"background"},
             ]
     if not smOnly :
         hadVars += [
-            {"var":"hadS", "type":"function", "color":r.kOrange,  "style":1, "desc":"signal, f = %5.2f"%wspace.var("f").getVal(), "stack":"total"},
+            {"var":"hadS", "type":"function", "desc":"signal", "desc2":"xs = %5.2f xs^{nom}; #rho = %4.2f"%(wspace.var("f").getVal(), wspace.var("rhoSignal").getVal()),
+             "color":r.kOrange,  "style":1,  "stack":"total"},
             ]
 
     validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = hadVars)
     
     if "Ewk" in method :
         validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
-                {"var":"photExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":False},
-                {"var":"mcPhot",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
+                {"var":"photExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":None},
+                {"var":"mcPhot",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":None},
                 ])
 
         validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
-                {"var":"muonExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":False},
-                {"var":"mcMuon",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
+                {"var":"muonExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":None},
+                {"var":"mcMuon",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":None},
                 ])
 
     canvas.Print(psFileName+"]")
