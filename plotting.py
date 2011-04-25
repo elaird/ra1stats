@@ -47,7 +47,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", l
         return out
 
     stuff = []
-    leg = r.TLegend(legendX1, 0.6, 0.9, 0.85)
+    leg = r.TLegend(legendX1, 0.6, 0.9, 0.85, "ML values" if otherVars else "")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -58,17 +58,20 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", l
     inp.SetMinimum(0.0)
     leg.AddEntry(inp, obsLabel, "lp")
 
-    stack = r.THStack("stack", "stack")
-    stuff += [leg,inp,stack]
+    stacks = {}
+    stuff += [leg,inp,stacks]
     for d in otherVars :
         hist = varHisto(inp, wspace, d["var"], d["color"], d["style"], d["type"])
         stuff.append(hist)
-        more = " (stacked)" if d["stack"] else ""
-        leg.AddEntry(hist, d["desc"]+more, "l")
-        if d["stack"] : stack.Add(hist)
+        leg.AddEntry(hist, "%s %s"%(d["desc"],"(%s stack)"%d["stack"] if d["stack"] else ""), "l")
+        if d["stack"] :
+            if d["stack"] not in stacks :
+                stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
+            stacks[d["stack"]].Add(hist)
         else : hist.Draw("same")
 
-    stack.Draw("same")
+    for stack in stacks.values() :
+        stack.Draw("same")
 
     leg.Draw()
     r.gPad.SetTickx()
@@ -78,30 +81,39 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", l
     canvas.Print(psFileName)
     return stuff
     
-def validationPlots(wspace, results, method) :
+def validationPlots(wspace, results, method, smOnly) :
     out = []
 
     canvas = r.TCanvas()
     psFileName = "bestFit.ps"
     canvas.Print(psFileName+"[")
     
-    vp = validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = [
-            {"var":"hadB", "type":"function", "color":r.kBlue,    "style":1, "desc":"best fit expected total background", "stack":False},
-            {"var":"zInv", "type":"var",      "color":r.kRed,     "style":2, "desc":"best fit Z->inv",                    "stack":True},
-            {"var":"ttw",  "type":"var",      "color":r.kGreen,   "style":3, "desc":"best fit t#bar{t} + W",              "stack":True},
-            {"var":"qcd",  "type":"function", "color":r.kMagenta, "style":3, "desc":"best fit QCD",                       "stack":True},
-            ]); out.append(vp)
+    hadVars = [
+        {"var":"hadB", "type":"function", "color":r.kBlue,    "style":1, "desc":"expected total background", "stack":"total"},
+        ]
+    if "Ewk" in method :
+        hadVars += [
+            {"var":"zInv", "type":"var",      "color":r.kRed,     "style":2, "desc":"Z->inv",                "stack":"background"},
+            {"var":"ttw",  "type":"var",      "color":r.kGreen,   "style":3, "desc":"t#bar{t} + W",          "stack":"background"},
+            {"var":"qcd",  "type":"function", "color":r.kMagenta, "style":3, "desc":"QCD",                   "stack":"background"},
+            ]
+    if not smOnly :
+        hadVars += [
+            {"var":"hadS", "type":"function", "color":r.kOrange,  "style":1, "desc":"signal, f = %5.2f"%wspace.var("f").getVal(), "stack":"total"},
+            ]
+
+    validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = hadVars)
     
     if "Ewk" in method :
-        vp = validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
-                {"var":"photExp", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expectation", "stack":False},
+        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
+                {"var":"photExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":False},
                 {"var":"mcPhot",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
-                ]); out.append(vp)
+                ])
 
-        vp = validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
-                {"var":"muonExp", "type":"function", "color":r.kBlue, "style":1, "desc":"best fit expectation", "stack":False},
+        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
+                {"var":"muonExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":False},
                 {"var":"mcMuon",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":False},
-                ]); out.append(vp)
+                ])
 
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
