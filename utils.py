@@ -14,6 +14,13 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::pair<std::string,std::vector<double> >","string;vector")
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
 #####################################
+def ps2pdf(psFileName, removePs = True) :
+    os.system("ps2pdf %s"%psFileName)
+    if removePs : os.remove(psFileName)
+#####################################
+def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
+    return pdf.fitTo(data, *options)
+#####################################
 def compile(sourceFile) :
     r.gSystem.SetAclicMode(r.TSystem.kDebug)
     r.gROOT.LoadMacro("%s+"%sourceFile)
