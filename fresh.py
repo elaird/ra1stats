@@ -45,9 +45,13 @@ def hadTerms(w, method, smOnly) :
         else :
             continue
 
-        for item in ["nSel"] :
-            wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
-        wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
+        wimport(w, r.RooRealVar("nSel%d"%i, "nSel%d"%i, nSelValue))
+        if smOnly :
+            wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
+        else :
+            wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("lumi"), w.var("hadSignalEff%d"%i))))
+            wimport(w, r.RooAddition("hadExp%d"%i, "hadExp%d"%i, r.RooArgSet(w.function("hadB%d"%i), w.function("hadS%d"%i))))
+            wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadExp%d"%i)))
         terms.append("hadPois%d"%i)
     
     if not smOnly :
@@ -101,7 +105,7 @@ def muonTerms(w) :
 def constraintTerms(w) :
     terms = []
     wimport(w, r.RooRealVar("oneConstraint", "oneConstraint", 1.0, 0.999, 1.001))
-    wimport(w, r.RooRealVar("small", "small", 0.1))
+    wimport(w, r.RooRealVar("small", "small", 0.05))
     for i in range(len(data2.observations()["nSel"])) :
         b    = w.function("hadB%d"%i)
         zInv = w.var("zInv%d"%i)
@@ -144,6 +148,7 @@ def setupLikelihood(w, method = "", smOnly = True) :
         multiBinItems += ["nPhot", "nMuon"]
 
     hadTerms(w, method, smOnly)
+    if not smOnly : obs.append("oneRhoSignal")
     terms.append("hadTerms")
     multiBinItems.append("nSel")
 
@@ -227,15 +232,15 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
-def go() :
+def go(methodIndex = 0, smOnly = True) :
     out = []
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
 
-    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][3]
-    setupLikelihood(wspace, method)
+    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][methodIndex]
+    setupLikelihood(wspace, method, smOnly = smOnly)
 
-    #wspace.Print("v")
+    wspace.Print("v")
     #plotting.writeGraphVizTree(wspace)
 
     data = dataset(wspace.set("obs"))
@@ -244,9 +249,9 @@ def go() :
     #out.append(interval(data, modelConfig, wspace))
     #out.append(pValue(wspace, data, nToys = 200, validate = True))
     #out.append(plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data)))
-    out.append(plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method))
+    out.append(plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly))
 
     #pars = rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
     return out
 
-stuff = go()
+stuff = go(methodIndex = 3, smOnly = False)
