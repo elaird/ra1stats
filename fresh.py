@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-import data2
+import data2,utils
 import plotting
 from utils import rooFitResults
 import math
 import ROOT as r
 
-def modelConfiguration(w) :
+def modelConfiguration(w, smOnly) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
-    #modelConfig.SetParametersOfInterest(w.set("poi"))
-    #modelConfig.SetNuisanceParameters(w.set("nuis"))
+    if not smOnly :
+        modelConfig.SetParametersOfInterest(w.set("poi"))
+        modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
 
 def initialA(i = 0) :
@@ -27,8 +28,8 @@ def initialk() :
 
 def hadTerms(w, method, smOnly) :
     terms = []
-    wimport(w, r.RooRealVar("A", "A", initialA(), 0.0, 10.0*initialA()))
-    wimport(w, r.RooRealVar("k", "k", initialk(), 0.0, 10.0*initialk()))
+    wimport(w, r.RooRealVar("A", "A", initialA(), 1.0e-9, 10.0*initialA()))
+    wimport(w, r.RooRealVar("k", "k", initialk(),    0.0, 10.0*initialk()))
 
     o = data2.observations()
     for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
@@ -121,7 +122,7 @@ def commonVariables(w, smOnly) :
     wimport(w, r.RooRealVar("lumi", "lumi", data2.lumi()))
     wimport(w, r.RooRealVar("xs", "xs", data2.signalXs()))
     if smOnly : wimport(w, r.RooRealVar("f", "f", 0.0))
-    else :      wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 20.0))
+    else :      wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 10.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
@@ -133,10 +134,22 @@ def commonVariables(w, smOnly) :
             name = "%sSignalEff%d"%(box, iBin)
             wimport(w, r.RooRealVar(name, name, eff))
 
+def multi(w, variables) :
+    out = []
+    bins = range(len(data2.observations()["nSel"]))
+    for item in variables :
+        for i in bins :
+            name = "%s%d"%(item,i)
+            if not w.var(name) : continue
+            out.append(name)
+    return out
+
 def setupLikelihood(w, method = "", smOnly = True) :
     terms = []
     obs = []
-    multiBinItems = []
+    nuis = []
+    multiBinObs = []
+    multiBinNuis = []
 
     commonVariables(w, smOnly)
 
@@ -145,27 +158,33 @@ def setupLikelihood(w, method = "", smOnly = True) :
         muonTerms(w)
         terms += ["photTerms", "muonTerms"]
         obs += ["onePhot", "oneMuon"]
-        multiBinItems += ["nPhot", "nMuon"]
+        multiBinObs += ["nPhot", "nMuon"]
+        nuis += ["rhoPhotZ", "rhoMuonW"]
+        multiBinNuis += ["zInv", "ttw"]
+
+    if "HtMethod" in method :
+        nuis += ["A","k"]
 
     hadTerms(w, method, smOnly)
-    if not smOnly : obs.append("oneRhoSignal")
     terms.append("hadTerms")
-    multiBinItems.append("nSel")
+    multiBinObs.append("nSel")
 
     if method=="HtMethod_Ewk" :
         constraintTerms(w)
-        multiBinItems += ["oneConstraint"]
+        multiBinObs += ["oneConstraint"]
         terms.append("constraintTerms")
 
     w.factory("PROD::model(%s)"%",".join(terms))
 
-    #w.defineSet("poi", "A,k")
-    for item in multiBinItems :
-        for i in range(len(data2.observations()["nSel"])) :
-            name = "%s%d"%(item,i)
-            if not w.var(name) : continue
-            obs.append(name)
+    if not smOnly :
+        obs.append("oneRhoSignal")
+        nuis.append("rhoSignal")
+        w.defineSet("poi", "f")
+
+    obs += multi(w, multiBinObs)
+    nuis += multi(w, multiBinNuis)
     w.defineSet("obs", ",".join(obs))
+    w.defineSet("nuis", ",".join(nuis))
 
 def dataset(obsSet) :
     out = r.RooDataSet("dataName","dataTitle", obsSet)
@@ -174,16 +193,34 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig, wspace) :
+def interval(dataset, modelconfig, wspace, smOnly) :
+    assert not smOnly
+
     plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
 
-    #ul = plInt.UpperLimit(wspace.var("A"))
-    #print "UpperLimit =",ul
+    ul = plInt.UpperLimit(wspace.var("f"))
+    print "UpperLimit =",ul
 
-    #plot = r.RooStats.LikelihoodIntervalPlot(plInt)
-    #plot.Draw(); return plot
+    plot = r.RooStats.LikelihoodIntervalPlot(plInt)
+    plot.Draw(); return plot
+
+def profilePlots(dataset, modelconfig, smOnly) :
+    assert not smOnly
+
+    canvas = r.TCanvas()
+    canvas.SetTickx()
+    canvas.SetTicky()
+    psFile = "profilePlots.ps"
+    canvas.Print(psFile+"[")
+
+    plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig)
+    for i in range(plots.GetSize()) :
+        plots.At(i).Draw("al")
+        canvas.Print(psFile)
+    canvas.Print(psFile+"]")
+    utils.ps2pdf(psFile)
 
 def pValue(wspace, data, nToys = 100, validate = False) :
     def lMax(results) :
@@ -245,12 +282,13 @@ def go(methodIndex = 0, smOnly = True, debug = False) :
         #plotting.writeGraphVizTree(wspace)
 
     data = dataset(wspace.set("obs"))
-    modelConfig = modelConfiguration(wspace)
+    modelConfig = modelConfiguration(wspace, smOnly)
 
-    #out.append(interval(data, modelConfig, wspace))
+    #out.append(interval(data, modelConfig, wspace, smOnly))
+    profilePlots(data, modelConfig, smOnly)
     #out.append(pValue(wspace, data, nToys = 200, validate = True))
     #out.append(plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data)))
-    out.append(plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly))
+    #out.append(plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly))
 
     if debug :
         #pars = rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
