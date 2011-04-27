@@ -104,15 +104,15 @@ def muonTerms(w) :
 
 def constraintTerms(w) :
     terms = []
-    wimport(w, r.RooRealVar("oneConstraint", "oneConstraint", 1.0, 0.999, 1.001))
-    wimport(w, r.RooRealVar("small", "small", 0.05))
+    wimport(w, r.RooRealVar("small", "small", 0.1))
     for i in range(len(data2.observations()["nSel"])) :
         b    = w.function("hadB%d"%i)
         zInv = w.var("zInv%d"%i)
         ttw  = w.var("ttw%d"%i)
         if not all([b, zInv, ttw]) : continue
+        wimport(w, r.RooRealVar("oneConstraint%d"%i, "oneConstraint%d"%i, 1.0))
         wimport(w, r.RooFormulaVar("fqcd%d"%i, "fqcd%d"%i, "(@0)>=((@1)+(@2))", r.RooArgList(b, zInv, ttw)))
-        wimport(w, r.RooGaussian("qcdConstraint%d"%i, "qcdConstraint%d"%i, w.var("oneConstraint"), w.function("fqcd%d"%i), w.var("small")))
+        wimport(w, r.RooGaussian("qcdConstraint%d"%i, "qcdConstraint%d"%i, w.var("oneConstraint%d"%i), w.function("fqcd%d"%i), w.var("small")))
         terms.append("qcdConstraint%d"%i)
     
     w.factory("PROD::constraintTerms(%s)"%",".join(terms))
@@ -154,14 +154,14 @@ def setupLikelihood(w, method = "", smOnly = True) :
 
     if method=="HtMethod_Ewk" :
         constraintTerms(w)
-        obs.append("oneConstraint")
+        multiBinItems += ["oneConstraint"]
         terms.append("constraintTerms")
 
     w.factory("PROD::model(%s)"%",".join(terms))
 
     #w.defineSet("poi", "A,k")
     for item in multiBinItems :
-        for i,value in enumerate(data2.observations()[item]) :
+        for i in range(len(data2.observations()["nSel"])) :
             name = "%s%d"%(item,i)
             if not w.var(name) : continue
             obs.append(name)
@@ -232,7 +232,7 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
-def go(methodIndex = 0, smOnly = True) :
+def go(methodIndex = 0, smOnly = True, debug = False) :
     out = []
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
@@ -240,8 +240,9 @@ def go(methodIndex = 0, smOnly = True) :
     method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][methodIndex]
     setupLikelihood(wspace, method, smOnly = smOnly)
 
-    wspace.Print("v")
-    #plotting.writeGraphVizTree(wspace)
+    if debug :
+        wspace.Print("v")
+        #plotting.writeGraphVizTree(wspace)
 
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace)
@@ -251,7 +252,11 @@ def go(methodIndex = 0, smOnly = True) :
     #out.append(plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data)))
     out.append(plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly))
 
-    #pars = rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
+    if debug :
+        #pars = rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
+        rooFitResults(pdf(wspace), data).Print("v")
+        wspace.Print("v")
+
     return out
 
-stuff = go(methodIndex = 3, smOnly = False)
+stuff = go(methodIndex = 1, smOnly = False, debug = False)
