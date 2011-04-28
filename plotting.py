@@ -86,7 +86,7 @@ def validationPlots(wspace, results, method, smOnly) :
     out = []
 
     canvas = r.TCanvas()
-    psFileName = "bestFit.ps"
+    psFileName = "bestFit_%s.ps"%method
     canvas.Print(psFileName+"[")
 
     akDesc = "A = %4.2e; k = %4.2e"%(wspace.var("A").getVal(), wspace.var("k").getVal())
