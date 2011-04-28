@@ -16,7 +16,7 @@ def modelConfiguration(w, smOnly) :
 
 def initialA(i = 0) :
     o = data2.observations()
-    return (0.0+o["nSel"][i])*math.exp(initialk()*o["htMean"][i])/o["nBulk"][i]
+    return math.log(max((1.0, 0.0+o["nSel"][i]))/o["nBulk"][i]) + initialk()*o["htMean"][i]
 
 def initialk() :
     o = data2.observations()
@@ -28,7 +28,7 @@ def initialk() :
 
 def hadTerms(w, method, smOnly) :
     terms = []
-    wimport(w, r.RooRealVar("A", "A", initialA(), 1.0e-9, 10.0*initialA()))
+    wimport(w, r.RooRealVar("A", "A", initialA(), -r.RooNumber.infinity(), r.RooNumber.infinity()))
     wimport(w, r.RooRealVar("k", "k", initialk(),    0.0, 10.0*initialk()))
 
     o = data2.observations()
@@ -36,12 +36,12 @@ def hadTerms(w, method, smOnly) :
         for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
         if "HtMethod" in method :
-            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("A"), w.var("nBulk%d"%i), w.var("k"), w.var("htMean%d"%i))))
+            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
         elif all([w.var("zInv%d"%i), w.var("ttw%d"%i)]) :
             if "Qcd=0" in method :
                 wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i))))
             else :
-                wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("A"), w.var("nBulk%d"%i), w.var("k"), w.var("htMean%d"%i))))
+                wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
                 wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)+(@2)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i), w.function("qcd%d"%i))))
         else :
             continue
@@ -162,7 +162,7 @@ def setupLikelihood(w, method = "", smOnly = True) :
         nuis += ["rhoPhotZ", "rhoMuonW"]
         multiBinNuis += ["zInv", "ttw"]
 
-    if "HtMethod" in method :
+    if "HtMethod" or "ExpQcd" in method :
         nuis += ["A","k"]
 
     hadTerms(w, method, smOnly)
@@ -206,13 +206,13 @@ def interval(dataset, modelconfig, wspace, smOnly) :
     plot = r.RooStats.LikelihoodIntervalPlot(plInt)
     plot.Draw(); return plot
 
-def profilePlots(dataset, modelconfig, smOnly) :
+def profilePlots(dataset, modelconfig, method, smOnly) :
     assert not smOnly
 
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "profilePlots.ps"
+    psFile = "profilePlots_%s.ps"%method
     canvas.Print(psFile+"[")
 
     plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print
@@ -232,6 +232,7 @@ def pValue(wspace, data, nToys = 100, validate = False) :
         return totalList.index(item)/(0.0+len(totalList))
         
     results = rooFitResults(pdf(wspace), data) #fit to data
+    #wspace.saveSnapshot("snap", wspace.allVars(), False)
     #results.Print()
     lMaxData = lMax(results)
     dataset = pdf(wspace).generate(wspace.set("obs"), nToys) #make pseudo experiments with final parameter values
@@ -244,11 +245,13 @@ def pValue(wspace, data, nToys = 100, validate = False) :
         data.reset()
         data.add(argSet)
         #data.Print("v")
+        #wspace.loadSnapshot("snap")
         wspace.var("A").setVal(initialA())
         wspace.var("k").setVal(initialk())
         results = rooFitResults(pdf(wspace), data)
         lMaxs.append(lMax(results))
         graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
+        #utils.delete(results)
     
     out = indexFraction(lMaxData, lMaxs)
     if validate : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph)
@@ -284,11 +287,11 @@ def go(methodIndex = 0, smOnly = True, debug = False) :
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace, smOnly)
 
-    out.append(interval(data, modelConfig, wspace, smOnly))
-    #profilePlots(data, modelConfig, smOnly)
+    #out.append(interval(data, modelConfig, wspace, smOnly))
+    #profilePlots(data, modelConfig, method, smOnly)
     #pValue(wspace, data, nToys = 200, validate = True)
     #plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data))
-    #plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly)
+    plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly)
 
     if debug :
         #pars = rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
