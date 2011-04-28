@@ -118,11 +118,10 @@ def constraintTerms(w) :
     
     w.factory("PROD::constraintTerms(%s)"%",".join(terms))
 
-def commonVariables(w, smOnly) :
+def signalVariables(w) :
     wimport(w, r.RooRealVar("lumi", "lumi", data2.lumi()))
     wimport(w, r.RooRealVar("xs", "xs", data2.signalXs()))
-    if smOnly : wimport(w, r.RooRealVar("f", "f", 0.0))
-    else :      wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 10.0))
+    wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 10.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
@@ -151,7 +150,8 @@ def setupLikelihood(w, method = "", smOnly = True) :
     multiBinObs = []
     multiBinNuis = []
 
-    commonVariables(w, smOnly)
+    if not smOnly :
+        signalVariables(w)
 
     if "Ewk" in method :
         photTerms(w)
@@ -215,7 +215,7 @@ def profilePlots(dataset, modelconfig, smOnly) :
     psFile = "profilePlots.ps"
     canvas.Print(psFile+"[")
 
-    plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig)
+    plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print
     for i in range(plots.GetSize()) :
         plots.At(i).Draw("al")
         canvas.Print(psFile)
@@ -284,11 +284,11 @@ def go(methodIndex = 0, smOnly = True, debug = False) :
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace, smOnly)
 
-    #out.append(interval(data, modelConfig, wspace, smOnly))
-    profilePlots(data, modelConfig, smOnly)
-    #out.append(pValue(wspace, data, nToys = 200, validate = True))
-    #out.append(plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data)))
-    #out.append(plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly))
+    out.append(interval(data, modelConfig, wspace, smOnly))
+    #profilePlots(data, modelConfig, smOnly)
+    #pValue(wspace, data, nToys = 200, validate = True)
+    #plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data))
+    #plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly)
 
     if debug :
         #pars = rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
@@ -297,4 +297,4 @@ def go(methodIndex = 0, smOnly = True, debug = False) :
 
     return out
 
-stuff = go(methodIndex = 1, smOnly = False, debug = False)
+stuff = go(methodIndex = 3, smOnly = False, debug = False)
