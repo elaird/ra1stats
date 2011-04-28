@@ -19,7 +19,7 @@ def mcExpectations() : #events / lumi
     return {"mcMuon":(  12.2,    5.2,    4.1,    1.9  ),
             "mcTtw": (  10.5,    4.47,   3.415,  1.692),
             "mcPhot":(  22.4,    7.0,    4.4,    2.1  ),
-            "mcZinv":(    -1,     -1,    2.586,  1.492),
+            "mcZinv":(   8.1,    3.9,    2.586,  1.492),
             }
 
 def fixedParameters() :
