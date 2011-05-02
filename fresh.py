@@ -50,7 +50,7 @@ def hadTerms(w, method, smOnly) :
         if smOnly :
             wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
         else :
-            wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("lumi"), w.var("hadSignalEff%d"%i))))
+            wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("hadLumi"), w.var("hadSignalEff%d"%i))))
             wimport(w, r.RooAddition("hadExp%d"%i, "hadExp%d"%i, r.RooArgSet(w.function("hadB%d"%i), w.function("hadS%d"%i))))
             wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadExp%d"%i)))
         terms.append("hadPois%d"%i)
@@ -119,7 +119,7 @@ def constraintTerms(w) :
     w.factory("PROD::constraintTerms(%s)"%",".join(terms))
 
 def signalVariables(w) :
-    wimport(w, r.RooRealVar("lumi", "lumi", data2.lumi()))
+    wimport(w, r.RooRealVar("hadLumi", "hadLumi", data2.lumi()["had"]))
     wimport(w, r.RooRealVar("xs", "xs", data2.signalXs()))
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 10.0))
 
