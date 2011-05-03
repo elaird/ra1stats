@@ -282,7 +282,7 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
-def go(methodIndex = 0, smOnly = True, debug = False) :
+def go(methodIndex, smOnly, debug = False, trace = False) :
     out = []
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
@@ -292,14 +292,15 @@ def go(methodIndex = 0, smOnly = True, debug = False) :
 
     if debug :
         wspace.Print("v")
-        #plotting.writeGraphVizTree(wspace)
+        plotting.writeGraphVizTree(wspace)
 
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace, smOnly)
 
-    #lots of info for debugging
-    #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
-    #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
+    if trace :
+        #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
+        #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
+        r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
 
     #interval(data, modelConfig, wspace, method, smOnly)
     #profilePlots(data, modelConfig, method, smOnly)
