@@ -6,6 +6,9 @@ from utils import rooFitResults
 import math
 import ROOT as r
 
+def init() :
+    r.gROOT.SetBatch(True)
+
 def modelConfiguration(w, smOnly) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
@@ -16,7 +19,7 @@ def modelConfiguration(w, smOnly) :
 
 def initialA(i = 0) :
     o = data2.observations()
-    return math.log(max((1.0, 0.0+o["nSel"][i]))/o["nBulk"][i]) + initialk()*o["htMean"][i]
+    return (0.0+o["nSel"][i])*math.exp(initialk()*o["htMean"][i])/o["nBulk"][i]
 
 def initialk() :
     o = data2.observations()
@@ -27,21 +30,22 @@ def initialk() :
     return math.log(rAlphaT[1]/rAlphaT[0])/(o["htMean"][0]-o["htMean"][1])
 
 def hadTerms(w, method, smOnly) :
-    terms = []
-    wimport(w, r.RooRealVar("A", "A", initialA(), -r.RooNumber.infinity(), r.RooNumber.infinity()))
-    wimport(w, r.RooRealVar("k", "k", initialk(),    0.0, 10.0*initialk()))
-
     o = data2.observations()
+
+    terms = []
+    wimport(w, r.RooRealVar("A", "A", initialA(), 0.0,  5.0*initialA()))
+    wimport(w, r.RooRealVar("k", "k", initialk(), 0.0, 10.0*initialk()))
+
     for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
         for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
         if "HtMethod" in method :
-            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
+            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
         elif all([w.var("zInv%d"%i), w.var("ttw%d"%i)]) :
             if "Qcd=0" in method :
                 wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i))))
             else :
-                wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
+                wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
                 wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)+(@2)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i), w.function("qcd%d"%i))))
         else :
             continue
@@ -121,7 +125,7 @@ def constraintTerms(w) :
 def signalVariables(w) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", data2.lumi()["had"]))
     wimport(w, r.RooRealVar("xs", "xs", data2.signalXs()))
-    wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 10.0))
+    wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 5.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
@@ -193,18 +197,24 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig, wspace, smOnly) :
+def interval(dataset, modelconfig, wspace, method, smOnly) :
     assert not smOnly
 
     plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
-
     ul = plInt.UpperLimit(wspace.var("f"))
     print "UpperLimit =",ul
 
+    canvas = r.TCanvas()
+    canvas.SetTickx()
+    canvas.SetTicky()
+    psFile = "intervalPlot_%s.ps"%method
+
     plot = r.RooStats.LikelihoodIntervalPlot(plInt)
-    plot.Draw(); return plot
+    plot.Draw(); print
+    canvas.Print(psFile)
+    utils.ps2pdf(psFile)
 
 def profilePlots(dataset, modelconfig, method, smOnly) :
     assert not smOnly
@@ -287,7 +297,11 @@ def go(methodIndex = 0, smOnly = True, debug = False) :
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace, smOnly)
 
-    #out.append(interval(data, modelConfig, wspace, smOnly))
+    #lots of info for debugging
+    #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
+    #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
+
+    #interval(data, modelConfig, wspace, method, smOnly)
     #profilePlots(data, modelConfig, method, smOnly)
     #pValue(wspace, data, nToys = 200, validate = True)
     #plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data))
@@ -300,4 +314,5 @@ def go(methodIndex = 0, smOnly = True, debug = False) :
 
     return out
 
+init()
 stuff = go(methodIndex = 3, smOnly = False, debug = False)
