@@ -47,7 +47,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", l
         return out
 
     stuff = []
-    leg = r.TLegend(legendX1, 0.6, 0.9, 0.85, "ML values" if otherVars else "")
+    leg = r.TLegend(legendX1, 0.6, 0.85, 0.85, "ML values" if otherVars else "")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -90,6 +90,9 @@ def validationPlots(wspace, results, method, smOnly) :
     canvas.Print(psFileName+"[")
 
     akDesc = "A = %4.2e; k = %4.2e"%(wspace.var("A").getVal(), wspace.var("k").getVal())
+    if not smOnly :
+        signalDesc  = "signal"
+        signalDesc2 = "xs = %5.2f xs^{nom}; #rho = %4.2f"%(wspace.var("f").getVal(), wspace.var("rhoSignal").getVal())
 
     hadVars = [
         {"var":"hadB", "type":"function", "desc":"expected total background", "desc2":(akDesc if "HtMethod" in method else ""),
@@ -105,22 +108,21 @@ def validationPlots(wspace, results, method, smOnly) :
              "color":r.kMagenta, "style":3, "stack":"background"},
             ]
     if not smOnly :
-        hadVars += [
-            {"var":"hadS", "type":"function", "desc":"signal", "desc2":"xs = %5.2f xs^{nom}; #rho = %4.2f"%(wspace.var("f").getVal(), wspace.var("rhoSignal").getVal()),
-             "color":r.kOrange,  "style":1,  "stack":"total"},
-            ]
+        hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
 
     validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = hadVars)
     
     if "Ewk" in method :
+        muonVars = [
+            {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":"total"},
+            {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "desc":"2010 SM MC",        "stack":None},
+            ]
+        if not smOnly :
+            muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
+        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.4, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = muonVars)
         validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
-                {"var":"photExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":None},
-                {"var":"mcPhot",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":None},
-                ])
-
-        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = [
-                {"var":"muonExp", "type":"function", "color":r.kBlue, "style":1, "desc":"expected yield",       "stack":None},
-                {"var":"mcMuon",  "type":None,       "color":r.kRed,  "style":2, "desc":"2010 MC",              "stack":None},
+                {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},
+                {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"2010 SM MC",        "stack":None},
                 ])
 
     canvas.Print(psFileName+"]")
