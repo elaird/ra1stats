@@ -33,8 +33,8 @@ def hadTerms(w, method, smOnly) :
     o = data2.observations()
 
     terms = []
-    wimport(w, r.RooRealVar("A", "A", initialA(), 0.0,  5.0*initialA()))
-    wimport(w, r.RooRealVar("k", "k", initialk(), 0.0, 10.0*initialk()))
+    wimport(w, r.RooRealVar("A", "A", initialA(), 0.0, 30.0*initialA()))
+    wimport(w, r.RooRealVar("k", "k", initialk(), 0.0, 30.0*initialk()))
 
     for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
         for item in ["htMean", "nBulk"] :
@@ -65,7 +65,8 @@ def hadTerms(w, method, smOnly) :
 
 def photTerms(w) :
     terms = []
-    wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 0.0, 2.0))
+    #wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 2.0))
+    wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 3.0))
     wimport(w, r.RooRealVar("onePhot", "onePhot", 1.0))
     wimport(w, r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", data2.fixedParameters()["sigmaPhotZ"]))
     wimport(w, r.RooGaussian("photGaus", "photGaus", w.var("onePhot"), w.var("rhoPhotZ"), w.var("sigmaPhotZ")))
