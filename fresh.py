@@ -60,7 +60,7 @@ def hadTerms(w, method, smOnly) :
         terms.append("hadPois%d"%i)
     
     if not smOnly :
-        terms.append("signalGaus") #defined in commonVariables()
+        terms.append("signalGaus") #defined in signalVariables()
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
 def photTerms(w) :
@@ -86,7 +86,7 @@ def photTerms(w) :
     
     w.factory("PROD::photTerms(%s)"%",".join(terms))
 
-def muonTerms(w) :
+def muonTerms(w, smOnly) :
     terms = []
     wimport(w, r.RooRealVar("rhoMuonW", "rhoMuonW", 1.0, 0.0, 2.0))
     wimport(w, r.RooRealVar("oneMuon", "oneMuon", 1.0))
@@ -102,8 +102,15 @@ def muonTerms(w) :
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
         wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue))
         wimport(w, r.RooRealVar("ttw%d"%i,   "ttw%d"%i,   max(1, nMuonValue), 0.0, 10*max(1, nMuonValue)))
-        wimport(w, r.RooFormulaVar("muonExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.var("ttw%d"%i))))
-        wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonExp%d"%i)))
+        wimport(w, r.RooFormulaVar("muonB%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.var("ttw%d"%i))))
+
+        if smOnly :
+            wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonB%d"%i)))
+        else :
+            wimport(w, r.RooProduct("muonS%d"%i, "muonS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("muonLumi"), w.var("muonSignalEff%d"%i))))
+            wimport(w, r.RooAddition("muonExp%d"%i, "muonExp%d"%i, r.RooArgSet(w.function("muonB%d"%i), w.function("muonS%d"%i))))
+            wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonExp%d"%i)))
+        
         terms.append("muonPois%d"%i)
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
@@ -125,6 +132,7 @@ def constraintTerms(w) :
 
 def signalVariables(w) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", data2.lumi()["had"]))
+    wimport(w, r.RooRealVar("muonLumi", "muonLumi", data2.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", data2.signalXs()))
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 5.0))
 
@@ -160,7 +168,7 @@ def setupLikelihood(w, method = "", smOnly = True) :
 
     if "Ewk" in method :
         photTerms(w)
-        muonTerms(w)
+        muonTerms(w, smOnly)
         terms += ["photTerms", "muonTerms"]
         obs += ["onePhot", "oneMuon"]
         multiBinObs += ["nPhot", "nMuon"]
