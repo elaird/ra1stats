@@ -41,5 +41,5 @@ def signalXs() :
 
 def signalEff() :
     return {"had": (0.0,    0.0,    0.02,   0.10),
-            "muon":(0.0,    0.0,    0.0,    0.0 ),
+            "muon":(0.0,    0.0,    0.002,  0.01),
             }
