@@ -1,4 +1,5 @@
-import os,array,data2,utils
+import os,array,utils
+import data2011 as data2
 import ROOT as r
 
 def rootSetup() :
@@ -110,7 +111,7 @@ def validationPlots(wspace, results, method, smOnly) :
     if not smOnly :
         hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
 
-    validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.3, obsKey = "nSel", obsLabel = "2010 hadronic data", otherVars = hadVars)
+    validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.3, obsKey = "nSel", obsLabel = "hadronic data [%g/pb]"%data2.lumi()["had"], otherVars = hadVars)
     
     if "Ewk" in method :
         muonVars = [
@@ -119,10 +120,10 @@ def validationPlots(wspace, results, method, smOnly) :
             ]
         if not smOnly :
             muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
-        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.4, obsKey = "nMuon", obsLabel = "2010 muon data", otherVars = muonVars)
-        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "2010 photon data", otherVars = [
+        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.4, obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%data2.lumi()["muon"], otherVars = muonVars)
+        validationPlot(wspace, canvas, psFileName, note = method, legendX1 = 0.6, obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%data2.lumi()["phot"], otherVars = [
                 {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},
-                {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"2010 SM MC",        "stack":None},
+                {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
                 ])
 
     canvas.Print(psFileName+"]")
