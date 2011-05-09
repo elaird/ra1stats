@@ -100,7 +100,7 @@ def muonTerms(w, smOnly) :
         if nMuonValue<0 : continue
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
         wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue))
-        wimport(w, r.RooRealVar("ttw%d"%i,   "ttw%d"%i,   max(1, nMuonValue), 0.0, 10*max(1, nMuonValue)))
+        wimport(w, r.RooRealVar("ttw%d"%i,   "ttw%d"%i,   mcTtwValue, 0.0, 10*mcTtwValue))
         wimport(w, r.RooFormulaVar("muonB%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.var("ttw%d"%i))))
 
         if smOnly :
