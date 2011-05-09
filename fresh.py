@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import data2,utils
-import plotting
-from utils import rooFitResults
-import math
+import data2011 as data2
+import math,plotting,utils
+
 import ROOT as r
 
 def init() :
@@ -79,7 +78,7 @@ def photTerms(w) :
         if nPhotValue<0 : continue
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
         wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue))
-        wimport(w, r.RooRealVar("zInv%d"%i,  "zInv%d"%i,  max(1, nPhotValue), 0.0, 10*max(1, nPhotValue)))
+        wimport(w, r.RooRealVar("zInv%d"%i,  "zInv%d"%i,  mcZinvValue, 0.0, 10*mcZinvValue))
         wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.var("zInv%d"%i))))
         wimport(w, r.RooPoisson("photPois%d"%i, "photPois%d"%i, w.var("nPhot%d"%i), w.function("photExp%d"%i)))
         terms.append("photPois%d"%i)
@@ -250,7 +249,7 @@ def pValue(wspace, data, nToys = 100, validate = False) :
         assert totalList.count(item)==1
         return totalList.index(item)/(0.0+len(totalList))
         
-    results = rooFitResults(pdf(wspace), data) #fit to data
+    results = utils.rooFitResults(pdf(wspace), data) #fit to data
     #wspace.saveSnapshot("snap", wspace.allVars(), False)
     #results.Print()
     lMaxData = lMax(results)
@@ -267,7 +266,7 @@ def pValue(wspace, data, nToys = 100, validate = False) :
         #wspace.loadSnapshot("snap")
         wspace.var("A").setVal(initialA())
         wspace.var("k").setVal(initialk())
-        results = rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(pdf(wspace), data)
         lMaxs.append(lMax(results))
         graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
         #utils.delete(results)
@@ -314,12 +313,12 @@ def go(methodIndex, smOnly, debug = False, trace = False) :
     #interval(data, modelConfig, wspace, method, smOnly)
     #profilePlots(data, modelConfig, method, smOnly)
     #pValue(wspace, data, nToys = 200, validate = True)
-    #plotting.errorsPlot(wspace, rooFitResults(pdf(wspace), data))
-    plotting.validationPlots(wspace, rooFitResults(pdf(wspace), data), method, smOnly)
+    #plotting.errorsPlot(wspace, utils.rooFitResults(pdf(wspace), data))
+    plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), method, smOnly)
 
     if debug :
-        #pars = rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
-        rooFitResults(pdf(wspace), data).Print("v")
+        #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
+        utils.rooFitResults(pdf(wspace), data).Print("v")
         wspace.Print("v")
 
     return out
