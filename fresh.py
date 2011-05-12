@@ -306,7 +306,7 @@ def go(REwk = None, RQcd = None, action = "", smOnly = True, debug = False, trac
     #if action=="profile"  : profilePlots(data, modelConfig, method, smOnly)
     #if action=="pValue"   : pValue(wspace, data, nToys = 200, validate = True)
     #if action=="errors"   : plotting.errorsPlot(wspace, utils.rooFitResults(pdf(wspace), data))
-    #if action=="bestFit"  : plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), method, smOnly)
+    if action=="bestFit"  : plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), REwk, RQcd, smOnly)
     
     if debug :
         #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
@@ -316,7 +316,7 @@ def go(REwk = None, RQcd = None, action = "", smOnly = True, debug = False, trac
 init()
 go(REwk = ["", "FallingExp", "Constant"][2],
    RQcd = ["FallingExp", "Zero"][0],
-   action = ["interval", "profile", "pValue", "bestFit"][0],
+   action = ["interval", "profile", "pValue", "bestFit"][3],
    smOnly = False,
    debug = False,
    trace = False,
