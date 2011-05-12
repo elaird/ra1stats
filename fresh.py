@@ -39,6 +39,9 @@ def hadTerms(w, method, smOnly) :
         for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
         if "HtMethod" in method :
+            if "HtMethodConstant" in method :
+                w.var("k").setVal(0.0)
+                w.var("k").setConstant()
             wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
         elif all([w.var("zInv%d"%i), w.var("ttw%d"%i)]) :
             if "Qcd=0" in method :
@@ -290,12 +293,11 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
-def go(methodIndex, smOnly, debug = False, trace = False) :
+def go(method = "", action = "", smOnly = True, debug = False, trace = False) :
     out = []
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
 
-    method = ["HtMethod_Ewk", "HtMethod_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][methodIndex]
     setupLikelihood(wspace, method, smOnly = smOnly)
 
     if debug :
@@ -309,12 +311,12 @@ def go(methodIndex, smOnly, debug = False, trace = False) :
         #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
         #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
         r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
-
-    #interval(data, modelConfig, wspace, method, smOnly)
-    #profilePlots(data, modelConfig, method, smOnly)
-    #pValue(wspace, data, nToys = 200, validate = True)
-    #plotting.errorsPlot(wspace, utils.rooFitResults(pdf(wspace), data))
-    plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), method, smOnly)
+    
+    if action=="interval" : interval(data, modelConfig, wspace, method, smOnly)
+    if action=="profile"  : profilePlots(data, modelConfig, method, smOnly)
+    if action=="pValue"   : pValue(wspace, data, nToys = 200, validate = True)
+    if action=="errors"   : plotting.errorsPlot(wspace, utils.rooFitResults(pdf(wspace), data))
+    if action=="bestFit"  : plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), method, smOnly)
 
     if debug :
         #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
@@ -324,4 +326,9 @@ def go(methodIndex, smOnly, debug = False, trace = False) :
     return out
 
 init()
-stuff = go(methodIndex = 3, smOnly = False, debug = False)
+stuff = go(method = ["HtMethod_Ewk", "HtMethod_Only", "HtMethodConstant_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][2],
+           action = ["interval", "profile", "pValue", "bestFit"][0],
+           smOnly = False,
+           debug = False,
+           trace = False,
+           )
