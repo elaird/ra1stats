@@ -28,30 +28,45 @@ def initialk() :
     rAlphaT = [(o["nSel"][i]+0.0)/o["nBulk"][i] for i in range(2)]
     return math.log(rAlphaT[1]/rAlphaT[0])/(o["htMean"][0]-o["htMean"][1])
 
-def hadTerms(w, method, smOnly) :
+def hadTerms(w, REwk, RQcd, smOnly) :
     o = data2.observations()
 
     terms = []
-    wimport(w, r.RooRealVar("A", "A", initialA(), 0.0, 30.0*initialA()))
-    wimport(w, r.RooRealVar("k", "k", initialk(), 0.0, 30.0*initialk()))
+
+    wimport(w, r.RooRealVar("A_qcd", "A_qcd", initialA()/10.0, 0.0, 30.0*initialA()))
+    wimport(w, r.RooRealVar("k_qcd", "k_qcd", initialk(),      0.0, 30.0*initialk()))
+
+    if REwk :
+        wimport(w, r.RooRealVar("A_ewk", "A_ewk", initialA(), 0.0, 30.0*initialA()))
+        wimport(w, r.RooRealVar("k_ewk", "k_ewk", initialk(), 0.0, 30.0*initialk()))
+
+    if RQcd=="Zero" :
+        w.var("A_qcd").setVal(0.0)
+        w.var("A_qcd").setConstant()
+        w.var("k_qcd").setVal(0.0)
+        w.var("k_qcd").setConstant()
+
+    if REwk=="Constant" :
+        w.var("k_ewk").setVal(0.0)
+        w.var("k_ewk").setConstant()
 
     for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
         for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
-        if "HtMethod" in method :
-            if "HtMethodConstant" in method :
-                w.var("k").setVal(0.0)
-                w.var("k").setConstant()
-            wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
-        elif all([w.var("zInv%d"%i), w.var("ttw%d"%i)]) :
-            if "Qcd=0" in method :
-                wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i))))
-            else :
-                wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A"), w.var("k"), w.var("htMean%d"%i))))
-                wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)+(@2)", r.RooArgList(w.var("zInv%d"%i), w.var("ttw%d"%i), w.function("qcd%d"%i))))
-        else :
-            continue
 
+        wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcd"), w.var("k_qcd"), w.var("htMean%d"%i))))
+        if REwk :
+            wimport(w, r.RooFormulaVar("ewk%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewk"), w.var("k_ewk"), w.var("htMean%d"%i))))
+            ewk = w.function("ewk%d"%i)
+        else :
+            wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nSelValue), 0.0, 10.0*max(1, nSelValue)))
+            ewk = w.var("ewk%d"%i)
+        wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.0, 1.0))
+
+        wimport(w, r.RooFormulaVar("zInv%d"%i, "(@0)*(@1)",       r.RooArgList(ewk, w.var("fZinv%d"%i))))
+        wimport(w, r.RooFormulaVar("ttw%d"%i,  "(@0)*(1.0-(@1))", r.RooArgList(ewk, w.var("fZinv%d"%i))))
+
+        wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(ewk, w.function("qcd%d"%i))))
         wimport(w, r.RooRealVar("nSel%d"%i, "nSel%d"%i, nSelValue))
         if smOnly :
             wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
@@ -81,8 +96,7 @@ def photTerms(w) :
         if nPhotValue<0 : continue
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
         wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue))
-        wimport(w, r.RooRealVar("zInv%d"%i,  "zInv%d"%i,  mcZinvValue, 0.0, 10*mcZinvValue))
-        wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.var("zInv%d"%i))))
+        wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.function("zInv%d"%i))))
         wimport(w, r.RooPoisson("photPois%d"%i, "photPois%d"%i, w.var("nPhot%d"%i), w.function("photExp%d"%i)))
         terms.append("photPois%d"%i)
     
@@ -103,8 +117,7 @@ def muonTerms(w, smOnly) :
         if nMuonValue<0 : continue
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
         wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue))
-        wimport(w, r.RooRealVar("ttw%d"%i,   "ttw%d"%i,   mcTtwValue, 0.0, 10*mcTtwValue))
-        wimport(w, r.RooFormulaVar("muonB%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.var("ttw%d"%i))))
+        wimport(w, r.RooFormulaVar("muonB%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.function("ttw%d"%i))))
 
         if smOnly :
             wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonB%d"%i)))
@@ -116,21 +129,6 @@ def muonTerms(w, smOnly) :
         terms.append("muonPois%d"%i)
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
-
-def constraintTerms(w) :
-    terms = []
-    wimport(w, r.RooRealVar("small", "small", 0.1))
-    for i in range(len(data2.observations()["nSel"])) :
-        b    = w.function("hadB%d"%i)
-        zInv = w.var("zInv%d"%i)
-        ttw  = w.var("ttw%d"%i)
-        if not all([b, zInv, ttw]) : continue
-        wimport(w, r.RooRealVar("oneConstraint%d"%i, "oneConstraint%d"%i, 1.0))
-        wimport(w, r.RooFormulaVar("fqcd%d"%i, "fqcd%d"%i, "(@0)>=((@1)+(@2))", r.RooArgList(b, zInv, ttw)))
-        wimport(w, r.RooGaussian("qcdConstraint%d"%i, "qcdConstraint%d"%i, w.var("oneConstraint%d"%i), w.function("fqcd%d"%i), w.var("small")))
-        terms.append("qcdConstraint%d"%i)
-    
-    w.factory("PROD::constraintTerms(%s)"%",".join(terms))
 
 def signalVariables(w) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", data2.lumi()["had"]))
@@ -158,7 +156,7 @@ def multi(w, variables) :
             out.append(name)
     return out
 
-def setupLikelihood(w, method = "", smOnly = True) :
+def setupLikelihood(w, REwk, RQcd, smOnly = True) :
     terms = []
     obs = []
     nuis = []
@@ -168,26 +166,19 @@ def setupLikelihood(w, method = "", smOnly = True) :
     if not smOnly :
         signalVariables(w)
 
-    if "Ewk" in method :
-        photTerms(w)
-        muonTerms(w, smOnly)
-        terms += ["photTerms", "muonTerms"]
-        obs += ["onePhot", "oneMuon"]
-        multiBinObs += ["nPhot", "nMuon"]
-        nuis += ["rhoPhotZ", "rhoMuonW"]
-        multiBinNuis += ["zInv", "ttw"]
-
-    if "HtMethod" or "ExpQcd" in method :
-        nuis += ["A","k"]
-
-    hadTerms(w, method, smOnly)
+    hadTerms(w, REwk, RQcd, smOnly)
     terms.append("hadTerms")
     multiBinObs.append("nSel")
+    nuis += ["A_qcd","k_qcd"]
+    if REwk : nuis += ["A_ewk","k_ewk"]
 
-    if method=="HtMethod_Ewk" :
-        constraintTerms(w)
-        multiBinObs += ["oneConstraint"]
-        terms.append("constraintTerms")
+    photTerms(w)
+    muonTerms(w, smOnly)
+    terms += ["photTerms", "muonTerms"]
+    obs += ["onePhot", "oneMuon"]
+    multiBinObs += ["nPhot", "nMuon"]
+    nuis += ["rhoPhotZ", "rhoMuonW"]
+    multiBinNuis += ["fZinv"]
 
     w.factory("PROD::model(%s)"%",".join(terms))
 
@@ -293,42 +284,40 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
-def go(method = "", action = "", smOnly = True, debug = False, trace = False) :
-    out = []
+def go(REwk = None, RQcd = None, action = "", smOnly = True, debug = False, trace = False) :
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
 
-    setupLikelihood(wspace, method, smOnly = smOnly)
+    setupLikelihood(wspace, REwk, RQcd, smOnly = smOnly)
 
     if debug :
         wspace.Print("v")
         plotting.writeGraphVizTree(wspace)
-
+    
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace, smOnly)
-
+    
     if trace :
         #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
         #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
         r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
     
-    if action=="interval" : interval(data, modelConfig, wspace, method, smOnly)
-    if action=="profile"  : profilePlots(data, modelConfig, method, smOnly)
-    if action=="pValue"   : pValue(wspace, data, nToys = 200, validate = True)
-    if action=="errors"   : plotting.errorsPlot(wspace, utils.rooFitResults(pdf(wspace), data))
-    if action=="bestFit"  : plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), method, smOnly)
-
+    #if action=="interval" : interval(data, modelConfig, wspace, method, smOnly)
+    #if action=="profile"  : profilePlots(data, modelConfig, method, smOnly)
+    #if action=="pValue"   : pValue(wspace, data, nToys = 200, validate = True)
+    #if action=="errors"   : plotting.errorsPlot(wspace, utils.rooFitResults(pdf(wspace), data))
+    #if action=="bestFit"  : plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), method, smOnly)
+    
     if debug :
         #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
         utils.rooFitResults(pdf(wspace), data).Print("v")
         wspace.Print("v")
 
-    return out
-
 init()
-stuff = go(method = ["HtMethod_Ewk", "HtMethod_Only", "HtMethodConstant_Only", "Qcd=0_Ewk", "ExpQcd_Ewk"][2],
-           action = ["interval", "profile", "pValue", "bestFit"][0],
-           smOnly = False,
-           debug = False,
-           trace = False,
-           )
+go(REwk = ["", "FallingExp", "Constant"][2],
+   RQcd = ["FallingExp", "Zero"][0],
+   action = ["interval", "profile", "pValue", "bestFit"][0],
+   smOnly = False,
+   debug = False,
+   trace = False,
+   )
