@@ -130,10 +130,10 @@ def muonTerms(w, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def signalVariables(w) :
+def signalVariables(w, signalXs, signalEff) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", data2.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", data2.lumi()["muon"]))
-    wimport(w, r.RooRealVar("xs", "xs", data2.signalXs()))
+    wimport(w, r.RooRealVar("xs", "xs", signalXs))
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 5.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
@@ -141,7 +141,7 @@ def signalVariables(w) :
     wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", 2.0*data2.fixedParameters()["sigmaLumi"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
-    for box,effs in data2.signalEff().iteritems() :
+    for box,effs in signalEff.iteritems() :
         for iBin,eff in enumerate(effs) :
             name = "%sSignalEff%d"%(box, iBin)
             wimport(w, r.RooRealVar(name, name, eff))
@@ -156,16 +156,17 @@ def multi(w, variables) :
             out.append(name)
     return out
 
-def setupLikelihood(w, REwk, RQcd, smOnly = True) :
+def setupLikelihood(w, REwk, RQcd, signalXs, signalEff) :
     terms = []
     obs = []
     nuis = []
     multiBinObs = []
     multiBinNuis = []
 
-    if not smOnly :
-        signalVariables(w)
+    if signalXs :
+        signalVariables(w, signalXs, signalEff)
 
+    smOnly = not signalXs
     hadTerms(w, REwk, RQcd, smOnly)
     terms.append("hadTerms")
     multiBinObs.append("nSel")
@@ -284,16 +285,19 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
-def go(REwk = None, RQcd = None, action = "", smOnly = True, debug = False, trace = False) :
+def go(REwk = None, RQcd = None, action = "", signalXs = None, signalEff = {}, debug = False, trace = False) :
+
     r.RooRandom.randomGenerator().SetSeed(1)
     wspace = r.RooWorkspace("Workspace")
 
-    setupLikelihood(wspace, REwk, RQcd, smOnly = smOnly)
+    setupLikelihood(wspace, REwk, RQcd, signalXs, signalEff)
 
     if debug :
         wspace.Print("v")
         plotting.writeGraphVizTree(wspace)
     
+    smOnly = not signalXs
+
     data = dataset(wspace.set("obs"))
     modelConfig = modelConfiguration(wspace, smOnly)
     
@@ -319,11 +323,15 @@ RQcdOptions = ["FallingExp", "Zero"]
 Actions = ["interval", "profile", "bestFit", "pValue"]
 
 init()
-
 go(REwk = REwkOptions[0],
    RQcd = RQcdOptions[0],
    action = Actions[2],
-   smOnly = False,
+
+   signalXs = 4.9, #pb (LM1); 0 or None means SM only
+   signalEff = {"had": (0.0,    0.0,    0.02,   0.10),
+                "muon":(0.0,    0.0,    0.002,  0.01),
+                },
+   
    debug = False,
    trace = False,
    )
