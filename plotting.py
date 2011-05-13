@@ -87,13 +87,13 @@ def akDesc(wspace, var) :
     return "A = %4.2e; k = %4.2e"%(wspace.var("A_%s"%var).getVal(), wspace.var("k_%s"%var).getVal())
 
 def note(REwk, RQcd): 
-    return "Ewk%s_Qcd%s"%(REwk, RQcd)
+    return "%sRQcd%s"%("REwk%s_"%REwk if REwk else "", RQcd)
 
 def validationPlots(wspace, results, REwk, RQcd, smOnly) :
     out = []
 
     canvas = r.TCanvas()
-    psFileName = "bestFit_%s.ps"%note(REwk, RQcd)
+    psFileName = "bestFit_%s%s.ps"%(note(REwk, RQcd), "_smOnly" if smOnly else "")
     canvas.Print(psFileName+"[")
     
     if not smOnly :
@@ -103,15 +103,17 @@ def validationPlots(wspace, results, REwk, RQcd, smOnly) :
     hadVars = [
         {"var":"hadB", "type":"function", "desc":"expected total background",
          "color":r.kBlue, "style":1, "stack":"total"},
+        {"var":"ewk",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewk") if REwk else "[floating]",
+         "color":r.kCyan, "style":1, "stack":"background"},
+        {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcd"),
+         "color":r.kMagenta, "style":3, "stack":"background"},
         ]
 
     hadVars += [
-        {"var":"zInv", "type":"var", "desc":"Z->inv", "desc2": "#rho = %4.2f"%wspace.var("rhoPhotZ").getVal(),
-         "color":r.kRed, "style":2, "stack":"background"},
-        {"var":"ttw",  "type":"var", "desc":"t#bar{t} + W", "desc2": "#rho = %4.2f"%wspace.var("rhoMuonW").getVal(),
-         "color":r.kGreen, "style":3, "stack":"background"},
-        {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcd"),
-         "color":r.kMagenta, "style":3, "stack":"background"},
+        {"var":"zInv", "type":"function", "desc":"Z->inv", "desc2": "#rho = %4.2f"%wspace.var("rhoPhotZ").getVal(),
+         "color":r.kRed, "style":2, "stack":"ewk"},
+        {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho = %4.2f"%wspace.var("rhoMuonW").getVal(),
+         "color":r.kGreen, "style":2, "stack":"ewk"},
         ]
     if not smOnly :
         hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
