@@ -40,11 +40,3 @@ def fixedParameters() :
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             }
-
-def signalXs() :
-    return 4.9 #pb
-
-def signalEff() :
-    return {"had": (0.0,    0.0,    0.02,   0.10),
-            "muon":(0.0,    0.0,    0.002,  0.01),
-            }
