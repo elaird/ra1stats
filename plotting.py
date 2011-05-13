@@ -136,10 +136,10 @@ def validationPlots(wspace, results, REwk, RQcd, smOnly) :
     utils.ps2pdf(psFileName)
     return out
 
-def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None) :
+def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note = "") :
     print "pValue =",pValue
 
-    ps = "pValue.ps"
+    ps = "pValue_%s.ps"%note
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
     canvas.SetTicky()
