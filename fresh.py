@@ -199,7 +199,7 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig, wspace, method, smOnly) :
+def interval(dataset, modelconfig, wspace, note, smOnly) :
     assert not smOnly
 
     plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
@@ -211,20 +211,20 @@ def interval(dataset, modelconfig, wspace, method, smOnly) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "intervalPlot_%s.ps"%method
+    psFile = "intervalPlot_%s.ps"%note
 
     plot = r.RooStats.LikelihoodIntervalPlot(plInt)
     plot.Draw(); print
     canvas.Print(psFile)
     utils.ps2pdf(psFile)
 
-def profilePlots(dataset, modelconfig, method, smOnly) :
+def profilePlots(dataset, modelconfig, note, smOnly) :
     assert not smOnly
 
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "profilePlots_%s.ps"%method
+    psFile = "profilePlots_%s.ps"%note
     canvas.Print(psFile+"[")
 
     plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print
@@ -234,7 +234,7 @@ def profilePlots(dataset, modelconfig, method, smOnly) :
     canvas.Print(psFile+"]")
     utils.ps2pdf(psFile)
 
-def pValue(wspace, data, nToys = 100, validate = False) :
+def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
         return math.exp(-results.minNll())
     
@@ -258,15 +258,15 @@ def pValue(wspace, data, nToys = 100, validate = False) :
         data.add(argSet)
         #data.Print("v")
         #wspace.loadSnapshot("snap")
-        wspace.var("A").setVal(initialA())
-        wspace.var("k").setVal(initialk())
+        #wspace.var("A").setVal(initialA())
+        #wspace.var("k").setVal(initialk())
         results = utils.rooFitResults(pdf(wspace), data)
         lMaxs.append(lMax(results))
         graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
         #utils.delete(results)
     
     out = indexFraction(lMaxData, lMaxs)
-    if validate : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph)
+    if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
     return out
 
 def pValueOld(dataset, modelconfig) :
@@ -302,10 +302,10 @@ def go(REwk = None, RQcd = None, action = "", smOnly = True, debug = False, trac
         #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
         r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
     
-    #if action=="interval" : interval(data, modelConfig, wspace, method, smOnly)
-    #if action=="profile"  : profilePlots(data, modelConfig, method, smOnly)
-    #if action=="pValue"   : pValue(wspace, data, nToys = 200, validate = True)
-    #if action=="errors"   : plotting.errorsPlot(wspace, utils.rooFitResults(pdf(wspace), data))
+    note = plotting.note(REwk, RQcd)
+    if action=="interval" : interval(data, modelConfig, wspace, note, smOnly)
+    if action=="profile"  : profilePlots(data, modelConfig, note, smOnly)
+    if action=="pValue"   : pValue(wspace, data, nToys = 200, note = note)
     if action=="bestFit"  : plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), REwk, RQcd, smOnly)
     
     if debug :
@@ -316,7 +316,7 @@ def go(REwk = None, RQcd = None, action = "", smOnly = True, debug = False, trac
 init()
 go(REwk = ["", "FallingExp", "Constant"][2],
    RQcd = ["FallingExp", "Zero"][0],
-   action = ["interval", "profile", "pValue", "bestFit"][3],
+   action = ["interval", "profile", "pValue", "bestFit"][0],
    smOnly = False,
    debug = False,
    trace = False,
