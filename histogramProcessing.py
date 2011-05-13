@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import collections,cPickle,os,math
 import configuration as conf
+import histogramSpecs as hs
 import refXsProcessing as rxs
 import data
 import ROOT as r
@@ -35,7 +36,7 @@ def checkHistoBinning() :
         return out
     
     def handles() :
-        d = conf.histoSpecs()
+        d = hs.histoSpecs()
         return [(value["file"], value["350Dirs"][0], value["loYield"]) for value in d.values()]
 
     for axis,values in properties(handles()).iteritems() :
@@ -167,7 +168,7 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
 
 def exampleHisto() :
     func = nloYieldHisto if conf.switches()["nlo"] else loYieldHisto
-    s = conf.histoSpecs()["sig10"]
+    s = hs.histoSpecs()["sig10"]
     return func(s, s["350Dirs"]+s["450Dirs"], data.numbers()["lumi"])
 
 def mergePickledFiles() :
@@ -213,10 +214,9 @@ def fullPoints() :
     return out
 
 def cachedPoints() :
-    if conf.switches()["testPointsOnly"] :
-        return conf.switches()["listOfTestPoints"]
-    else :
-        return fullPoints()
+    p = conf.switches()["listOfTestPoints"]
+    if p : return p
+    return fullPoints()
 
 def points() :
     return _points
@@ -299,7 +299,7 @@ def makeEfficiencyPlots(item = "sig10") :
     s = conf.switches()
     fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"])
     c = squareCanvas()
-    spec = conf.histoSpecs()[item]
+    spec = hs.histoSpecs()[item]
     num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
     den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
     num.Divide(den)
