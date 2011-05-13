@@ -1,20 +1,8 @@
-output 1D histo for expectedLimit jobs
-consider signal sys for contamination samples
-masks for holes in input files
-reduce 0.01 minimum
-lolargs
-bayesian switch in setupLikelihood and modelConfig
-improve histo bin check
-investigate ng
-use muon variation directories?
-use sms variation directories?
-take care with passing x or exp(x)
-tau_1ObservedNumberCountingDataWithSideband
-consider pdfUncertainty for LO
+fix leak in pValue()
+snapshot in pValue()
 
+inherited
+---------
+improve histo bin check
+consider pdfUncertainty for LO
 consider lognormal vs. gaussian
-log size plot
-tt etc map
-tempfile for output
-consider 95 vs 99 etc.
-switchable info level
