@@ -313,10 +313,16 @@ def go(REwk = None, RQcd = None, action = "", smOnly = True, debug = False, trac
         utils.rooFitResults(pdf(wspace), data).Print("v")
         wspace.Print("v")
 
+#############################################################
+REwkOptions = ["", "FallingExp", "Constant"]
+RQcdOptions = ["FallingExp", "Zero"]
+Actions = ["interval", "profile", "bestFit", "pValue"]
+
 init()
-go(REwk = ["", "FallingExp", "Constant"][2],
-   RQcd = ["FallingExp", "Zero"][0],
-   action = ["interval", "profile", "pValue", "bestFit"][0],
+
+go(REwk = REwkOptions[0],
+   RQcd = RQcdOptions[0],
+   action = Actions[2],
    smOnly = False,
    debug = False,
    trace = False,
