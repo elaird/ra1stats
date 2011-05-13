@@ -101,11 +101,11 @@ def mergeRootFiles(nSlices) :
         mergeOneType("workspace")
 ############################################    
 def compile() :
-    for file in conf.stringsNoArgs()["sourceFiles"] :
+    for file in conf.switches()["sourceFiles"] :
         utils.compile(file)
 ############################################    
 def clean() :
-    for file in conf.stringsNoArgs()["sourceFiles"] :
+    for file in conf.switches()["sourceFiles"] :
         toRemove = []
         for ext in [".cxx", ".C"] :
             if ext in file :
