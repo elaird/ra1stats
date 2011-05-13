@@ -28,20 +28,18 @@ def jobCmds(nSlices = None) :
     out = []
 
     strings = conf.stringsNoArgs()
-    suppress = conf.switches()["suppressJobOutput"]
+    switches = conf.switches()
+    suppress = switches["suppressJobOutput"]
     for iSlice in range(nSlices) :
         args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
-        s += " %s"%strings["envScript"]                  #2
+        s += " %s"%switches["envScript"]                 #2
         s += " %s"%("/dev/null" if suppress else "%s/%s"%(pwd, logFileName(iSlice))) #3
         s += " %s"%(" ".join(args))                      #4
         out.append(s)
 
-    if conf.singleJobOnly() :
-        return out[:1]
-    else :
-        return out
+    return out
 ############################################
 def batch(nSlices) :
     for jobCmd in jobCmds(nSlices) :
