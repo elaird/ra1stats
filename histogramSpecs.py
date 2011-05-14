@@ -106,9 +106,9 @@ def histoSpecs(modelIn = conf.switches()["signalModel"]) :
     return d[modelIn]
 
 def histoTitle() :
-    if switches()["signalModel"]=="T1" :
+    if conf.switches()["signalModel"]=="T1" :
         return ";m_{gluino} (GeV);m_{LSP} (GeV)"
-    if switches()["signalModel"]=="T2" :
+    if conf.switches()["signalModel"]=="T2" :
         return ";m_{squark} (GeV);m_{LSP} (GeV)"
     else :
         return ";m_{0} (GeV);m_{1/2} (GeV)"
