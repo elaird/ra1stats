@@ -11,7 +11,6 @@ def writeNumbers(fileName = None, d = None) :
     outFile.close()
 
 def go() :
-    print "points:",points()
     for point in points() :
         f = fresh.foo(REwk = ["", "FallingExp", "Constant"][0],
                       RQcd = ["FallingExp", "Zero"][0],
