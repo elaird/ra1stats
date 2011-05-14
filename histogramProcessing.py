@@ -39,7 +39,7 @@ def checkHistoBinning() :
         return [(value["file"], value["350Dirs"][0], value["loYield"]) for value in d.values()]
 
     for axis,values in properties(handles()).iteritems() :
-        print "Here are the %s binnings: %s"%(axis, str(values))        
+        #print "Here are the %s binnings: %s"%(axis, str(values))        
         if len(set(values))!=1 :
             print "The %s binnings do not match: %s"%(axis, str(values))
             for h in handles() :
@@ -84,6 +84,14 @@ def pdfUncHisto(spec) :
         return fillHoles(h, 2)
     else :
         return h
+
+def loXsHisto() :
+    print "WARNING: hard-coded filename in hp.loXsHisto()"
+    f = r.TFile("/home/hep/elaird1/82_xs_maps/tanbeta10_lo.root")
+    out = f.Get("xs").Clone("XS")
+    out.SetDirectory(0)
+    f.Close()
+    return out
     
 def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     f = r.TFile(spec["file"])
@@ -173,10 +181,10 @@ def exampleHisto(lumi = 1.0) :
 
 def mergePickledFiles() :
     example = exampleHisto()
-    print "Here are the example binnings:"
-    print "x:",example.GetNbinsX(), example.GetXaxis().GetXmin(), example.GetXaxis().GetXmax()
-    print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
-    print "z:",example.GetNbinsZ(), example.GetZaxis().GetXmin(), example.GetZaxis().GetXmax()
+    #print "Here are the example binnings:"
+    #print "x:",example.GetNbinsX(), example.GetXaxis().GetXmin(), example.GetXaxis().GetXmax()
+    #print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
+    #print "z:",example.GetNbinsZ(), example.GetZaxis().GetXmin(), example.GetZaxis().GetXmax()
     histos = {}
 
     for point in points() :
