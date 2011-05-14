@@ -5,13 +5,13 @@ def switches() :
 
     d["CL"] = 0.95
     d["method"] = ["profileLikelihood", "feldmanCousins"][0]
-    d["minSignalEventsForConsideration"] = None
+    d["minSignalEventsForConsideration"] = 1.0
     d["maxSignalEventsForConsideration"] = None
     
     d["nlo"] = False
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
-    d["listOfTestPoints"] = [(6, 25, 1)]
-    #d["listOfTestPoints"] = []
+    #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
+    d["listOfTestPoints"] = []
     
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
