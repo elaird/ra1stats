@@ -39,6 +39,7 @@ def checkHistoBinning() :
         return [(value["file"], value["350Dirs"][0], value["loYield"]) for value in d.values()]
 
     for axis,values in properties(handles()).iteritems() :
+        print "Here are the %s binnings: %s"%(axis, str(values))        
         if len(set(values))!=1 :
             print "The %s binnings do not match: %s"%(axis, str(values))
             for h in handles() :
@@ -172,6 +173,10 @@ def exampleHisto(lumi = 1.0) :
 
 def mergePickledFiles() :
     example = exampleHisto()
+    print "Here are the example binnings:"
+    print "x:",example.GetNbinsX(), example.GetXaxis().GetXmin(), example.GetXaxis().GetXmax()
+    print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
+    print "z:",example.GetNbinsZ(), example.GetZaxis().GetXmin(), example.GetZaxis().GetXmax()
     histos = {}
 
     for point in points() :
