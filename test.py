@@ -14,3 +14,4 @@ f = fresh.foo(REwk = ["", "FallingExp", "Constant"][0],
 #f.profile()
 f.bestFit()
 #f.pValue(nToys = 200)
+#f.debug()
