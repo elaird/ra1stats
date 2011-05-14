@@ -5,9 +5,6 @@ import math,plotting,utils
 
 import ROOT as r
 
-def init() :
-    r.gROOT.SetBatch(True)
-
 def modelConfiguration(w, smOnly) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
@@ -207,7 +204,6 @@ def interval(dataset, modelconfig, wspace, note, smOnly) :
     plc.SetConfidenceLevel(0.95)
     plInt = plc.GetInterval()
     ul = plInt.UpperLimit(wspace.var("f"))
-    print "UpperLimit =",ul
 
     canvas = r.TCanvas()
     canvas.SetTickx()
@@ -218,6 +214,7 @@ def interval(dataset, modelconfig, wspace, note, smOnly) :
     plot.Draw(); print
     canvas.Print(psFile)
     utils.ps2pdf(psFile)
+    return ul
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
     assert not smOnly
@@ -285,53 +282,50 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
-def go(REwk = None, RQcd = None, action = "", signalXs = None, signalEff = {}, debug = False, trace = False) :
+class foo(object) :
+    def __init__(self, REwk = None, RQcd = None, signalXs = None, signalEff = {}, trace = False) :
+        self.checkInputs(REwk, RQcd, signalEff)
+        for item in ["REwk", "RQcd", "signalXs", "signalEff"] :
+            setattr(self, item, eval(item))
 
-    r.RooRandom.randomGenerator().SetSeed(1)
-    wspace = r.RooWorkspace("Workspace")
+        r.gROOT.SetBatch(True)
+        r.RooRandom.randomGenerator().SetSeed(1)
 
-    setupLikelihood(wspace, REwk, RQcd, signalXs, signalEff)
+        self.note = plotting.note(REwk, RQcd)
+        self.wspace = r.RooWorkspace("Workspace")
+        setupLikelihood(self.wspace, REwk, RQcd, signalXs, signalEff)
+        self.data = dataset(self.wspace.set("obs"))
+        self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
 
-    if debug :
+        if trace :
+            #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
+            #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
+            r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
+
+    def checkInputs(self, REwk, RQcd, signalEff) :
+        assert REwk in ["", "FallingExp", "Constant"]
+        assert RQcd in ["FallingExp", "Zero"]
+        for key in signalEff.keys() :
+            assert key in ["had", "muon"]
+            
+    def smOnly(self) :
+        return not self.signalXs
+            
+    def debug(self) :
         wspace.Print("v")
         plotting.writeGraphVizTree(wspace)
-    
-    smOnly = not signalXs
-
-    data = dataset(wspace.set("obs"))
-    modelConfig = modelConfiguration(wspace, smOnly)
-    
-    if trace :
-        #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
-        #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
-        r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
-    
-    note = plotting.note(REwk, RQcd)
-    if action=="interval" : interval(data, modelConfig, wspace, note, smOnly)
-    if action=="profile"  : profilePlots(data, modelConfig, note, smOnly)
-    if action=="pValue"   : pValue(wspace, data, nToys = 200, note = note)
-    if action=="bestFit"  : plotting.validationPlots(wspace, utils.rooFitResults(pdf(wspace), data), REwk, RQcd, smOnly)
-    
-    if debug :
         #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
         utils.rooFitResults(pdf(wspace), data).Print("v")
-        wspace.Print("v")
+        #wspace.Print("v")
 
-#############################################################
-REwkOptions = ["", "FallingExp", "Constant"]
-RQcdOptions = ["FallingExp", "Zero"]
-Actions = ["interval", "profile", "bestFit", "pValue"]
+    def upperLimit(self) :
+        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly())
 
-init()
-go(REwk = REwkOptions[0],
-   RQcd = RQcdOptions[0],
-   action = Actions[2],
+    def profile(self) :
+        profilePlots(self.data, self.modelConfig, self.note, self.smOnly())
 
-   signalXs = 4.9, #pb (LM1); 0 or None means SM only
-   signalEff = {"had": (0.0,    0.0,    0.02,   0.10),
-                "muon":(0.0,    0.0,    0.002,  0.01),
-                },
-   
-   debug = False,
-   trace = False,
-   )
+    def pValue(self, nToys = 200) :
+        pValue(self.wspace, self.data, nToys = nToys, note = self.note)
+
+    def bestFit(self) :
+        plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data), self.REwk, self.RQcd, self.smOnly())
