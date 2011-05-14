@@ -66,7 +66,7 @@ def stringsNoArgs() :
     #output name options
     d["outputDir"]      = "output"
     d["logDir"]         = "log"
-    d["plotStem"]       = "%s/Significance"%d["outputDir"]
+    d["plotStem"]       = "%s/"%d["outputDir"]
     d["logStem"]        = "%s/job"%d["logDir"]
     d["mergedFile"]     = mergedFile(d["outputDir"], switches())
     return d
