@@ -5,10 +5,13 @@ def switches() :
 
     d["CL"] = 0.95
     d["method"] = ["profileLikelihood", "feldmanCousins"][0]
-
-    d["nlo"] = True
-    d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][0]
-    d["listOfTestPoints"] = [(14, 9, 1)]
+    d["minSignalEventsForConsideration"] = None
+    d["maxSignalEventsForConsideration"] = None
+    
+    d["nlo"] = False
+    d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
+    d["listOfTestPoints"] = [(6, 25, 1)]
+    #d["listOfTestPoints"] = []
     
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
@@ -18,6 +21,7 @@ def switches() :
     d["fillHolesInEffUncRelPdf"] = True
     d["fillHolesInEfficiencyPlots"] = True
     d["fillHolesInXsLimitPlot"] = True
+    d["icfDefaultLumi"] = 100.0 #/pb
     
     d["fcAdditionalNToysFactor"] = 4
     d["fcSetNBins"] = 40
