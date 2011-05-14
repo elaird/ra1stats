@@ -1,9 +1,11 @@
 fix leak in pValue()
 snapshot in pValue()
 mc stats as systematic
-merge data.py
+nlo switch
+investigate lo/nlo binning mismatch
 
 (inherited)
 improve histo bin check
+investigate ng process
 consider pdfUncertainty for LO
 consider lognormal vs. gaussian
