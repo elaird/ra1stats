@@ -13,7 +13,7 @@ def writeNumbers(fileName = None, d = None) :
     outFile.close()
 
 def xs(point) :
-    return 1.0
+    return hp.loXsHisto().GetBinContent(*point)
 
 def xsFail(point) :
     spec = hs.histoSpecs()["sig10"]
@@ -35,20 +35,19 @@ def eff(point, label) :
     
 def go() :
     for point in points() :
-        x  = xs(point)
+        x = xs(point)
         signalEff = {}
         signalEff["had" ] = eff(point, "sig10")
         signalEff["muon"] = eff(point, "muon")
         
-        #f = fresh.foo(REwk = ["", "FallingExp", "Constant"][0],
-        #              RQcd = ["FallingExp", "Zero"][0],
-        #              signalXs = 4.9, #pb (LM1); 0 or None means SM only
-        #              signalEff = signalEff,
-        #              )
-        #ul = f.upperLimit()
+        f = fresh.foo(REwk = ["", "FallingExp", "Constant"][0],
+                      RQcd = ["FallingExp", "Zero"][0],
+                      signalXs = x, signalEff = signalEff,
+                      )
+        ul = f.upperLimit()
 
         out = {}
-        out["upperLimit"] = 0.0
+        out["upperLimit"] = ul
         out["xs"] = x
         for i,bin in enumerate([250, 300, 350, 450]) :
             for sel in ["had", "muon"] :
