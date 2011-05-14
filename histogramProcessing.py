@@ -3,7 +3,6 @@ import collections,cPickle,os,math
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
-import data
 import ROOT as r
 
 def setupRoot() :
@@ -98,7 +97,7 @@ def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
             h.Add(hOld)
             
     h.SetDirectory(0)
-    h.Scale(lumi/data.numbers()["icfDefaultLumi"])
+    h.Scale(lumi/conf.switches()["icfDefaultLumi"])
     f.Close()
     return h
 
@@ -166,10 +165,10 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     f.Close()
     return out
 
-def exampleHisto() :
+def exampleHisto(lumi = 1.0) :
     func = nloYieldHisto if conf.switches()["nlo"] else loYieldHisto
     s = hs.histoSpecs()["sig10"]
-    return func(s, s["350Dirs"]+s["450Dirs"], data.numbers()["lumi"])
+    return func(s, s["350Dirs"]+s["450Dirs"], lumi)
 
 def mergePickledFiles() :
     example = exampleHisto()
