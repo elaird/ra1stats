@@ -181,15 +181,13 @@ def mergePickledFiles() :
             print "skipping file",fileName            
         else :
             inFile = open(fileName)
-            stuff = cPickle.load(inFile)
+            d = cPickle.load(inFile)
             inFile.close()
-            bin = tuple(stuff[:3])
-            d = stuff[3]
             for key,value in d.iteritems() :
                 if key not in histos :
                     histos[key] = example.Clone(key)
                     histos[key].Reset()
-                histos[key].SetBinContent(bin[0], bin[1], bin[2], value)
+                histos[key].SetBinContent(point[0], point[1], point[2], value)
             os.remove(fileName)
 
     f = r.TFile(conf.stringsNoArgs()["mergedFile"], "RECREATE")
@@ -257,7 +255,7 @@ def epsToPdf(fileName, tight = True) :
 
 def adjustHisto(h, zTitle = "") :
     h.SetStats(False)
-    h.SetTitle("%s;%s"%(conf.histoTitle(), zTitle))
+    h.SetTitle("%s;%s"%(hs.histoTitle(), zTitle))
     h.GetYaxis().SetTitleOffset(1.5)
     h.GetZaxis().SetTitleOffset(1.5)
 
@@ -422,7 +420,7 @@ def makeValidationPlots() :
             printHoles(h2)
             printMaxes(h2)
         h2.SetStats(False)
-        h2.SetTitle("%s%s"%(name, conf.histoTitle()))
+        h2.SetTitle("%s%s"%(name, hs.histoTitle()))
         h2.Draw("colz")
         canvas.Print(fileName)
 
