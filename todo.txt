@@ -3,6 +3,7 @@ snapshot in pValue()
 mc stats as systematic
 nlo switch
 investigate lo/nlo binning mismatch
+check xsHisto binning
 
 (inherited)
 improve histo bin check
