@@ -312,10 +312,10 @@ class foo(object) :
         return not self.signalXs
             
     def debug(self) :
-        wspace.Print("v")
-        plotting.writeGraphVizTree(wspace)
+        self.wspace.Print("v")
+        plotting.writeGraphVizTree(self.wspace)
         #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
-        utils.rooFitResults(pdf(wspace), data).Print("v")
+        utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
     def upperLimit(self) :
