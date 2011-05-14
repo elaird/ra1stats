@@ -49,6 +49,7 @@ def go() :
         out = {}
         out["upperLimit"] = ul
         out["xs"] = x
+        out["excluded"] = 2.0*(ul<1.0) - 1.0
         for i,bin in enumerate([250, 300, 350, 450]) :
             for sel in ["had", "muon"] :
                 out["eff%s%d"%(sel, bin)] = signalEff[sel][i]
