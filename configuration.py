@@ -60,6 +60,8 @@ def checkAndAdjust(d) :
 def mergedFile(outputDir, switches) :
     out  = "%s/"%outputDir
     out += "_".join([switches["method"],
+                     "REwk%s"%switches["REwk"],
+                     "RQcd%s"%switches["RQcd"],
                      switches["signalModel"],
                      "nlo" if switches["nlo"] else "lo",
                      ])
