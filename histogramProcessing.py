@@ -442,6 +442,7 @@ def printLumis() :
     for key in sorted(d.keys()) :
         i += 1
         text.DrawText(x, y-i*s, "%8s       %6.0f"%(key, d[key]))
+    text.DrawText(x, y-(i+1)*s, "HT bins: %s"%str(data2011.htBinLowerEdges()))
     return text
 
 def makeValidationPlots() :
