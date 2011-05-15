@@ -34,25 +34,26 @@ def eff(point, label) :
     return tuple(out)
     
 def go() :
+    s = conf.switches()
     for point in points() :
         x = xs(point)
         signalEff = {}
         signalEff["had" ] = eff(point, "sig10")
         signalEff["muon"] = eff(point, "muon")
         
-        f = fresh.foo(REwk = ["", "FallingExp", "Constant"][0],
-                      RQcd = ["FallingExp", "Zero"][0],
+        f = fresh.foo(REwk = s["REwk"],
+                      RQcd = s["RQcd"],
                       signalXs = x, signalEff = signalEff,
                       )
         ul = f.upperLimit()
 
         out = {}
-        out["upperLimit"] = ul
-        out["xs"] = x
-        out["excluded"] = 2.0*(ul<1.0) - 1.0
+        out["upperLimit"] = (ul, "95% C.L. upper limit on XS factor")
+        out["xs"] = (x, "#sigma (pb)")
+        out["excluded"] = (2.0*(ul<1.0) - 1.0, "is (upper limit on XS factor)<1?")
         for i,bin in enumerate([250, 300, 350, 450]) :
             for sel in ["had", "muon"] :
-                out["eff%s%d"%(sel, bin)] = signalEff[sel][i]
+                out["eff%s%d"%(sel, bin)] = (signalEff[sel][i], "#epsilon of %s %d selection"%(sel, bin))
         writeNumbers(conf.strings(*point)["pickledFileName"], out)
 
 profile = False
