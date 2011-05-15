@@ -7,6 +7,9 @@ def switches() :
     d["method"] = ["profileLikelihood", "feldmanCousins"][0]
     d["minSignalEventsForConsideration"] = 1.0
     d["maxSignalEventsForConsideration"] = None
+
+    d["REwk"] = ["", "FallingExp", "Constant"][0]
+    d["RQcd"] = ["FallingExp", "Zero"][0]
     
     d["nlo"] = False
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
