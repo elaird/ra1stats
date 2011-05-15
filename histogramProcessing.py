@@ -186,7 +186,8 @@ def mergePickledFiles() :
     #print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
     #print "z:",example.GetNbinsZ(), example.GetZaxis().GetXmin(), example.GetZaxis().GetXmax()
     histos = {}
-
+    zTitles = {}
+    
     for point in points() :
         fileName = conf.strings(*point)["pickledFileName"]
         if not os.path.exists(fileName) :
@@ -196,11 +197,16 @@ def mergePickledFiles() :
             d = cPickle.load(inFile)
             inFile.close()
             for key,value in d.iteritems() :
+                content,zTitle = value
                 if key not in histos :
                     histos[key] = example.Clone(key)
                     histos[key].Reset()
-                histos[key].SetBinContent(point[0], point[1], point[2], value)
+                    zTitles[key] = zTitle
+                histos[key].SetBinContent(point[0], point[1], point[2], content)
             os.remove(fileName)
+
+    for key,histo in histos.iteritems() :
+        histo.GetZaxis().SetTitle(zTitles[key])
 
     f = r.TFile(conf.stringsNoArgs()["mergedFile"], "RECREATE")
     for histo in histos.values() :
@@ -245,6 +251,7 @@ def threeToTwo(h3) :
         for iY in range(1, 1+h3.GetNbinsY()) :
             content = h3.GetBinContent(iX, iY, 1)
             h2.SetBinContent(iX, iY, content)
+    h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
     return h2
 
 def squareCanvas(margin = 0.18) :
@@ -409,6 +416,34 @@ def makeEfficiencyUncertaintyPlots() :
     go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelJesZRange")
     go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelMcStatsZRange")
 
+def printTimeStamp() :
+    s = conf.switches()
+    text = r.TText()
+    text.SetNDC()
+    text.DrawText(0.1, 0.1, "file created at %s"%r.TDatime().AsString())
+    text.DrawText(0.1, 0.30, "RQcd = %s"%(s["RQcd"] if s["RQcd"] else "[no form assumed]"))
+    text.DrawText(0.1, 0.35, "REwk = %s"%(s["REwk"] if s["REwk"] else "[no form assumed]"))
+    return text
+
+def printLumis() :
+    text = r.TText()
+    text.SetNDC()
+    text.SetTextFont(102)
+    text.SetTextSize(0.5*text.GetTextSize())
+
+    x = 0.1
+    y = 0.9
+    s = 0.035
+    text.DrawText(x, y  , "sample     lumi (/pb)")
+    text.DrawText(x, y-s, "---------------------")
+    import data2011
+    i = 1
+    d = data2011.lumi()
+    for key in sorted(d.keys()) :
+        i += 1
+        text.DrawText(x, y-i*s, "%8s       %6.0f"%(key, d[key]))
+    return text
+
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
     f = r.TFile(inFile)
@@ -418,7 +453,14 @@ def makeValidationPlots() :
     canvas.SetRightMargin(0.15)
     
     canvas.Print(fileName+"[")
-    special = ["ExclusionLimit", "UpperLimit"]
+
+
+    text1 = printTimeStamp()
+    text2 = printLumis()
+    canvas.Print(fileName)
+    canvas.Clear()
+    
+    special = ["excluded", "upperLimit"]
     first = []
     names = sorted([key.GetName() for key in f.GetListOfKeys()])
     for item in special :
