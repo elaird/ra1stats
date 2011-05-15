@@ -10,7 +10,7 @@ f = fresh.foo(REwk = ["", "FallingExp", "Constant"][0],
                            },
               )
 
-#ul = f.upperLimit(); print "Upper limit:",ul
+#ul = f.upperLimit(makePlot = True); print "Upper limit:",ul
 #f.profile()
 f.bestFit()
 #f.pValue(nToys = 200)

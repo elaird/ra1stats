@@ -197,7 +197,7 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig, wspace, note, smOnly) :
+def interval(dataset, modelconfig, wspace, note, smOnly, makePlot = True) :
     assert not smOnly
 
     plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
@@ -205,15 +205,16 @@ def interval(dataset, modelconfig, wspace, note, smOnly) :
     plInt = plc.GetInterval()
     ul = plInt.UpperLimit(wspace.var("f"))
 
-    canvas = r.TCanvas()
-    canvas.SetTickx()
-    canvas.SetTicky()
-    psFile = "intervalPlot_%s.ps"%note
+    if makePlot :
+        canvas = r.TCanvas()
+        canvas.SetTickx()
+        canvas.SetTicky()
+        psFile = "intervalPlot_%s.ps"%note
+        plot = r.RooStats.LikelihoodIntervalPlot(plInt)
+        plot.Draw(); print
+        canvas.Print(psFile)
+        utils.ps2pdf(psFile)
 
-    plot = r.RooStats.LikelihoodIntervalPlot(plInt)
-    plot.Draw(); print
-    canvas.Print(psFile)
-    utils.ps2pdf(psFile)
     return ul
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
@@ -318,8 +319,8 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def upperLimit(self) :
-        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly())
+    def upperLimit(self, makePlot = False) :
+        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), makePlot = makePlot)
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note, self.smOnly())
