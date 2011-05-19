@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import fresh
-import data2011
-f = fresh.foo(inputData = data2011.data(),
+import data2011 as data
+f = fresh.foo(inputData = data.data(),
               REwk = ["", "FallingExp", "Constant"][0],
               RQcd = ["FallingExp", "Zero"][0],
               signalXs = 4.9, #pb (LM1); 0 or None means SM only
