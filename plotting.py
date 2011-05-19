@@ -1,5 +1,4 @@
 import os,array,utils
-import data2011 as data2
 import ROOT as r
 
 def rootSetup() :
@@ -21,12 +20,12 @@ def errorsPlot(wspace, results) :
     plot.Draw()
     return plot
 
-def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
+def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
     def inputHisto() :
-        bins = array.array('d', list(data2.htBinLowerEdges())+[data2.htMaxForPlot()])
+        bins = array.array('d', list(inputData.htBinLowerEdges())+[inputData.htMaxForPlot()])
         out = r.TH1D(obsKey, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
         out.Sumw2()
-        for i,content in enumerate(data2.observations()[obsKey]) :
+        for i,content in enumerate(inputData.observations()[obsKey]) :
             for count in range(content) : out.Fill(bins[i])
         return out
     
@@ -37,13 +36,13 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, note = "", l
         out.SetLineColor(color)
         out.SetLineStyle(style)
         out.SetMarkerColor(color)
-        for i in range(len(data2.htBinLowerEdges())) :
+        for i in range(len(inputData.htBinLowerEdges())) :
             if wspaceMemberFunc :
                 var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
                 if not var : continue
                 out.SetBinContent(i+1, var.getVal())
             else :
-                out.SetBinContent(i+1, data2.mcExpectations()[varName][i])
+                out.SetBinContent(i+1, inputData.mcExpectations()[varName][i])
                 
         return out
 
@@ -89,7 +88,7 @@ def akDesc(wspace, var) :
 def note(REwk, RQcd): 
     return "%sRQcd%s"%("REwk%s_"%REwk if REwk else "", RQcd)
 
-def validationPlots(wspace, results, REwk, RQcd, smOnly) :
+def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
     out = []
 
     canvas = r.TCanvas()
@@ -118,7 +117,7 @@ def validationPlots(wspace, results, REwk, RQcd, smOnly) :
     if not smOnly :
         hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
 
-    validationPlot(wspace, canvas, psFileName, note = note(REwk, RQcd), legendX1 = 0.3, obsKey = "nSel", obsLabel = "hadronic data [%g/pb]"%data2.lumi()["had"], otherVars = hadVars)
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.3, obsKey = "nSel", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars)
     
     muonVars = [
         {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":"total"},
@@ -126,8 +125,8 @@ def validationPlots(wspace, results, REwk, RQcd, smOnly) :
         ]
     if not smOnly :
         muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
-    validationPlot(wspace, canvas, psFileName, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%data2.lumi()["muon"], otherVars = muonVars)
-    validationPlot(wspace, canvas, psFileName, note = note(REwk, RQcd), legendX1 = 0.6, obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%data2.lumi()["phot"], otherVars = [
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars)
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.6, obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},
             {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
             ])

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import fresh
-
-f = fresh.foo(REwk = ["", "FallingExp", "Constant"][0],
+import data2011
+f = fresh.foo(inputData = data2011.data(),
+              REwk = ["", "FallingExp", "Constant"][0],
               RQcd = ["FallingExp", "Zero"][0],
               signalXs = 4.9, #pb (LM1); 0 or None means SM only
               signalEff = {"had": (0.0,    0.0,    0.02,   0.10),

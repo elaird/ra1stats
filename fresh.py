@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import data2011 as data2
 import math,plotting,utils
-
 import ROOT as r
 
 def modelConfiguration(w, smOnly) :
@@ -13,29 +11,31 @@ def modelConfiguration(w, smOnly) :
         modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
 
-def initialA(i = 0) :
-    o = data2.observations()
-    return (0.0+o["nSel"][i])*math.exp(initialk()*o["htMean"][i])/o["nBulk"][i]
+def initialA(inputData, i = 0) :
+    o = inputData.observations()
+    return (0.0+o["nSel"][i])*math.exp(initialk(inputData)*o["htMean"][i])/o["nBulk"][i]
 
-def initialk() :
-    o = data2.observations()
+def initialk(inputData) :
+    o = inputData.observations()
     lengthMatch = len(set(map(lambda x:len(o[x]),["nSel", "nBulk", "htMean"])))==1
     assert lengthMatch and (len(o["nSel"])>1)
 
     rAlphaT = [(o["nSel"][i]+0.0)/o["nBulk"][i] for i in range(2)]
     return math.log(rAlphaT[1]/rAlphaT[0])/(o["htMean"][0]-o["htMean"][1])
 
-def hadTerms(w, REwk, RQcd, smOnly) :
-    o = data2.observations()
+def hadTerms(w, inputData, REwk, RQcd, smOnly) :
+    o = inputData.observations()
 
     terms = []
 
-    wimport(w, r.RooRealVar("A_qcd", "A_qcd", initialA()/10.0, 0.0, 30.0*initialA()))
-    wimport(w, r.RooRealVar("k_qcd", "k_qcd", initialk(),      0.0, 30.0*initialk()))
+    A_ini = initialA(inputData)
+    k_ini = initialk(inputData)
+    wimport(w, r.RooRealVar("A_qcd", "A_qcd", A_ini/10.0, 0.0, 30.0*A_ini))
+    wimport(w, r.RooRealVar("k_qcd", "k_qcd", k_ini,      0.0, 30.0*k_ini))
 
     if REwk :
-        wimport(w, r.RooRealVar("A_ewk", "A_ewk", initialA(), 0.0, 30.0*initialA()))
-        wimport(w, r.RooRealVar("k_ewk", "k_ewk", initialk(), 0.0, 30.0*initialk()))
+        wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ini, 0.0, 30.0*A_ini))
+        wimport(w, r.RooRealVar("k_ewk", "k_ewk", k_ini, 0.0, 30.0*k_ini))
 
     if RQcd=="Zero" :
         w.var("A_qcd").setVal(0.0)
@@ -77,19 +77,19 @@ def hadTerms(w, REwk, RQcd, smOnly) :
         terms.append("signalGaus") #defined in signalVariables()
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
-def photTerms(w) :
+def photTerms(w, inputData) :
     terms = []
     #wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 2.0))
     wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 3.0))
     wimport(w, r.RooRealVar("onePhot", "onePhot", 1.0))
-    wimport(w, r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", data2.fixedParameters()["sigmaPhotZ"]))
+    wimport(w, r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", inputData.fixedParameters()["sigmaPhotZ"]))
     wimport(w, r.RooGaussian("photGaus", "photGaus", w.var("onePhot"), w.var("rhoPhotZ"), w.var("sigmaPhotZ")))
     terms.append("photGaus")
 
-    for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(data2.observations()["nPhot"])),
-                                                    data2.observations()["nPhot"],
-                                                    data2.mcExpectations()["mcPhot"],
-                                                    data2.mcExpectations()["mcZinv"]) :
+    for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(inputData.observations()["nPhot"])),
+                                                    inputData.observations()["nPhot"],
+                                                    inputData.mcExpectations()["mcPhot"],
+                                                    inputData.mcExpectations()["mcZinv"]) :
         if nPhotValue<0 : continue
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
         wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue))
@@ -99,18 +99,18 @@ def photTerms(w) :
     
     w.factory("PROD::photTerms(%s)"%",".join(terms))
 
-def muonTerms(w, smOnly) :
+def muonTerms(w, inputData, smOnly) :
     terms = []
     wimport(w, r.RooRealVar("rhoMuonW", "rhoMuonW", 1.0, 0.0, 2.0))
     wimport(w, r.RooRealVar("oneMuon", "oneMuon", 1.0))
-    wimport(w, r.RooRealVar("sigmaMuonW", "sigmaMuonW", data2.fixedParameters()["sigmaMuonW"]))
+    wimport(w, r.RooRealVar("sigmaMuonW", "sigmaMuonW", inputData.fixedParameters()["sigmaMuonW"]))
     wimport(w, r.RooGaussian("muonGaus", "muonGaus", w.var("oneMuon"), w.var("rhoMuonW"), w.var("sigmaMuonW")))
     terms.append("muonGaus")
 
-    for i,nMuonValue,mcMuonValue,mcTtwValue in zip(range(len(data2.observations()["nMuon"])),
-                                                   data2.observations()["nMuon"],
-                                                   data2.mcExpectations()["mcMuon"],
-                                                   data2.mcExpectations()["mcTtw"]) :
+    for i,nMuonValue,mcMuonValue,mcTtwValue in zip(range(len(inputData.observations()["nMuon"])),
+                                                   inputData.observations()["nMuon"],
+                                                   inputData.mcExpectations()["mcMuon"],
+                                                   inputData.mcExpectations()["mcTtw"]) :
         if nMuonValue<0 : continue
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
         wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue))
@@ -127,15 +127,15 @@ def muonTerms(w, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def signalVariables(w, signalXs, signalEff) :
-    wimport(w, r.RooRealVar("hadLumi", "hadLumi", data2.lumi()["had"]))
-    wimport(w, r.RooRealVar("muonLumi", "muonLumi", data2.lumi()["muon"]))
+def signalVariables(w, inputData, signalXs, signalEff) :
+    wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
+    wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", signalXs))
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 5.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
-    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", 2.0*data2.fixedParameters()["sigmaLumi"]))
+    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", 2.0*inputData.fixedParameters()["sigmaLumi"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
     for box,effs in signalEff.iteritems() :
@@ -143,9 +143,9 @@ def signalVariables(w, signalXs, signalEff) :
             name = "%sSignalEff%d"%(box, iBin)
             wimport(w, r.RooRealVar(name, name, eff))
 
-def multi(w, variables) :
+def multi(w, variables, inputData) :
     out = []
-    bins = range(len(data2.observations()["nSel"]))
+    bins = range(len(inputData.observations()["nSel"]))
     for item in variables :
         for i in bins :
             name = "%s%d"%(item,i)
@@ -153,7 +153,7 @@ def multi(w, variables) :
             out.append(name)
     return out
 
-def setupLikelihood(w, REwk, RQcd, signalXs, signalEff) :
+def setupLikelihood(w, inputData, REwk, RQcd, signalXs, signalEff) :
     terms = []
     obs = []
     nuis = []
@@ -161,17 +161,17 @@ def setupLikelihood(w, REwk, RQcd, signalXs, signalEff) :
     multiBinNuis = []
 
     if signalXs :
-        signalVariables(w, signalXs, signalEff)
+        signalVariables(w, inputData, signalXs, signalEff)
 
     smOnly = not signalXs
-    hadTerms(w, REwk, RQcd, smOnly)
+    hadTerms(w, inputData, REwk, RQcd, smOnly)
     terms.append("hadTerms")
     multiBinObs.append("nSel")
     nuis += ["A_qcd","k_qcd"]
     if REwk : nuis += ["A_ewk","k_ewk"]
 
-    photTerms(w)
-    muonTerms(w, smOnly)
+    photTerms(w, inputData)
+    muonTerms(w, inputData, smOnly)
     terms += ["photTerms", "muonTerms"]
     obs += ["onePhot", "oneMuon"]
     multiBinObs += ["nPhot", "nMuon"]
@@ -185,8 +185,8 @@ def setupLikelihood(w, REwk, RQcd, signalXs, signalEff) :
         nuis.append("rhoSignal")
         w.defineSet("poi", "f")
 
-    obs += multi(w, multiBinObs)
-    nuis += multi(w, multiBinNuis)
+    obs += multi(w, multiBinObs, inputData)
+    nuis += multi(w, multiBinNuis, inputData)
     w.defineSet("obs", ",".join(obs))
     w.defineSet("nuis", ",".join(nuis))
 
@@ -284,9 +284,9 @@ def pdf(w) :
     return w.pdf("model")
 
 class foo(object) :
-    def __init__(self, REwk = None, RQcd = None, signalXs = None, signalEff = {}, trace = False) :
+    def __init__(self, inputData = None, REwk = None, RQcd = None, signalXs = None, signalEff = {}, trace = False) :
         self.checkInputs(REwk, RQcd, signalEff)
-        for item in ["REwk", "RQcd", "signalXs", "signalEff"] :
+        for item in ["inputData", "REwk", "RQcd", "signalXs", "signalEff"] :
             setattr(self, item, eval(item))
 
         r.gROOT.SetBatch(True)
@@ -294,7 +294,7 @@ class foo(object) :
 
         self.note = plotting.note(REwk, RQcd)
         self.wspace = r.RooWorkspace("Workspace")
-        setupLikelihood(self.wspace, REwk, RQcd, signalXs, signalEff)
+        setupLikelihood(self.wspace, inputData, REwk, RQcd, signalXs, signalEff)
         self.data = dataset(self.wspace.set("obs"))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
 
@@ -329,4 +329,4 @@ class foo(object) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note)
 
     def bestFit(self) :
-        plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data), self.REwk, self.RQcd, self.smOnly())
+        plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data), self.inputData, self.REwk, self.RQcd, self.smOnly())
