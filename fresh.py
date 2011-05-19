@@ -13,14 +13,14 @@ def modelConfiguration(w, smOnly) :
 
 def initialA(inputData, i = 0) :
     o = inputData.observations()
-    return (0.0+o["nSel"][i])*math.exp(initialk(inputData)*o["htMean"][i])/o["nBulk"][i]
+    return (0.0+o["nHad"][i])*math.exp(initialk(inputData)*o["htMean"][i])/o["nBulk"][i]
 
 def initialk(inputData) :
     o = inputData.observations()
-    lengthMatch = len(set(map(lambda x:len(o[x]),["nSel", "nBulk", "htMean"])))==1
-    assert lengthMatch and (len(o["nSel"])>1)
+    lengthMatch = len(set(map(lambda x:len(o[x]),["nHad", "nBulk", "htMean"])))==1
+    assert lengthMatch and (len(o["nHad"])>1)
 
-    rAlphaT = [(o["nSel"][i]+0.0)/o["nBulk"][i] for i in range(2)]
+    rAlphaT = [(o["nHad"][i]+0.0)/o["nBulk"][i] for i in range(2)]
     return math.log(rAlphaT[1]/rAlphaT[0])/(o["htMean"][0]-o["htMean"][1])
 
 def hadTerms(w, inputData, REwk, RQcd, smOnly) :
@@ -47,7 +47,7 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         w.var("k_ewk").setVal(0.0)
         w.var("k_ewk").setConstant()
 
-    for i,htMeanValue,nBulkValue,nSelValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nSel"]) :
+    for i,htMeanValue,nBulkValue,nHadValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nHad"]) :
         for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
 
@@ -56,7 +56,7 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
             wimport(w, r.RooFormulaVar("ewk%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewk"), w.var("k_ewk"), w.var("htMean%d"%i))))
             ewk = w.function("ewk%d"%i)
         else :
-            wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nSelValue), 0.0, 10.0*max(1, nSelValue)))
+            wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
             ewk = w.var("ewk%d"%i)
         wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.0, 1.0))
 
@@ -64,13 +64,13 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         wimport(w, r.RooFormulaVar("ttw%d"%i,  "(@0)*(1.0-(@1))", r.RooArgList(ewk, w.var("fZinv%d"%i))))
 
         wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(ewk, w.function("qcd%d"%i))))
-        wimport(w, r.RooRealVar("nSel%d"%i, "nSel%d"%i, nSelValue))
+        wimport(w, r.RooRealVar("nHad%d"%i, "nHad%d"%i, nHadValue))
         if smOnly :
-            wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadB%d"%i)))
+            wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nHad%d"%i), w.function("hadB%d"%i)))
         else :
             wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("hadLumi"), w.var("hadSignalEff%d"%i))))
             wimport(w, r.RooAddition("hadExp%d"%i, "hadExp%d"%i, r.RooArgSet(w.function("hadB%d"%i), w.function("hadS%d"%i))))
-            wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nSel%d"%i), w.function("hadExp%d"%i)))
+            wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nHad%d"%i), w.function("hadExp%d"%i)))
         terms.append("hadPois%d"%i)
     
     if not smOnly :
@@ -145,7 +145,7 @@ def signalVariables(w, inputData, signalXs, signalEff) :
 
 def multi(w, variables, inputData) :
     out = []
-    bins = range(len(inputData.observations()["nSel"]))
+    bins = range(len(inputData.observations()["nHad"]))
     for item in variables :
         for i in bins :
             name = "%s%d"%(item,i)
@@ -166,7 +166,7 @@ def setupLikelihood(w, inputData, REwk, RQcd, signalXs, signalEff) :
     smOnly = not signalXs
     hadTerms(w, inputData, REwk, RQcd, smOnly)
     terms.append("hadTerms")
-    multiBinObs.append("nSel")
+    multiBinObs.append("nHad")
     nuis += ["A_qcd","k_qcd"]
     if REwk : nuis += ["A_ewk","k_ewk"]
 

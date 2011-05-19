@@ -117,7 +117,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
     if not smOnly :
         hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
 
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.3, obsKey = "nSel", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars)
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.3, obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars)
     
     muonVars = [
         {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":"total"},

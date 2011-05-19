@@ -18,7 +18,7 @@ class data(object) :
     def observations(self) :
         return {"htMean":       ( 265.0,  315.0,  375.0,  475.0),#place-holder values
                 "nBulk": scaled((844459, 331948, 225649, 110034), self.lumi()["had"]/self.lumi()["hadBulk"]),
-                "nSel":         (    33,     11,      8,      5), #2010
+                "nHad":         (    33,     11,      8,      5), #2010
                 "nPhot":        (    94,     45,     21,      9),
                 "nMuon":        (    13,      5,      5,      2), #2010
                 }
