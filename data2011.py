@@ -35,7 +35,7 @@ class data(object) :
                 "mcTtw":          scaled((  10.5,    4.47,   3.415,  1.692), self.lumi()["had" ]/self.lumi()["mcTtw"] ), #2010
                 "mcPhot":    excl(scaled((   110,      37,      28,      9,    4,    0.8,    0.5,    0), self.lumi()["phot"]/self.lumi()["mcPhot"]), self.photIsExcl()),
                 "mcPhotErr":      scaled((    10,       3,       3,      1,    1,    0.5,    0.4,    1), self.lumi()["phot"]/self.lumi()["mcPhot"]),
-                "mcZinv":    excl(scaled((    39,      16,      18,      9,  1.7,    0.4,    0.4,    0), self.lumi()["had"] /self.lumi()["mcZinv"]), self.photIsExcl()),
+                "mcZinv":    excl(scaled((    39,      16,      18,      9,  1.7,    0.41,   0.4, 0.01), self.lumi()["had"] /self.lumi()["mcZinv"]), self.photIsExcl()),
                 "mcZinvErr":      scaled((     4,       3,       3,      2,  0.9,    0.4,    0.4,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
                 }
     def fixedParameters(self) :
