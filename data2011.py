@@ -1,26 +1,26 @@
 def scaled(t, factor) : return tuple([factor*a for a in t])
 
 class data(object) :
-    def htBinLowerEdges(self) : return (250.0, 300.0, 350.0, 450.0)
-    def htMaxForPlot(self) :    return 600.0
+    def htBinLowerEdges(self) : return (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
+    def htMaxForPlot(self) :    return 975.0
     def lumi(self) :
-        return {"had":     35.0,
-                "hadBulk": 35.0,
+        return {"had":     189.,
+                "hadBulk": 189.,
                 
-                "muon":    35.0,
-                "mcMuon":  35.0,
-                "mcTtw":   35.0,
+                "muon":     35.,
+                "mcMuon":   35.,
+                "mcTtw":    35.,
                 
                 "phot":    101.,
                 "mcPhot":  101.,
                 "mcZinv":  101.,
                 }
     def observations(self) :
-        return {"htMean":       ( 265.0,  315.0,  375.0,  475.0),#place-holder values
-                "nBulk": scaled((844459, 331948, 225649, 110034), self.lumi()["had"]/self.lumi()["hadBulk"]),
-                "nHad":         (    33,     11,      8,      5), #2010
-                "nPhot":        (    94,     45,     21,      9),
-                "nMuon":        (    13,      5,      5,      2), #2010
+        return {"htMean": (     297.51,      347.25,      415.57,   516.2 , 617.17, 717.72, 818.33, 919.08),
+                "nBulk":  (9.04799e+06, 3.79382e+06, 2.62383e+06,   823968, 289401, 112899,  48118,  65098),
+                "nHad":   (        130,          68,          47,       12,      5,      1,      0,      0),
+                "nPhot":       (    94,     45,     21,      9),
+                "nMuon":       (    13,      5,      5,      2), #2010
                 }
     def mcExpectations(self) :
         return {"mcMuon":scaled((  12.2,    5.2,    4.1,    1.9  ), self.lumi()["muon"]/self.lumi()["mcMuon"]), #2010
