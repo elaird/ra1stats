@@ -29,12 +29,13 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
             for count in range(content) : out.Fill(bins[i])
         return out
     
-    def varHisto(inp, wspace, varName, color, style, wspaceMemberFunc = None) :
+    def varHisto(inp, wspace, varName, color, style, width, wspaceMemberFunc = None) :
         out = inp.Clone(varName)
         out.Reset()
         out.SetMarkerStyle(1)
         out.SetLineColor(color)
         out.SetLineStyle(style)
+        out.SetLineWidth(width)
         out.SetMarkerColor(color)
         for i in range(len(inputData.htBinLowerEdges())) :
             if wspaceMemberFunc :
@@ -61,7 +62,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     stacks = {}
     stuff += [leg,inp,stacks]
     for d in otherVars :
-        hist = varHisto(inp, wspace, d["var"], d["color"], d["style"], d["type"])
+        hist = varHisto(inp, wspace, d["var"], d["color"], d["style"], d["width"] if "width" in d else 1, d["type"])
         if not hist.GetEntries() : continue
         stuff.append(hist)
         leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
@@ -101,9 +102,9 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
 
     hadVars = [
         {"var":"hadB", "type":"function", "desc":"expected total background",
-         "color":r.kBlue, "style":1, "stack":"total"},
+         "color":r.kBlue, "style":1, "width":2, "stack":"total"},
         {"var":"ewk",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewk") if REwk else "[floating]",
-         "color":r.kCyan, "style":1, "stack":"background"},
+         "color":r.kCyan, "style":2, "stack":"background"},
         {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcd"),
          "color":r.kMagenta, "style":3, "stack":"background"},
         ]
@@ -126,7 +127,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
     if not smOnly :
         muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars)
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.6, obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},
             {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
             ])
