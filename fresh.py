@@ -28,14 +28,20 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
 
     terms = []
 
-    A_ini = initialA(inputData)
-    k_ini = initialk(inputData)
-    wimport(w, r.RooRealVar("A_qcd", "A_qcd", A_ini/10.0, 0.0, 30.0*A_ini))
-    wimport(w, r.RooRealVar("k_qcd", "k_qcd", k_ini,      0.0, 30.0*k_ini))
+    #A_ini = initialA(inputData)
+    #k_ini = initialk(inputData)
+    #wimport(w, r.RooRealVar("A_qcd", "A_qcd", A_ini/10.0, 0.0, 30.0*A_ini))
+    #wimport(w, r.RooRealVar("k_qcd", "k_qcd", k_ini,      0.0, 30.0*k_ini))
+
+    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 2.03e-04, 0.0, 30*2.03e-04))
+    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-6,   0.0, 1.0))
 
     if REwk :
-        wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ini, 0.0, 30.0*A_ini))
-        wimport(w, r.RooRealVar("k_ewk", "k_ewk", k_ini, 0.0, 30.0*k_ini))
+        #wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ini, 0.0, 30.0*A_ini))
+        #wimport(w, r.RooRealVar("k_ewk", "k_ewk", k_ini, 0.0, 30.0*k_ini))
+
+        wimport(w, r.RooRealVar("A_ewk", "A_ewk", 2.97e-05, 0.0, 30*2.97e-05))
+        wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6,   0.0, 1.0))
 
     if RQcd=="Zero" :
         w.var("A_qcd").setVal(0.0)
@@ -86,13 +92,17 @@ def photTerms(w, inputData) :
     wimport(w, r.RooGaussian("photGaus", "photGaus", w.var("onePhot"), w.var("rhoPhotZ"), w.var("sigmaPhotZ")))
     terms.append("photGaus")
 
-    for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(inputData.observations()["nPhot"])),
-                                                    inputData.observations()["nPhot"],
-                                                    inputData.mcExpectations()["mcPhot"],
-                                                    inputData.mcExpectations()["mcZinv"]) :
+    rFinal = None
+    for i,nPhotValue,mcPhotValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
+                                                             inputData.observations()["nPhot"],
+                                                             inputData.mcExpectations()["mcPhot"],
+                                                             inputData.mcExpectations()["mcZinv"],
+                                                             inputData.constantMcRatioAfterHere(),
+                                                             ) :
         if nPhotValue<0 : continue
+        if stopHere : rFinal = mcPhotValue/mcZinvValue
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
-        wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue))
+        wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue if not rFinal else rFinal))
         wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.function("zInv%d"%i))))
         wimport(w, r.RooPoisson("photPois%d"%i, "photPois%d"%i, w.var("nPhot%d"%i), w.function("photExp%d"%i)))
         terms.append("photPois%d"%i)
@@ -107,13 +117,17 @@ def muonTerms(w, inputData, smOnly) :
     wimport(w, r.RooGaussian("muonGaus", "muonGaus", w.var("oneMuon"), w.var("rhoMuonW"), w.var("sigmaMuonW")))
     terms.append("muonGaus")
 
-    for i,nMuonValue,mcMuonValue,mcTtwValue in zip(range(len(inputData.observations()["nMuon"])),
-                                                   inputData.observations()["nMuon"],
-                                                   inputData.mcExpectations()["mcMuon"],
-                                                   inputData.mcExpectations()["mcTtw"]) :
+    rFinal = None
+    for i,nMuonValue,mcMuonValue,mcTtwValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
+                                                            inputData.observations()["nMuon"],
+                                                            inputData.mcExpectations()["mcMuon"],
+                                                            inputData.mcExpectations()["mcTtw"],
+                                                            inputData.constantMcRatioAfterHere(),
+                                                            ) :
         if nMuonValue<0 : continue
+        if stopHere : rFinal = mcMuonValue/mcTtwValue
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
-        wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue))
+        wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue if not rFinal else rFinal))
         wimport(w, r.RooFormulaVar("muonB%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.function("ttw%d"%i))))
 
         if smOnly :
