@@ -15,9 +15,10 @@ class data(object) :
         return {"had":     189.,
                 "hadBulk": 189.,
                 
-                "muon":     35.,
-                "mcMuon":   35.,
-                "mcTtw":    35.,
+                "muon":    183., #mu  dataset (pt>25)
+                #"muon":   189., #had dataset (pt>20)
+                "mcMuon":  189.,
+                "mcTtw":   189.,
                 
                 "phot":    164.6,
                 "mcPhot":  164.6,
@@ -28,15 +29,17 @@ class data(object) :
                 "nBulk":     ( 9.047e+06,   3.793e+06,   2.623e+06,  823968, 289401, 112899,  48118,  65098),
                 "nHad":      (       130,          68,          47,      12,      5,      1,      0,      0),
                 "nPhot":excl((       142,          57,          43,      12,      2,      2,      2,      0), self.photIsExcl()),
-                "nMuon":     (   13,   5,     5,    2), #2010
+                "nMuon":     (       177,          77,          13,      10,      4,      0,      0,      0), #mu  dataset (pt>25)
+                #"nMuon":    (        95,          73,          17,      12,      4,      0,      0,      0), #had dataset (pt>20)
                 }
     def mcExpectations(self) :
-        return {"mcMuon":         scaled((  12.2,     5.2,     4.1,    1.9), self.lumi()["muon"]/self.lumi()["mcMuon"]), #2010
-                "mcTtw":          scaled((  10.5,    4.47,   3.415,  1.692), self.lumi()["had" ]/self.lumi()["mcTtw"] ), #2010
-                "mcPhot":    excl(scaled((   110,      37,      28,      9,    4,    0.8,    0.5,    0), self.lumi()["phot"]/self.lumi()["mcPhot"]), self.photIsExcl()),
-                "mcPhotErr":      scaled((    10,       3,       3,      1,    1,    0.5,    0.4,    1), self.lumi()["phot"]/self.lumi()["mcPhot"]),
-                "mcZinv":    excl(scaled((    39,      16,      18,      9,  1.7,    0.41,   0.4, 0.01), self.lumi()["had"] /self.lumi()["mcZinv"]), self.photIsExcl()),
-                "mcZinvErr":      scaled((     4,       3,       3,      2,  0.9,    0.4,    0.4,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
+        return {"mcMuon":         scaled((198.17,  100.06,   16.78,   4.82,   2.08,   1.13,   0.11, 0.02), self.lumi()["muon"]/self.lumi()["mcMuon"]), #mu  dataset (pt>25)
+                #"mcMuon":        scaled((201.04,  101.8 ,   17.82,   4.86,   2.10,   1.13,   0.11, 0.03), self.lumi()["muon"]/self.lumi()["mcMuon"]), #had dataset (pt>20)
+                "mcTtw":          scaled((  74.4,   27.82,   19.26,   7.17,   1.24,   1.05,   0.52, 0.55), self.lumi()["had" ]/self.lumi()["mcTtw" ]),
+                "mcPhot":    excl(scaled((   110,      37,      28,      9,      4,    0.8,    0.5,    0), self.lumi()["phot"]/self.lumi()["mcPhot"]), self.photIsExcl()),
+                "mcPhotErr":      scaled((    10,       3,       3,      1,      1,    0.5,    0.4,    1), self.lumi()["phot"]/self.lumi()["mcPhot"]),
+                "mcZinv":    excl(scaled((    39,      16,      18,      9,    1.7,    0.41,   0.4, 0.01), self.lumi()["had"] /self.lumi()["mcZinv"]), self.photIsExcl()),
+                "mcZinvErr":      scaled((     4,       3,       3,      2,    0.9,    0.4,    0.4,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
                 }
     def fixedParameters(self) :
         return {"sigmaLumi":  0.04,
