@@ -8,9 +8,10 @@ def excl(counts, isExclusive) :
     return tuple(out)
 
 class data(object) :
-    def photIsExcl(self) :      return (    1,     1,     0,     0,     0,     0,     0,     1)
-    def htBinLowerEdges(self) : return (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
-    def htMaxForPlot(self) :    return 975.0
+    def photIsExcl(self) :               return (    1,     1,     0,     0,     0,     0,     0,     1)
+    def constantMcRatioAfterHere(self) : return (    0,     0,     1,     0,     0,     0,     0,     0)
+    def htBinLowerEdges(self) :          return (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
+    def htMaxForPlot(self) :             return 975.0
     def lumi(self) :
         return {"had":     189.,
                 "hadBulk": 189.,
@@ -33,12 +34,13 @@ class data(object) :
                 #"nMuon":    (        95,          73,          17,      12,      4,      0,      0,      0), #had dataset (pt>20)
                 }
     def mcExpectations(self) :
+        ep = 0.01
         return {"mcMuon":         scaled((198.17,  100.06,   16.78,   4.82,   2.08,   1.13,   0.11, 0.02), self.lumi()["muon"]/self.lumi()["mcMuon"]), #mu  dataset (pt>25)
                 #"mcMuon":        scaled((201.04,  101.8 ,   17.82,   4.86,   2.10,   1.13,   0.11, 0.03), self.lumi()["muon"]/self.lumi()["mcMuon"]), #had dataset (pt>20)
                 "mcTtw":          scaled((  74.4,   27.82,   19.26,   7.17,   1.24,   1.05,   0.52, 0.55), self.lumi()["had" ]/self.lumi()["mcTtw" ]),
-                "mcPhot":    excl(scaled((   110,      37,      28,      9,      4,    0.8,    0.5,    0), self.lumi()["phot"]/self.lumi()["mcPhot"]), self.photIsExcl()),
+                "mcPhot":    excl(scaled((   110,      37,      28,      9,      4,    0.8,    0.5,   ep), self.lumi()["phot"]/self.lumi()["mcPhot"]), self.photIsExcl()),
                 "mcPhotErr":      scaled((    10,       3,       3,      1,      1,    0.5,    0.4,    1), self.lumi()["phot"]/self.lumi()["mcPhot"]),
-                "mcZinv":    excl(scaled((    39,      16,      18,      9,    1.7,    0.41,   0.4, 0.01), self.lumi()["had"] /self.lumi()["mcZinv"]), self.photIsExcl()),
+                "mcZinv":    excl(scaled((    39,      16,      18,      9,    1.7, ep+0.4,    0.4,   ep), self.lumi()["had"] /self.lumi()["mcZinv"]), self.photIsExcl()),
                 "mcZinvErr":      scaled((     4,       3,       3,      2,    0.9,    0.4,    0.4,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
                 }
     def fixedParameters(self) :
