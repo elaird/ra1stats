@@ -1,6 +1,7 @@
 class data(object) :
-    def htBinLowerEdges(self) : return (250.0, 300.0, 350.0, 450.0)
-    def htMaxForPlot(self) :    return 600.0
+    def constantMcRatioAfterHere(self) : return (    0,     0,     0,     0)
+    def htBinLowerEdges(self) :          return (250.0, 300.0, 350.0, 450.0)
+    def htMaxForPlot(self) :             return 600.0
     def lumi(self) :
         return {"had":     35.0,
                 "hadBulk": 35.0,
