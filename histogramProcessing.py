@@ -488,6 +488,7 @@ def makeValidationPlots() :
             suppressed.append(name)
             continue
         canvas.SetLogz(name in logZ)
+        if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
         canvas.Print(fileName)
 
     canvas.Clear()
