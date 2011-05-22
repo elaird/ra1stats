@@ -12,7 +12,18 @@ def setupRoot() :
     r.gStyle.SetPalette(1)
     #r.gStyle.SetPadTickX(True)
     #r.gStyle.SetPadTickY(True)
-    
+
+def ratio(file, numDir, numHisto, denDir, denHisto) :
+    f = r.TFile(file)
+    assert not f.IsZombie(), file
+        
+    hOld = f.Get("%s/%s"%(numDir, numHisto))
+    h = hOld.Clone("%s_clone"%hOld.GetName())
+    h.SetDirectory(0)
+    h.Divide(f.Get("%s/%s"%(denDir, denHisto)))
+    f.Close()
+    return h
+
 def checkHistoBinning() :
     def axisStuff(axis) :
         return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
@@ -86,29 +97,18 @@ def pdfUncHisto(spec) :
         return h
 
 def loXsHisto() :
-    print "WARNING: hard-coded filename in hp.loXsHisto()"
-    f = r.TFile("/home/hep/elaird1/82_xs_maps/tanbeta10_lo.root")
-    out = f.Get("xs").Clone("XS")
-    out.SetDirectory(0)
-    f.Close()
+    s = hs.histoSpec(box = "had", scale = "1")
+    out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi_noweight")
+    out.Scale(conf.switches()["icfDefaultNEventsIn"]/conf.switches()["icfDefaultLumi"])
+    #mData = mEv.GetSusyCrossSection()*mDesiredLumi/10000;
+    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/framework/src/common/Compute_Helpers.cc
+    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
     return out
-    
-def loYieldHisto(spec, dirs, lumi, beforeSpec = None) :
-    f = r.TFile(spec["file"])
-    assert not f.IsZombie()
 
-    h = None
-    for dir in dirs :
-        hOld = f.Get("%s/%s"%(dir, spec["loYield"]))
-        if not h :
-            h = hOld.Clone("%s_%s_%s"%(spec["file"], dir, hOld.GetName()))
-        else :
-            h.Add(hOld)
-            
-    h.SetDirectory(0)
-    h.Scale(lumi/conf.switches()["icfDefaultLumi"])
-    f.Close()
-    return h
+def loEffHisto(box, scale, htLower, htUpper) :
+    s = hs.histoSpec(box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+    out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
+    return out
 
 def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     def numerator(name) :
@@ -174,10 +174,8 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     f.Close()
     return out
 
-def exampleHisto(lumi = 1.0) :
-    func = nloYieldHisto if conf.switches()["nlo"] else loYieldHisto
-    s = hs.histoSpecs()["sig10"]
-    return func(s, s["350Dirs"]+s["450Dirs"], lumi)
+def exampleHisto() :
+    return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
 
 def mergePickledFiles() :
     example = exampleHisto()
@@ -425,6 +423,13 @@ def printTimeStamp() :
     text.DrawText(0.1, 0.35, "REwk = %s"%(s["REwk"] if s["REwk"] else "[no form assumed]"))
     return text
 
+def printSuppressed(l) :
+    text = r.TText()
+    text.SetTextSize(0.3*text.GetTextSize())
+    text.SetNDC()
+    text.DrawText(0.1, 0.9, "empty histograms: %s"%str(l))
+    return text
+
 def printLumis() :
     text = r.TText()
     text.SetNDC()
@@ -436,13 +441,13 @@ def printLumis() :
     s = 0.035
     text.DrawText(x, y  , "sample     lumi (/pb)")
     text.DrawText(x, y-s, "---------------------")
-    import data2011
+    inputData = conf.data()
     i = 1
-    d = data2011.lumi()
+    d = inputData.lumi()
     for key in sorted(d.keys()) :
         i += 1
         text.DrawText(x, y-i*s, "%8s       %6.0f"%(key, d[key]))
-    text.DrawText(x, y-(i+1)*s, "HT bins: %s"%str(data2011.htBinLowerEdges()))
+    text.DrawText(x, y-(i+1)*s, "HT bins: %s"%str(inputData.htBinLowerEdges()))
     return text
 
 def makeValidationPlots() :
@@ -455,13 +460,15 @@ def makeValidationPlots() :
     
     canvas.Print(fileName+"[")
 
-
     text1 = printTimeStamp()
     text2 = printLumis()
     canvas.Print(fileName)
     canvas.Clear()
-    
+
+    logZ = ["xs"]
     special = ["excluded", "upperLimit"]
+    suppressed = []
+    
     first = []
     names = sorted([key.GetName() for key in f.GetListOfKeys()])
     for item in special :
@@ -477,8 +484,16 @@ def makeValidationPlots() :
         h2.SetStats(False)
         h2.SetTitle("%s%s"%(name, hs.histoTitle()))
         h2.Draw("colz")
+        if not h2.Integral() :
+            suppressed.append(name)
+            continue
+        canvas.SetLogz(name in logZ)
         canvas.Print(fileName)
 
+    canvas.Clear()
+    text3 = printSuppressed(suppressed)
+    canvas.Print(fileName)
+    
     canvas.Print(fileName+"]")
     os.system("ps2pdf %s %s"%(fileName, outFileName))
     os.remove(fileName)
