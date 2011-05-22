@@ -25,7 +25,8 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
         bins = array.array('d', list(inputData.htBinLowerEdges())+[inputData.htMaxForPlot()])
         out = r.TH1D(obsKey, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
         out.Sumw2()
-        for i,content in enumerate(inputData.observations()[obsKey]) :
+        obs = inputData.observations()
+        for i,content in enumerate(obs[obsKey] if obsKey in obs else []) :
             for count in range(content) : out.Fill(bins[i])
         return out
     
@@ -48,7 +49,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
         return out
 
     stuff = []
-    leg = r.TLegend(legendX1, 0.6, 0.85, 0.85, "ML values" if otherVars else "")
+    leg = r.TLegend(legendX1, 0.6, 0.85, 0.85, "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -57,8 +58,10 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     inp.SetStats(False)
     inp.Draw("p")
     inp.SetMinimum(0.0)
-    leg.AddEntry(inp, obsLabel, "lp")
+    if obsLabel : leg.AddEntry(inp, obsLabel, "lp")
+    else        : inp.SetMaximum(4.0)
 
+    goptions = "same"
     stacks = {}
     stuff += [leg,inp,stacks]
     for d in otherVars :
@@ -70,10 +73,10 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
             if d["stack"] not in stacks :
                 stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
             stacks[d["stack"]].Add(hist)
-        else : hist.Draw("same")
+        else : hist.Draw(goptions)
 
     for stack in stacks.values() :
-        stack.Draw("same")
+        stack.Draw(goptions)
 
     leg.Draw()
     r.gPad.SetTickx()
@@ -122,7 +125,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
     
     muonVars = [
         {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":"total"},
-        {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "desc":"2010 SM MC",        "stack":None},
+        {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
         ]
     if not smOnly :
         muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
@@ -131,6 +134,12 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},
             {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
             ])
+
+    #plot MC ratios
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
+            {"var":"rMuon", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC muon / MC ttW", "stack":None}])
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
+            {"var":"rPhot", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC phot / MC Z->inv", "stack":None}])
     
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
