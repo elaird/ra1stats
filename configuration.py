@@ -3,18 +3,20 @@
 def switches() :
     d = {}
 
+    d["dataYear"] = [2010, 2011][1]
+    
     d["CL"] = 0.95
     d["method"] = ["profileLikelihood", "feldmanCousins"][0]
     d["minSignalEventsForConsideration"] = 1.0
     d["maxSignalEventsForConsideration"] = None
 
-    d["REwk"] = ["", "FallingExp", "Constant"][0]
-    d["RQcd"] = ["FallingExp", "Zero"][0]
+    d["REwk"] = ["", "FallingExp", "Constant"][2]
+    d["RQcd"] = ["FallingExp", "Zero"][1]
     
     d["nlo"] = False
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
-    #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
-    d["listOfTestPoints"] = []
+    d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
+    #d["listOfTestPoints"] = []
     
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
@@ -25,6 +27,7 @@ def switches() :
     d["fillHolesInEfficiencyPlots"] = True
     d["fillHolesInXsLimitPlot"] = True
     d["icfDefaultLumi"] = 100.0 #/pb
+    d["icfDefaultNEventsIn"] = 10000
     
     d["fcAdditionalNToysFactor"] = 4
     d["fcSetNBins"] = 40
@@ -39,8 +42,13 @@ def switches() :
     checkAndAdjust(d)
     return d
 
+def data() :
+    exec("import data%s as inputData"%str(switches()["dataYear"]))
+    return inputData.data()
+
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
+    assert not d["nlo"],"NLO is not yet supported."
     d["lateDivision"] = False
     if len(d["signalModel"])==2 :
         d["nlo"] = False
