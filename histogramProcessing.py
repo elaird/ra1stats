@@ -503,8 +503,9 @@ def makeValidationPlots() :
             continue
         canvas.SetLogz(name in logZ)
         if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
-        s = conf.switches()
-        if s["drawBenchmarkPoints"] and ("tanBeta" in s["signalModel"]) : stuff = drawBenchmarks(conf.scanParameters()[s["signalModel"]])
+        switches = conf.switches()
+        params =  conf.scanParameters()
+        if switches["drawBenchmarkPoints"] and (switches["signalModel"] in params) : stuff = drawBenchmarks(params[switches["signalModel"]])
         canvas.Print(fileName)
 
     canvas.Clear()
