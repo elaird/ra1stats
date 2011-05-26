@@ -451,7 +451,6 @@ def printLumis() :
     return text
 
 def drawBenchmarks(params) :
-    print params
     text = r.TText()
     out = []
     for label,coords in conf.benchmarkPoints().iteritems() :
@@ -459,7 +458,6 @@ def drawBenchmarks(params) :
         for key,value in coords.iteritems() :
             if key in params and value!=params[key] : drawIt = False
         if not drawIt : continue
-        print label,coords,drawIt
         marker = r.TMarker(coords["m0"], coords["m12"], 20)
         marker.Draw()
         out.append(marker)
