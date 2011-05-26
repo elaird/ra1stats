@@ -450,6 +450,22 @@ def printLumis() :
     text.DrawText(x, y-(i+1)*s, "HT bins: %s"%str(inputData.htBinLowerEdges()))
     return text
 
+def drawBenchmarks(params) :
+    print params
+    text = r.TText()
+    out = []
+    for label,coords in conf.benchmarkPoints().iteritems() :
+        drawIt = True
+        for key,value in coords.iteritems() :
+            if key in params and value!=params[key] : drawIt = False
+        if not drawIt : continue
+        print label,coords,drawIt
+        marker = r.TMarker(coords["m0"], coords["m12"], 20)
+        marker.Draw()
+        out.append(marker)
+        out.append(text.DrawText(10+coords["m0"], 10+coords["m12"], label))
+    return out
+        
 def makeValidationPlots() :
     inFile = conf.stringsNoArgs()["mergedFile"]
     f = r.TFile(inFile)
@@ -466,7 +482,7 @@ def makeValidationPlots() :
     canvas.Clear()
 
     logZ = ["xs"]
-    special = ["excluded", "upperLimit"]
+    special = ["excluded", "upperLimit", "xs"]
     suppressed = []
     
     first = []
@@ -489,6 +505,8 @@ def makeValidationPlots() :
             continue
         canvas.SetLogz(name in logZ)
         if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
+        s = conf.switches()
+        if s["drawBenchmarkPoints"] and ("tanBeta" in s["signalModel"]) : stuff = drawBenchmarks(conf.scanParameters()[s["signalModel"]])
         canvas.Print(fileName)
 
     canvas.Clear()
