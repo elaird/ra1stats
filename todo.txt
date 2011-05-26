@@ -1,11 +1,9 @@
 fix leak in pValue()
 snapshot in pValue()
 mc stats as systematic
-investigate lo/nlo binning mismatch
 check xsHisto binning
 
 (inherited)
 improve histo bin check
-investigate ng process
 consider pdfUncertainty for LO
 consider lognormal vs. gaussian
