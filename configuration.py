@@ -117,7 +117,6 @@ def benchmarkPoints() :
     out["IM2" ] = dict(zip(fields, [   180,    510,     0,        10,         1]))
     out["IM3" ] = dict(zip(fields, [   260,    450,     0,        10,         1]))
     out["IM4" ] = dict(zip(fields, [   820,    390,     0,        10,         1]))
-
     return out
 
 def scanParameters() :
@@ -127,3 +126,6 @@ def scanParameters() :
     out["tanBeta10"] = dict(zip(fields, [   0,        10,         1]))
     out["tanBeta50"] = dict(zip(fields, [   0,        50,         1]))
     return out
+
+def processes() :
+    return ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
