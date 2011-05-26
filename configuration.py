@@ -3,7 +3,7 @@
 def switches() :
     d = {}
 
-    d["dataYear"] = [2010, 2011][1]
+    d["dataYear"] = [2010, 2011][0]
     
     d["CL"] = 0.95
     d["method"] = ["profileLikelihood", "feldmanCousins"][0]
@@ -13,7 +13,7 @@ def switches() :
     d["REwk"] = ["", "FallingExp", "Constant"][2]
     d["RQcd"] = ["FallingExp", "Zero"][1]
     
-    d["nlo"] = False
+    d["nlo"] = True
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
     d["drawBenchmarkPoints"] = True
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
@@ -49,7 +49,6 @@ def data() :
 
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
-    assert not d["nlo"],"NLO is not yet supported."
     d["lateDivision"] = False
     if len(d["signalModel"])==2 :
         d["nlo"] = False
