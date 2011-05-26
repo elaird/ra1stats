@@ -18,9 +18,12 @@ def go() :
     bins = data.htBinLowerEdges()
 
     for point in points() :
-        x = hp.loXsHisto().GetBinContent(*point)
+        xsHisto  = getattr(hp,"%sXsHisto"%("nlo" if s["nlo"] else "lo"))
+        effHisto = getattr(hp,"%sEffHisto"%("nlo" if s["nlo"] else "lo"))
+        
+        x = xsHisto().GetBinContent(*point)
         signalEff = {}
-        signalEff["had" ] = [hp.loEffHisto(box = "had", scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
+        signalEff["had" ] = [effHisto(box = "had", scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
                              for htLower, htUpper in zip(bins, list(bins[1:])+[None])]
         signalEff["muon"] = [0.0]*len(bins)
         #print x,signalEff
