@@ -2,6 +2,7 @@ fix leak in pValue()
 snapshot in pValue()
 mc stats as systematic
 check xsHisto binning
+bin merging
 
 (inherited)
 improve histo bin check
