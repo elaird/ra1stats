@@ -110,10 +110,10 @@ def loEffHisto(box, scale, htLower, htUpper) :
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     return out
 
-def nloXsHisto() :
-    s = hs.histoSpec(box = "had", scale = "1")
+def nloXsHisto(scale = "1") :
+    s = hs.histoSpec(box = "had", scale = scale)
     out = None
-    for process in ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"] :
+    for process in conf.processes() :
         h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
         if out is None : out = h.Clone("nloXsHisto")
         else :           out.Add(h)
@@ -122,40 +122,15 @@ def nloXsHisto() :
     return out
 
 def nloEffHisto(box, scale, htLower, htUpper) :
-    return loEffHisto(box, scale, htLower, htUpper)    
-
-def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
-    def numerator(name) :
-        out = None
-        for dir in dirs :
-            if out is None :
-                out = f.Get("%s/m0_m12_%s_0"%(dir, name))
-            else :
-                out.Add(f.Get("%s/m0_m12_%s_0"%(dir, name)))
-        return out
-
-    f = r.TFile(spec["file"])
-    beforeFile = f if not beforeSpec else r.TFile(beforeSpec["file"])
-    beforeDir = spec["beforeDir"] if not beforeSpec else beforeSpec["beforeDir"]
-    if f.IsZombie() : return None
-
-    all = None
-    #l = ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
-    l = ["gg", "sb", "ss", "sg", "ll", "nn", "bb", "tb", "ns"]
-    for name in l :
-        num = numerator(name)
-        num.Divide(beforeFile.Get("%s/m0_m12_%s_5"%(beforeDir, name)))
-        
-        if all is None :
-            all = num.Clone("%s_%s_%s"%(spec["file"], dirs[0], name))
-        else :
-            all.Add(num)
-
-    all.SetDirectory(0)
-    all.Scale(lumi)
-    f.Close()
-    if beforeSpec : beforeFile.Close()
-    return all
+    s = hs.histoSpec(box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+    out = None
+    for process in conf.processes() :
+        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
+        if out is None : out = h.Clone("nloEffHisto")
+        else :           out.Add(h)
+    out.SetDirectory(0)
+    out.Divide(nloXsHisto(scale)) #divide by total xs
+    return out
 
 def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     def counts(dirs) :
