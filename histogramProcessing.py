@@ -110,6 +110,20 @@ def loEffHisto(box, scale, htLower, htUpper) :
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     return out
 
+def nloXsHisto() :
+    s = hs.histoSpec(box = "had", scale = "1")
+    out = None
+    for process in ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"] :
+        h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
+        if out is None : out = h.Clone("nloXsHisto")
+        else :           out.Add(h)
+    out.SetDirectory(0)
+    #see links in loXsHisto
+    return out
+
+def nloEffHisto(box, scale, htLower, htUpper) :
+    return loEffHisto(box, scale, htLower, htUpper)    
+
 def nloYieldHisto(spec, dirs, lumi, beforeSpec = None) :
     def numerator(name) :
         out = None
