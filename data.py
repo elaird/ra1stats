@@ -39,6 +39,7 @@ class data(object) :
     
     def _doBinMerge(self) :
         if not hasattr(self,"_mergeBins") : return
+        if self._mergeBins is None : return
         assert len(self._mergeBins)==len(self._htBinLowerEdges)
         for a,b in zip(self._mergeBins, sorted(self._mergeBins)) :
             assert a==b,"A non-ascending mergeBins spec is not supported."
