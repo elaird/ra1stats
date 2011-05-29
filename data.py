@@ -9,7 +9,7 @@ def excl(counts, isExclusive) :
         out.append(count if isExcl else (count-counts[i+1]))
     return tuple(out)
 
-vars = ["constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "observations", "mcExpectations", "mcStatError", "fixedParameters"]
+vars = ["constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "observations", "mcExpectations", "mcStatError", "fixedParameters"]
 
 class data(object) :
     def __init__(self) :
