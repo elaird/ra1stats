@@ -1,55 +1,92 @@
-#!/usr/bin/env python
-import math,utils
-import configuration as conf
-assert False
-def numbers() :
-    d = {}
-    d["seed"]              = 4357 #seed for RooRandom::randomGenerator()
-    d["icfDefaultLumi"]    = 100.0 #/pb
+import math
 
-    #recorded lumi for analyzed sample
-    d["lumi"]              = 35.0 #/pb
-    d["lumi_sigma"]        = 0.11 #relative
+def scaled(t, factor) :
+    return tuple([factor*a for a in t])
 
-    #signal-related uncertainties (all are relative)
-    d["deadEcal_sigma"]    = 0.03
-    d["lepPhotVeto_sigma"] = 0.025
-    d["jesRes_sigma"]      = 0.025
-    d["pdfUncertainty"]    = 0.10
+def excl(counts, isExclusive) :
+    out = []
+    for i,count,isExcl in zip(range(len(counts)), counts, isExclusive) :
+        out.append(count if isExcl else (count-counts[i+1]))
+    return tuple(out)
 
-    #observations
-    d["n_signal"]          = (8, 5) #number of events measured at HT > 350 GeV and alphaT > 0.55
-    d["n_htcontrol"]       = (33, 11, 8, 5)
-    d["n_bar_htcontrol"]   = (844459, 331948, 225649, 110034)
-                           
-    d["n_muoncontrol"]     = (      5,      2) #number of events measured in muon control sample
-    d["mc_muoncontrol"]    = (    4.1,    1.9) #MC expectation in muon control sample
-    d["mc_ttW"]            = (  3.415,  1.692) #MC expectation in hadronic sample
-                           
-    d["n_photoncontrol"]   = (      6,      1) #number of events measured in photon control sample
-    d["mc_photoncontrol"]  = (    4.4,    2.1) #MC expectation in photon control sample
-    d["mc_Zinv"]           = (  2.586,  1.492) #MC expectation in photon control sample
+vars = ["constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "observations", "mcExpectations", "mcStatError", "fixedParameters"]
 
-    #uncertainties for control sample constraints
-    d["sigma_x"]           = 0.11 #systematic uncertainty on inclusive background estimation (uncertainty on the assumpotion that rhoprime = rho*rho)
-    d["lowHT_sys_1"]       = 0.08
-    d["lowHT_sys_2"]       = 0.14
-    d["sigma_ttW"]         = 0.3               #systematic uncertainty on tt+W background estimation
-    d["sigma_Zinv"]        = 0.4     #systematic uncertainty on Zinv background estimation
+class data(object) :
+    def __init__(self) :
+        self._fill()
+        self._checkVars()
+        self._checkLengths()
+        self._doBinMerge()
 
-    ##to synchronize with RA2
-    #if conf.switches()["Ra2SyncHack"] :
-    #    muF = 9.3/5.9
-    #    d["n_muoncontrol"]    = (      5*muF,   2*muF) #number of events measured in muon control sample
-    #    d["mc_muoncontrol"]   = (    4.1*muF, 1.9*muF) #MC expectation in muon control sample
-    #    d["sigma_Zinv"]       = math.sqrt(0.172**2+0.2**2+0.2**2+0.05**2) #use box for theory uncertainty
+    def _fill(self) : raise Exception("NotImplemented", "Implement a member function _fill(self)")
 
-    #place-holder values; used only when switches["hardCodedSignalContamination"]=True; otherwise overridden     
-    d["_sFrac"]            = (0.25, 0.75) #assumed fraction of signal in each bin (in case of no model)
-    d["_muon_cont_1"]      = 0.2
-    d["_muon_cont_2"]      = 0.2
-    d["_lowHT_cont_1"]     = 0.2
-    d["_lowHT_cont_2"]     = 0.2
-    d["_accXeff_sigma"]    = utils.quadSum([d[item] for item in ["deadEcal_sigma", "lepPhotVeto_sigma", "jesRes_sigma"]])
+    def _checkVars(self) :
+        for item in vars :
+            assert hasattr(self, "_%s"%item),item
+
+    def _checkLengths(self) :
+        l = len(self._htBinLowerEdges)
+
+        if not hasattr(self, "_mergeBins") :
+            assert len(self._constantMcRatioAfterHere)==l
+            
+        for item in ["observations", "mcExpectations", "mcStatError"] :
+            for key,value in getattr(self,"_%s"%item).iteritems() :
+                assert len(value)==l,"%s: %s"%(item, key)
+
+    def _mergeOneTuple(self) :
+        pass
     
-    return d
+    def _doBinMerge(self) :
+        if not hasattr(self,"_mergeBins") : return
+        assert len(self._mergeBins)==len(self._htBinLowerEdges)
+        for a,b in zip(self._mergeBins, sorted(self._mergeBins)) :
+            assert a==b,"A non-ascending mergeBins spec is not supported."
+
+        l = sorted(list(set(self._mergeBins)))
+        assert len(l)==len(self._constantMcRatioAfterHere),"wrong length of _constantMcRatioAfterHere when using _mergeBins"
+        for a,b in zip(l, range(len(l))) :
+            assert a==b, "Holes are not allowed."
+
+        #adjust HT means (before the others are adjusted)
+        newMeans = [0]*len(l)
+        nBulk = [0]*len(l)
+        for index,value in enumerate(self._htMeans) :
+            newMeans[self._mergeBins[index]] += value*self._observations["nHadBulk"][index]
+            nBulk   [self._mergeBins[index]] +=       self._observations["nHadBulk"][index]
+        for i in range(len(l)) :
+            newMeans[i] /= nBulk[i]
+        self._htMeans = newMeans
+        
+        #adjust self._htBinLowerEdges
+        newBins = []
+        for index in range(len(l)) :
+            htBinLowerIndex = list(self._mergeBins).index(index)
+            newBins.append(self._htBinLowerEdges[htBinLowerIndex])
+        self._htBinLowerEdges = tuple(newBins)
+
+        #adjust count dictionaries
+        for item in ["observations", "mcExpectations"] :
+            d = {}
+            for key,t in getattr(self, "_%s"%item).iteritems() :
+                d[key] = [0]*len(l)
+                for index,value in enumerate(t) :
+                    d[key][self._mergeBins[index]]+=value
+            for key,value in d.iteritems() :
+                getattr(self, "_%s"%item)[key] = tuple(value)
+
+        #adjust errors
+        for item in ["mcStatError"] :
+            d = {}
+            for key,t in getattr(self, "_%s"%item).iteritems() :
+                d[key] = [0]*len(l)
+                for index,value in enumerate(t) :
+                    d[key][self._mergeBins[index]] += value*value
+            for key,value in d.iteritems() :
+                getattr(self, "_%s"%item)[key] = tuple(map(lambda x:math.sqrt(x), value))
+            
+        return
+
+    #define functions called by outside world
+    for item in vars :
+        exec('def %s(self) : return self._%s'%(item, item))
