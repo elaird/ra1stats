@@ -1,4 +1,5 @@
-import os,array,utils
+import os,array,math
+import utils
 import ROOT as r
 
 def rootSetup() :
@@ -20,40 +21,40 @@ def errorsPlot(wspace, results) :
     plot.Draw()
     return plot
 
-def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
-    def inputHisto() :
-        bins = array.array('d', list(inputData.htBinLowerEdges())+[inputData.htMaxForPlot()])
-        out = r.TH1D(obsKey, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
-        out.Sumw2()
-        obs = inputData.observations()
-        for i,content in enumerate(obs[obsKey] if obsKey in obs else []) :
-            for count in range(content) : out.Fill(bins[i])
-        return out
+def inputHisto(inputData, obsKey, note) :
+    bins = array.array('d', list(inputData.htBinLowerEdges())+[inputData.htMaxForPlot()])
+    out = r.TH1D(obsKey, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
+    out.Sumw2()
+    obs = inputData.observations()
+    for i,content in enumerate(obs[obsKey] if obsKey in obs else []) :
+        out.SetBinContent(1+i, content)
+        out.SetBinError(1+i, math.sqrt(content))
+    return out
     
-    def varHisto(inp, wspace, varName, color, style, width, wspaceMemberFunc = None) :
-        out = inp.Clone(varName)
-        out.Reset()
-        out.SetMarkerStyle(1)
-        out.SetLineColor(color)
-        out.SetLineStyle(style)
-        out.SetLineWidth(width)
-        out.SetMarkerColor(color)
-        for i in range(len(inputData.htBinLowerEdges())) :
-            if wspaceMemberFunc :
-                var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
-                if not var : continue
-                out.SetBinContent(i+1, var.getVal())
-            else :
-                out.SetBinContent(i+1, inputData.mcExpectations()[varName][i])
-                
-        return out
+def varHisto(exampleHisto, inputData, wspace, varName, color, style, width, wspaceMemberFunc = None) :
+    out = exampleHisto.Clone(varName)
+    out.Reset()
+    out.SetMarkerStyle(1)
+    out.SetLineColor(color)
+    out.SetLineStyle(style)
+    out.SetLineWidth(width)
+    out.SetMarkerColor(color)
+    for i in range(len(inputData.htBinLowerEdges())) :
+        if wspaceMemberFunc :
+            var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
+            if not var : continue
+            out.SetBinContent(i+1, var.getVal())
+        else :
+            out.SetBinContent(i+1, inputData.mcExpectations()[varName][i])
+    return out
 
+def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
     stuff = []
     leg = r.TLegend(legendX1, 0.6, 0.85, 0.85, "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
-    inp = inputHisto()
+    inp = inputHisto(inputData, obsKey, note)
     inp.SetMarkerStyle(20)
     inp.SetStats(False)
     inp.Draw("p")
@@ -65,7 +66,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     stacks = {}
     stuff += [leg,inp,stacks]
     for d in otherVars :
-        hist = varHisto(inp, wspace, d["var"], d["color"], d["style"], d["width"] if "width" in d else 1, d["type"])
+        hist = varHisto(inp, inputData, wspace, d["var"], d["color"], d["style"], d["width"] if "width" in d else 1, d["type"])
         if not hist.GetEntries() : continue
         stuff.append(hist)
         leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
@@ -135,12 +136,17 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
             {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
             ])
 
+    #plot fZinv
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
+        {"var":"fZinv", "type":"var", "color":r.kBlue,   "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}])
     #plot MC ratios
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
-            {"var":"rMuon", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC muon / MC ttW", "stack":None}])
+        {"var":"rMuon", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC muon / MC ttW", "stack":None}])
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
-            {"var":"rPhot", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC phot / MC Z->inv", "stack":None}])
+        {"var":"rPhot", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC phot / MC Z->inv", "stack":None}])
     
+    #ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", numKey = [], denKey = [],
+    #          details = {"var":"rPhot", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC phot / MC Z->inv", "stack":None})
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
     return out
