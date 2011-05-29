@@ -21,9 +21,9 @@ def errorsPlot(wspace, results) :
     plot.Draw()
     return plot
 
-def inputHisto(inputData, obsKey, note) :
+def inputHisto(inputData, obsKey, note, extraName = "") :
     bins = array.array('d', list(inputData.htBinLowerEdges())+[inputData.htMaxForPlot()])
-    out = r.TH1D(obsKey, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
+    out = r.TH1D(obsKey+extraName, "%s;H_{T} (GeV);counts / bin"%note, len(bins)-1, bins)
     out.Sumw2()
     obs = inputData.observations()
     for i,content in enumerate(obs[obsKey] if obsKey in obs else []) :
@@ -31,14 +31,19 @@ def inputHisto(inputData, obsKey, note) :
         out.SetBinError(1+i, math.sqrt(content))
     return out
     
-def varHisto(exampleHisto, inputData, wspace, varName, color, style, width, wspaceMemberFunc = None) :
-    out = exampleHisto.Clone(varName)
+def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = None,
+             color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1,
+             wspaceMemberFunc = None, extraName = "") :
+    out = exampleHisto.Clone(varName+extraName)
     out.Reset()
-    out.SetMarkerStyle(1)
+
     out.SetLineColor(color)
-    out.SetLineStyle(style)
-    out.SetLineWidth(width)
+    out.SetLineStyle(lineStyle)
+    out.SetLineWidth(lineWidth)
+
     out.SetMarkerColor(color)
+    out.SetMarkerStyle(markerStyle)
+
     for i in range(len(inputData.htBinLowerEdges())) :
         if wspaceMemberFunc :
             var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
@@ -48,7 +53,7 @@ def varHisto(exampleHisto, inputData, wspace, varName, color, style, width, wspa
             out.SetBinContent(i+1, inputData.mcExpectations()[varName][i])
     return out
 
-def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, otherVars = []) :
+def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, obsKey = None, obsLabel = None, maximum = None, otherVars = []) :
     stuff = []
     leg = r.TLegend(legendX1, 0.6, 0.85, 0.85, "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
@@ -60,13 +65,13 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     inp.Draw("p")
     inp.SetMinimum(0.0)
     if obsLabel : leg.AddEntry(inp, obsLabel, "lp")
-    else        : inp.SetMaximum(4.0)
+    if maximum!=None : inp.SetMaximum(maximum)
 
     goptions = "same"
     stacks = {}
     stuff += [leg,inp,stacks]
     for d in otherVars :
-        hist = varHisto(inp, inputData, wspace, d["var"], d["color"], d["style"], d["width"] if "width" in d else 1, d["type"])
+        hist = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1, wspaceMemberFunc = d["type"])
         if not hist.GetEntries() : continue
         stuff.append(hist)
         leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
@@ -80,6 +85,55 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
         stack.Draw(goptions)
 
     leg.Draw()
+    r.gPad.SetTickx()
+    r.gPad.SetTicky()
+    r.gPad.Update()
+
+    canvas.Print(psFileName)
+    return stuff
+
+
+def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, specs = []) :
+    stuff = []
+    leg = r.TLegend(legendX1, 0.6, 0.85, 0.85)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+
+    histos = []
+    for spec in specs :
+        if spec["numType"]=="data" :
+            num = inputHisto(inputData, spec["num"], note)
+        else :
+            example = inputHisto(inputData, "nHad", note, extraName = spec["num"]+spec["den"])
+            num = varHisto(example, inputData, wspace, spec["num"], wspaceMemberFunc = spec["numType"])
+
+        if spec["denType"]=="data" :            
+            den = inputHisto(inputData, spec["den"], note, extraName = spec["num"]+spec["den"])
+        else :
+            example = inputHisto(inputData, "nHad", note, extraName = spec["num"]+spec["den"])            
+            den = varHisto(example, inputData, wspace, spec["den"], wspaceMemberFunc = spec["denType"])
+
+        num.Divide(den)
+        num.SetMarkerStyle(20)
+        num.SetStats(False)
+        num.SetLineColor(spec["color"])
+        num.SetMarkerColor(spec["color"])
+        leg.AddEntry(num, spec["desc"], "lp")
+        histos.append(num)
+
+    m = 1.1*max(map(lambda x:x.GetMaximum(), histos))
+    for i,h in enumerate(histos) :
+        goptions = "p"
+        if not i :
+            h.Draw(goptions)
+            h.SetMinimum(0.0)
+            h.SetMaximum(m)
+        else :
+            h.Draw("%ssame"%goptions)
+
+    leg.Draw()
+    stuff.append(leg)
+    stuff.append(histos)
     r.gPad.SetTickx()
     r.gPad.SetTicky()
     r.gPad.Update()
@@ -137,16 +191,21 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
             ])
 
     #plot fZinv
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
-        {"var":"fZinv", "type":"var", "color":r.kBlue,   "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}])
-    #plot MC ratios
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
-        {"var":"rMuon", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC muon / MC ttW", "stack":None}])
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", otherVars = [
-        {"var":"rPhot", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC phot / MC Z->inv", "stack":None}])
-    
-    #ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", numKey = [], denKey = [],
-    #          details = {"var":"rPhot", "type":"var", "color":r.kBlue,   "style":1, "desc":"MC phot / MC Z->inv", "stack":None})
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 1.0,
+                   otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}])
+    #plot MC translation factors
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 4.0,
+                   otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}])
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 4.0,
+                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z->inv", "stack":None}])
+
+    #plot alphaT ratios
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
+        {"num":"nHad",  "numType":"data",     "den":"nHadBulk", "denType":"data", "desc":"nHad / nHadBulk",    "color":r.kBlack},
+        {"num":"hadB",  "numType":"function", "den":"nHadBulk", "denType":"data", "desc":"ML hadB / nHadBulk", "color":r.kBlue},
+        {"num":"nPhot", "numType":"data",     "den":"nHadBulk", "denType":"data", "desc":"nPhot / nHadBulk",   "color":r.kRed},
+        {"num":"nMuon", "numType":"data",     "den":"nHadBulk", "denType":"data", "desc":"nMuon / nHadBulk",   "color":r.kGreen},
+        ])
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
     return out
