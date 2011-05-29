@@ -7,14 +7,11 @@ class data2011(data) :
         self._htBinLowerEdges =          (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
         self._htMaxForPlot = 975.0
 
-        #self._mergeBins = None
-        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
+        self._mergeBins = None
+        self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
         
-        #self._mergeBins = range(len(self._htBinLowerEdges))
-        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
-        
-        self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
-        self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
+        #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
+        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
         
         self._lumi = {
             "had":     189.,
