@@ -25,7 +25,7 @@ def initialk(inputData) :
 
 def hadTerms(w, inputData, REwk, RQcd, smOnly) :
     o = inputData.observations()
-
+    htMeans = inputData.htMeans()
     terms = []
 
     #A_ini = initialA(inputData)
@@ -53,7 +53,7 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         w.var("k_ewk").setVal(0.0)
         w.var("k_ewk").setConstant()
 
-    for i,htMeanValue,nBulkValue,nHadValue in zip(range(len(o["htMean"])), o["htMean"], o["nBulk"], o["nHad"]) :
+    for i,htMeanValue,nBulkValue,nHadValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHad"]) :
         for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
 
