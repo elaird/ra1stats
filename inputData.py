@@ -55,8 +55,9 @@ class data2011(data) :
         
 class data2010(data) :
     def _fill(self) :
-        self._constantMcRatioAfterHere = (    0,     0,     0,     0)
         self._htBinLowerEdges =          (250.0, 300.0, 350.0, 450.0)
+        self._mergeBins = None
+        self._constantMcRatioAfterHere = (    0,     0,     0,     0)
         self._htMaxForPlot = 600.0
         self._lumi = {
             "had":     35.0,
