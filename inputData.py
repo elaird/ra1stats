@@ -70,12 +70,12 @@ class data2010(data) :
             "mcPhot":  35.0,
             "mcZinv":  35.0,
             }
+        self._htMeans = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
         self._observations = {
-            "htMean": ( 265.0,  315.0,  375.0,  475.0), #place-holder values
-            "nBulk":  (844459, 331948, 225649, 110034),
-            "nHad":   (    33,     11,      8,      5),
-            "nPhot":  (    24,      4,      6,      1),
-            "nMuon":  (    13,      5,      5,      2),
+            "nHadBulk": (844459, 331948, 225649, 110034),
+            "nHad":     (    33,     11,      8,      5),
+            "nPhot":    (    24,      4,      6,      1),
+            "nMuon":    (    13,      5,      5,      2),
             }
         self._mcExpectations = {
             "mcMuon": (  12.2,    5.2,    4.1,    1.9  ),
