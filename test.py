@@ -22,7 +22,8 @@ f = fresh.foo(inputData = data2011(),
               #             "muon":(0.0,     0.0,    0.0005,  0.0012, 0.0019, 0.0022, 0.0018, 0.0029)}
               )
 
-#ul = f.upperLimit(makePlot = True); print "Upper limit:",ul
+method = ["profileLikelihood", "feldmanCousins", "CLs"][0]
+#out = f.upperLimit(cl = 0.95, method = method, makePlot = True); print out
 #f.profile()
 f.bestFit()
 #f.pValue(nToys = 500)
