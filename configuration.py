@@ -16,8 +16,8 @@ def switches() :
     d["nlo"] = True
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
     d["drawBenchmarkPoints"] = True
-    #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
-    d["listOfTestPoints"] = []
+    d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
+    #d["listOfTestPoints"] = []
     
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
@@ -44,8 +44,8 @@ def switches() :
     return d
 
 def data() :
-    exec("import data%s as inputData"%str(switches()["dataYear"]))
-    return inputData.data()
+    exec("from inputData import data%s as data"%str(switches()["dataYear"]))
+    return data()
 
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
