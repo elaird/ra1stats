@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sys,cPickle,fresh
 import configuration as conf
-import histogramSpecs as hs
 import histogramProcessing as hp
 
 def points() :
@@ -15,8 +14,9 @@ def writeNumbers(fileName = None, d = None) :
 def go() :
     s = conf.switches()
     data = conf.data()
-    bins = data.htBinLowerEdges()
-
+    binsInput = data.htBinLowerEdgesInput()
+    binsMerged = data.htBinLowerEdges()
+    
     for point in points() :
         xsHisto  = getattr(hp,"%sXsHisto"%("nlo" if s["nlo"] else "lo"))
         effHisto = getattr(hp,"%sEffHisto"%("nlo" if s["nlo"] else "lo"))
@@ -24,8 +24,11 @@ def go() :
         x = xsHisto().GetBinContent(*point)
         signalEff = {}
         signalEff["had" ] = [effHisto(box = "had", scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
-                             for htLower, htUpper in zip(bins, list(bins[1:])+[None])]
-        signalEff["muon"] = [0.0]*len(bins)
+                             for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
+        signalEff["muon"] = [0.0]*len(binsInput)
+
+        for item in ["had","muon"] :
+            signalEff[item] = data.mergeEfficiency(signalEff[item])
         #print x,signalEff
         
         f = fresh.foo(inputData = data,
@@ -40,7 +43,7 @@ def go() :
         out["excluded"] = (2.0*(ul<1.0) - 1.0, "is (upper limit on XS factor)<1?")
 
         out["xs"] = (x, "#sigma (pb)")
-        for i,bin in enumerate(bins) :
+        for i,bin in enumerate(binsMerged) :
             for sel in ["had", "muon"] :
                 out["eff%s%d"%(sel, bin)] = (signalEff[sel][i], "#epsilon of %s %d selection"%(sel, bin))
         writeNumbers(conf.strings(*point)["pickledFileName"], out)
