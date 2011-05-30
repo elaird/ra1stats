@@ -1,4 +1,4 @@
-import math
+import math,copy
 
 def scaled(t, factor) :
     return tuple([factor*a for a in t])
@@ -9,13 +9,14 @@ def excl(counts, isExclusive) :
         out.append(count if isExcl else (count-counts[i+1]))
     return tuple(out)
 
-vars = ["constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "observations", "mcExpectations", "mcStatError", "fixedParameters"]
+vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "observations", "mcExpectations", "mcStatError", "fixedParameters"]
 
 class data(object) :
     def __init__(self) :
         self._fill()
         self._checkVars()
         self._checkLengths()
+        self._stashInput()
         self._doBinMerge()
 
     def _fill(self) : raise Exception("NotImplemented", "Implement a member function _fill(self)")
@@ -28,18 +29,17 @@ class data(object) :
         l = len(self._htBinLowerEdges)
         assert len(self._htMeans)==l
         
-        if not hasattr(self, "_mergeBins") :
+        if not self._mergeBins :
             assert len(self._constantMcRatioAfterHere)==l
             
         for item in ["observations", "mcExpectations", "mcStatError"] :
             for key,value in getattr(self,"_%s"%item).iteritems() :
                 assert len(value)==l,"%s: %s"%(item, key)
 
-    def _mergeOneTuple(self) :
-        pass
-    
+    def _stashInput(self) :
+        self._htBinLowerEdgesInput = copy.copy(self._htBinLowerEdges)
+
     def _doBinMerge(self) :
-        if not hasattr(self,"_mergeBins") : return
         if self._mergeBins is None : return
         assert len(self._mergeBins)==len(self._htBinLowerEdges)
         for a,b in zip(self._mergeBins, sorted(self._mergeBins)) :
@@ -59,7 +59,7 @@ class data(object) :
         for i in range(len(l)) :
             newMeans[i] /= nBulk[i]
         self._htMeans = newMeans
-        
+
         #adjust self._htBinLowerEdges
         newBins = []
         for index in range(len(l)) :
@@ -90,5 +90,14 @@ class data(object) :
         return
 
     #define functions called by outside world
-    for item in vars :
+    for item in vars+["htBinLowerEdgesInput"] :
         exec('def %s(self) : return self._%s'%(item, item))
+
+    def mergeEfficiency(self, inList) :
+        mergeSpec = self.mergeBins()
+        if not mergeSpec : return inList
+        l = sorted(list(set(mergeSpec)))
+        out = [0]*len(l)
+        for index,value in enumerate(inList) :
+            out[mergeSpec[index]] += value
+        return out
