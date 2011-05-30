@@ -11,6 +11,10 @@ def writeNumbers(fileName = None, d = None) :
     cPickle.dump(d, outFile)
     outFile.close()
 
+def description(key) :
+    if key[:2]=="CL" : return key
+    if key[-5:]=="Limit" : return "%g%% C.L. %s limit on XS factor"%(100*conf.switches()["CL"], key[:-5])
+
 def go() :
     s = conf.switches()
     data = conf.data()
@@ -36,11 +40,17 @@ def go() :
                       RQcd = s["RQcd"],
                       signalXs = x, signalEff = signalEff,
                       )
-        ul = f.upperLimit()
-        
+        results = f.upperLimit(cl = s["CL"], method = s["method"])
+
         out = {}
-        out["upperLimit"] = (ul, "95% C.L. upper limit on XS factor")
-        out["excluded"] = (2.0*(ul<1.0) - 1.0, "is (upper limit on XS factor)<1?")
+        for key,value in results.iteritems() :
+            out[key] = (value, description(key))
+
+        if "CLs" in out :
+            value = 1.0 - s["CL"]
+            out["excluded"] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
+        else :
+            out["excluded"] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (upper limit on XS factor)<1?")
 
         out["xs"] = (x, "#sigma (pb)")
         for i,bin in enumerate(binsMerged) :
