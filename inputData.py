@@ -52,6 +52,7 @@ class data2011(data) :
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             }
+        # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
         
 class data2010(data) :
     def _fill(self) :
