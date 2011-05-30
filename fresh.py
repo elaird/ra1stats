@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import math,plotting,utils
 import ROOT as r
 
@@ -145,7 +143,7 @@ def signalVariables(w, inputData, signalXs, signalEff) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", signalXs))
-    wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 5.0))
+    wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
@@ -211,25 +209,54 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig, wspace, note, smOnly, makePlot = True) :
+def interval(dataset, modelconfig, wspace, note, smOnly, cl = None, method = None, makePlot = True) :
     assert not smOnly
+    out = {}
+    calc = None
+    if method=="profileLikelihood" :
+        calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
+    if method=="feldmanCousins" :
+        makePlot = False
+        calc = r.RooStats.FeldmanCousins(dataset, modelconfig)
+        calc.FluctuateNumDataEntries(False)
+        calc.UseAdaptiveSampling(True)
+        #calc.AdditionalNToysFactor(4)
+        #calc.SetNBins(40)
+        #calc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
 
-    plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
-    plc.SetConfidenceLevel(0.95)
-    plInt = plc.GetInterval()
-    ul = plInt.UpperLimit(wspace.var("f"))
+    if method=="CLs" :
+        makePlot = False
+        calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
+
+        wspace.var("f").setVal(0.0)
+        wspace.var("f").setConstant()
+        calc.SetNullParameters(r.RooArgSet(wspace.var("f")))
+        out["CLb"] = 1.0 - calc.GetHypoTest().NullPValue()
+
+        wspace.var("f").setVal(1.0)
+        wspace.var("f").setConstant()
+        calc.SetNullParameters(r.RooArgSet(wspace.var("f")))
+        out["CLs+b"] = calc.GetHypoTest().NullPValue()
+        
+        out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
+    else :
+        calc.SetConfidenceLevel(cl)
+        lInt = calc.GetInterval()
+        out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+        out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
 
     if makePlot :
         canvas = r.TCanvas()
         canvas.SetTickx()
         canvas.SetTicky()
         psFile = "intervalPlot_%s.ps"%note
-        plot = r.RooStats.LikelihoodIntervalPlot(plInt)
+        plot = r.RooStats.LikelihoodIntervalPlot(lInt)
         plot.Draw(); print
         canvas.Print(psFile)
         utils.ps2pdf(psFile)
 
-    return ul
+    #utils.delete(lInt)
+    return out
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
     assert not smOnly
@@ -333,8 +360,8 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def upperLimit(self, makePlot = False) :
-        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), makePlot = makePlot)
+    def upperLimit(self, cl = 0.95, method = "profileLikelihood", makePlot = False) :
+        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, method = method, makePlot = makePlot)
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note, self.smOnly())
