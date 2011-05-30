@@ -3,21 +3,23 @@
 def switches() :
     d = {}
 
-    d["dataYear"] = [2010, 2011][0]
+    d["dataYear"] = [2010, 2011][1]
     
     d["CL"] = 0.95
-    d["method"] = ["profileLikelihood", "feldmanCousins"][0]
+    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs"][2]
     d["minSignalEventsForConsideration"] = 1.0e-6
     d["maxSignalEventsForConsideration"] = None
 
     d["REwk"] = ["", "FallingExp", "Constant"][2]
     d["RQcd"] = ["FallingExp", "Zero"][1]
     
-    d["nlo"] = True
+    d["nlo"] = False
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
     d["drawBenchmarkPoints"] = True
-    d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
-    #d["listOfTestPoints"] = []
+    #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
+    d["listOfTestPoints"] = []
+
+    d["suppressJobOutput"] = True
     
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
@@ -30,10 +32,6 @@ def switches() :
     d["icfDefaultLumi"] = 100.0 #/pb
     d["icfDefaultNEventsIn"] = 10000
     
-    d["fcAdditionalNToysFactor"] = 4
-    d["fcSetNBins"] = 40
-    d["fcUseProof"] = False
-
     d["debugOutput"] = False
     d["sourceFiles"] = []
     
@@ -56,7 +54,7 @@ def checkAndAdjust(d) :
         d["maxSignalEventsForConsideration"] = None
         d["lateDivision"] = True
 
-    d["suppressJobOutput"] = d["computeExpectedLimit"] and not d["debugMedianHisto"]
+    d["suppressJobOutput"] |= (d["computeExpectedLimit"] and not d["debugMedianHisto"])
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
         d["minSignalEventsForConsideration"] = 10.0
