@@ -26,7 +26,8 @@ class data(object) :
 
     def _checkLengths(self) :
         l = len(self._htBinLowerEdges)
-
+        assert len(self._htMeans)==l
+        
         if not hasattr(self, "_mergeBins") :
             assert len(self._constantMcRatioAfterHere)==l
             
