@@ -1,10 +1,27 @@
+technical
+---------
 fix leak in pValue()
 snapshot in pValue()
-mc stats as systematic
 check xsHisto binning
-bin merging
-
-(inherited)
 improve histo bin check
+feed FC points to test
+plot FC belt
+tweak FC running
+try ProfileLikelihoodTestStatistic.SetOneSided()
+
+physics
+-------
+repair nlo
+repair CLb and CLsb
+use scaled yields in lowest two bins
+muon yields
+systematics on signal eff.
+mc stats as systematic
 consider pdfUncertainty for LO
 consider lognormal vs. gaussian
+ability to use one exponent for both EWK and QCD
+
+checks
+------
+bin merging
+multiple background models
