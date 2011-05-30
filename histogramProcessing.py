@@ -469,7 +469,7 @@ def makeValidationPlots() :
     canvas.Clear()
 
     logZ = ["xs"]
-    special = ["excluded", "upperLimit", "xs"]
+    special = ["excluded", "upperLimit", "CLs", "CLs+b", "CLb", "xs"]
     suppressed = []
     
     first = []
