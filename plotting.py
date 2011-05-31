@@ -54,7 +54,7 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
     return out
 
 def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, maximum = None, logY = False,
-                   obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin") :
+                   obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
     leg = r.TLegend(legendX1, 0.6, 0.85, 0.85, "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
@@ -86,7 +86,9 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
             if d["stack"] not in stacks :
                 stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
             stacks[d["stack"]].Add(hist)
-        else : hist.Draw(goptions)
+        else :
+            hist.Scale(scale)
+            hist.Draw(goptions)
 
     for stack in stacks.values() :
         stack.Draw(goptions)
@@ -204,9 +206,11 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
                    otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}], yLabel = "")
     #plot MC translation factors
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 4.0,
-                   otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}], yLabel = "")
+                   otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}],
+                   yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["muon"])
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 4.0,
-                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z->inv", "stack":None}], yLabel = "")
+                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z->inv", "stack":None}],
+                   yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["phot"])
 
     #plot alphaT ratios
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
