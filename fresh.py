@@ -209,14 +209,14 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig, wspace, note, smOnly, cl = None, method = None, makePlot = True) :
+def interval(dataset, modelconfig, wspace, note, smOnly, cl = None, method = None, makePlots = True) :
     assert not smOnly
     out = {}
     calc = None
     if method=="profileLikelihood" :
         calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     if method=="feldmanCousins" :
-        makePlot = False
+        makePlots = False
         calc = r.RooStats.FeldmanCousins(dataset, modelconfig)
         calc.FluctuateNumDataEntries(False)
         calc.UseAdaptiveSampling(True)
@@ -224,8 +224,30 @@ def interval(dataset, modelconfig, wspace, note, smOnly, cl = None, method = Non
         #calc.SetNBins(40)
         #calc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
 
+    calc.SetConfidenceLevel(cl)
+    lInt = calc.GetInterval()
+    out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+    out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
+
+    if makePlots :
+        canvas = r.TCanvas()
+        canvas.SetTickx()
+        canvas.SetTicky()
+        psFile = "intervalPlot_%s.ps"%note
+        plot = r.RooStats.LikelihoodIntervalPlot(lInt)
+        plot.Draw(); print
+        canvas.Print(psFile)
+        utils.ps2pdf(psFile)
+
+    #utils.delete(lInt)
+    return out
+
+def cls(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
+    assert not smOnly
+
+    out = {}
+
     if method=="CLs" :
-        makePlot = False
         calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
 
         wspace.var("f").setVal(0.0)
@@ -237,25 +259,17 @@ def interval(dataset, modelconfig, wspace, note, smOnly, cl = None, method = Non
         wspace.var("f").setConstant()
         calc.SetNullParameters(r.RooArgSet(wspace.var("f")))
         out["CLs+b"] = calc.GetHypoTest().NullPValue()
+
+    if method=="CLsViaToys" :
+        wspace.var("f").setVal(0.0)
+        wspace.var("f").setConstant()
+        out["CLb"] = 1.0 - pValue(wspace, dataset, nToys = nToys, note = "", plots = makePlots)
+
+        wspace.var("f").setVal(1.0)
+        wspace.var("f").setConstant()
+        out["CLs+b"] = pValue(wspace, dataset, nToys = nToys, note = "", plots = makePlots)
         
-        out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
-    else :
-        calc.SetConfidenceLevel(cl)
-        lInt = calc.GetInterval()
-        out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
-        out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
-
-    if makePlot :
-        canvas = r.TCanvas()
-        canvas.SetTickx()
-        canvas.SetTicky()
-        psFile = "intervalPlot_%s.ps"%note
-        plot = r.RooStats.LikelihoodIntervalPlot(lInt)
-        plot.Draw(); print
-        canvas.Print(psFile)
-        utils.ps2pdf(psFile)
-
-    #utils.delete(lInt)
+    out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
     return out
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
@@ -360,8 +374,11 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def upperLimit(self, cl = 0.95, method = "profileLikelihood", makePlot = False) :
-        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, method = method, makePlot = makePlot)
+    def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False) :
+        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, method = method, makePlots = makePlots)
+
+    def cls(self, method = "CLs", nToys = 300, makePlots = False) :
+        return cls(self.data, self.modelConfig, self.wspace, self.smOnly(), method = method, nToys = nToys, makePlots = makePlots)
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note, self.smOnly())
