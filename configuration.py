@@ -6,7 +6,9 @@ def switches() :
     d["dataYear"] = [2010, 2011][1]
     
     d["CL"] = 0.95
-    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs"][2]
+    d["nToys"] = 100
+    
+    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsViaToys"][3]
     d["minSignalEventsForConsideration"] = 1.0e-6
     d["maxSignalEventsForConsideration"] = None
 
@@ -23,7 +25,6 @@ def switches() :
     
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
-    d["nToys"] = 1000
     d["debugMedianHisto"] = False
 
     d["fillHolesInEffUncRelPdf"] = True
