@@ -20,6 +20,7 @@ mc stats as systematic
 consider pdfUncertainty for LO
 consider lognormal vs. gaussian
 ability to use one exponent for both EWK and QCD
+CLs geometric plot
 
 checks
 ------
