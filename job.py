@@ -40,17 +40,18 @@ def go() :
                       RQcd = s["RQcd"],
                       signalXs = x, signalEff = signalEff,
                       )
-        results = f.upperLimit(cl = s["CL"], method = s["method"])
 
         out = {}
-        for key,value in results.iteritems() :
-            out[key] = (value, description(key))
-
-        if "CLs" in out :
+        if "CLs" in s["method"] :
+            results = f.cls(method = s["method"], nToys = s["nToys"])
             value = 1.0 - s["CL"]
             out["excluded"] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
         else :
+            results = f.interval(cl = s["CL"], method = s["method"])
             out["excluded"] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (upper limit on XS factor)<1?")
+
+        for key,value in results.iteritems() :
+            out[key] = (value, description(key))
 
         out["xs"] = (x, "#sigma (pb)")
         for i,bin in enumerate(binsMerged) :

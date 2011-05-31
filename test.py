@@ -16,15 +16,16 @@ f = fresh.foo(inputData = data2011(),
               #signalEff = {"had": (0.0,    0.0,    0.02,   0.10),
               #             "muon":(0.0,    0.0,    0.002,  0.01)}
 
-              ##LM6-like (2011)
-              #signalXs = 0.3104, #pb
-              #signalEff = {"had": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
-              #             "muon":(0.0,     0.0,    0.0005,  0.0012, 0.0019, 0.0022, 0.0018, 0.0029)}
+              #LM6-like (2011)
+              signalXs = 0.3104, #pb
+              signalEff = {"had": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
+                           "muon":(0.0,     0.0,    0.0005,  0.0012, 0.0019, 0.0022, 0.0018, 0.0029)}
               )
 
-method = ["profileLikelihood", "feldmanCousins", "CLs"][0]
-#out = f.upperLimit(cl = 0.95, method = method, makePlot = True); print out
+
+#out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
+out = f.cls(method = ["CLs", "CLsViaToys"][1], nToys = 100, makePlots = False); print out
 #f.profile()
-f.bestFit()
+#f.bestFit()
 #f.pValue(nToys = 500)
 #f.debug()
