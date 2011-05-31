@@ -12,7 +12,7 @@ try ProfileLikelihoodTestStatistic.SetOneSided()
 physics
 -------
 repair nlo
-repair CLb and CLsb
+fix mc ratio
 use scaled yields in lowest two bins
 muon yields
 systematics on signal eff.
