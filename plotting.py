@@ -118,7 +118,7 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
             num = varHisto(example, inputData, wspace, spec["num"], wspaceMemberFunc = spec["numType"])
 
         for den,denType in zip(spec["dens"], spec["denTypes"]) :
-            if denType=="data" :            
+            if denType=="data" :
                 num.Divide( inputHisto(inputData, den, note, extraName = extraName+den) )
             else :
                 example = inputHisto(inputData, "nHad", note, extraName = extraName+den)
@@ -229,6 +229,12 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 4.0,
                    otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z->inv", "stack":None}],
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["phot"])
+
+    #plot EWK background scale factors
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
+        {"num":"zInv",  "numType":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv", "color":r.kRed}], yLabel = "")
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
+        {"num":"ttw",   "numType":"function", "dens":["mcTtw"],  "denTypes":[None], "desc":"ML ttW / MC ttW",       "color":r.kGreen}], yLabel = "")
 
     #plot alphaT ratios
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
