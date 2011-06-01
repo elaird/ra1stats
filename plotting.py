@@ -53,10 +53,10 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
             out.SetBinContent(i+1, inputData.mcExpectations()[varName][i])
     return out
 
-def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, maximum = None, logY = False,
+def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), maximum = None, logY = False,
                    obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
-    leg = r.TLegend(legendX1, 0.6, 0.85, 0.85, "ML values" if (otherVars and obsKey) else "")
+    leg = r.TLegend(legend0[0], legend0[1], 0.85, 0.85, "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -101,10 +101,15 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     canvas.Print(psFileName)
     return stuff
 
+def legSpec(goptions) :
+    out = ""
+    if "p" in goptions : out += "p"
+    if "hist" in goptions : out += "l"
+    return out
 
-def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legendX1 = 0.3, specs = [], yLabel = "", customMax = False) :
+def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), specs = [], yLabel = "", customMax = False, goptions = "p") :
     stuff = []
-    leg = r.TLegend(legendX1, 0.6, 0.85, 0.85)
+    leg = r.TLegend(legend0[0], legend0[1], 0.85, 0.85)
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -128,12 +133,11 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
         num.SetStats(False)
         num.SetLineColor(spec["color"])
         num.SetMarkerColor(spec["color"])
-        leg.AddEntry(num, spec["desc"], "lp")
+        leg.AddEntry(num, spec["desc"], legSpec(goptions))
         histos.append(num)
 
     m = 1.1*max(map(lambda x:x.GetMaximum(), histos))
     for i,h in enumerate(histos) :
-        goptions = "p"
         if not i :
             h.Draw(goptions)
             h.SetMinimum(0.0)
@@ -204,8 +208,10 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
     if not smOnly :
         hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
 
+    #hadronic sample
     for logY in [False, True] :
-        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.3, obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY)
+        thisNote = "Hadronic Sample%s"%(" (logY)" if logY else "")
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.6), obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY)
     
     muonVars = [
         {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":"total"},
@@ -213,40 +219,46 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
         ]
     if not smOnly :
         muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars)
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
+    #muon control sample
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Muon Control Sample", legend0 = (0.35, 0.7), obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars)
+    #photon control sample
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Photon Control Sample", legend0 = (0.35, 0.72), obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},
             {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
             ])
 
-    #plot fZinv
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 1.0,
+    #EWK background scale factors
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), specs = [
+        {"num":"ttw",   "numType":"function", "dens":["mcTtw"],  "denTypes":[None], "desc":"ML ttW / MC ttW",       "color":r.kGreen}], goptions = "hist")
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "Z->inv scale factor (result of fit)", legend0 = (0.5, 0.8), specs = [
+        {"num":"zInv",  "numType":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv", "color":r.kRed}], goptions = "hist")
+
+    #fZinv
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "fraction of EWK background which is Z->inv (result of fit)",
+                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 1.0,
                    otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}], yLabel = "")
-    #plot MC translation factors
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 4.0,
+
+    #MC translation factors
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon translation factor (from MC)",
+                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 4.0,
                    otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}],
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["muon"])
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.4, obsKey = "", obsLabel = "", maximum = 4.0,
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "photon translation factor (from MC)",
+                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 4.0,
                    otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z->inv", "stack":None}],
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["phot"])
 
-    #plot EWK background scale factors
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
-        {"num":"zInv",  "numType":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv", "color":r.kRed}], yLabel = "")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
-        {"num":"ttw",   "numType":"function", "dens":["mcTtw"],  "denTypes":[None], "desc":"ML ttW / MC ttW",       "color":r.kGreen}], yLabel = "")
-
-    #plot alphaT ratios
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
+    #alphaT ratios
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.5, 0.7), specs = [
         {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
         ], yLabel = "R_{#alpha_{T}}")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.5, 0.7), specs = [
        #{"num":"nPhot", "numType":"data",     "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"nPhot / nHadBulk",            "color":r.kGray+2},
         {"num":"nPhot", "numType":"data",     "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * MCZ/MCph / nHadBulk", "color":r.kBlack},
         {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",          "color":r.kRed},
         ], yLabel = "R_{#alpha_{T}}")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = note(REwk, RQcd), legendX1 = 0.5, specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.5, 0.7), specs = [
        #{"num":"nMuon", "numType":"data",     "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"nMuon / nHadBulk",              "color":r.kGray+2},
         {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * MCttW/MCmu / nHadBulk", "color":r.kBlack},
         {"num":"ttw",   "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML ttW / nHadBulk",             "color":r.kGreen},        
