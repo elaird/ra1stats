@@ -209,21 +209,10 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def interval(dataset, modelconfig, wspace, note, smOnly, cl = None, method = None, makePlots = True) :
+def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
     assert not smOnly
     out = {}
-    calc = None
-    if method=="profileLikelihood" :
-        calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
-    if method=="feldmanCousins" :
-        makePlots = False
-        calc = r.RooStats.FeldmanCousins(dataset, modelconfig)
-        calc.FluctuateNumDataEntries(False)
-        calc.UseAdaptiveSampling(True)
-        #calc.AdditionalNToysFactor(4)
-        #calc.SetNBins(40)
-        #calc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
-
+    calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
@@ -233,11 +222,43 @@ def interval(dataset, modelconfig, wspace, note, smOnly, cl = None, method = Non
         canvas = r.TCanvas()
         canvas.SetTickx()
         canvas.SetTicky()
-        psFile = "intervalPlot_%s.ps"%note
+        psFile = "intervalPlot_%s_%g.ps"%(note, 100*cl)
         plot = r.RooStats.LikelihoodIntervalPlot(lInt)
         plot.Draw(); print
         canvas.Print(psFile)
         utils.ps2pdf(psFile)
+
+    #utils.delete(lInt)
+    return out
+
+def fcInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True, nPoints = 2) :
+    assert not smOnly
+
+    twoSided = plInterval(dataset, modelconfig, wspace, note, smOnly, cl,       makePlots)["upperLimit"]
+    oneSided = plInterval(dataset, modelconfig, wspace, note, smOnly, 2*cl-1.0, makePlots)["upperLimit"]
+
+    assert not nPoints%2
+    f = r.RooRealVar("f", "f", 0.0)
+    poiValues = r.RooDataSet("poiValues", "poiValues", r.RooArgSet(f))
+    r.SetOwnership(poiValues, False) #so that ~FeldmanCousins() can delete it
+    for point in [0.0] + sorted([oneSided + (i+0.0)*(twoSided - oneSided)/nPoints for i in range(-nPoints/2, 1+3*nPoints/2)]) :
+        f.setVal(point)
+        poiValues.add(r.RooArgSet(f))
+    poiValues.write("foo.txt")
+        
+    out = {}
+    calc = r.RooStats.FeldmanCousins(dataset, modelconfig)
+    calc.SetPOIPointsToTest(poiValues)
+    calc.FluctuateNumDataEntries(False)
+    calc.UseAdaptiveSampling(True)
+    #calc.AdditionalNToysFactor(4)
+    #calc.SetNBins(40)
+    #calc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
+    
+    calc.SetConfidenceLevel(cl)
+    lInt = calc.GetInterval()
+    out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+    out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
 
     #utils.delete(lInt)
     return out
@@ -377,7 +398,10 @@ class foo(object) :
         #wspace.Print("v")
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False) :
-        return interval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, method = method, makePlots = makePlots)
+        if method=="profileLikelihood" :
+            return plInterval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
+        elif method=="feldmanCousins" :
+            return fcInterval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
 
     def cls(self, method = "CLs", nToys = 300, makePlots = False) :
         return cls(self.data, self.modelConfig, self.wspace, self.smOnly(), method = method, nToys = nToys, makePlots = makePlots)
