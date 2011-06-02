@@ -340,16 +340,16 @@ def pdf(w) :
 
 class foo(object) :
     def __init__(self, inputData = None, REwk = None, RQcd = None, signalXs = None, signalEff = {}, trace = False) :
-        self.checkInputs(REwk, RQcd, signalEff)
         for item in ["inputData", "REwk", "RQcd", "signalXs", "signalEff"] :
             setattr(self, item, eval(item))
 
+        self.checkInputs()
         r.gROOT.SetBatch(True)
         r.RooRandom.randomGenerator().SetSeed(1)
 
         self.note = plotting.note(REwk, RQcd)
         self.wspace = r.RooWorkspace("Workspace")
-        setupLikelihood(self.wspace, inputData, REwk, RQcd, signalXs, signalEff)
+        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signalXs, self.signalEff)
         self.data = dataset(self.wspace.set("obs"))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
 
@@ -358,11 +358,13 @@ class foo(object) :
             #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
 
-    def checkInputs(self, REwk, RQcd, signalEff) :
-        assert REwk in ["", "FallingExp", "Constant"]
-        assert RQcd in ["FallingExp", "Zero"]
-        for key in signalEff.keys() :
+    def checkInputs(self) :
+        assert self.REwk in ["", "FallingExp", "Constant"]
+        assert self.RQcd in ["FallingExp", "Zero"]
+        bins = self.inputData.htBinLowerEdges()
+        for key,value in self.signalEff.iteritems() :
             assert key in ["had", "muon"]
+            assert len(value)==len(bins)
             
     def smOnly(self) :
         return not self.signalXs
