@@ -5,10 +5,10 @@ def switches() :
 
     d["dataYear"] = [2010, 2011][1]
     
-    d["CL"] = 0.95
+    d["CL"] = [0.95, 0.90][:]
     d["nToys"] = 100
     
-    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsViaToys"][3]
+    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsViaToys"][0]
     d["minSignalEventsForConsideration"] = 1.0e-6
     d["maxSignalEventsForConsideration"] = None
 
