@@ -475,10 +475,12 @@ def makeValidationPlots() :
     first = []
     names = sorted([key.GetName() for key in f.GetListOfKeys()])
     for item in special :
-        if item in names :
-            names.remove(item)
-            first.append(item)
-            
+        for name in names :
+            if item==name[:len(item)] :
+                first.append(name)
+    for item in first :
+        names.remove(item)
+
     for name in first+names :
         h2 = threeToTwo(f.Get(name))
         if name=="UpperLimit" :

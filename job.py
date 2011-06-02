@@ -11,9 +11,9 @@ def writeNumbers(fileName = None, d = None) :
     cPickle.dump(d, outFile)
     outFile.close()
 
-def description(key) :
+def description(key, cl = None) :
     if key[:2]=="CL" : return key
-    if key[-5:]=="Limit" : return "%g%% C.L. %s limit on XS factor"%(100*conf.switches()["CL"], key[:-5])
+    if key[-5:]=="Limit" : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
 
 def go() :
     s = conf.switches()
@@ -34,29 +34,28 @@ def go() :
         for item in ["had","muon"] :
             signalEff[item] = data.mergeEfficiency(signalEff[item])
         #print x,signalEff
-        
-        f = fresh.foo(inputData = data,
-                      REwk = s["REwk"],
-                      RQcd = s["RQcd"],
-                      signalXs = x, signalEff = signalEff,
-                      )
 
         out = {}
-        if "CLs" in s["method"] :
-            results = f.cls(method = s["method"], nToys = s["nToys"])
-            value = 1.0 - s["CL"]
-            out["excluded"] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
-        else :
-            results = f.interval(cl = s["CL"], method = s["method"])
-            out["excluded"] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (upper limit on XS factor)<1?")
-
-        for key,value in results.iteritems() :
-            out[key] = (value, description(key))
-
         out["xs"] = (x, "#sigma (pb)")
         for i,bin in enumerate(binsMerged) :
             for sel in ["had", "muon"] :
                 out["eff%s%d"%(sel, bin)] = (signalEff[sel][i], "#epsilon of %s %d selection"%(sel, bin))
+
+        if "CLs" in s["method"] :
+            f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signalXs = x, signalEff = signalEff)            
+            results = f.cls(method = s["method"], nToys = s["nToys"])
+            for key,value in results.iteritems() : out[key] = (value, description(key))
+            for cl in s["CL"] :
+                value = 1.0 - cl
+                out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
+        else :
+            for cl in s["CL"] :
+                f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signalXs = x, signalEff = signalEff)
+                results = f.interval(cl = cl, method = s["method"])
+                cl2 = 100*cl
+                for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+                out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
+
         writeNumbers(conf.strings(*point)["pickledFileName"], out)
 
 if False :
