@@ -2,8 +2,6 @@ technical
 ---------
 fix leak in pValue()
 snapshot in pValue()
-check xsHisto binning
-improve histo bin check
 plot FC belt
 tweak FC running
 try ProfileLikelihoodTestStatistic.SetOneSided()
