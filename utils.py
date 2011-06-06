@@ -13,6 +13,19 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::map<std::string,std::string>","string;map")
     r.gInterpreter.GenerateDictionary("std::pair<std::string,std::vector<double> >","string;vector")
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
+#####################################    
+class numberedCanvas(r.TCanvas) :
+    page = 0
+    text = r.TText()
+    text.SetNDC()
+    text.SetTextFont(102)
+    text.SetTextSize(0.45*text.GetTextSize())
+    text.SetTextAlign(33)
+    
+    def Print(self, *args) :
+        if self.page : self.text.DrawText(0.95, 0.02, "page %2d"%self.page)
+        self.page += 1
+        super(numberedCanvas, self).Print(*args)
 #####################################
 def ps2pdf(psFileName, removePs = True) :
     os.system("ps2pdf %s"%psFileName)
@@ -50,24 +63,6 @@ def getCommandOutput(command):
     p = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     stdout,stderr = p.communicate()
     return {"stdout":stdout, "stderr":stderr, "returncode":p.returncode}
-#####################################
-def stdMap(d, t1, t2) :
-    out = r.std.map(t1, t2)()
-    for key,value in d.iteritems() :
-        out[key] = value
-    return out
-#####################################
-def stdMap_String_VectorDoubles(d) :
-    out = r.std.map("std::string", "std::vector<double>")()
-    for key,value in d.iteritems() :
-        v = r.std.vector('double')()
-        if type(value) is tuple :
-            for item in value :
-                v.push_back(item)
-        else :
-            v.push_back(value)
-        out[key] = v
-    return out
 #####################################
 def quadSum(l) :
     return math.sqrt(sum([x**2 for x in l]))

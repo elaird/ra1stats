@@ -161,28 +161,10 @@ def akDesc(wspace, var) :
 def note(REwk, RQcd): 
     return "%sRQcd%s"%("REwk%s_"%REwk if REwk else "", RQcd)
 
-class numberedCanvas(object) :
-    def __init__(self, *args) :
-        self.canvas = r.TCanvas(*args)
-        self.page = 0
-
-        self.text = r.TText()
-        self.text.SetNDC()
-        self.text.SetTextFont(102)
-        self.text.SetTextSize(0.45*self.text.GetTextSize())
-        self.text.SetTextAlign(33)
-        
-    def stamp(self) :
-        self.text.DrawText(0.95, 0.02, "page %2d"%self.page)
-        self.page += 1
-    def Print(self, *args) :
-        self.stamp()
-        self.canvas.Print(*args)
-        
 def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
     out = []
 
-    canvas = numberedCanvas()
+    canvas = utils.numberedCanvas()
     psFileName = "bestFit_%s%s.ps"%(note(REwk, RQcd), "_smOnly" if smOnly else "")
     canvas.Print(psFileName+"[")
     
