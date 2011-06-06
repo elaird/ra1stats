@@ -8,7 +8,6 @@ try ProfileLikelihoodTestStatistic.SetOneSided()
 
 physics
 -------
-mu eff ratios
 look at g(l) for f = 1
 repair nlo
 fix mc ratio
