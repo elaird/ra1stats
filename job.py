@@ -15,15 +15,10 @@ def description(key, cl = None) :
     if key[:2]=="CL" : return key
     if key[-5:]=="Limit" : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
 
-def xs(switches, point) :
-    xsHisto = getattr(hp,"%sXsHisto"%("nlo" if switches["nlo"] else "lo"))
-    return xsHisto().GetBinContent(*point)
-    
 def signalEff(switches, data, binsInput, binsMerged, point) :
-    effHisto = getattr(hp,"%sEffHisto"%("nlo" if switches["nlo"] else "lo"))
     out = {}
     for item in ["had", "muon"] :
-        out[item] = [effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
+        out[item] = [hp.effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
                      for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
         out[item] = data.mergeEfficiency(out[item])
     #out["muon"] = tuple([0.0]*len(out["muon"])); print "HACK: muon sig eff set to 0"
@@ -44,7 +39,7 @@ def go() :
     binsMerged = data.htBinLowerEdges()
     
     for point in points() :
-        x = xs(s, point)
+        x = hp.xsHisto().GetBinContent(*point)
         eff = signalEff(s, data, binsInput, binsMerged, point)
         out = stuffVars(binsMerged, x, eff)
 

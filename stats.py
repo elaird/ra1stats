@@ -97,7 +97,7 @@ def mergeRootFiles(nSlices) :
     if conf.switches()["writeWorkspaceFile"] :
         mergeOneType("workspace")
 ############################################
-#hp.checkHistoBinning()
+hp.checkHistoBinning()
 mkdirs()
 
 options = opts()

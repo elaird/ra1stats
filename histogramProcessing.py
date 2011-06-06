@@ -28,28 +28,27 @@ def checkHistoBinning() :
     def axisStuff(axis) :
         return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
 
-    def properties(handles) :
+    def properties(histos) :
         out = collections.defaultdict(list)
-        for handle in handles :
+        for h in histos :
             try:
-                f = r.TFile(handle[0])
-                h = f.Get("%s/%s"%(handle[1], handle[2]))
                 out["type"].append(type(h))
                 out["x"].append(axisStuff(h.GetXaxis()))
                 out["y"].append(axisStuff(h.GetYaxis()))
                 out["z"].append(axisStuff(h.GetZaxis()))
-                f.Close()
             except AttributeError as ae :
-                print handle
+                h.Print()
                 raise ae
-                
+        return out
+
+    def histos() :
+        binsInput = conf.data().htBinLowerEdgesInput()
+        out = [xsHisto()]
+        for item in ["had", "muon"] :
+            out += [effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper) for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
         return out
     
-    def handles() :
-        d = hs.histoSpecs()
-        return [(value["file"], value["350Dirs"][0], value["loYield"]) for value in d.values()]
-
-    for axis,values in properties(handles()).iteritems() :
+    for axis,values in properties(histos()).iteritems() :
         #print "Here are the %s binnings: %s"%(axis, str(values))        
         if len(set(values))!=1 :
             print "The %s binnings do not match: %s"%(axis, str(values))
@@ -95,6 +94,12 @@ def pdfUncHisto(spec) :
         return fillHoles(h, 2)
     else :
         return h
+
+def xsHisto() :
+    return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
+
+def effHisto(**args) :
+    return nloEffHisto(**args) if conf.switches()["nlo"] else loEffHisto(**args)
 
 def loXsHisto() :
     s = hs.histoSpec(box = "had", scale = "1")
@@ -163,11 +168,8 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     f.Close()
     return out
 
-def exampleXsHisto() :
-    return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
-
 def mergePickledFiles() :
-    example = exampleXsHisto()
+    example = xsHisto()
     #print "Here are the example binnings:"
     #print "x:",example.GetNbinsX(), example.GetXaxis().GetXmin(), example.GetXaxis().GetXmax()
     #print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
@@ -203,7 +205,7 @@ def mergePickledFiles() :
 def fullPoints() :
     out = []
     s = conf.switches()
-    h = exampleXsHisto()
+    h = xsHisto()
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
