@@ -4,7 +4,6 @@ fix leak in pValue()
 snapshot in pValue()
 check xsHisto binning
 improve histo bin check
-feed FC points to test
 plot FC belt
 tweak FC running
 try ProfileLikelihoodTestStatistic.SetOneSided()
@@ -14,7 +13,6 @@ physics
 repair nlo
 fix mc ratio
 use scaled yields in lowest two bins
-muon yields
 systematics on signal eff.
 mc stats as systematic
 consider pdfUncertainty for LO
