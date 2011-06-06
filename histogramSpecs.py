@@ -21,7 +21,7 @@ def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
     assert scale in ["1", "05", "2"]
 
     dir = "/vols/cms02/elaird1/20_yieldHistograms/2011"
-    fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_All.root"%(conf.switches()["signalModel"].lower())
+    fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_%s_All.root"%(conf.switches()["signalModel"].lower(), box.capitalize())
 
     out = {}
     out["file"] = "/".join([dir, box, versions[box], fileName])
