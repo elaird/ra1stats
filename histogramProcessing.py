@@ -163,11 +163,11 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     f.Close()
     return out
 
-def exampleHisto() :
+def exampleXsHisto() :
     return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
 
 def mergePickledFiles() :
-    example = exampleHisto()
+    example = exampleXsHisto()
     #print "Here are the example binnings:"
     #print "x:",example.GetNbinsX(), example.GetXaxis().GetXmin(), example.GetXaxis().GetXmax()
     #print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
@@ -203,13 +203,13 @@ def mergePickledFiles() :
 def fullPoints() :
     out = []
     s = conf.switches()
-    h = exampleHisto()
+    h = exampleXsHisto()
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 content = h.GetBinContent(iBinX, iBinY, iBinZ)
-                min = s["minSignalEventsForConsideration"]
-                max = s["maxSignalEventsForConsideration"]
+                min = s["minSignalXsForConsideration"]
+                max = s["maxSignalXsForConsideration"]
                 if min!=None and content<min : continue
                 if max!=None and content>max : continue
                 if s["fiftyGeVStepsOnly"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/50.0)%1 != 0.0) : continue
