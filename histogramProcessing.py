@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import collections,cPickle,os,math
+import collections,cPickle,os,math,utils
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
@@ -460,7 +460,7 @@ def makeValidationPlots() :
     f = r.TFile(inFile)
     fileName = inFile.replace(".root",".ps")
     outFileName = fileName.replace(".ps",".pdf")
-    canvas = r.TCanvas()
+    canvas = utils.numberedCanvas()
     canvas.SetRightMargin(0.15)
     
     canvas.Print(fileName+"[")
