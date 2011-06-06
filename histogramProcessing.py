@@ -441,7 +441,13 @@ def printLumis() :
     text.DrawText(x, y-(i+1)*s, "HT bins: %s"%str(inputData.htBinLowerEdges()))
     return text
 
-def drawBenchmarks(params) :
+def drawBenchmarks() :
+    switches = conf.switches()
+    parameters =  conf.scanParameters()
+    if not switches["drawBenchmarkPoints"] : return
+    if not (switches["signalModel"] in parameters) : return
+    params = parameters[switches["signalModel"]]
+        
     text = r.TText()
     out = []
     for label,coords in conf.benchmarkPoints().iteritems() :
@@ -496,10 +502,25 @@ def makeValidationPlots() :
             continue
         canvas.SetLogz(name in logZ)
         if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
-        switches = conf.switches()
-        params =  conf.scanParameters()
-        if switches["drawBenchmarkPoints"] and (switches["signalModel"] in params) : stuff = drawBenchmarks(params[switches["signalModel"]])
+        stuff = drawBenchmarks()
         canvas.Print(fileName)
+
+    #effMu/effHad
+    if conf.switches()["effRatioPlots"] :
+        for name in names :
+            num = threeToTwo(f.Get(name))
+            if name[:7]!="effmuon" : continue
+            denName = name.replace("muon", "had")
+            den = threeToTwo(f.Get(denName))
+            num.Divide(den)
+            num.SetStats(False)
+            num.SetTitle("%s/%s%s;"%(name, denName, hs.histoTitle()))
+            num.Draw("colz")
+            if not num.Integral() : continue
+            num.SetMinimum(0.0)
+            num.SetMaximum(0.5)
+            stuff = drawBenchmarks()
+            canvas.Print(fileName)
 
     canvas.Clear()
     text3 = printSuppressed(suppressed)
