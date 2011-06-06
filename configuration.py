@@ -19,11 +19,9 @@ def switches() :
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
     d["drawBenchmarkPoints"] = True
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
-    #d["listOfTestPoints"] = [(70, 27, 1)] #at the edge
-    d["listOfTestPoints"] = []
+    d["listOfTestPoints"] = [(70, 27, 1)] #at the edge
+    #d["listOfTestPoints"] = []
 
-    d["suppressJobOutput"] = True
-    
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0, "TwoSigma": 2.0}
     d["debugMedianHisto"] = False
@@ -54,7 +52,6 @@ def checkAndAdjust(d) :
         d["nlo"] = False
         d["lateDivision"] = True
 
-    d["suppressJobOutput"] |= (d["computeExpectedLimit"] and not d["debugMedianHisto"])
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
     else :
