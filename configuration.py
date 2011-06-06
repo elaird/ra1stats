@@ -33,9 +33,6 @@ def switches() :
     d["icfDefaultLumi"] = 100.0 #/pb
     d["icfDefaultNEventsIn"] = 10000
     
-    d["debugOutput"] = False
-    d["sourceFiles"] = []
-    
     d["subCmd"] = "qsub -q hep%s.q"%(["short", "medium", "long"][0])
     d["envScript"] = "icJob.sh"
 
@@ -69,6 +66,7 @@ def mergedFile(outputDir, switches) :
                      ])
     for item in ["computeExpectedLimit"] :
         if switches[item] : out += "_%s"%item
+    if switches["dataYear"]==2010 : out +="_2010"
     out += ".root"
     return out
 
