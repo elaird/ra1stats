@@ -231,20 +231,21 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
     #utils.delete(lInt)
     return out
 
-def fcInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True, nPoints = 2) :
+def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
     assert not smOnly
 
-    twoSided = plInterval(dataset, modelconfig, wspace, note, smOnly, cl,       makePlots)["upperLimit"]
-    oneSided = plInterval(dataset, modelconfig, wspace, note, smOnly, 2*cl-1.0, makePlots)["upperLimit"]
+    #twoSided = plInterval(dataset, modelconfig, wspace, note, smOnly, cl,       makePlots)["upperLimit"]
+    ##oneSided = plInterval(dataset, modelconfig, wspace, note, smOnly, 2*cl-1.0, makePlots)["upperLimit"]
+    ##points = sorted([oneSided + (i+0.0)*(twoSided - oneSided)/nPoints for i in range(-nPoints/2, 1+3*nPoints/2)])
+    #if twoSided<=0.9 or twoSided>=1.1 : return {}
 
-    assert not nPoints%2
-    f = r.RooRealVar("f", "f", 0.0)
+    f = r.RooRealVar("f", "f", 1.0)
     poiValues = r.RooDataSet("poiValues", "poiValues", r.RooArgSet(f))
     r.SetOwnership(poiValues, False) #so that ~FeldmanCousins() can delete it
-    for point in [0.0] + sorted([oneSided + (i+0.0)*(twoSided - oneSided)/nPoints for i in range(-nPoints/2, 1+3*nPoints/2)]) :
+    points = [1.0]
+    for point in [0.0] + points :
         f.setVal(point)
         poiValues.add(r.RooArgSet(f))
-    poiValues.write("foo.txt")
         
     out = {}
     calc = r.RooStats.FeldmanCousins(dataset, modelconfig)
@@ -257,6 +258,7 @@ def fcInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
     
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
+
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
     out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
 
@@ -401,7 +403,7 @@ class foo(object) :
         if method=="profileLikelihood" :
             return plInterval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
         elif method=="feldmanCousins" :
-            return fcInterval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
+            return fcExcl(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
 
     def cls(self, method = "CLs", nToys = 300, makePlots = False) :
         return cls(self.data, self.modelConfig, self.wspace, self.smOnly(), method = method, nToys = nToys, makePlots = makePlots)
