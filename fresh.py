@@ -234,11 +234,6 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
 def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
     assert not smOnly
 
-    #twoSided = plInterval(dataset, modelconfig, wspace, note, smOnly, cl,       makePlots)["upperLimit"]
-    ##oneSided = plInterval(dataset, modelconfig, wspace, note, smOnly, 2*cl-1.0, makePlots)["upperLimit"]
-    ##points = sorted([oneSided + (i+0.0)*(twoSided - oneSided)/nPoints for i in range(-nPoints/2, 1+3*nPoints/2)])
-    #if twoSided<=0.9 or twoSided>=1.1 : return {}
-
     f = r.RooRealVar("f", "f", 1.0)
     poiValues = r.RooDataSet("poiValues", "poiValues", r.RooArgSet(f))
     r.SetOwnership(poiValues, False) #so that ~FeldmanCousins() can delete it
@@ -260,9 +255,6 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
     lInt = calc.GetInterval()
 
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
-    out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
-
-    #utils.delete(lInt)
     return out
 
 def cls(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
