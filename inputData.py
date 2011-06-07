@@ -12,16 +12,14 @@ class data2011(data) :
         
         #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
         #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
-        
+
         self._lumi = {
-            #"had":     189.,
             "had":     248.,
             "hadBulk": 189.,
             
-            "muon":    183., #mu  dataset (pt>25)
-            #"muon":   189., #had dataset (pt>20)
-            "mcMuon":  189.,
-            "mcTtw":   189.,
+            "muon":    244., #mu dataset (pt>25)
+            "mcMuon":  248.,
+            "mcTtw":   248.,
             
             "phot":    164.6,
             "mcPhot":  164.6,
@@ -30,18 +28,17 @@ class data2011(data) :
         self._htMeans = (     297.51,      347.25,      415.57,  516.2 , 617.17, 717.72, 818.33, 919.08)
         self._observations = {
             "nHadBulk":scaled(( 9.047e+06,   3.793e+06,   2.623e+06,  823968, 289401, 112899,  48118,  65098), self.lumi()["had"]/self.lumi()["hadBulk"]),
-            #"nHad":           (       130,          68,          47,      12,      5,      1,      0,      0),#189/pb
-            #"nHad":           (       130,          68,        47.3,    12.7,      6,    2.2,    1.1,    1.6),#189/pb plus exp. LM6 added
-            "nHad":      excl((       164,          83,          77,      21,      8,      1,      0,      0), isExcl),#248/pb
+            "nHad":      excl((       164,          83,          77,      21,      8,      1,      0,      0), isExcl),
             "nPhot":     excl((       142,          57,          43,      12,      2,      2,      2,      0), isExcl),
-            "nMuon":          (       177,          77,          13,      10,      4,      0,      0,      0), #mu  dataset (pt>25)
-            #"nMuon":         (        95,          73,          17,      12,      4,      0,      0,      0), #had dataset (pt>20)
+           #"nMuon":          (       177,          77,          13,      10,      4,      0,      0,      0), #183/pb
+            "nMuon":          (        76,          30,          37,      15,      5,      1,      0,      0), #244/pb
             }
         ep = 0.01        
         self._mcExpectations = {
-            "mcMuon":         scaled((198.17,  100.06,   16.78,   4.82,   2.08,   1.13,   0.11, 0.02), self.lumi()["muon"]/self.lumi()["mcMuon"]), #mu  dataset (pt>25)
-            #"mcMuon":        scaled((201.04,  101.8 ,   17.82,   4.86,   2.10,   1.13,   0.11, 0.03), self.lumi()["muon"]/self.lumi()["mcMuon"]), #had dataset (pt>20)
-            "mcTtw":          scaled((  74.4,   27.82,   19.26,   7.17,   1.24,   1.05,   0.52, 0.55), self.lumi()["had" ]/self.lumi()["mcTtw" ]),
+           #"mcMuon":         scaled((198.17,  100.06,   16.78,   4.82,   2.08,   1.13,   0.11, 0.02), self.lumi()["muon"]/self.lumi()["mcMuon"]), #189/pb
+            "mcMuon":         scaled(( 81.87,   30.35,   21.44,   6.73,   2.52,   1.48,   0.10, 0.03), self.lumi()["muon"]/self.lumi()["mcMuon"]), #248/pb
+           #"mcTtw":          scaled((  74.4,   27.82,   19.26,   7.17,   1.24,   1.05,   0.52, 0.55), self.lumi()["had" ]/self.lumi()["mcTtw" ]), #189/pb
+            "mcTtw":          scaled(( 94.94,   34.01,   22.75,   8.48,   1.35,   1.31,   0.62, 0.17), self.lumi()["had" ]/self.lumi()["mcTtw"] ), #248/pb
             "mcPhot":    excl(scaled((   110,      37,      28,      9,      4,    0.8,    0.5,   ep), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
             "mcZinv":    excl(scaled((    39,      16,      18,      9,    1.7, ep+0.4,    0.4,   ep), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
             }
