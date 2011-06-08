@@ -26,20 +26,12 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
     htMeans = inputData.htMeans()
     terms = []
 
-    #A_ini = initialA(inputData)
-    #k_ini = initialk(inputData)
-    #wimport(w, r.RooRealVar("A_qcd", "A_qcd", A_ini/10.0, 0.0, 30.0*A_ini))
-    #wimport(w, r.RooRealVar("k_qcd", "k_qcd", k_ini,      0.0, 30.0*k_ini))
-
-    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 2.03e-04, 0.0, 30*2.03e-04))
-    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-6,   0.0, 1.0))
+    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-6, 0.0, 4.5e-5))
+    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-6, 0.0, 1.0))
 
     if REwk :
-        #wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ini, 0.0, 30.0*A_ini))
-        #wimport(w, r.RooRealVar("k_ewk", "k_ewk", k_ini, 0.0, 30.0*k_ini))
-
-        wimport(w, r.RooRealVar("A_ewk", "A_ewk", 2.97e-05, 0.0, 30*2.97e-05))
-        wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6,   0.0, 1.0))
+        wimport(w, r.RooRealVar("A_ewk", "A_ewk", 1.5e-5, 0.0, 4.5e-4))
+        wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6, 0.0, 1.0))
 
     if RQcd=="Zero" :
         w.var("A_qcd").setVal(0.0)
@@ -72,7 +64,7 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         if smOnly :
             wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nHad%d"%i), w.function("hadB%d"%i)))
         else :
-            wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("hadLumi"), w.var("hadSignalEff%d"%i))))
+            wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("hadLumi"), w.var("signalEffHad%d"%i))))
             wimport(w, r.RooAddition("hadExp%d"%i, "hadExp%d"%i, r.RooArgSet(w.function("hadB%d"%i), w.function("hadS%d"%i))))
             wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nHad%d"%i), w.function("hadExp%d"%i)))
         terms.append("hadPois%d"%i)
@@ -131,7 +123,7 @@ def muonTerms(w, inputData, smOnly) :
         if smOnly :
             wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonB%d"%i)))
         else :
-            wimport(w, r.RooProduct("muonS%d"%i, "muonS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("muonLumi"), w.var("muonSignalEff%d"%i))))
+            wimport(w, r.RooProduct("muonS%d"%i, "muonS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("muonLumi"), w.var("signalEffMuon%d"%i))))
             wimport(w, r.RooAddition("muonExp%d"%i, "muonExp%d"%i, r.RooArgSet(w.function("muonB%d"%i), w.function("muonS%d"%i))))
             wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonExp%d"%i)))
         
@@ -139,10 +131,10 @@ def muonTerms(w, inputData, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def signalVariables(w, inputData, signalXs, signalEff) :
+def signalVariables(w, inputData, signalDict) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
-    wimport(w, r.RooRealVar("xs", "xs", signalXs))
+    wimport(w, r.RooRealVar("xs", "xs", signalDict["xs"]))
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
@@ -150,9 +142,10 @@ def signalVariables(w, inputData, signalXs, signalEff) :
     wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", 2.0*inputData.fixedParameters()["sigmaLumi"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
-    for box,effs in signalEff.iteritems() :
-        for iBin,eff in enumerate(effs) :
-            name = "%sSignalEff%d"%(box, iBin)
+    for key,value in signalDict.iteritems() :
+        if key=="xs" : continue
+        for iBin,eff in enumerate(value) :
+            name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
             wimport(w, r.RooRealVar(name, name, eff))
 
 def multi(w, variables, inputData) :
@@ -165,17 +158,17 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, signalXs, signalEff) :
+def setupLikelihood(w, inputData, REwk, RQcd, signalDict) :
     terms = []
     obs = []
     nuis = []
     multiBinObs = []
     multiBinNuis = []
 
-    if signalXs :
-        signalVariables(w, inputData, signalXs, signalEff)
+    if signalDict :
+        signalVariables(w, inputData, signalDict)
 
-    smOnly = not signalXs
+    smOnly = not signalDict
     hadTerms(w, inputData, REwk, RQcd, smOnly)
     terms.append("hadTerms")
     multiBinObs.append("nHad")
@@ -354,8 +347,8 @@ def pdf(w) :
     return w.pdf("model")
 
 class foo(object) :
-    def __init__(self, inputData = None, REwk = None, RQcd = None, signalXs = None, signalEff = {}, trace = False) :
-        for item in ["inputData", "REwk", "RQcd", "signalXs", "signalEff"] :
+    def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, trace = False) :
+        for item in ["inputData", "REwk", "RQcd", "signal"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -364,7 +357,7 @@ class foo(object) :
 
         self.note = plotting.note(REwk, RQcd)
         self.wspace = r.RooWorkspace("Workspace")
-        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signalXs, self.signalEff)
+        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signal)
         self.data = dataset(self.wspace.set("obs"))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
 
@@ -377,12 +370,13 @@ class foo(object) :
         assert self.REwk in ["", "FallingExp", "Constant"]
         assert self.RQcd in ["FallingExp", "Zero"]
         bins = self.inputData.htBinLowerEdges()
-        for key,value in self.signalEff.iteritems() :
-            assert key in ["had", "muon"]
+        for key,value in self.signal.iteritems() :
+            if key=="xs" : continue
+            assert key in ["effHad", "effMuon"]
             assert len(value)==len(bins)
             
     def smOnly(self) :
-        return not self.signalXs
+        return not self.signal
             
     def debug(self) :
         self.wspace.Print("v")

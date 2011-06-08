@@ -17,19 +17,20 @@ def description(key, cl = None) :
 
 def signalEff(switches, data, binsInput, binsMerged, point) :
     out = {}
-    for item in ["had", "muon"] :
-        out[item] = [hp.effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
+    for item in ["effHad", "effMuon"] :
+        box = item.replace("eff","").lower()
+        out[item] = [hp.effHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
                      for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
         out[item] = data.mergeEfficiency(out[item])
     #out["muon"] = tuple([0.0]*len(out["muon"])); print "HACK: muon sig eff set to 0"
     return out
 
-def stuffVars(binsMerged, x, eff) :
+def stuffVars(binsMerged, signal) :
     out = {}
-    out["xs"] = (x, "#sigma (pb)")
+    out["xs"] = (signal["xs"], "#sigma (pb)")
     for i,bin in enumerate(binsMerged) :
-        for sel in ["had", "muon"] :
-            out["eff%s%d"%(sel, bin)] = (eff[sel][i], "#epsilon of %s %d selection"%(sel, bin))
+        for sel in ["effHad", "effMuon"] :
+            out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel, bin))
     return out
 
 def go() :
@@ -39,12 +40,15 @@ def go() :
     binsMerged = data.htBinLowerEdges()
     
     for point in points() :
-        x = hp.xsHisto().GetBinContent(*point)
-        eff = signalEff(s, data, binsInput, binsMerged, point)
-        out = stuffVars(binsMerged, x, eff)
+        signal = {}
+        signal["xs"] = hp.xsHisto().GetBinContent(*point)
+        for key,value in signalEff(s, data, binsInput, binsMerged, point).iteritems() :
+            signal[key] = value
+
+        out = stuffVars(binsMerged, signal)
 
         if "CLs" in s["method"] :
-            f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signalXs = x, signalEff = eff)
+            f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signal = signal)
             results = f.cls(method = s["method"], nToys = s["nToys"])
             for key,value in results.iteritems() : out[key] = (value, description(key))
             for cl in s["CL"] :
@@ -52,7 +56,7 @@ def go() :
                 out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
         else :
             for cl in s["CL"] :
-                f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signalXs = x, signalEff = eff)
+                f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signal = signal)
                 results = f.interval(cl = cl, method = s["method"])
                 cl2 = 100*cl
                 for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
