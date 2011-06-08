@@ -53,10 +53,29 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
             out.SetBinContent(i+1, inputData.mcExpectations()[varName][i])
     return out
 
-def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), maximum = None, logY = False,
-                   obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
+def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
+    out = exampleHisto.Clone(exampleHisto.GetName()+d["desc"])
+    out.Reset()
+
+    out.SetLineColor(d["color"])
+    out.SetLineStyle(d["style"] if "style" in d else 1)
+    out.SetLineWidth(d["width"] if "width" in d else 1)
+
+    out.SetMarkerColor(d["color"])
+    out.SetMarkerStyle(d["style"] if "style" in d else 1)
+
+    for i in range(len(inputData.htBinLowerEdges())) :
+        box = d["box"]
+        l = inputData.lumi()[box]
+        xs = d["example"]["xs"]
+        eff = d["example"]["eff%s"%box.capitalize()][i]
+        out.SetBinContent(i+1, l*xs*eff)
+    return out
+
+def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85),
+                   maximum = None, logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
-    leg = r.TLegend(legend0[0], legend0[1], 0.85, 0.85, "ML values" if (otherVars and obsKey) else "")
+    leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -78,7 +97,10 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     stacks = {}
     stuff += [leg,inp,stacks]
     for d in otherVars :
-        hist = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1, wspaceMemberFunc = d["type"])
+        if "example" not in d :
+            hist = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1, wspaceMemberFunc = d["type"])
+        else :
+            hist = signalExampleHisto(inp, inputData, d)
         if not hist.GetEntries() : continue
         stuff.append(hist)
         leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
@@ -161,7 +183,9 @@ def akDesc(wspace, var) :
 def note(REwk, RQcd): 
     return "%sRQcd%s"%("REwk%s_"%REwk if REwk else "", RQcd)
 
-def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
+def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampleToStack = ("", {})) :
+    if any(signalExampleToStack) : assert smOnly
+    
     out = []
 
     canvas = utils.numberedCanvas()
@@ -172,6 +196,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
         signalDesc  = "signal"
         signalDesc2 = "xs = %5.2f xs^{nom}; #rho = %4.2f"%(wspace.var("f").getVal(), wspace.var("rhoSignal").getVal())
 
+    #hadronic sample
     hadVars = [
         {"var":"hadB", "type":"function", "desc":"expected total background",
          "color":r.kBlue, "style":1, "width":2, "stack":"total"},
@@ -189,20 +214,26 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly) :
         ]
     if not smOnly :
         hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
+    elif any(signalExampleToStack) :
+        hadVars += [{"example":signalExampleToStack[1], "box":"had", "desc":signalExampleToStack[0], "color":r.kOrange,  "style":1,  "stack":"total"}]
 
-    #hadronic sample
     for logY in [False, True] :
         thisNote = "Hadronic Sample%s"%(" (logY)" if logY else "")
-        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.6), obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY)
-    
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
+                       obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY)
+
+    #muon control sample
     muonVars = [
         {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":"total"},
         {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
         ]
     if not smOnly :
         muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
-    #muon control sample
+    elif any(signalExampleToStack) :
+        muonVars += [{"example":signalExampleToStack[1], "box":"muon", "desc":signalExampleToStack[0], "color":r.kOrange,  "style":1,  "stack":"total"}]
+        
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Muon Control Sample", legend0 = (0.35, 0.7), obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars)
+
     #photon control sample
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Photon Control Sample", legend0 = (0.35, 0.72), obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},

@@ -347,8 +347,8 @@ def pdf(w) :
     return w.pdf("model")
 
 class foo(object) :
-    def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, trace = False) :
-        for item in ["inputData", "REwk", "RQcd", "signal"] :
+    def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, signalExampleToStack = ("", {}), trace = False) :
+        for item in ["inputData", "REwk", "RQcd", "signal", "signalExampleToStack"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -370,10 +370,11 @@ class foo(object) :
         assert self.REwk in ["", "FallingExp", "Constant"]
         assert self.RQcd in ["FallingExp", "Zero"]
         bins = self.inputData.htBinLowerEdges()
-        for key,value in self.signal.iteritems() :
-            if key=="xs" : continue
-            assert key in ["effHad", "effMuon"]
-            assert len(value)==len(bins)
+        for d in [self.signal, self.signalExampleToStack[1]] :
+            for key,value in d.iteritems() :
+                if key=="xs" : continue
+                assert key in ["effHad", "effMuon"]
+                assert len(value)==len(bins)
             
     def smOnly(self) :
         return not self.signal
@@ -401,4 +402,5 @@ class foo(object) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note)
 
     def bestFit(self) :
-        plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data), self.inputData, self.REwk, self.RQcd, self.smOnly())
+        plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
+                                 self.inputData, self.REwk, self.RQcd, self.smOnly(), self.signalExampleToStack)
