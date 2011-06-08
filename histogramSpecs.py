@@ -23,6 +23,7 @@ def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
     dir = "/vols/cms02/elaird1/20_yieldHistograms/2011"
     if box=="muon" :
         fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_%s_All.root"%(conf.switches()["signalModel"].lower(), box.capitalize())
+        #fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_%s_100.root"%(conf.switches()["signalModel"].lower(), box)        
     elif box=="had" :
         fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_%s_100.root"%(conf.switches()["signalModel"].lower(), box)
     
