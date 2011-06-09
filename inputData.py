@@ -29,6 +29,7 @@ class data2011(data) :
         self._observations = {
             "nHadBulk":scaled(( 9.047e+06,   3.793e+06,   2.623e+06,  823968, 289401, 112899,  48118,  65098), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad":      excl((       164,          83,          77,      21,      8,      1,      0,      0), isExcl),
+           #"nHad":           (       164,          83,          56,      13,      7,      2,      1,      1), #fix last three bins to SM exp.
             "nPhot":     excl((       142,          57,          43,      12,      2,      2,      2,      0), isExcl),
            #"nMuon":          (       177,          77,          13,      10,      4,      0,      0,      0), #183/pb
             "nMuon":          (        76,          30,          37,      15,      5,      1,      0,      0), #244/pb
