@@ -115,6 +115,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     for stack in stacks.values() :
         stack.Draw(goptions)
 
+    inp.Draw("psame")#redraw data
     leg.Draw()
     r.gPad.SetTickx()
     r.gPad.SetTicky()
@@ -199,23 +200,23 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
     #hadronic sample
     hadVars = [
         {"var":"hadB", "type":"function", "desc":"expected total background",
-         "color":r.kBlue, "style":1, "width":2, "stack":"total"},
+         "color":r.kBlue, "style":1, "width":3, "stack":"total"},
         {"var":"ewk",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewk") if REwk else "[floating]",
-         "color":r.kCyan, "style":2, "stack":"background"},
+         "color":r.kCyan, "style":2, "width":2, "stack":"background"},
         {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcd"),
-         "color":r.kMagenta, "style":3, "stack":"background"},
+         "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
         ]
 
     hadVars += [
         {"var":"zInv", "type":"function", "desc":"Z->inv", "desc2": "#rho = %4.2f"%wspace.var("rhoPhotZ").getVal(),
-         "color":r.kRed, "style":2, "stack":"ewk"},
+         "color":r.kRed, "style":2, "width":2, "stack":"ewk"},
         {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho = %4.2f"%wspace.var("rhoMuonW").getVal(),
-         "color":r.kGreen, "style":2, "stack":"ewk"},
+         "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
         ]
     if not smOnly :
-        hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange,  "style":1,  "stack":"total"}]
+        hadVars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
     elif any(signalExampleToStack) :
-        hadVars += [{"example":signalExampleToStack[1], "box":"had", "desc":signalExampleToStack[0], "color":r.kOrange,  "style":1,  "stack":"total"}]
+        hadVars += [{"example":signalExampleToStack[1], "box":"had", "desc":signalExampleToStack[0], "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
 
     for logY in [False, True] :
         thisNote = "Hadronic Sample%s"%(" (logY)" if logY else "")
@@ -224,20 +225,20 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
 
     #muon control sample
     muonVars = [
-        {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":"total"},
-        {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
+        {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":"total"},
+        {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None},
         ]
     if not smOnly :
-        muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
+        muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "width":2, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
     elif any(signalExampleToStack) :
-        muonVars += [{"example":signalExampleToStack[1], "box":"muon", "desc":signalExampleToStack[0], "color":r.kOrange,  "style":1,  "stack":"total"}]
+        muonVars += [{"example":signalExampleToStack[1], "box":"muon", "desc":signalExampleToStack[0], "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
         
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Muon Control Sample", legend0 = (0.35, 0.7), obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars)
 
     #photon control sample
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Photon Control Sample", legend0 = (0.35, 0.72), obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
-            {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "desc":"expected SM yield", "stack":None},
-            {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "desc":"SM MC",             "stack":None},
+        {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+        {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None},
             ])
 
     #EWK background scale factors
