@@ -30,7 +30,7 @@ def stuffVars(binsMerged, signal) :
     out["xs"] = (signal["xs"], "#sigma (pb)")
     for i,bin in enumerate(binsMerged) :
         for sel in ["effHad", "effMuon"] :
-            out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel, bin))
+            out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
     return out
 
 def go() :
