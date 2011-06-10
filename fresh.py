@@ -307,19 +307,32 @@ def pseudoData(wspace, nToys) :
         out.append(data)
     return out
     
-def expectedLimit(modelConfig, wspace, nToys) :
-    #fit to SM-only    
+def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys) :
+    assert not smOnly
+    
+    #fit to SM-only
     wspace.var("f").setVal(0.0)
     wspace.var("f").setConstant(True)
-    results = utils.rooFitResults(pdf(wspace), data)
+    results = utils.rooFitResults(pdf(wspace), dataset)
 
+    #save snapshot and generate toys
+    wspace.saveSnapshot("snap", wspace.allVars())
     toys = pseudoData(wspace, nToys)
 
     #restore signal model
     wspace.var("f").setVal(1.0)
     wspace.var("f").setConstant(False)
-    
 
+    limits = []
+    for i,toy in enumerate(toys) :
+        wspace.loadSnapshot("snap")
+        toy.Print("v")
+
+        interval = plInterval(toy, modelConfig, wspace, note = "", smOnly = smOnly, cl = cl, makePlots = False)
+        limits.append(interval["upperLimit"])
+        #utils.delete(results)
+    
+    
 #    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 98, 1, 50)
 #    for i in range(int(dataset.sumEntries())) :
 #        argSet = dataset.get(i)
@@ -455,6 +468,9 @@ class foo(object) :
 
     def pValue(self, nToys = 200) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note)
+
+    def expectedLimit(self, cl = 0.95, nToys = 200) :
+        expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys)
 
     def bestFit(self) :
         plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
