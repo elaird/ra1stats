@@ -34,24 +34,37 @@ def inputHisto(inputData, obsKey, note, extraName = "", yLabel = "") :
 def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = None,
              color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1,
              wspaceMemberFunc = None, extraName = "") :
-    out = exampleHisto.Clone(varName+extraName)
-    out.Reset()
+    d = {}
+    d["value"] = exampleHisto.Clone(varName+extraName)
+    d["value"].Reset()
 
-    out.SetLineColor(color)
-    out.SetLineStyle(lineStyle)
-    out.SetLineWidth(lineWidth)
+    d["value"].SetLineColor(color)
+    d["value"].SetLineStyle(lineStyle)
+    d["value"].SetLineWidth(lineWidth)
 
-    out.SetMarkerColor(color)
-    out.SetMarkerStyle(markerStyle)
+    if wspaceMemberFunc=="var" :
+        for item in ["min", "max"] :
+            d[item] = d["value"].Clone(d["value"].GetName()+item)
+            d[item].SetLineColor(color)
+            d[item].SetLineStyle(lineStyle+1)
+            d[item].SetLineWidth(lineWidth)
+              
+    d["value"].SetMarkerColor(color)
+    d["value"].SetMarkerStyle(markerStyle)
 
     for i in range(len(inputData.htBinLowerEdges())) :
         if wspaceMemberFunc :
             var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
             if not var : continue
-            out.SetBinContent(i+1, var.getVal())
+            d["value"].SetBinContent(i+1, var.getVal())
+            if wspaceMemberFunc=="var" :
+                for item in ["min", "max"] :
+                    x = getattr(var, "get%s"%item.capitalize())()
+                    if abs(x)==1.0e30 : continue
+                    d[item].SetBinContent(i+1, x)
         else :
-            out.SetBinContent(i+1, inputData.mcExpectations()[varName][i])
-    return out
+            d["value"].SetBinContent(i+1, inputData.mcExpectations()[varName][i])
+    return d
 
 def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
     out = exampleHisto.Clone(exampleHisto.GetName()+d["desc"])
@@ -73,7 +86,7 @@ def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
     return out
 
 def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85),
-                   minimum = None, maximum = None, logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
+                   minimum = 0.0, maximum = None, logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
     leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
@@ -91,7 +104,6 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
         inp.SetMinimum(0.1)
         r.gPad.SetLogy()
     else :
-        inp.SetMinimum(0.0)
         r.gPad.SetLogy(False)
     
     goptions = "same"
@@ -99,7 +111,8 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     stuff += [leg,inp,stacks]
     for d in otherVars :
         if "example" not in d :
-            hist = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1, wspaceMemberFunc = d["type"])
+            histos = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1, wspaceMemberFunc = d["type"])
+            hist = histos["value"]
         else :
             hist = signalExampleHisto(inp, inputData, d)
         if not hist.GetEntries() : continue
@@ -112,6 +125,9 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
         else :
             hist.Scale(scale)
             hist.Draw(goptions)
+            for item in ["min", "max"] :
+                if item not in histos : continue
+                histos[item].Draw(goptions)
 
     for stack in stacks.values() :
         stack.Draw(goptions)
@@ -144,14 +160,14 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
             num = inputHisto(inputData, spec["num"], note, yLabel = yLabel)
         else :
             example = inputHisto(inputData, "nHad", note, extraName = extraName, yLabel = yLabel)
-            num = varHisto(example, inputData, wspace, spec["num"], wspaceMemberFunc = spec["numType"])
+            num = varHisto(example, inputData, wspace, spec["num"], wspaceMemberFunc = spec["numType"])["value"]
 
         for den,denType in zip(spec["dens"], spec["denTypes"]) :
             if denType=="data" :
                 num.Divide( inputHisto(inputData, den, note, extraName = extraName+den) )
             else :
                 example = inputHisto(inputData, "nHad", note, extraName = extraName+den)
-                num.Divide( varHisto(example, inputData, wspace, den, wspaceMemberFunc = denType) )
+                num.Divide( varHisto(example, inputData, wspace, den, wspaceMemberFunc = denType)["value"] )
 
         num.SetMarkerStyle(20)
         num.SetStats(False)
@@ -257,7 +273,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
 
     #fZinv
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "fraction of EWK background which is Z->inv (result of fit)",
-                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", minimum = 0.15, maximum = 0.85,
+                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", minimum = 0.0, maximum = 1.0,
                    otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}], yLabel = "")
 
     #MC translation factors
