@@ -320,7 +320,7 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     canvas.Print(ps)
     
     totalList = lMaxs+[lMaxData]
-    histo = r.TH1D("lMaxHisto",";L_{max};pseudo experiments / bin", 100, 0.0, max(totalList)*1.1)
+    histo = r.TH1D("lMaxHisto",";log(L_{max});pseudo experiments / bin", 100, 0.0, max(totalList)*1.1)
     for item in lMaxs :
         histo.Fill(item)
     histo.SetStats(False)
@@ -332,11 +332,11 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     line.SetLineWidth(2)
     line = line.DrawLine(lMaxData, histo.GetMinimum(), lMaxData, histo.GetMaximum())
     
-    legend = r.TLegend(0.5, 0.7, 0.9, 0.9)
+    legend = r.TLegend(0.1, 0.7, 0.5, 0.9)
     legend.SetFillStyle(0)
     legend.SetBorderSize(0)
-    legend.AddEntry(histo, "L_{max} in pseudo-experiments", "l")
-    legend.AddEntry(line, "L_{max} observed", "l")
+    legend.AddEntry(histo, "log(L_{max}) in pseudo-experiments", "l")
+    legend.AddEntry(line, "log(L_{max}) observed", "l")
     legend.Draw()
     
     canvas.Print(ps)
