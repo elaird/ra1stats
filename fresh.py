@@ -54,7 +54,7 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         else :
             wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
             ewk = w.var("ewk%d"%i)
-        wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.0, 1.0))
+        wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.2, 0.8))
 
         wimport(w, r.RooFormulaVar("zInv%d"%i, "(@0)*(@1)",       r.RooArgList(ewk, w.var("fZinv%d"%i))))
         wimport(w, r.RooFormulaVar("ttw%d"%i,  "(@0)*(1.0-(@1))", r.RooArgList(ewk, w.var("fZinv%d"%i))))
@@ -296,6 +296,72 @@ def profilePlots(dataset, modelconfig, note, smOnly) :
     canvas.Print(psFile+"]")
     utils.ps2pdf(psFile)
 
+def pseudoData(wspace, setName, nToys) :
+    out = []
+    #make pseudo experiments with current parameter values
+    dataset = pdf(wspace).generate(wspace.set("obs"), nToys)
+    for i in range(int(dataset.sumEntries())) :
+        argSet = dataset.get(i)
+        data = r.RooDataSet("pseudoData%d"%i, "title", argSet)
+        data.add(argSet)
+        out.append(data)
+    return out
+    
+def expectedLimit(modelConfig, wspace, nToys) :
+    #fit to SM-only    
+    wspace.var("f").setVal(0.0)
+    wspace.var("f").setConstant(True)
+    results = utils.rooFitResults(pdf(wspace), data)
+
+    toys = pseudoData(wspace, "obs", nToys)
+
+    #restore signal model
+    wspace.var("f").setVal(1.0)
+    wspace.var("f").setConstant(False)
+    
+
+#    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 98, 1, 50)
+#    for i in range(int(dataset.sumEntries())) :
+#        argSet = dataset.get(i)
+#        data = r.RooDataSet(strings["dataName"]+str(i),"title",argSet)
+#        data.add(argSet)
+#        if switches["debugOutput"] : data.Print("v")
+#
+#        def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
+#    
+#        
+#        h.Fill(upperLimit(modelConfig, wspace, strings, switches, dataIn = data))
+#
+#    def probList() :
+#        def lo(nSigma) : return ( 1.0-r.TMath.Erf(nSigma/math.sqrt(2.0)) )/2.0
+#        def hi(nSigma) : return 1.0-lo(nSigma)
+#        out = []
+#        out.append( (0.5, "Median") )
+#        for key,n in switches["expectedPlusMinus"].iteritems() :
+#            out.append( (lo(n), "MedianMinus%s"%key) )
+#            out.append( (hi(n), "MedianPlus%s"%key)  )
+#        return sorted(out)
+#
+#    def oneElement(i, l) :
+#        return map(lambda x:x[i], l)
+#    
+#    pl = probList()
+#    probs = oneElement(0, pl)
+#    names = oneElement(1, pl)
+#    
+#    probSum = array.array('d', probs)
+#    q = array.array('d', [0.0]*len(probSum))
+#    h.GetQuantiles(len(probSum), q, probSum)
+#
+#    if switches["debugMedianHisto"] :
+#        hp.setupRoot()
+#        h.Draw()
+#        hp.printOnce(r.gPad, "expectedLimit.eps")
+#        print probSum
+#        print q
+#
+#    return dict(zip(names, q))
+
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
         return math.exp(-results.minNll())
@@ -306,23 +372,15 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
         return totalList.index(item)/(0.0+len(totalList))
         
     results = utils.rooFitResults(pdf(wspace), data) #fit to data
-    #wspace.saveSnapshot("snap", wspace.allVars(), False)
-    #results.Print()
+    wspace.saveSnapshot("snap", wspace.allVars())    
     lMaxData = lMax(results)
-    dataset = pdf(wspace).generate(wspace.set("obs"), nToys) #make pseudo experiments with final parameter values
-
+    
     graph = r.TGraph()
     lMaxs = []
-    for i in range(int(dataset.sumEntries())) :
-        argSet = dataset.get(i)
-        pseudoData = r.RooDataSet("pseudoData%d"%i, "title", argSet)
-        data.reset()
-        data.add(argSet)
-        #data.Print("v")
-        #wspace.loadSnapshot("snap")
-        #wspace.var("A").setVal(initialA())
-        #wspace.var("k").setVal(initialk())
-        results = utils.rooFitResults(pdf(wspace), data)
+    for i,dataSet in enumerate(pseudoData(wspace, "obs", nToys)) :
+        wspace.loadSnapshot("snap")
+        dataSet.Print("v")
+        results = utils.rooFitResults(pdf(wspace), dataSet)
         lMaxs.append(lMax(results))
         graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
         #utils.delete(results)
@@ -330,13 +388,6 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     out = indexFraction(lMaxData, lMaxs)
     if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
     return out
-
-def pValueOld(dataset, modelconfig) :
-    plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
-    plc.SetNullParameters(modelconfig.GetParametersOfInterest())
-    htr = plc.GetHypoTest()
-    print "p-value = %g +/- %g"%(htr.NullPValue(), htr.NullPValueError())
-    print "significance = %g"%htr.Significance()
 
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
