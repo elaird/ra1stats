@@ -73,7 +73,7 @@ def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
     return out
 
 def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85),
-                   maximum = None, logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
+                   minimum = None, maximum = None, logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
     leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
@@ -84,6 +84,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     inp.SetStats(False)
     inp.Draw("p")
     if obsLabel : leg.AddEntry(inp, obsLabel, "lp")
+    if minimum!=None : inp.SetMinimum(minimum)
     if maximum!=None : inp.SetMaximum(maximum)
 
     if logY :
@@ -163,6 +164,7 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
     for i,h in enumerate(histos) :
         if not i :
             h.Draw(goptions)
+            r.gPad.SetLogy(False)
             h.SetMinimum(0.0)
             if customMax : h.SetMaximum(m)
         else :
@@ -232,13 +234,19 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
         muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "width":2, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
     elif any(signalExampleToStack) :
         muonVars += [{"example":signalExampleToStack[1], "box":"muon", "desc":signalExampleToStack[0], "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
-        
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Muon Control Sample", legend0 = (0.35, 0.7), obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars)
+
+    for logY in [False, True] :
+        thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.7),
+                       obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars, logY = logY)
 
     #photon control sample
-    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "Photon Control Sample", legend0 = (0.35, 0.72), obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], otherVars = [
-        {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
-        {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None},
+    for logY in [False, True] :
+        thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")        
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72),
+                       obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], logY = logY, otherVars = [
+            {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+            {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None},
             ])
 
     #EWK background scale factors
@@ -249,7 +257,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
 
     #fZinv
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "fraction of EWK background which is Z->inv (result of fit)",
-                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 1.0,
+                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", minimum = 0.15, maximum = 0.85,
                    otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}], yLabel = "")
 
     #MC translation factors
