@@ -296,10 +296,10 @@ def profilePlots(dataset, modelconfig, note, smOnly) :
     canvas.Print(psFile+"]")
     utils.ps2pdf(psFile)
 
-def pseudoData(wspace, setName, nToys) :
+def pseudoData(wspace, nToys) :
     out = []
     #make pseudo experiments with current parameter values
-    dataset = pdf(wspace).generate(wspace.set("obs"), nToys)
+    dataset = pdf(wspace).generate(obs(wspace), nToys)
     for i in range(int(dataset.sumEntries())) :
         argSet = dataset.get(i)
         data = r.RooDataSet("pseudoData%d"%i, "title", argSet)
@@ -313,7 +313,7 @@ def expectedLimit(modelConfig, wspace, nToys) :
     wspace.var("f").setConstant(True)
     results = utils.rooFitResults(pdf(wspace), data)
 
-    toys = pseudoData(wspace, "obs", nToys)
+    toys = pseudoData(wspace, nToys)
 
     #restore signal model
     wspace.var("f").setVal(1.0)
@@ -364,7 +364,8 @@ def expectedLimit(modelConfig, wspace, nToys) :
 
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
-        return math.exp(-results.minNll())
+        #return math.exp(-results.minNll())
+        return -results.minNll()
     
     def indexFraction(item, l) :
         totalList = sorted(l+[item])
@@ -377,9 +378,9 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     
     graph = r.TGraph()
     lMaxs = []
-    for i,dataSet in enumerate(pseudoData(wspace, "obs", nToys)) :
+    for i,dataSet in enumerate(pseudoData(wspace, nToys)) :
         wspace.loadSnapshot("snap")
-        dataSet.Print("v")
+        #dataSet.Print("v")
         results = utils.rooFitResults(pdf(wspace), dataSet)
         lMaxs.append(lMax(results))
         graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
@@ -397,6 +398,9 @@ def wimport(w, item) :
 def pdf(w) :
     return w.pdf("model")
 
+def obs(w) :
+    return w.set("obs")
+
 class foo(object) :
     def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, signalExampleToStack = ("", {}), trace = False) :
         for item in ["inputData", "REwk", "RQcd", "signal", "signalExampleToStack"] :
@@ -409,7 +413,7 @@ class foo(object) :
         self.note = plotting.note(REwk, RQcd)
         self.wspace = r.RooWorkspace("Workspace")
         setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signal)
-        self.data = dataset(self.wspace.set("obs"))
+        self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
 
         if trace :
