@@ -312,7 +312,7 @@ def limits(wspace, snapName, modelConfig, smOnly, cl, datasets, makePlots = Fals
     out = []
     for i,dataset in enumerate(datasets) :
         wspace.loadSnapshot(snapName)
-        #toy.Print("v")
+        #dataset.Print("v")
         interval = plInterval(dataset, modelConfig, wspace, note = "", smOnly = smOnly, cl = cl, makePlots = makePlots)
         out.append(interval["upperLimit"])
     return sorted(out)
