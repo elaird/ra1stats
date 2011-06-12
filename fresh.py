@@ -1,4 +1,5 @@
-import math,plotting,utils
+import math,array
+import plotting,utils
 import ROOT as r
 
 def modelConfiguration(w, smOnly) :
@@ -221,7 +222,7 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
         canvas.Print(psFile)
         utils.ps2pdf(psFile)
 
-    #utils.delete(lInt)
+    utils.delete(lInt)
     return out
 
 def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
@@ -306,8 +307,47 @@ def pseudoData(wspace, nToys) :
         data.add(argSet)
         out.append(data)
     return out
+
+def limits(wspace, snapName, modelConfig, smOnly, cl, datasets, makePlots = False) :
+    out = []
+    for i,dataset in enumerate(datasets) :
+        wspace.loadSnapshot(snapName)
+        #toy.Print("v")
+        interval = plInterval(dataset, modelConfig, wspace, note = "", smOnly = smOnly, cl = cl, makePlots = makePlots)
+        out.append(interval["upperLimit"])
+    return sorted(out)
+
+def quantiles(limits, plusMinus, makePlots = False) :
+    def histoFromList(l, name, title, bins) :
+        h = r.TH1D(name, title, *bins)
+        for item in l : h.Fill(item)
+        return h
     
-def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys) :
+    def probList(plusMinus) :
+        def lo(nSigma) : return ( 1.0-r.TMath.Erf(nSigma/math.sqrt(2.0)) )/2.0
+        def hi(nSigma) : return 1.0-lo(nSigma)
+        out = []
+        out.append( (0.5, "Median") )
+        for key,n in plusMinus.iteritems() :
+            out.append( (lo(n), "MedianMinus%s"%key) )
+            out.append( (hi(n), "MedianPlus%s"%key)  )
+        return sorted(out)
+
+    def oneElement(i, l) :
+        return map(lambda x:x[i], l)
+    
+    pl = probList(plusMinus)
+    probs = oneElement(0, pl)
+    names = oneElement(1, pl)
+    
+    probSum = array.array('d', probs)
+    q = array.array('d', [0.0]*len(probSum))
+
+    h = histoFromList(limits, name = "upperLimit", title = ";upper limit on XS factor;toys / bin", bins = (50, 1, -1)) #enable auto-range
+    h.GetQuantiles(len(probSum), q, probSum)
+    return dict(zip(names, q)+[("hist", h)])
+    
+def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, note = "", makePlots = False) :
     assert not smOnly
     
     #fit to SM-only
@@ -315,65 +355,25 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys) :
     wspace.var("f").setConstant(True)
     results = utils.rooFitResults(pdf(wspace), dataset)
 
-    #save snapshot and generate toys
-    wspace.saveSnapshot("snap", wspace.allVars())
+    #generate toys
     toys = pseudoData(wspace, nToys)
 
     #restore signal model
     wspace.var("f").setVal(1.0)
     wspace.var("f").setConstant(False)
 
-    limits = []
-    for i,toy in enumerate(toys) :
-        wspace.loadSnapshot("snap")
-        toy.Print("v")
+    #save snapshot
+    snapName = "snap"
+    wspace.saveSnapshot(snapName, wspace.allVars())
 
-        interval = plInterval(toy, modelConfig, wspace, note = "", smOnly = smOnly, cl = cl, makePlots = False)
-        limits.append(interval["upperLimit"])
-        #utils.delete(results)
-    
-    
-#    h = r.TH1D("upperLimit", ";upper limit (events / %g/pb);toys / bin"%lumi, 98, 1, 50)
-#    for i in range(int(dataset.sumEntries())) :
-#        argSet = dataset.get(i)
-#        data = r.RooDataSet(strings["dataName"]+str(i),"title",argSet)
-#        data.add(argSet)
-#        if switches["debugOutput"] : data.Print("v")
-#
-#        def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
-#    
-#        
-#        h.Fill(upperLimit(modelConfig, wspace, strings, switches, dataIn = data))
-#
-#    def probList() :
-#        def lo(nSigma) : return ( 1.0-r.TMath.Erf(nSigma/math.sqrt(2.0)) )/2.0
-#        def hi(nSigma) : return 1.0-lo(nSigma)
-#        out = []
-#        out.append( (0.5, "Median") )
-#        for key,n in switches["expectedPlusMinus"].iteritems() :
-#            out.append( (lo(n), "MedianMinus%s"%key) )
-#            out.append( (hi(n), "MedianPlus%s"%key)  )
-#        return sorted(out)
-#
-#    def oneElement(i, l) :
-#        return map(lambda x:x[i], l)
-#    
-#    pl = probList()
-#    probs = oneElement(0, pl)
-#    names = oneElement(1, pl)
-#    
-#    probSum = array.array('d', probs)
-#    q = array.array('d', [0.0]*len(probSum))
-#    h.GetQuantiles(len(probSum), q, probSum)
-#
-#    if switches["debugMedianHisto"] :
-#        hp.setupRoot()
-#        h.Draw()
-#        hp.printOnce(r.gPad, "expectedLimit.eps")
-#        print probSum
-#        print q
-#
-#    return dict(zip(names, q))
+    #fit toys
+    l = limits(wspace, snapName, modelConfig, smOnly, cl, toys)
+    q = quantiles(l, plusMinus, makePlots)    
+
+    obsLimit = limits(wspace, snapName, modelConfig, smOnly, cl, [dataset])[0]
+
+    if makePlots : plotting.expectedLimitPlots(quantiles = q, obsLimit = obsLimit, note = note)
+    return q
 
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
@@ -397,7 +397,7 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
         results = utils.rooFitResults(pdf(wspace), dataSet)
         lMaxs.append(lMax(results))
         graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
-        #utils.delete(results)
+        utils.delete(results)
     
     out = indexFraction(lMaxData, lMaxs)
     if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
@@ -469,8 +469,9 @@ class foo(object) :
     def pValue(self, nToys = 200) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note)
 
-    def expectedLimit(self, cl = 0.95, nToys = 200) :
-        expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys)
+    def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
+        expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
+                      plusMinus = plusMinus, note = self.note, makePlots = makePlots)
 
     def bestFit(self) :
         plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
