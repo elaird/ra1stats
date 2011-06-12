@@ -1,4 +1,4 @@
-import os,array,math
+import os,array,math,copy
 import utils
 import ROOT as r
 
@@ -304,6 +304,38 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
     return out
+
+def expectedLimitPlots(quantiles = {}, obsLimit = None, note = "") :
+    ps = "limits_%s.ps"%note
+    canvas = r.TCanvas("canvas")
+    canvas.SetTickx()
+    canvas.SetTicky()
+    canvas.Print(ps+"[")
+
+    h = quantiles["hist"]
+    h.Draw()
+    h.SetStats(False)
+
+    q = copy.deepcopy(quantiles)
+    q["Observed Limit"] = obsLimit
+
+    legend = r.TLegend(0.1, 0.7, 0.5, 0.9)
+    legend.SetFillStyle(0)
+    legend.SetBorderSize(0)
+    
+    line = r.TLine()
+    line.SetLineWidth(2)
+    keys = sorted(q.keys())
+    keys.remove("hist")
+    for i,key in enumerate(keys) :
+        line.SetLineColor(2+i)
+        line2 = line.DrawLine(q[key], h.GetMinimum(), q[key], h.GetMaximum())
+        legend.AddEntry(line2, key, "l")
+
+    legend.Draw()
+    canvas.Print(ps)
+    canvas.Print(ps+"]")
+    utils.ps2pdf(ps)
 
 def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note = "") :
     print "pValue =",pValue
