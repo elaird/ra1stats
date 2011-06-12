@@ -1,6 +1,6 @@
 technical
 ---------
-fix leak in pValue()
+fix leak in pValue() and expectedLimit()
 plot FC belt
 tweak FC running
 try ProfileLikelihoodTestStatistic.SetOneSided()
