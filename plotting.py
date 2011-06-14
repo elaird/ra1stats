@@ -21,19 +21,23 @@ def errorsPlot(wspace, results) :
     plot.Draw()
     return plot
 
-def inputHisto(inputData, obsKey, note, extraName = "", yLabel = "") :
+def inputHisto(inputData, obsKey, note, extraName = "", yLabel = "", printPages = False, lumiString = "") :
     bins = array.array('d', list(inputData.htBinLowerEdges())+[inputData.htMaxForPlot()])
     out = r.TH1D(obsKey+extraName, "%s;H_{T} (GeV);%s"%(note, yLabel), len(bins)-1, bins)
     out.Sumw2()
     obs = inputData.observations()
+    numList = []
     for i,content in enumerate(obs[obsKey] if obsKey in obs else []) :
+        numList.append(content)
         out.SetBinContent(1+i, content)
         out.SetBinError(1+i, math.sqrt(content))
+
+    if printPages : print obsKey.rjust(10),lumiString.rjust(10),pretty(numList)
     return out
     
 def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = None,
              color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1,
-             wspaceMemberFunc = None, extraName = "") :
+             wspaceMemberFunc = None, extraName = "", printPages = False, lumiString = "") :
     d = {}
     d["value"] = exampleHisto.Clone(varName+extraName)
     d["value"].Reset()
@@ -52,20 +56,32 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
     d["value"].SetMarkerColor(color)
     d["value"].SetMarkerStyle(markerStyle)
 
+    toPrint = []
     for i in range(len(inputData.htBinLowerEdges())) :
         if wspaceMemberFunc :
             var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
             if not var : continue
-            d["value"].SetBinContent(i+1, var.getVal())
+            value = var.getVal()
+            d["value"].SetBinContent(i+1, value)
             if wspaceMemberFunc=="var" :
                 for item in ["min", "max"] :
                     x = getattr(var, "get%s"%item.capitalize())()
                     if abs(x)==1.0e30 : continue
                     d[item].SetBinContent(i+1, x)
         else :
-            d["value"].SetBinContent(i+1, inputData.mcExpectations()[varName][i])
+            value = inputData.mcExpectations()[varName][i]
+            d["value"].SetBinContent(i+1, value)
+        toPrint.append(value)
+    if printPages : print varName.rjust(10),lumiString.rjust(10),pretty(toPrint)
     return d
 
+def pretty(l) :
+    out = "("
+    for i,item in enumerate(l) :
+        out += "%6.2f"%item
+        if i!=len(l)-1 : out += ", "
+    return out+")"
+    
 def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
     out = exampleHisto.Clone(exampleHisto.GetName()+d["desc"])
     out.Reset()
@@ -92,7 +108,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
-    inp = inputHisto(inputData, obsKey, note, yLabel = yLabel)
+    inp = inputHisto(inputData, obsKey, note, yLabel = yLabel, printPages = (printPages and not logY), lumiString = obsLabel[obsLabel.find("["):])
     inp.SetMarkerStyle(20)
     inp.SetStats(False)
     inp.Draw("p")
@@ -111,7 +127,8 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     stuff += [leg,inp,stacks]
     for d in otherVars :
         if "example" not in d :
-            histos = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1, wspaceMemberFunc = d["type"])
+            histos = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1,
+                              wspaceMemberFunc = d["type"], printPages = (printPages and not logY), lumiString = obsLabel[obsLabel.find("["):])
             hist = histos["value"]
         else :
             hist = signalExampleHisto(inp, inputData, d)
