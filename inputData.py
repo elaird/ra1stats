@@ -1,6 +1,56 @@
 from data import data,scaled,excl
 
-class data2011(data) :
+class data2011_1(data) :
+    def _fill(self) :
+        isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
+
+        self._htBinLowerEdges =          (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
+        self._htMaxForPlot = 975.0
+
+        self._mergeBins = None
+        self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
+        
+        #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
+        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
+
+        self._lumi = {
+            "had":     353.,
+            "hadBulk": 353.,
+            
+            "muon":    361.,
+            "mcMuon":  353.,
+            "mcTtw":   353.,
+
+            "phot":    468.8,
+            "mcPhot":  468.8,
+            "mcZinv":  468.8,
+            }
+        self._htMeans =       (    297.51,      347.25,      415.57,     516.2 , 617.17, 717.72, 818.33, 919.08)
+        self._observations = {
+            "nHadBulk":scaled(( 1.918e+07,   7.867e+06,   5.389e+06,  1.701e+06, 589724, 227972,  96054,  86017), self.lumi()["had"]/self.lumi()["hadBulk"]),
+            "nHad":           (       254,         118,          66,         19,     11,      1,      2,      1),
+            "nPhot":     excl((       408,         149,         139,         55,     21,      9,      4,      1), isExcl),
+            "nMuon":          (       113,          41,          35,         13,      6,      1,      0,      0),
+            }
+        ep = 0.01        
+        self._mcExpectations = {
+            "mcMuon":         scaled((120.19,   45.40,   31.79,   9.58,   3.63,   2.11,   0.15, 0.05), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcTtw":          scaled((135.14,   48.42,   32.38,  12.07,   1.92,   1.86,   0.88, 0.25), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
+            "mcPhot":    excl(scaled((   330,     117,     102,     31,     11,      3,      2,  0.3), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
+            "mcZinv":    excl(scaled((    90,      41,      51,     24,      4,   ep+1,      1,   ep), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
+            }
+        self._mcStatError = {
+            "mcPhotErr":      scaled((    50,       9,       8,      5,      3,      1,      1,  0.3), self.lumi()["phot"]/self.lumi()["mcPhot"]),
+            "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
+            }
+        self._fixedParameters = {
+            "sigmaLumi":  0.04,
+            "sigmaPhotZ": 0.40,
+            "sigmaMuonW": 0.30,
+            }
+        # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
+        
+class data2011_0(data) :
     def _fill(self) :
         isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
 
@@ -54,6 +104,9 @@ class data2011(data) :
             }
         # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
         
+class data2011(data2011_1) :
+    pass
+
 class data2010(data) :
     def _fill(self) :
         self._htBinLowerEdges =          (250.0, 300.0, 350.0, 450.0)
