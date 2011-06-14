@@ -91,7 +91,7 @@ def photTerms(w, inputData) :
                                                              inputData.constantMcRatioAfterHere(),
                                                              ) :
         if nPhotValue<0 : continue
-        if stopHere : rFinal = mcPhotValue/mcZinvValue
+        if stopHere : rFinal = sum(inputData.mcExpectations()["mcPhot"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
         wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue if not rFinal else rFinal))
         wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.function("zInv%d"%i))))
@@ -116,7 +116,7 @@ def muonTerms(w, inputData, smOnly) :
                                                             inputData.constantMcRatioAfterHere(),
                                                             ) :
         if nMuonValue<0 : continue
-        if stopHere : rFinal = mcMuonValue/mcTtwValue
+        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/sum(inputData.mcExpectations()["mcTtw"][i:])
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
         wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue if not rFinal else rFinal))
         wimport(w, r.RooFormulaVar("muonB%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.function("ttw%d"%i))))
