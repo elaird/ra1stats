@@ -29,7 +29,7 @@ class data2011_1(data) :
         self._observations = {
             "nHadBulk":scaled(( 1.918e+07,   7.867e+06,   5.389e+06,  1.701e+06, 589724, 227972,  96054,  86017), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad":           (       254,         118,          66,         19,     11,      1,      2,      1),
-            "nPhot":     excl((       408,         149,         139,         55,     21,      9,      4,      1), isExcl),
+            "nPhot":     excl((       402,         149,         139,         55,     21,      9,      4,      1), isExcl),
             "nMuon":          (       114,          42,          35,         13,      6,      1,      0,      0),
             }
 
@@ -37,11 +37,11 @@ class data2011_1(data) :
         self._mcExpectations = {
             "mcMuon":         scaled((121.78,   46.29,   31.85,  10.36,   3.63,   2.11,   0.15, 0.05), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtw":          scaled((126.25,   47.82,   30.62,  11.29,   1.92,   1.81,   0.88, 0.25), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
-            "mcPhot":    excl(scaled((   320,     113,     109,     37,     14,      3,    2.1,  0.9), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
+            "mcPhot":    excl(scaled((   290,     112,     109,     37,     14,      3,    2.1,  0.9), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
             "mcZinv":    excl(scaled((    90,      41,      51,     24,      4,   ep+1,      1,   ep), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
             }
         self._mcStatError = {
-            "mcPhotErr":      scaled((    40,       6,       6,      3,      2,      1,    0.8,  0.5), self.lumi()["phot"]/self.lumi()["mcPhot"]),
+            "mcPhotErr":      scaled((    20,       6,       6,      3,      2,      1,    0.8,  0.5), self.lumi()["phot"]/self.lumi()["mcPhot"]),
             "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
             }
         self._fixedParameters = {
