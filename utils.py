@@ -31,6 +31,10 @@ def ps2pdf(psFileName, removePs = True) :
     os.system("ps2pdf %s"%psFileName)
     if removePs : os.remove(psFileName)
 #####################################
+def epsToPdf(epsFileName, removeEps = True) :
+    os.system("epstopdf %s"%epsFileName)
+    if removeEps : os.remove(epsFileName)
+#####################################
 def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
     return pdf.fitTo(data, *options)
 #####################################
