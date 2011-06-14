@@ -147,7 +147,8 @@ def legSpec(goptions) :
     if "hist" in goptions : out += "l"
     return out
 
-def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), specs = [], yLabel = "", customMax = False, goptions = "p") :
+def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), specs = [], yLabel = "",
+              customMax = False, maximum = None, goptions = "p") :
     stuff = []
     leg = r.TLegend(legend0[0], legend0[1], 0.85, 0.85)
     leg.SetBorderSize(0)
@@ -183,6 +184,7 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
             r.gPad.SetLogy(False)
             h.SetMinimum(0.0)
             if customMax : h.SetMaximum(m)
+            if maximum :  h.SetMaximum(maximum)
         else :
             h.Draw("%ssame"%goptions)
 
@@ -266,9 +268,9 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
             ])
 
     #EWK background scale factors
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, specs = [
         {"num":"ttw",   "numType":"function", "dens":["mcTtw"],  "denTypes":[None], "desc":"ML ttW / MC ttW",       "color":r.kGreen}], goptions = "hist")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "Z->inv scale factor (result of fit)", legend0 = (0.5, 0.8), specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "Z->inv scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, specs = [
         {"num":"zInv",  "numType":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv", "color":r.kRed}], goptions = "hist")
 
     #fZinv
