@@ -139,15 +139,17 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     r.gPad.Update()
 
     if printPages :
-        fileName = note
-        for item in [(" ","_"), ("(",""), (")","")] :
-            fileName = fileName.replace(*item)
         inp.SetTitle("")
-        fileName = fileName.lower()+".eps"
-        super(utils.numberedCanvas, canvas).Print(fileName)
-        utils.epsToPdf(fileName)
+        printOnePage(canvas, note)
     canvas.Print(psFileName)
     return stuff
+
+def printOnePage(canvas, fileName) :
+    for item in [(" ","_"), ("(",""), (")","")] :
+        fileName = fileName.replace(*item)
+    fileName = fileName.lower()+".eps"
+    super(utils.numberedCanvas, canvas).Print(fileName)
+    utils.epsToPdf(fileName)
 
 def legSpec(goptions) :
     out = ""
@@ -155,10 +157,10 @@ def legSpec(goptions) :
     if "hist" in goptions : out += "l"
     return out
 
-def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), specs = [], yLabel = "",
-              customMax = False, maximum = None, goptions = "p") :
+def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
+              customMax = False, maximum = None, goptions = "p", printPages = False) :
     stuff = []
-    leg = r.TLegend(legend0[0], legend0[1], 0.85, 0.85)
+    leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
@@ -203,6 +205,9 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
     r.gPad.SetTicky()
     r.gPad.Update()
 
+    if printPages :
+        histos[0].SetTitle("")
+        printOnePage(canvas, note)
     canvas.Print(psFileName)
     return stuff
 
@@ -297,7 +302,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["phot"])
 
     #alphaT ratios
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.5, 0.7), specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "R_alphaT", legend0 = (0.15, 0.7), legend1 = (0.5, 0.88), printPages = printPages, specs = [
         {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
         ], yLabel = "R_{#alpha_{T}}")
