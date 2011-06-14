@@ -36,11 +36,11 @@ class data2011_1(data) :
         self._mcExpectations = {
             "mcMuon":         scaled((120.19,   45.40,   31.79,   9.58,   3.63,   2.11,   0.15, 0.05), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtw":          scaled((135.14,   48.42,   32.38,  12.07,   1.92,   1.86,   0.88, 0.25), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
-            "mcPhot":    excl(scaled((   330,     117,     102,     31,     11,      3,      2,  0.3), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
+            "mcPhot":    excl(scaled((   320,     113,     109,     37,     14,      3,    2.1,  0.9), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
             "mcZinv":    excl(scaled((    90,      41,      51,     24,      4,   ep+1,      1,   ep), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
             }
         self._mcStatError = {
-            "mcPhotErr":      scaled((    50,       9,       8,      5,      3,      1,      1,  0.3), self.lumi()["phot"]/self.lumi()["mcPhot"]),
+            "mcPhotErr":      scaled((    40,       6,       6,      3,      2,      1,    0.8,  0.5), self.lumi()["phot"]/self.lumi()["mcPhot"]),
             "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
             }
         self._fixedParameters = {
