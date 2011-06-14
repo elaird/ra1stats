@@ -86,7 +86,7 @@ def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
     return out
 
 def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85),
-                   minimum = 0.0, maximum = None, logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
+                   minimum = 0.0, maximum = None, logY = False, printPages = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
     leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "ML values" if (otherVars and obsKey) else "")
     leg.SetBorderSize(0)
@@ -138,6 +138,14 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     r.gPad.SetTicky()
     r.gPad.Update()
 
+    if printPages :
+        fileName = note
+        for item in [(" ","_"), ("(",""), (")","")] :
+            fileName = fileName.replace(*item)
+        inp.SetTitle("")
+        fileName = fileName.lower()+".eps"
+        super(utils.numberedCanvas, canvas).Print(fileName)
+        utils.epsToPdf(fileName)
     canvas.Print(psFileName)
     return stuff
 
@@ -204,7 +212,7 @@ def akDesc(wspace, var) :
 def note(REwk, RQcd): 
     return "%sRQcd%s"%("REwk%s_"%REwk if REwk else "", RQcd)
 
-def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampleToStack = ("", {})) :
+def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampleToStack = ("", {}), printPages = False) :
     if any(signalExampleToStack) : assert smOnly
     
     out = []
@@ -241,7 +249,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
     for logY in [False, True] :
         thisNote = "Hadronic Sample%s"%(" (logY)" if logY else "")
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
-                       obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY)
+                       obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY, printPages = printPages)
 
     #muon control sample
     muonVars = [
@@ -256,13 +264,13 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
     for logY in [False, True] :
         thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.7),
-                       obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars, logY = logY)
+                       obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%inputData.lumi()["muon"], otherVars = muonVars, logY = logY, printPages = printPages)
 
     #photon control sample
     for logY in [False, True] :
         thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")        
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72),
-                       obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], logY = logY, otherVars = [
+                       obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], logY = logY, printPages = printPages, otherVars = [
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
             {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None},
             ])
