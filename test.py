@@ -20,6 +20,7 @@ f = fresh.foo(inputData = data2011(),
               RQcd = ["FallingExp", "Zero"][1],
               signal = [{}, lm6_2011, lm1_2011, lm1_2010][0],
               signalExampleToStack = ("LM6", lm6_2011),
+              #trace = True
               )
 
 
