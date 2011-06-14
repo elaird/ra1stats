@@ -258,9 +258,9 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
         ]
 
     hadVars += [
-        {"var":"zInv", "type":"function", "desc":"Z->inv", "desc2": "#rho = %4.2f"%wspace.var("rhoPhotZ").getVal(),
+        {"var":"zInv", "type":"function", "desc":"Z->inv", "desc2": "#rho = %4.2f #pm %4.2f"%(wspace.var("rhoPhotZ").getVal(), wspace.var("rhoPhotZ").getError()),
          "color":r.kRed, "style":2, "width":2, "stack":"ewk"},
-        {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho = %4.2f"%wspace.var("rhoMuonW").getVal(),
+        {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho = %4.2f #pm %4.2f"%(wspace.var("rhoMuonW").getVal(), wspace.var("rhoMuonW").getError()),
          "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
         ]
     if not smOnly :
