@@ -473,6 +473,6 @@ class foo(object) :
         expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                       plusMinus = plusMinus, note = self.note, makePlots = makePlots)
 
-    def bestFit(self) :
+    def bestFit(self, printPages = False) :
         plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
-                                 self.inputData, self.REwk, self.RQcd, self.smOnly(), self.signalExampleToStack)
+                                 self.inputData, self.REwk, self.RQcd, self.smOnly(), self.signalExampleToStack, printPages = printPages)
