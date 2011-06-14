@@ -310,7 +310,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
 
     #MC translation factors
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon translation factor (from MC)",
-                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 4.0,
+                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 2.0,
                    otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}],
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["muon"])
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "photon translation factor (from MC)",
