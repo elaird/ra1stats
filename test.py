@@ -28,6 +28,7 @@ f = fresh.foo(inputData = data2011(),
 #out = f.cls(method = ["CLs", "CLsViaToys"][1], nToys = 100, makePlots = False); print out
 #f.profile()
 f.bestFit()
+#f.bestFit(printPages = True)
 #f.pValue(nToys = 50)
 #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
 #f.debug()
