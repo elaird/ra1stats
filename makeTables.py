@@ -1,55 +1,7 @@
 #!/usr/bin/env python
 
+import math
 from inputData import data2011
-
-def printHtBins(data, truncate) :
-    print "HT bins"
-    print "-------"
-    if truncate : print data.htBinLowerEdges()[:3]
-    else :        print data.htBinLowerEdges()
-        
-    print
-
-def lumi(data, key, value) :
-    if type(value) is float : return ""
-    lumiKey = key
-    if lumiKey[0]=="n" :
-        lumiKey = lumiKey[1:]
-        lumiKey = lumiKey[0].swapcase()+lumiKey[1:]
-        l = data.lumi()[lumiKey]
-    else :
-        aKey = lumiKey.replace("mc","").lower()
-        if aKey in data.lumi() :
-            l = data.lumi()[aKey]
-        else :
-            l = data.lumi()["had"]
-    return l
-
-def lumiString(l) :
-    return "[%4.0f/pb]"%l
-
-def Value(value, truncate) :
-    if not truncate : return value
-    if type(value)!= tuple : return value
-    return tuple([value[0], value[1], sum(value[2:])])
-
-def formatted(t) :
-    if type(t) is float : return str(t)
-    out = "("
-    for i,item in enumerate(t) :
-        out += "%3.2e"%item
-        if i!=len(t)-1 : out += ", "
-    return out+")"
-
-def printYields(data, items = ["observations", "mcExpectations", "fixedParameters"], truncate = False) :
-    for item in items :
-        print item
-        print "-"*len(item)
-        d = getattr(data,item)()
-        for key,value in d.iteritems() :
-            print "%10s %s %s"%(key, lumiString(lumi(data, key, value)), formatted(Value(value, truncate)))
-        print
-
 
 def toString(item) :
     if type(item) is float : return str(int(item))
@@ -71,7 +23,7 @@ def endTable() :
 \end{table}
 '''
 
-def oneRow(label = "", labelWidth = 20, entryList = [], entryWidth = 10, hline = (False,False), extra = "") :
+def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 23, hline = (False,False), extra = "") :
     s = ""
     if hline[0] : s += "\n\n\hline"
     s += "\n"+label.ljust(labelWidth)+" & "+" & ".join([entry.ljust(entryWidth) for entry in entryList])+r" \\ %s"%extra
@@ -90,31 +42,89 @@ def oneTable(data, caption = "", label = "", rows = []) :
         s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))) for l,u in zip(bins[:-1], bins[1:])],
                     hline = (True,True), extra = "[0.5ex]")
         for row in rows :
-            s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices))
+            s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()))
     s += endTable()
     return s
 
-def tailCounts(data, indices) :
+#alphaT ratio
+def tailCounts(data, indices, *args) :
     return ["%d"%data.observations()["nHad"][i] for i in indices]
 
-def bulkCounts(data, indices) :
+def bulkCounts(data, indices, *args) :
     return ["%4.2e"%data.observations()["nHadBulk"][i] for i in indices]
 
-def alphaTratios(data, indices) :
+def alphaTratios(data, indices, *args) :
     tail = data.observations()["nHad"]
     bulk = data.observations()["nHadBulk"]
-    return ["%4.2e"%(tail[i]/(0.0+bulk[i])) for i in indices]
+    return ["%4.2e $\pm$ %4.2e"%(tail[i]/(0.0+bulk[i]), math.sqrt(tail[i])/(0.0+bulk[i])) for i in indices]
 
 def RalphaT(data) :
     return oneTable(data,
-                    caption = r'''R$_{\alpha_{T}}$ distribution '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$}''',
+                    caption = r'''$\RaT$ distribution '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
                     label = "results-HT",
-                    rows = [{"label": r'''$\alpha_{T} > 0.55$''', "entryFunc":tailCounts},
-                            {"label": r'''$\alpha_{T} < 0.55$''', "entryFunc":bulkCounts},
-                            {"label": r'''$R_{\alpha_{T}}$''',    "entryFunc":alphaTratios},
+                    rows = [{"label": r'''$\alt > 0.55$''', "entryFunc":tailCounts},
+                            {"label": r'''$\alt < 0.55$''', "entryFunc":bulkCounts},
+                            {"label": r'''$\RaT$''',        "entryFunc":alphaTratios},
+                            ])
+
+#EWK helpers
+def truncate(t, index = 2) :
+    l = list(t)
+    return tuple(l[:index] + [sum(l[index:])]*(len(l)-index))
+
+def mcYieldHadLumi(data, indices, *args) :
+    return ["%4.1f"%data.mcExpectations()[args[0]][i] for i in indices]
+
+def mcYieldOtherLumi(data, indices, *args) :
+    mcOther = data.mcExpectations()[args[0]]
+    lumiOther = data.lumi()[args[1]]
+    lumiHad   = data.lumi()[args[2]]
+    return ["%4.1f"%(mcOther[i]*lumiHad/lumiOther) for i in indices]
+
+def mcRatio(data, indices, *args) :
+    mcPhot = truncate(data.mcExpectations()[args[0]])
+    mcZinv = truncate(data.mcExpectations()[args[1]])
+    lumiPhot = data.lumi()[args[2]]
+    lumiHad  = data.lumi()[args[3]]
+    return ["%4.2f"%(mcZinv[i]/(mcPhot[i]*lumiHad/lumiPhot)) for i in indices]
+
+def dataYieldOtherLumi(data, indices, *args) :
+    lumiPhot = data.lumi()[args[1]]
+    lumiHad = data.lumi()[args[2]]
+    return ["%5.1f"%(data.observations()[args[0]][i]*lumiHad/lumiPhot) for i in indices]
+
+def prediction(data, indices, *args) :
+    mcPhot = truncate(data.mcExpectations()[args[1]])
+    mcZinv = truncate(data.mcExpectations()[args[2]])
+    return ["%5.1f $\pm$ %5.1f"%(data.observations()[args[0]][i]*mcZinv[i]/mcPhot[i], math.sqrt(data.observations()[args[0]][i])*mcZinv[i]/mcPhot[i]) for i in indices]
+
+#photon to Z
+def photon(data) :
+    return oneTable(data,
+                    caption = r'''Photon Sample Predictions '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
+                    label = "results-PHOTON",
+                    rows = [{"label": r'''MC $\znunu$''',          "entryFunc":mcYieldHadLumi,    "args":("mcZinv",)},
+                            {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcPhot", "phot", "had")},
+                            {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcPhot", "mcZinv", "phot", "had")},
+                            {"label": r'''Data $\gamma +$~jets''', "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
+                            {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcPhot", "mcZinv")},
+                            ])
+
+#muon to W
+def muon(data) :
+    return oneTable(data,
+                    caption = r'''Muon Sample Predictions '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
+                    label = "results-W",
+                    rows = [{"label": r'''MC W + $\ttNew$''',         "entryFunc":mcYieldHadLumi,     "args":("mcTtw",)},
+                            {"label": r'''MC $\mu +$~jets''',         "entryFunc":mcYieldOtherLumi,   "args":("mcMuon", "muon", "had")},
+                            {"label": r'''MC Ratio''',                "entryFunc":mcRatio,            "args":("mcMuon", "mcTtw", "muon", "had")},
+                            {"label": r'''Data $\mu +$~jets''',       "entryFunc":dataYieldOtherLumi, "args":("nMuon", "muon", "had")},
+                            {"label": r'''W + $\ttNew$ Prediction''', "entryFunc":prediction,         "args":("nMuon", "mcMuon", "mcTtw")},
                             ])
 
 data = data2011()
 print RalphaT(data)
+print photon(data)
+print muon(data)
 
 
