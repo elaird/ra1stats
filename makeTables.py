@@ -132,9 +132,42 @@ def muon(data) :
                             {"label": r'''W + $\ttNew$ Prediction''', "entryFunc":prediction,         "args":("nMuon", "mcMuon", "mcTtw", "sigmaMuonW")},
                             ])
 
-zeroObsUpperLimit = 1.15
+#fit results
+def dictFromFile(fileName) :
+    out = {}
+    f = open(fileName)
+    for line in f :
+        fields = line.split()
+        key = fields[0]
+        lumi = fields[1].replace("/pb]","").replace("[","")
+        values = []
+        for item in [item.replace(",","").replace("(","").replace(")","") for item in fields[2:]] :
+            if item!="" : values.append(float(item))
+        out[key] = (float(lumi), values)
+    f.close()
+    return out
 
+def resultFromTxt(data, indices, *args) :
+    return ["%5.1f"%data.txtData[args[0]][1][i] for i in indices]
+
+def fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt") :
+    txtData = dictFromFile(fileName)
+    assert len(set([len(value[1]) for value in txtData.values()]))==1
+    data.txtData = txtData
+    return oneTable(data,
+                    caption = r'''Fit Results '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
+                    label = "results-fit",
+                    rows = [{"label": r'''W + $\ttNew$ background''', "entryFunc":resultFromTxt,  "args":("ttw",)},
+                            {"label": r'''$\znunu$ background''',     "entryFunc":resultFromTxt,  "args":("zInv",)},
+                            {"label": r'''Total Background''',        "entryFunc":resultFromTxt,  "args":("hadB",)},
+                            {"label": r'''Data''',                    "entryFunc":resultFromTxt,  "args":("nHad",)},
+                            ])
+
+    
+
+zeroObsUpperLimit = 1.15
 data = data2011()
 print RalphaT(data)
 print photon(data)
 print muon(data)
+print fitResults(data)
