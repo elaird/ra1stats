@@ -55,16 +55,31 @@ def toString(item) :
     if type(item) is float : return str(int(item))
     else : return str(item)
 
-def RalphaT(data) :
-    s = \
-      r'''\begin{table}[ht!]
-\caption{R$_{\alpha_{T}}$ distribution '''+"%g"%data.lumi()["had"]
-    s += \
-      r'''pb$^{-1}$} % title of table
-\label{tab:results-HT}
-\centering'''
+def beginTable(data, caption = "", label = "") :
+    s  = r'''\begin{table}[ht!]'''
+    s += "\n\caption{%s}"%caption
+    s += "\n\label{tab:%s}"%label
+    s += "\n\centering"
     s += "\n\\begin{tabular}{ %s }"%("c".join(["|"]*(2+len(data.htBinLowerEdges())/2)))
-    s += "\n\hline\n"
+    return s
+
+def endTable() :
+    return r'''
+
+\hline
+\end{tabular}
+\end{table}
+'''
+
+def oneRow(label = "", labelWidth = 20, entryList = [], hline = (False,False), extra = "") :
+    s = ""
+    if hline[0] : s += "\n\n\hline"
+    s += "\n"+label.ljust(labelWidth)+" & "+" & ".join(entryList)+r" \\ %s"%extra
+    if hline[1] : s += "\n\hline"
+    return s
+
+def RalphaT(data) :
+    s = beginTable(data, caption = r'''R$_{\alpha_{T}}$ distribution '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$}''', label = "results-HT")
 
     just = 20
     w = 10
@@ -76,18 +91,12 @@ def RalphaT(data) :
         stop = 1 + (1+subTable)*len(fullBins)/2
         indices = range(start,stop-1)[:len(fullBins)/2]
         bins = fullBins[start:stop]
-        s += "\n"
-        s += "\scalht Bin (GeV)".ljust(just)+" & "+" & ".join([("%s--%s"%(toString(l), toString(u))).ljust(w) for l,u in zip(bins[:-1], bins[1:])])+r" \\  [0.5ex]"
-        s += "\n\hline\n"
-        s += r'''$\alpha_{T} > 0.55$'''.ljust(just)+" & "+" & ".join([("%d"%tail[i]).ljust(w) for i in indices])+r'''\\'''
-        s += "\n"
-        s += r'''$\alpha_{T} < 0.55$'''.ljust(just)+" & "+" & ".join([("%g"%bulk[i]).ljust(w) for i in indices])+r'''\\'''
-        s += "\n\hline"
-
-    s += r'''
-\end{tabular}
-\end{table}
-'''
+        s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))).ljust(w) for l,u in zip(bins[:-1], bins[1:])],
+                    hline = (True,True), extra = "[0.5ex]")
+        s += oneRow(label = r'''$\alpha_{T} > 0.55$''', entryList = [("%d"%tail[i]).ljust(w) for i in indices])
+        s += oneRow(label = r'''$\alpha_{T} < 0.55$''', entryList = [("%4.2e"%bulk[i]).ljust(w) for i in indices])
+        s += oneRow(label = r'''$R_{\alpha_{T}}$''',    entryList = [("%4.2e"%(tail[i]/(0.0+bulk[i]))).ljust(w) for i in indices])
+    s += endTable()
     return s
 
 data = data2011()
