@@ -23,7 +23,7 @@ def endTable() :
 \end{table}
 '''
 
-def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 23, hline = (False,False), extra = "") :
+def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 30, hline = (False,False), extra = "") :
     s = ""
     if hline[0] : s += "\n\n\hline"
     s += "\n"+label.ljust(labelWidth)+" & "+" & ".join([entry.ljust(entryWidth) for entry in entryList])+r" \\ %s"%extra
@@ -42,7 +42,8 @@ def oneTable(data, caption = "", label = "", rows = []) :
         s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))) for l,u in zip(bins[:-1], bins[1:])],
                     hline = (True,True), extra = "[0.5ex]")
         for row in rows :
-            s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()))
+            s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()),
+                        entryWidth = row["entryWidth"] if "entryWidth" in row else 30)
     s += endTable()
     return s
 
@@ -56,7 +57,7 @@ def bulkCounts(data, indices, *args) :
 def alphaTratios(data, indices, *args) :
     tail = data.observations()["nHad"]
     bulk = data.observations()["nHadBulk"]
-    return ["%4.2e $\pm$ %4.2e"%(tail[i]/(0.0+bulk[i]), math.sqrt(tail[i])/(0.0+bulk[i])) for i in indices]
+    return ["%4.2e $\pm$ %4.2e_{stat}"%(tail[i]/(0.0+bulk[i]), max(zeroObsUpperLimit, math.sqrt(tail[i]))/(0.0+bulk[i])) for i in indices]
 
 def RalphaT(data) :
     return oneTable(data,
@@ -93,10 +94,19 @@ def dataYieldOtherLumi(data, indices, *args) :
     lumiHad = data.lumi()[args[2]]
     return ["%5.1f"%(data.observations()[args[0]][i]*lumiHad/lumiPhot) for i in indices]
 
+def error(obs) :
+    d = {}
+    d[0] = 1.15
+    d[1] = 1.36
+    if obs in d : return d[obs]
+    else : return math.sqrt(obs)
+    
 def prediction(data, indices, *args) :
+    def oneString(obs, ratio, sysFactor = 1.0) :
+        return "%5.1f $\pm$ %5.1f_{stat} %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f_{syst}"%(obs*ratio*sysFactor))
     mcPhot = truncate(data.mcExpectations()[args[1]])
     mcZinv = truncate(data.mcExpectations()[args[2]])
-    return ["%5.1f $\pm$ %5.1f"%(data.observations()[args[0]][i]*mcZinv[i]/mcPhot[i], math.sqrt(data.observations()[args[0]][i])*mcZinv[i]/mcPhot[i]) for i in indices]
+    return [oneString(data.observations()[args[0]][i], mcZinv[i]/mcPhot[i], data.fixedParameters()[args[3]]) for i in indices]
 
 #photon to Z
 def photon(data) :
@@ -107,7 +117,7 @@ def photon(data) :
                             {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcPhot", "phot", "had")},
                             {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcPhot", "mcZinv", "phot", "had")},
                             {"label": r'''Data $\gamma +$~jets''', "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
-                            {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcPhot", "mcZinv")},
+                            {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcPhot", "mcZinv", "sigmaPhotZ")},
                             ])
 
 #muon to W
@@ -119,12 +129,12 @@ def muon(data) :
                             {"label": r'''MC $\mu +$~jets''',         "entryFunc":mcYieldOtherLumi,   "args":("mcMuon", "muon", "had")},
                             {"label": r'''MC Ratio''',                "entryFunc":mcRatio,            "args":("mcMuon", "mcTtw", "muon", "had")},
                             {"label": r'''Data $\mu +$~jets''',       "entryFunc":dataYieldOtherLumi, "args":("nMuon", "muon", "had")},
-                            {"label": r'''W + $\ttNew$ Prediction''', "entryFunc":prediction,         "args":("nMuon", "mcMuon", "mcTtw")},
+                            {"label": r'''W + $\ttNew$ Prediction''', "entryFunc":prediction,         "args":("nMuon", "mcMuon", "mcTtw", "sigmaMuonW")},
                             ])
+
+zeroObsUpperLimit = 1.15
 
 data = data2011()
 print RalphaT(data)
 print photon(data)
 print muon(data)
-
-
