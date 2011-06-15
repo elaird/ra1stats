@@ -12,6 +12,7 @@ def beginTable(data, caption = "", label = "") :
     s += "\n\caption{%s}"%caption
     s += "\n\label{tab:%s}"%label
     s += "\n\centering"
+    s += "\n"+r'''\footnotesize'''
     s += "\n\\begin{tabular}{ %s }"%("c".join(["|"]*(2+len(data.htBinLowerEdges())/2)))
     return s
 
@@ -57,7 +58,7 @@ def bulkCounts(data, indices, *args) :
 def alphaTratios(data, indices, *args) :
     tail = data.observations()["nHad"]
     bulk = data.observations()["nHadBulk"]
-    return ["%4.2e $\pm$ %4.2e_{stat}"%(tail[i]/(0.0+bulk[i]), max(zeroObsUpperLimit, math.sqrt(tail[i]))/(0.0+bulk[i])) for i in indices]
+    return ["%4.2e $\pm$ %4.2e$_{stat}$"%(tail[i]/(0.0+bulk[i]), max(zeroObsUpperLimit, math.sqrt(tail[i]))/(0.0+bulk[i])) for i in indices]
 
 def RalphaT(data) :
     return oneTable(data,
@@ -103,7 +104,7 @@ def error(obs) :
     
 def prediction(data, indices, *args) :
     def oneString(obs, ratio, sysFactor = 1.0) :
-        return "%5.1f $\pm$ %5.1f_{stat} %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f_{syst}"%(obs*ratio*sysFactor))
+        return "%5.1f $\pm$ %5.1f$_{stat}$ %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f$_{syst}$"%(obs*ratio*sysFactor))
     mcPhot = truncate(data.mcExpectations()[args[1]])
     mcZinv = truncate(data.mcExpectations()[args[2]])
     return [oneString(data.observations()[args[0]][i], mcZinv[i]/mcPhot[i], data.fixedParameters()[args[3]]) for i in indices]
@@ -147,8 +148,11 @@ def dictFromFile(fileName) :
     f.close()
     return out
 
-def resultFromTxt(data, indices, *args) :
+def floatResultFromTxt(data, indices, *args) :
     return ["%5.1f"%data.txtData[args[0]][1][i] for i in indices]
+
+def intResultFromTxt(data, indices, *args) :
+    return ["%d"%data.txtData[args[0]][1][i] for i in indices]
 
 def fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt") :
     txtData = dictFromFile(fileName)
@@ -157,13 +161,11 @@ def fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers
     return oneTable(data,
                     caption = r'''Fit Results '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
                     label = "results-fit",
-                    rows = [{"label": r'''W + $\ttNew$ background''', "entryFunc":resultFromTxt,  "args":("ttw",)},
-                            {"label": r'''$\znunu$ background''',     "entryFunc":resultFromTxt,  "args":("zInv",)},
-                            {"label": r'''Total Background''',        "entryFunc":resultFromTxt,  "args":("hadB",)},
-                            {"label": r'''Data''',                    "entryFunc":resultFromTxt,  "args":("nHad",)},
+                    rows = [{"label": r'''W + $\ttNew$ background''', "entryFunc":floatResultFromTxt,  "args":("ttw",)},
+                            {"label": r'''$\znunu$ background''',     "entryFunc":floatResultFromTxt,  "args":("zInv",)},
+                            {"label": r'''Total Background''',        "entryFunc":floatResultFromTxt,  "args":("hadB",)},
+                            {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
-
-    
 
 zeroObsUpperLimit = 1.15
 data = data2011()
