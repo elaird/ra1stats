@@ -71,33 +71,48 @@ def endTable() :
 \end{table}
 '''
 
-def oneRow(label = "", labelWidth = 20, entryList = [], hline = (False,False), extra = "") :
+def oneRow(label = "", labelWidth = 20, entryList = [], entryWidth = 10, hline = (False,False), extra = "") :
     s = ""
     if hline[0] : s += "\n\n\hline"
-    s += "\n"+label.ljust(labelWidth)+" & "+" & ".join(entryList)+r" \\ %s"%extra
+    s += "\n"+label.ljust(labelWidth)+" & "+" & ".join([entry.ljust(entryWidth) for entry in entryList])+r" \\ %s"%extra
     if hline[1] : s += "\n\hline"
     return s
 
-def RalphaT(data) :
-    s = beginTable(data, caption = r'''R$_{\alpha_{T}}$ distribution '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$}''', label = "results-HT")
+def oneTable(data, caption = "", label = "", rows = []) :
+    s = beginTable(data, caption = caption, label = label)
 
-    just = 20
-    w = 10
-    tail = data.observations()["nHad"]
-    bulk = data.observations()["nHadBulk"]
     fullBins = list(data.htBinLowerEdges()) + ["$\infty$"]
     for subTable in range(2) :
         start = 0 + subTable*len(fullBins)/2
         stop = 1 + (1+subTable)*len(fullBins)/2
         indices = range(start,stop-1)[:len(fullBins)/2]
         bins = fullBins[start:stop]
-        s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))).ljust(w) for l,u in zip(bins[:-1], bins[1:])],
+        s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))) for l,u in zip(bins[:-1], bins[1:])],
                     hline = (True,True), extra = "[0.5ex]")
-        s += oneRow(label = r'''$\alpha_{T} > 0.55$''', entryList = [("%d"%tail[i]).ljust(w) for i in indices])
-        s += oneRow(label = r'''$\alpha_{T} < 0.55$''', entryList = [("%4.2e"%bulk[i]).ljust(w) for i in indices])
-        s += oneRow(label = r'''$R_{\alpha_{T}}$''',    entryList = [("%4.2e"%(tail[i]/(0.0+bulk[i]))).ljust(w) for i in indices])
+        for row in rows :
+            s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices))
     s += endTable()
     return s
+
+def tailCounts(data, indices) :
+    return ["%d"%data.observations()["nHad"][i] for i in indices]
+
+def bulkCounts(data, indices) :
+    return ["%4.2e"%data.observations()["nHadBulk"][i] for i in indices]
+
+def alphaTratios(data, indices) :
+    tail = data.observations()["nHad"]
+    bulk = data.observations()["nHadBulk"]
+    return ["%4.2e"%(tail[i]/(0.0+bulk[i])) for i in indices]
+
+def RalphaT(data) :
+    return oneTable(data,
+                    caption = r'''R$_{\alpha_{T}}$ distribution '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$}''',
+                    label = "results-HT",
+                    rows = [{"label": r'''$\alpha_{T} > 0.55$''', "entryFunc":tailCounts},
+                            {"label": r'''$\alpha_{T} < 0.55$''', "entryFunc":bulkCounts},
+                            {"label": r'''$R_{\alpha_{T}}$''',    "entryFunc":alphaTratios},
+                            ])
 
 data = data2011()
 print RalphaT(data)
