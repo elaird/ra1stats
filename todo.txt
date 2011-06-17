@@ -8,6 +8,7 @@ try ProfileLikelihoodTestStatistic.SetOneSided()
 physics
 -------
 look at g(l) for f = 1
+update muon file
 repair nlo
 use scaled yields in lowest two bins
 systematics on signal eff.
