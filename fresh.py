@@ -345,7 +345,7 @@ def quantiles(limits, plusMinus, makePlots = False) :
 
     h = histoFromList(limits, name = "upperLimit", title = ";upper limit on XS factor;toys / bin", bins = (50, 1, -1)) #enable auto-range
     h.GetQuantiles(len(probSum), q, probSum)
-    return dict(zip(names, q)+[("hist", h)])
+    return dict(zip(names, q)),h
     
 def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, note = "", makePlots = False) :
     assert not smOnly
@@ -368,11 +368,11 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 
     #fit toys
     l = limits(wspace, snapName, modelConfig, smOnly, cl, toys)
-    q = quantiles(l, plusMinus, makePlots)    
+    q,hist = quantiles(l, plusMinus, makePlots)    
 
     obsLimit = limits(wspace, snapName, modelConfig, smOnly, cl, [dataset])[0]
 
-    if makePlots : plotting.expectedLimitPlots(quantiles = q, obsLimit = obsLimit, note = note)
+    if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q
 
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
@@ -470,8 +470,8 @@ class foo(object) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note)
 
     def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
-        expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
-                      plusMinus = plusMinus, note = self.note, makePlots = makePlots)
+        return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
+                             plusMinus = plusMinus, note = self.note, makePlots = makePlots)
 
     def bestFit(self, printPages = False) :
         plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),

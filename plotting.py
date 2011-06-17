@@ -337,16 +337,16 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
     utils.ps2pdf(psFileName)
     return out
 
-def expectedLimitPlots(quantiles = {}, obsLimit = None, note = "") :
+def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
     ps = "limits_%s.ps"%note
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
     canvas.SetTicky()
     canvas.Print(ps+"[")
 
-    h = quantiles["hist"]
-    h.Draw()
-    h.SetStats(False)
+    hist
+    hist.Draw()
+    hist.SetStats(False)
 
     q = copy.deepcopy(quantiles)
     q["Observed Limit"] = obsLimit
@@ -357,9 +357,7 @@ def expectedLimitPlots(quantiles = {}, obsLimit = None, note = "") :
     
     line = r.TLine()
     line.SetLineWidth(2)
-    keys = sorted(q.keys())
-    keys.remove("hist")
-    for i,key in enumerate(keys) :
+    for i,key in enumerate(sorted(q.keys())) :
         line.SetLineColor(2+i)
         line2 = line.DrawLine(q[key], h.GetMinimum(), q[key], h.GetMaximum())
         legend.AddEntry(line2, key, "l")
