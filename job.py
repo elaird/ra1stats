@@ -33,35 +33,38 @@ def stuffVars(binsMerged, signal) :
             out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
     return out
 
-def go() :
-    s = conf.switches()
-    data = conf.data()
+def onePoint(data = None, point = None) :
     binsInput = data.htBinLowerEdgesInput()
     binsMerged = data.htBinLowerEdges()
     
-    for point in points() :
-        signal = {}
-        signal["xs"] = hp.xsHisto().GetBinContent(*point)
-        for key,value in signalEff(s, data, binsInput, binsMerged, point).iteritems() :
-            signal[key] = value
+    signal = {}
+    signal["xs"] = hp.xsHisto().GetBinContent(*point)
+    for key,value in signalEff(s, data, binsInput, binsMerged, point).iteritems() :
+        signal[key] = value
 
-        out = stuffVars(binsMerged, signal)
+    out = stuffVars(binsMerged, signal)
 
-        if "CLs" in s["method"] :
+    if "CLs" in s["method"] :
+        f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signal = signal)
+        results = f.cls(method = s["method"], nToys = s["nToys"])
+        for key,value in results.iteritems() : out[key] = (value, description(key))
+        for cl in s["CL"] :
+            value = 1.0 - cl
+            out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
+    else :
+        for cl in s["CL"] :
             f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signal = signal)
-            results = f.cls(method = s["method"], nToys = s["nToys"])
-            for key,value in results.iteritems() : out[key] = (value, description(key))
-            for cl in s["CL"] :
-                value = 1.0 - cl
-                out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
-        else :
-            for cl in s["CL"] :
-                f = fresh.foo(inputData = data, REwk = s["REwk"], RQcd = s["RQcd"], signal = signal)
-                results = f.interval(cl = cl, method = s["method"])
-                cl2 = 100*cl
-                for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-                out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
-        writeNumbers(conf.strings(*point)["pickledFileName"], out)
+            results = f.interval(cl = cl, method = s["method"])
+            cl2 = 100*cl
+            for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+            out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
+    writeNumbers(conf.strings(*point)["pickledFileName"], out)
+    
+def go() :
+    s = conf.switches()
+    data = conf.data()
+    for point in points() :
+        onePoint(data = data, point = point)
 
 if False :
     import cProfile
