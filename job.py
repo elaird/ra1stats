@@ -14,6 +14,7 @@ def writeNumbers(fileName = None, d = None) :
 def description(key, cl = None) :
     if key[:2]=="CL" : return key
     if key[-5:]=="Limit" : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
+    else : return ""
 
 def signalEff(switches, data, binsInput, binsMerged, point) :
     out = {}
@@ -53,16 +54,27 @@ def onePoint(switches = None, data = None, point = None) :
             out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
     else :
         for cl in switches["CL"] :
-            f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], signal = signal)
-            results = f.interval(cl = cl, method = switches["method"])
             cl2 = 100*cl
-            for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-            out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
+            f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], signal = signal)
+
+            if not switches["computeExpectedLimit"] :
+                results = f.interval(cl = cl, method = switches["method"])
+                for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+                out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
+            else :
+                d = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
+                for key,value in d.iteritems() :
+                    out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+                    out["excluded%s%g"%(key, cl2)] = (2.0*(value<1.0) - 1.0, "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
+
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
     
 def go() :
     s = conf.switches()
     data = conf.data()
+
+    if s["computeExpectedLimit"] : assert s["method"]=="profileLikelihood"
+    
     for point in points() :
         onePoint(switches = s, data = data, point = point)
 
