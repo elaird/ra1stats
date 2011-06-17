@@ -41,9 +41,8 @@ def jobCmds(nSlices = None) :
     return out
 ############################################
 def batch(nSlices) :
-    for jobCmd in jobCmds(nSlices) :
-        subCmd = "%s %s"%(conf.switches()["subCmd"], jobCmd)
-        os.system(subCmd)
+    subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jobCmds(nSlices)]
+    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 ############################################
 def local(nWorkers) :
     def worker(q) :
