@@ -45,12 +45,7 @@ def batch(nSlices) :
     utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 ############################################
 def local(nWorkers) :
-    def worker(q) :
-        while True:
-            item = q.get()
-            os.system(item)
-            q.task_done()
-    utils.operateOnListUsingQueue(nWorkers, worker, jobCmds())
+    utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jobCmds())
 ############################################
 def mkdirs() :
     s = conf.stringsNoArgs()
