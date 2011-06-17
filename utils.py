@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #####################################
 from multiprocessing import Process,JoinableQueue
-import os,subprocess,math
+import os,subprocess,math,traceback,sys
 import ROOT as r
 #####################################
 def delete(thing) :
@@ -55,6 +55,23 @@ def operateOnListUsingQueue(nCores, workerFunc, inList) :
     #clean up
     for process in listOfProcesses :
         process.terminate()
+#####################################
+class qWorker(object) :
+    def __init__(self, func = None, star = True) :
+        self.func = func
+        self.star = star
+    def __call__(self,q) :
+        while True:
+            item = q.get()
+            try:
+                if self.func :
+                    if self.star : self.func(*item)
+                    else : self.func(item)
+                else: item()
+            except Exception as e:
+                traceback.print_tb(sys.exc_info()[2], limit=20, file=sys.stdout)
+                print e.__class__.__name__,":", e
+            q.task_done()
 #####################################
 def mkdir(path) :
     try:
