@@ -503,6 +503,14 @@ def makeValidationPlots() :
         canvas.SetLogz(name in logZ)
         if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
         stuff = drawBenchmarks()
+
+        if "excluded" in name :
+            title = h2.GetTitle()
+            h2.SetTitle("")
+            eps = fileName.replace(".ps","_%s.eps"%name)
+            super(utils.numberedCanvas, canvas).Print(eps)
+            utils.epsToPdf(eps)
+            h2.SetTitle(title)
         canvas.Print(fileName)
 
     #effMu/effHad
