@@ -101,6 +101,22 @@ def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
         out.SetBinContent(i+1, l*xs*eff)
     return out
 
+def drawOne(hist, goptions, errorBand, bandFillColor = r.kGray, bandFillStyle = 1001) :
+    if not errorBand :
+        hist.Draw(goptions)
+        return
+
+    goptions = "he2"+goptions
+    out = []
+    errors   = hist.Clone(hist.GetName()+"_errors")
+    noerrors = hist.Clone(hist.GetName()+"_noerrors")
+    for i in range(1, 1+noerrors.GetNbinsX()) : noerrors.SetBinError(i, 0.0)
+    noerrors.Draw("h"+goptions)
+    errors.SetFillColor(bandFillColor)
+    errors.SetFillStyle(bandFillStyle)
+    errors.Draw("e2same")
+    return [errors, noerrors]
+
 def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85),
                    minimum = 0.0, maximum = None, logY = False, printPages = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
@@ -141,7 +157,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
             stacks[d["stack"]].Add(hist)
         else :
             hist.Scale(scale)
-            hist.Draw(goptions)
+            stuff.append( drawOne(hist, goptions, d["errorBand"] if "errorBand" in d else False) )
             for item in ["min", "max"] :
                 if item not in histos : continue
                 histos[item].Draw(goptions)
