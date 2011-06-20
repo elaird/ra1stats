@@ -10,35 +10,49 @@ def modelConfiguration(w, smOnly) :
         modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
 
-def initialA(inputData, i = 0) :
+def q0q1(inputData, factor, A_ewk_ini) :
+    def thing(i) :
+        return (o["nHad"][i] - o["nHadBulk"][i]*A_ewk_ini*factor)
     o = inputData.observations()
-    return (0.0+o["nHad"][i])*math.exp(initialk(inputData)*o["htMean"][i])/o["nBulk"][i]
+    return thing(0)/thing(1)
 
-def initialk(inputData) :
-    o = inputData.observations()
-    lengthMatch = len(set(map(lambda x:len(o[x]),["nHad", "nBulk", "htMean"])))==1
-    assert lengthMatch and (len(o["nHad"])>1)
+def initialkQcd(inputData, factor, A_ewk_ini) :
+    obs = inputData.observations()
+    htMeans = inputData.htMeans()    
+    out = q0q1(inputData, factor, A_ewk_ini)
+    out *= obs["nHadBulk"][1]/float(obs["nHadBulk"][0])
+    out = math.log(out)
+    out /= (htMeans[1] - htMeans[0])
+    return out
 
-    rAlphaT = [(o["nHad"][i]+0.0)/o["nBulk"][i] for i in range(2)]
-    return math.log(rAlphaT[1]/rAlphaT[0])/(o["htMean"][0]-o["htMean"][1])
-
+def initialAQcd(inputData, factor, A_ewk_ini) :
+    obs = inputData.observations()
+    htMeans = inputData.htMeans()
+    out = math.exp( initialkQcd(inputData, factor, A_ewk_ini)*htMeans[0] )
+    out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
+    return out
+                     
 def hadTerms(w, inputData, REwk, RQcd, smOnly) :
     o = inputData.observations()
     htMeans = inputData.htMeans()
     terms = []
 
-    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-6, 0.0, 4.5e-5))
-    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-6, 0.0, 1.0))
-
+    A_ewk_ini = 1.5e-5
     if REwk :
-        wimport(w, r.RooRealVar("A_ewk", "A_ewk", 1.5e-5, 0.0, 4.5e-4))
+        wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ewk_ini, 0.0, 3.0*A_ewk_ini))
         wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6, 0.0, 1.0))
 
+    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 1.0))
+    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0, 1.0))
     if RQcd=="Zero" :
         w.var("A_qcd").setVal(0.0)
         w.var("A_qcd").setConstant()
         w.var("k_qcd").setVal(0.0)
         w.var("k_qcd").setConstant()
+    else :
+        factor = 0.7
+        w.var("A_qcd").setVal(initialAQcd(inputData, factor, A_ewk_ini))
+        w.var("k_qcd").setVal(initialkQcd(inputData, factor, A_ewk_ini))
 
     if REwk=="Constant" :
         w.var("k_ewk").setVal(0.0)
