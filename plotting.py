@@ -150,7 +150,8 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
             hist = signalExampleHisto(inp, inputData, d)
         if not hist.GetEntries() : continue
         stuff.append(hist)
-        leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
+        #leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
+        leg.AddEntry(hist, "%s %s"%(d["desc"], d["desc2"] if "desc2" in d else ""), "l")
         if d["stack"] :
             if d["stack"] not in stacks :
                 stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
@@ -244,8 +245,13 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
     canvas.Print(psFileName)
     return stuff
 
-def akDesc(wspace, var) :
-    return "A = %4.2e; k = %4.2e"%(wspace.var("A_%s"%var).getVal(), wspace.var("k_%s"%var).getVal())
+def akDesc(wspace, var, errors = True) :
+    varA = wspace.var("A_%s"%var)
+    vark = wspace.var("k_%s"%var)
+    out = ""
+    out += "A = %4.2e%s; "%(varA.getVal(), " #pm %4.2e"%varA.getError() if errors else "")
+    out += "k = %4.2e%s"  %(vark.getVal(), " #pm %4.2e"%vark.getError() if errors else "")
+    return out
 
 def note(REwk, RQcd): 
     return "%sRQcd%s"%("REwk%s_"%REwk if REwk else "", RQcd)
@@ -267,9 +273,9 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
     hadVars = [
         {"var":"hadB", "type":"function", "desc":"expected total background",
          "color":r.kBlue, "style":1, "width":3, "stack":"total"},
-        {"var":"ewk",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewk") if REwk else "[floating]",
+        {"var":"ewk",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewk", errors = True) if REwk else "[floating]",
          "color":r.kCyan, "style":2, "width":2, "stack":"background"},
-        {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcd"),
+        {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcd", errors = True),
          "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
         ]
 
