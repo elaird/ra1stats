@@ -58,7 +58,7 @@ def bulkCounts(data, indices, *args) :
 def alphaTratios(data, indices, *args) :
     tail = data.observations()["nHad"]
     bulk = data.observations()["nHadBulk"]
-    return ["%4.2e $\pm$ %4.2e$_{stat}$"%(tail[i]/(0.0+bulk[i]), max(zeroObsUpperLimit, math.sqrt(tail[i]))/(0.0+bulk[i])) for i in indices]
+    return ["%4.2e $\pm$ %4.2e$_{stat}$"%(tail[i]/(0.0+bulk[i]), error(tail[i])/(0.0+bulk[i])) for i in indices]
 
 def RalphaT(data) :
     return oneTable(data,
@@ -101,7 +101,7 @@ def error(obs) :
     d[1] = 1.36
     if obs in d : return d[obs]
     else : return math.sqrt(obs)
-    
+
 def prediction(data, indices, *args) :
     def oneString(obs, ratio, sysFactor = 1.0) :
         return "%5.1f $\pm$ %5.1f$_{stat}$ %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f$_{syst}$"%(obs*ratio*sysFactor))
@@ -154,7 +154,7 @@ def floatResultFromTxt(data, indices, *args) :
 def intResultFromTxt(data, indices, *args) :
     return ["%d"%data.txtData[args[0]][1][i] for i in indices]
 
-def fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt") :
+def fitResults(data, fileName = "") :
     txtData = dictFromFile(fileName)
     assert len(set([len(value[1]) for value in txtData.values()]))==1
     data.txtData = txtData
@@ -167,9 +167,9 @@ def fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers
                             {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
 
-zeroObsUpperLimit = 1.15
 data = data2011()
 print RalphaT(data)
 print photon(data)
 print muon(data)
-print fitResults(data)
+#print fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
+print fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt")
