@@ -71,6 +71,9 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
         else :
             value = inputData.mcExpectations()[varName][i]
             d["value"].SetBinContent(i+1, value)
+            key = varName+"Err"
+            if key in inputData.mcStatError() :
+                d["value"].SetBinError(i+1, inputData.mcStatError()[key][i])
         toPrint.append(value)
     if printPages : print varName.rjust(10),lumiString.rjust(10),pretty(toPrint)
     return d
@@ -101,7 +104,7 @@ def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
         out.SetBinContent(i+1, l*xs*eff)
     return out
 
-def drawOne(hist, goptions, errorBand, bandFillColor = r.kGray, bandFillStyle = 1001) :
+def drawOne(hist, goptions, errorBand, bandFillStyle = 1001) :
     if not errorBand :
         hist.Draw(goptions)
         return
@@ -111,13 +114,13 @@ def drawOne(hist, goptions, errorBand, bandFillColor = r.kGray, bandFillStyle = 
     errors   = hist.Clone(hist.GetName()+"_errors")
     noerrors = hist.Clone(hist.GetName()+"_noerrors")
     for i in range(1, 1+noerrors.GetNbinsX()) : noerrors.SetBinError(i, 0.0)
-    noerrors.Draw("h"+goptions)
-    errors.SetFillColor(bandFillColor)
+    errors.SetFillColor(errorBand)
     errors.SetFillStyle(bandFillStyle)
     errors.Draw("e2same")
+    noerrors.Draw("h"+goptions)
     return [errors, noerrors]
 
-def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85),
+def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
                    minimum = 0.0, maximum = None, logY = False, printPages = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
     stuff = []
     leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "ML values" if (otherVars and obsKey) else "")
@@ -141,6 +144,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     goptions = "same"
     stacks = {}
     stuff += [leg,inp,stacks]
+    legEntries = []
     for d in otherVars :
         if "example" not in d :
             histos = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1,
@@ -150,8 +154,7 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
             hist = signalExampleHisto(inp, inputData, d)
         if not hist.GetEntries() : continue
         stuff.append(hist)
-        #leg.AddEntry(hist, "%s %s %s"%(d["desc"],("(%s stack)"%d["stack"]) if d["stack"] else "", d["desc2"] if "desc2" in d else ""), "l")
-        leg.AddEntry(hist, "%s %s"%(d["desc"], d["desc2"] if "desc2" in d else ""), "l")
+        legEntries.append( (hist, "%s %s"%(d["desc"], d["desc2"] if "desc2" in d else ""), "l") )
         if d["stack"] :
             if d["stack"] not in stacks :
                 stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
@@ -167,6 +170,9 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
         stack.Draw(goptions)
 
     inp.Draw("psame")#redraw data
+
+    for item in reversed(legEntries) if reverseLegend else legEntries :
+        leg.AddEntry(*item)
     leg.Draw()
     r.gPad.SetTickx()
     r.gPad.SetTicky()
@@ -313,10 +319,10 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
     #photon control sample
     for logY in [False, True] :
         thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")        
-        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72),
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
                        obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], logY = logY, printPages = printPages, otherVars = [
+            {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None, "errorBand":r.kGray},
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
-            {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None},
             ])
 
     #EWK background scale factors
