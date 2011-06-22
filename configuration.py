@@ -20,7 +20,8 @@ def switches() :
     d["drawBenchmarkPoints"] = True
     d["effRatioPlots"] = False
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
-    #d["listOfTestPoints"] = [(70, 27, 1)] #at the edge
+    #d["listOfTestPoints"] = [(55, 44, 1)] #Filip's request
+    #d["listOfTestPoints"] = [(11, 11, 1)] #Sue Ann's request
     d["listOfTestPoints"] = []
 
     d["computeExpectedLimit"] = False
