@@ -61,9 +61,6 @@ class data2011_2_mb_dphi_cut(data) :
         self._mergeBins = None
         self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
         
-        #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
-
         self._lumi = {
             "had":     602.,
             "hadBulk": 602.,
@@ -117,23 +114,19 @@ class data2011_2_no_cleaning_cuts(data) :
         self._mergeBins = None
         self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
         
-        #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
-
         self._lumi = {
             "had":     602.,
             "hadBulk": 602.,
             
             "muon":    448.,
             "mcMuon":  441.,
-            "mcTtw":   441.,
 
             "phot":    468.8,
             "mcPhot":  468.8,
             }
         self._htMeans =       (    297.51,      347.25,      415.57,     516.2 , 617.17, 717.72, 818.33, 919.08)
         self._observations = {
-            "nHadBulk":scaled(( 3.234e+07,   1.328e+07,   9.086e+06,  2.870e+06, 998415, 387023, 162452, 145889), self.lumi()["had"]/self.lumi()["hadBulk"]),
+            "nHadBulk":       ( 3.234e+07,   1.328e+07,   9.086e+06,  2.870e+06, 998415, 387023, 162452, 145889),
             "nHad":           (      2398,         633,         260,         56,     19,      3,      2,      1),
             "nPhot":     excl((       402,         149,         139,         55,     21,      9,      4,      1), isExcl),
             "nMuon":          (       146,          53,          39,         17,      7,      1,      0,      0),            
