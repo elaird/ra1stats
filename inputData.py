@@ -51,13 +51,63 @@ class data2011_2(data) :
             }
         # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
         
-class data2011_2_no_cleaning_cuts(data) :
-    def addLists(self, l1, l2) :
-        out = []
-        for a,b in zip(l1,l2) :
-            out.append(a+b)
-        return out
+class data2011_2_mb_dphi_cut(data) :
+    def _fill(self) :
+        isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
+
+        self._htBinLowerEdges =          (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
+        self._htMaxForPlot = 975.0
+
+        self._mergeBins = None
+        self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
         
+        #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
+        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
+
+        self._lumi = {
+            "had":     602.,
+            "hadBulk": 602.,
+            
+            "muon":    448.,
+            "mcMuon":  441.,
+            "mcTtw":   441.,
+
+            "phot":    468.8,
+            "mcPhot":  468.8,
+            "mcZinv":  468.8,
+            }
+        self._htMeans =       (    297.51,      347.25,      415.57,     516.2 , 617.17, 717.72, 818.33, 919.08)
+        self._observations = {
+            "nHadBulk":scaled(( 3.234e+07,   1.328e+07,   9.086e+06,  2.870e+06, 998416, 387024, 162452, 145889), self.lumi()["had"]/self.lumi()["hadBulk"]),
+            "nHad":           (       384,         159,          91,         30,     14,      2,      1,      1),
+            "nPhot":     excl((       402,         149,         139,         55,     21,      9,      4,      1), isExcl),
+            "nMuon":          (       146,          53,          39,         17,      7,      1,      0,      0),
+            }
+        ep = 0.01        
+        self._mcExpectations = {
+            "mcMuon":         scaled((152.05,   57.80,   39.77,  12.93,   4.53,   2.63,   0.19, 0.06), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcTtw": addLists([117., 39.6, 25.1, 7.98, 1.48, 3.97, 0, 0], [55.4, 23.2, 13.6, 4.46, 0.42, 0.01, 0, 0.09]),
+            "mcPhot":    excl(scaled((   290,     112,     109,     37,     14,      3,    2.1,  0.9), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
+            "mcZinv":                (  101.,    49.3,    33.7,   26.1,   4.46,      0,   1.73,    0),
+            }
+        self._mcStatError = {
+            "mcPhotErr":      scaled((    20,       6,       6,      3,      2,      1,    0.8,  0.5), self.lumi()["phot"]/self.lumi()["mcPhot"]),
+            "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
+            }
+        self._fixedParameters = {
+            "sigmaLumi":  0.04,
+            "sigmaPhotZ": 0.40,
+            "sigmaMuonW": 0.30,
+            }
+        # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
+
+def addLists(l1, l2) :
+    out = []
+    for a,b in zip(l1,l2) :
+        out.append(a+b)
+    return out
+        
+class data2011_2_no_cleaning_cuts(data) :
     def _fill(self) :
         isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
 
@@ -92,7 +142,7 @@ class data2011_2_no_cleaning_cuts(data) :
         ep = 0.01        
         self._mcExpectations = {
             "mcMuon":         scaled((121.78,   46.29,   31.85,  10.36,   3.63,   2.11,   0.15, 0.05), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-            "mcTtw": self.addLists([137.,  47.5,  32.8,  12.7,  0.91,  1.82,  0.91,  0.91], [79.1,  37.9,  27.4,  9.51,  3.08,  1.11,  0.37,  0.43]),
+            "mcTtw": addLists([137.,  47.5,  32.8,  12.7,  0.91,  1.82,  0.91,  0.91], [79.1,  37.9,  27.4,  9.51,  3.08,  1.11,  0.37,  0.43]),
             "mcPhot":    excl(scaled((   290,     112,     109,     37,     14,      3,    2.1,  0.9), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
             "mcZinv":                (  102.,    44.2,    32.5,   19.7,   3.49,      0,   1.16,    0),
             }
