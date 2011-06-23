@@ -34,6 +34,17 @@ def stuffVars(binsMerged, signal) :
             out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
     return out
 
+def printDict(signal) :
+    print "{"
+    for key,value in signal.iteritems() :
+        out = '"%s":'%key
+        if type(value)!=tuple and type(value)!=list :
+            out+=str(value)
+        else :
+            out += "[%s]"%(", ".join(["%s"%str(item) for item in value]))
+        print out+","
+    print "}"
+        
 def onePoint(switches = None, data = None, point = None) :
     binsInput = data.htBinLowerEdgesInput()
     binsMerged = data.htBinLowerEdges()
@@ -43,6 +54,7 @@ def onePoint(switches = None, data = None, point = None) :
     for key,value in signalEff(switches, data, binsInput, binsMerged, point).iteritems() :
         signal[key] = value
 
+    printDict(signal)
     out = stuffVars(binsMerged, signal)
 
     if "CLs" in switches["method"] :
