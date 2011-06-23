@@ -15,9 +15,13 @@ lm6_2011 = {"xs": 0.3104,
             "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
             "effMuon":(0.0,     0.0,     0.005/6, 0.012/6,0.019/6,0.022/6,0.018/6,0.029/6)}
 
-filips_point = {'xs': 0.0909,
+filips_point1 = {'xs': 0.0909,
                 'effMuon': [0.0003, 0.0003, 0.0004, 0.0007, 0.0012, 0.0011, 0.0015, 0.0032],
                 'effHad':  [0.0015, 0.0014, 0.0043, 0.0043, 0.0067, 0.0091, 0.0115, 0.0392]}
+
+filips_point2 = {"xs":0.0962,
+                 "effMuon":[0.0002, 0.0002, 0.0005, 0.0007, 0.0013, 0.0011, 0.0016, 0.0037],
+                 "effHad":[0.0014, 0.0017, 0.0026, 0.0054, 0.0084, 0.0107, 0.0153, 0.0451]}
 
 sue_anns_point = {'xs': 2004.,
                   'effMuon': [0.0, 0.0, 9.99e-05, 0.0, 9.99-05, 0.0, 0.0, 0.0],
@@ -29,7 +33,8 @@ f = fresh.foo(inputData = data2011(),
               RQcd = ["FallingExp", "Zero"][1],
               #signal = [{}, lm6_2011, lm1_2011, lm1_2010, filips_point, sue_anns_point][-2],
               signalExampleToStack = ("LM6", lm6_2011),
-              #signalExampleToStack = ("m0=540 GeV, m12=440 GeV", filips_point),
+              #signalExampleToStack = ("m0=540 GeV, m12=440 GeV", filips_point1),
+              #signalExampleToStack = ("m_{0} = 500 GeV;  m_{1/2} = 440 GeV", filips_point2),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
               #trace = True
               )
