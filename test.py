@@ -27,7 +27,6 @@ sue_anns_point = {'xs': 2004.,
                   'effMuon': [0.0, 0.0, 9.99e-05, 0.0, 9.99-05, 0.0, 0.0, 0.0],
                   'effHad': [0.0009, 0.0006, 0.0009, 0.0003, 0.0003, 9.99e-05, 0.0, 0.0]}
 
-
 f = fresh.foo(inputData = data2011(),
               REwk = ["", "FallingExp", "Constant"][2],
               RQcd = ["FallingExp", "Zero"][1],
@@ -38,7 +37,6 @@ f = fresh.foo(inputData = data2011(),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
               #trace = True
               )
-
 
 #out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(method = ["CLs", "CLsViaToys"][1], nToys = 100, makePlots = False); print out
