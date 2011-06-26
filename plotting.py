@@ -259,16 +259,13 @@ def akDesc(wspace, var, errors = True) :
     out += "k = %4.2e%s"  %(vark.getVal(), " #pm %4.2e"%vark.getError() if errors else "")
     return out
 
-def note(REwk, RQcd): 
-    return "%sRQcd%s"%("REwk%s_"%REwk if REwk else "", RQcd)
-
-def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampleToStack = ("", {}), printPages = False) :
+def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signalExampleToStack = ("", {}), printPages = False) :
     if any(signalExampleToStack) : assert smOnly
     
     out = []
 
     canvas = utils.numberedCanvas()
-    psFileName = "bestFit_%s%s.ps"%(note(REwk, RQcd), "_smOnly" if smOnly else "")
+    psFileName = "bestFit_%s%s.ps"%(note, "_smOnly" if smOnly else "")
     canvas.Print(psFileName+"[")
     
     if not smOnly :
@@ -323,6 +320,15 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, signalExampl
                        obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], logY = logY, printPages = printPages, otherVars = [
             {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None, "errorBand":r.kGray},
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+            ])
+
+    #mumu control sample
+    for logY in [False, True] :
+        thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")        
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
+                       obsKey = "nMumu", obsLabel = "mumuon data [%g/pb]"%inputData.lumi()["mumu"], logY = logY, printPages = printPages, otherVars = [
+            {"var":"mcMumu",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None, "errorBand":r.kGray},
+            {"var":"mumuExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
             ])
 
     #EWK background scale factors
