@@ -283,9 +283,10 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
         ]
 
     hadVars += [
-        {"var":"zInv", "type":"function", "desc":"Z->inv", "desc2": "#rho = %4.2f #pm %4.2f"%(wspace.var("rhoPhotZ").getVal(), wspace.var("rhoPhotZ").getError()),
-         "color":r.kRed, "style":2, "width":2, "stack":"ewk"},
-        {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho = %4.2f #pm %4.2f"%(wspace.var("rhoMuonW").getVal(), wspace.var("rhoMuonW").getError()),
+        {"var":"zInv", "type":"function", "desc":"Z->inv",
+         "desc2": "#rho_{ph} = %4.2f #pm %4.2f; "%(wspace.var("rhoPhotZ").getVal(), wspace.var("rhoPhotZ").getError())+\
+         "#rho_{#mu#mu} = %4.2f #pm %4.2f"%(wspace.var("rhoMumuZ").getVal(), wspace.var("rhoMumuZ").getError()), "color":r.kRed, "style":2, "width":2, "stack":"ewk"},
+        {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho_{#mu} = %4.2f #pm %4.2f"%(wspace.var("rhoMuonW").getVal(), wspace.var("rhoMuonW").getError()),
          "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
         ]
     if not smOnly :
@@ -349,8 +350,12 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["muon"])
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "photon translation factor (from MC)",
                    legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 4.0,
-                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z->inv", "stack":None}],
+                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z#rightarrow#nu#bar{#nu}", "stack":None}],
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["phot"])
+    validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon-muon translation factor (from MC)",
+                   legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 1.0,
+                   otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#mu / MC Z#rightarrow#nu#bar{#nu}", "stack":None}],
+                   yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["mumu"])
 
     #alphaT ratios
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "R_alphaT", legend0 = (0.15, 0.7), legend1 = (0.5, 0.88), printPages = printPages, specs = [
