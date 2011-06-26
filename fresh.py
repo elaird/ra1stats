@@ -88,6 +88,31 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         terms.append("signalGaus") #defined in signalVariables()
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
+def mumuTerms(w, inputData) :
+    terms = []
+    wimport(w, r.RooRealVar("rhoMumuZ", "rhoMumuZ", 1.0, 1.0e-3, 3.0))
+    wimport(w, r.RooRealVar("oneMumu", "oneMumu", 1.0))
+    wimport(w, r.RooRealVar("sigmaMumuZ", "sigmaMumuZ", inputData.fixedParameters()["sigmaMumuZ"]))
+    wimport(w, r.RooGaussian("mumuGaus", "mumuGaus", w.var("oneMumu"), w.var("rhoMumuZ"), w.var("sigmaMumuZ")))
+    terms.append("mumuGaus")
+
+    rFinal = None
+    for i,nMumuValue,mcMumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
+                                                             inputData.observations()["nMumu"],
+                                                             inputData.mcExpectations()["mcMumu"],
+                                                             inputData.mcExpectations()["mcZinv"],
+                                                             inputData.constantMcRatioAfterHere(),
+                                                             ) :
+        if nMumuValue<0 : continue
+        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
+        wimport(w, r.RooRealVar("nMumu%d"%i, "nMumu%d"%i, nMumuValue))
+        wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, mcMumuValue/mcZinvValue if not rFinal else rFinal))
+        wimport(w, r.RooFormulaVar("mumuExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMumuZ"), w.var("rMumu%d"%i), w.function("zInv%d"%i))))
+        wimport(w, r.RooPoisson("mumuPois%d"%i, "mumuPois%d"%i, w.var("nMumu%d"%i), w.function("mumuExp%d"%i)))
+        terms.append("mumuPois%d"%i)
+    
+    w.factory("PROD::mumuTerms(%s)"%",".join(terms))
+
 def photTerms(w, inputData) :
     terms = []
     #wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 2.0))
@@ -173,7 +198,7 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, signalDict) :
+def setupLikelihood(w, inputData, REwk, RQcd, signalDict, includeHadTerms = True, includeMuonTerms = True, includePhotTerms = True, includeMumuTerms = False) :
     terms = []
     obs = []
     nuis = []
@@ -185,17 +210,22 @@ def setupLikelihood(w, inputData, REwk, RQcd, signalDict) :
 
     smOnly = not signalDict
     hadTerms(w, inputData, REwk, RQcd, smOnly)
-    terms.append("hadTerms")
+    if includeHadTerms : terms.append("hadTerms")
     multiBinObs.append("nHad")
     nuis += ["A_qcd","k_qcd"]
     if REwk : nuis += ["A_ewk","k_ewk"]
 
     photTerms(w, inputData)
     muonTerms(w, inputData, smOnly)
-    terms += ["photTerms", "muonTerms"]
-    obs += ["onePhot", "oneMuon"]
-    multiBinObs += ["nPhot", "nMuon"]
-    nuis += ["rhoPhotZ", "rhoMuonW"]
+    mumuTerms(w, inputData)
+
+    if includePhotTerms : terms.append("photTerms")
+    if includeMuonTerms : terms.append("muonTerms")
+    if includeMumuTerms : terms.append("mumuTerms")
+        
+    obs += ["onePhot", "oneMuon", "oneMumu"]
+    multiBinObs += ["nPhot", "nMuon", "nMumu"]
+    nuis += ["rhoPhotZ", "rhoMuonW", "rhoMumuZ"]
     multiBinNuis += ["fZinv"]
 
     w.factory("PROD::model(%s)"%",".join(terms))
@@ -429,17 +459,19 @@ def obs(w) :
     return w.set("obs")
 
 class foo(object) :
-    def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, signalExampleToStack = ("", {}), trace = False) :
-        for item in ["inputData", "REwk", "RQcd", "signal", "signalExampleToStack"] :
+    def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, signalExampleToStack = ("", {}), trace = False,
+                 hadTerms = True, muonTerms = True, photTerms = True, mumuTerms = False) :
+        for item in ["inputData", "REwk", "RQcd", "signal", "signalExampleToStack",
+                     "hadTerms", "muonTerms", "photTerms", "mumuTerms"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
         r.gROOT.SetBatch(True)
         r.RooRandom.randomGenerator().SetSeed(1)
 
-        self.note = plotting.note(REwk, RQcd)
         self.wspace = r.RooWorkspace("Workspace")
-        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signal)
+        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signal,
+                        includeHadTerms = self.hadTerms, includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
 
@@ -460,6 +492,16 @@ class foo(object) :
             
     def smOnly(self) :
         return not self.signal
+
+    def note(self) :
+        out = ""
+        if self.REwk : out += "REwk%s_"%self.REwk
+        out += "RQcd%s"%self.RQcd
+        if self.hadTerms : out+="_had"
+        if self.muonTerms : out+="_muon"
+        if self.photTerms : out+="_phot"
+        if self.mumuTerms : out+="_mumu"
+        return out
             
     def debug(self) :
         self.wspace.Print("v")
@@ -470,23 +512,23 @@ class foo(object) :
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False) :
         if method=="profileLikelihood" :
-            return plInterval(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
+            return plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
         elif method=="feldmanCousins" :
-            return fcExcl(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
+            return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
     def cls(self, method = "CLs", nToys = 300, makePlots = False) :
         return cls(self.data, self.modelConfig, self.wspace, self.smOnly(), method = method, nToys = nToys, makePlots = makePlots)
 
     def profile(self) :
-        profilePlots(self.data, self.modelConfig, self.note, self.smOnly())
+        profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
 
     def pValue(self, nToys = 200) :
-        pValue(self.wspace, self.data, nToys = nToys, note = self.note)
+        pValue(self.wspace, self.data, nToys = nToys, note = self.note())
 
     def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
-                             plusMinus = plusMinus, note = self.note, makePlots = makePlots)
+                             plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False) :
         plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
-                                 self.inputData, self.REwk, self.RQcd, self.smOnly(), self.signalExampleToStack, printPages = printPages)
+                                 self.inputData, self.REwk, self.RQcd, self.smOnly(), self.note(), self.signalExampleToStack, printPages = printPages)
