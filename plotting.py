@@ -327,7 +327,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
     for logY in [False, True] :
         thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")        
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
-                       obsKey = "nMumu", obsLabel = "mumuon data [%g/pb]"%inputData.lumi()["mumu"], logY = logY, printPages = printPages, otherVars = [
+                       obsKey = "nMumu", obsLabel = "mumu data [%g/pb]"%inputData.lumi()["mumu"], logY = logY, printPages = printPages, otherVars = [
             {"var":"mcMumu",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None, "errorBand":r.kGray},
             {"var":"mumuExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
             ])
@@ -358,19 +358,21 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["mumu"])
 
     #alphaT ratios
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "R_alphaT", legend0 = (0.15, 0.7), legend1 = (0.5, 0.88), printPages = printPages, specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "R_alphaT", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
         {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
         ], yLabel = "R_{#alpha_{T}}")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.5, 0.7), specs = [
-       #{"num":"nPhot", "numType":"data",     "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"nPhot / nHadBulk",            "color":r.kGray+2},
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
+        {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * MCttW/MCmu / nHadBulk", "color":r.kBlack},
+        {"num":"ttw",   "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML ttW / nHadBulk",             "color":r.kGreen},        
+        ], yLabel = "R_{#alpha_{T}}")
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
         {"num":"nPhot", "numType":"data",     "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * MCZ/MCph / nHadBulk", "color":r.kBlack},
         {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",          "color":r.kRed},
         ], yLabel = "R_{#alpha_{T}}")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.5, 0.7), specs = [
-       #{"num":"nMuon", "numType":"data",     "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"nMuon / nHadBulk",              "color":r.kGray+2},
-        {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * MCttW/MCmu / nHadBulk", "color":r.kBlack},
-        {"num":"ttw",   "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML ttW / nHadBulk",             "color":r.kGreen},        
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
+        {"num":"nMumu", "numType":"data",     "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * MCZ/MCmumu / nHadBulk", "color":r.kBlack},
+        {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",            "color":r.kPink},
         ], yLabel = "R_{#alpha_{T}}")
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
