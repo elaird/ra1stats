@@ -27,11 +27,11 @@ class data2011_3(data) :
             "mcTtw":   441.,
 
             "phot":    771.2,
-            "mcPhot":  771.2,
+            "mcGjets": 771.2,
             "mcZinv":  468.8,
 
             "mumu":    697.,
-            "mcMumu":  697.,
+            "mcZmumu": 697.,
             }
         self._htMeans =       (    297.51,      347.25,      415.57,     516.2 , 617.17, 717.72, 818.33, 919.08)
         self._observations = {
@@ -45,16 +45,20 @@ class data2011_3(data) :
         self._mcExpectations = {
             "mcMuon":         scaled((152.05,   57.80,   39.77,  12.93,   4.53,   2.63,   0.19, 0.06), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtw":          scaled((157.63,   59.71,   38.23,  14.09,   2.40,   2.26,   1.10, 0.31), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
-            "mcPhot":    excl(scaled((   480,     190,     183,     62,     22,      5,      4,  1.5), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
+            "mcGjets":   excl(scaled((   440,     190,     181,     62,     22,      5,      4,  1.5), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             "mcZinv":    excl(scaled((    90,      41,      51,     24,      4,      1,      1,    0), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
-            "mcMumu":    excl(scaled((    16,      10,      11,      8,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcMumu"]), isExcl),
+            "mcZmumu":   excl(scaled((    15,       9,      11,      7,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]), isExcl),
             }
         self._mcStatError = {
             "mcMuonErr":      scaled((  9.55,    5.62,    5.03,   2.95,   1.62,   1.31,   0.11, 0.06), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtwErr":       scaled(( 10.08,    5.97,    4.86,   3.10,   1.33,   1.31,   0.92, 0.14), self.lumi()["had"] /self.lumi()["mcTtw"]),
-            "mcPhotErr":      scaled((    30,      10,      10,      6,      4,      2,      1,  0.9), self.lumi()["phot"]/self.lumi()["mcPhot"]),
+            "mcGjetsErr":     scaled((    20,      10,      10,      6,      4,      2,      1,  0.9), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
-            "mcMumuErr":      scaled((     4,       3,       3,      3,      2,      1,      1,    1), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
+            "mcZmumuErr":     scaled((     4,       3,       3,      3,      2,      1,      1,    1), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
+            }
+        self._purities = {
+            "phot":                  (  0.92,    0.97,    0.99,   0.99,   0.99,   0.99,   0.99, 0.99),
+            "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),
             }
         self._fixedParameters = {
             "sigmaLumi":  0.06,

@@ -97,16 +97,17 @@ def mumuTerms(w, inputData) :
     terms.append("mumuGaus")
 
     rFinal = None
-    for i,nMumuValue,mcMumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
-                                                             inputData.observations()["nMumu"],
-                                                             inputData.mcExpectations()["mcMumu"],
-                                                             inputData.mcExpectations()["mcZinv"],
-                                                             inputData.constantMcRatioAfterHere(),
-                                                             ) :
+    for i,nMumuValue,purity,mcZmumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
+                                                                     inputData.observations()["nMumu"],
+                                                                     inputData.purities()["mumu"],
+                                                                     inputData.mcExpectations()["mcZmumu"],
+                                                                     inputData.mcExpectations()["mcZinv"],
+                                                                     inputData.constantMcRatioAfterHere(),
+                                                                     ) :
         if nMumuValue<0 : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
+        if stopHere : rFinal = sum(inputData.mcExpectations()["mcZmumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nMumu%d"%i, "nMumu%d"%i, nMumuValue))
-        wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, mcMumuValue/mcZinvValue if not rFinal else rFinal))
+        wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, (mcZumuValue/mcZinvValue if not rFinal else rFinal)/purity))
         wimport(w, r.RooFormulaVar("mumuExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMumuZ"), w.var("rMumu%d"%i), w.function("zInv%d"%i))))
         wimport(w, r.RooPoisson("mumuPois%d"%i, "mumuPois%d"%i, w.var("nMumu%d"%i), w.function("mumuExp%d"%i)))
         terms.append("mumuPois%d"%i)
@@ -115,7 +116,6 @@ def mumuTerms(w, inputData) :
 
 def photTerms(w, inputData) :
     terms = []
-    #wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 2.0))
     wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 3.0))
     wimport(w, r.RooRealVar("onePhot", "onePhot", 1.0))
     wimport(w, r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", inputData.fixedParameters()["sigmaPhotZ"]))
@@ -123,16 +123,17 @@ def photTerms(w, inputData) :
     terms.append("photGaus")
 
     rFinal = None
-    for i,nPhotValue,mcPhotValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
-                                                             inputData.observations()["nPhot"],
-                                                             inputData.mcExpectations()["mcPhot"],
-                                                             inputData.mcExpectations()["mcZinv"],
-                                                             inputData.constantMcRatioAfterHere(),
-                                                             ) :
+    for i,nPhotValue,purity,mcGjetValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
+                                                                    inputData.observations()["nPhot"],
+                                                                    inputData.purities()["phot"],
+                                                                    inputData.mcExpectations()["mcGjets"],
+                                                                    inputData.mcExpectations()["mcZinv"],
+                                                                    inputData.constantMcRatioAfterHere(),
+                                                                    ) :
         if nPhotValue<0 : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcPhot"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
+        if stopHere : rFinal = sum(inputData.mcExpectations()["mcGjets"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
-        wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, mcPhotValue/mcZinvValue if not rFinal else rFinal))
+        wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
         wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.function("zInv%d"%i))))
         wimport(w, r.RooPoisson("photPois%d"%i, "photPois%d"%i, w.var("nPhot%d"%i), w.function("photExp%d"%i)))
         terms.append("photPois%d"%i)

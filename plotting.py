@@ -37,7 +37,7 @@ def inputHisto(inputData, obsKey, note, extraName = "", yLabel = "", printPages 
     
 def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = None,
              color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1,
-             wspaceMemberFunc = None, extraName = "", printPages = False, lumiString = "") :
+             wspaceMemberFunc = None, purityKey = None, extraName = "", printPages = False, lumiString = "") :
     d = {}
     d["value"] = exampleHisto.Clone(varName+extraName)
     d["value"].Reset()
@@ -70,10 +70,11 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
                     d[item].SetBinContent(i+1, x)
         else :
             value = inputData.mcExpectations()[varName][i]
-            d["value"].SetBinContent(i+1, value)
+            purity = 1.0 if not purityKey else inputData.purities()[purityKey][i]
+            d["value"].SetBinContent(i+1, value/purity)
             key = varName+"Err"
             if key in inputData.mcStatError() :
-                d["value"].SetBinError(i+1, inputData.mcStatError()[key][i])
+                d["value"].SetBinError(i+1, inputData.mcStatError()[key][i]/purity)
         toPrint.append(value)
     if printPages : print varName.rjust(10),lumiString.rjust(10),pretty(toPrint)
     return d
@@ -84,17 +85,20 @@ def pretty(l) :
         out += "%6.2f"%item
         if i!=len(l)-1 : out += ", "
     return out+")"
-    
+
+def inDict(d, key, default) :
+    return d[key] if key in d else default
+
 def signalExampleHisto(exampleHisto = None, inputData = None, d = {}) :
     out = exampleHisto.Clone(exampleHisto.GetName()+d["desc"])
     out.Reset()
 
     out.SetLineColor(d["color"])
-    out.SetLineStyle(d["style"] if "style" in d else 1)
-    out.SetLineWidth(d["width"] if "width" in d else 1)
+    out.SetLineStyle(inDict(d, "style", 1))
+    out.SetLineWidth(inDict(d, "width", 1))
 
     out.SetMarkerColor(d["color"])
-    out.SetMarkerStyle(d["style"] if "style" in d else 1)
+    out.SetMarkerStyle(inDict(d, "style", 1))
 
     for i in range(len(inputData.htBinLowerEdges())) :
         box = d["box"]
@@ -147,21 +151,22 @@ def validationPlot(wspace = None, canvas = None, psFileName = None, inputData = 
     legEntries = []
     for d in otherVars :
         if "example" not in d :
-            histos = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = d["width"] if "width" in d else 1,
-                              wspaceMemberFunc = d["type"], printPages = (printPages and not logY), lumiString = obsLabel[obsLabel.find("["):])
+            histos = varHisto(inp, inputData, wspace, d["var"], d["color"], lineStyle = d["style"], lineWidth = inDict(d, "width", 1),
+                              wspaceMemberFunc = d["type"], purityKey = inDict(d, "purityKey", None),
+                              printPages = (printPages and not logY), lumiString = obsLabel[obsLabel.find("["):])
             hist = histos["value"]
         else :
             hist = signalExampleHisto(inp, inputData, d)
         if not hist.GetEntries() : continue
         stuff.append(hist)
-        legEntries.append( (hist, "%s %s"%(d["desc"], d["desc2"] if "desc2" in d else ""), "l") )
+        legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), "l") )
         if d["stack"] :
             if d["stack"] not in stacks :
                 stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
             stacks[d["stack"]].Add(hist)
         else :
             hist.Scale(scale)
-            stuff.append( drawOne(hist, goptions, d["errorBand"] if "errorBand" in d else False) )
+            stuff.append( drawOne(hist, goptions, inDict(d, "errorBand", False)) )
             for item in ["min", "max"] :
                 if item not in histos : continue
                 histos[item].Draw(goptions)
@@ -302,7 +307,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
     #muon control sample
     muonVars = [
         {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":"total"},
-        {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None, "errorBand":r.kGray}
+        {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray}
         ]
     if not smOnly :
         muonVars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "width":2, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
@@ -319,7 +324,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
         thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")        
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
                        obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%inputData.lumi()["phot"], logY = logY, printPages = printPages, otherVars = [
-            {"var":"mcPhot",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None, "errorBand":r.kGray},
+            {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
             {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
             ])
 
@@ -328,7 +333,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
         thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")        
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
                        obsKey = "nMumu", obsLabel = "mumu data [%g/pb]"%inputData.lumi()["mumu"], logY = logY, printPages = printPages, otherVars = [
-            {"var":"mcMumu",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC",             "stack":None, "errorBand":r.kGray},
+            {"var":"mcZmumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
             {"var":"mumuExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
             ])
 
@@ -350,29 +355,29 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["muon"])
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "photon translation factor (from MC)",
                    legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 4.0,
-                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC phot / MC Z#rightarrow#nu#bar{#nu}", "stack":None}],
+                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC #gamma / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["phot"])
     validationPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon-muon translation factor (from MC)",
                    legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 1.0,
-                   otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#mu / MC Z#rightarrow#nu#bar{#nu}", "stack":None}],
+                   otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["mumu"])
 
     #alphaT ratios
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "R_alphaT", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
         {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
         ], yLabel = "R_{#alpha_{T}}")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
-        {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * MCttW/MCmu / nHadBulk", "color":r.kBlack},
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
+        {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack},
         {"num":"ttw",   "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML ttW / nHadBulk",             "color":r.kGreen},        
         ], yLabel = "R_{#alpha_{T}}")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
-        {"num":"nPhot", "numType":"data",     "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * MCZ/MCph / nHadBulk", "color":r.kBlack},
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "photon to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
+        {"num":"nPhot", "numType":"data",     "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk", "color":r.kBlack},
         {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",          "color":r.kRed},
         ], yLabel = "R_{#alpha_{T}}")
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
-        {"num":"nMumu", "numType":"data",     "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * MCZ/MCmumu / nHadBulk", "color":r.kBlack},
-        {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",            "color":r.kPink},
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
+        {"num":"nMumu", "numType":"data",     "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk", "color":r.kBlack},
+        {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",            "color":r.kRed},
         ], yLabel = "R_{#alpha_{T}}")
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
