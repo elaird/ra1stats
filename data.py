@@ -89,6 +89,7 @@ class data(object) :
                 getattr(self, "_%s"%item)[key] = tuple(map(lambda x:math.sqrt(x), value))
 
         assert False,"Implement purity merging."
+        #print "ERROR: purity merging is not implemented.  Results are nonsense."
         return
 
     #define functions called by outside world
