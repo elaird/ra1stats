@@ -16,7 +16,7 @@ class data2011_3(data) :
         #self._constantMcRatioAfterHere = (    0,     0,     1)
 
         #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
+        #self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0)
 
         self._lumi = {
             "had":     602.,
