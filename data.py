@@ -9,7 +9,8 @@ def excl(counts, isExclusive) :
         out.append(count if isExcl else (count-counts[i+1]))
     return tuple(out)
 
-vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "observations", "mcExpectations", "mcStatError", "fixedParameters"]
+vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans",
+        "observations", "purities", "mcExpectations", "mcStatError", "fixedParameters"]
 
 class data(object) :
     def __init__(self) :
@@ -86,7 +87,8 @@ class data(object) :
                     d[key][self._mergeBins[index]] += value*value
             for key,value in d.iteritems() :
                 getattr(self, "_%s"%item)[key] = tuple(map(lambda x:math.sqrt(x), value))
-            
+
+        assert False,"Implement purity merging."
         return
 
     #define functions called by outside world
