@@ -69,8 +69,8 @@ go(label = "photons",
    yLabel = "Z#rightarrow #nu#bar{#nu} + jets / #gamma + jets",
    title = "Spring '11 MadGraph MC#semicolon RA1 selection",
    #minMax = (0.0, 1.5),
-   mcPhot = data.mcExpectations()["mcPhot"],
-   mcPhotErr = data.mcStatError()["mcPhotErr"],
+   mcPhot = data.mcExpectations()["mcGjets"],
+   mcPhotErr = data.mcStatError()["mcGjetsErr"],
    mcZinv = data.mcExpectations()["mcZinv"],
    mcZinvErr = data.mcStatError()["mcZinvErr"],
    sysFactor = data.fixedParameters()["sigmaPhotZ"],
@@ -78,7 +78,7 @@ go(label = "photons",
    )
 
 go(label = "muons",
-   yLabel = "W#rightarrow #mu#nu + jets / W + jets (had. selection)",
+   yLabel = "t#bar{t} + W (#mu selection) / t#bar{t} + W (had. selection)",
    title = "Spring '11 MadGraph MC#semicolon RA1 selection",
    #minMax = (0.0, 1.5),
    mcPhot = data.mcExpectations()["mcMuon"],
@@ -87,4 +87,16 @@ go(label = "muons",
    mcZinvErr = data.mcStatError()["mcTtwErr"],
    sysFactor = data.fixedParameters()["sigmaMuonW"],   
    scale = data.lumi()["muon"]/data.lumi()["had"]
+   )
+
+go(label = "mumu",
+   yLabel = "Z#rightarrow#nu#bar{#nu} / Z#rightarrow#mu#bar{#mu}",
+   title = "Spring '11 MadGraph MC#semicolon RA1 selection",
+   minMax = (0.0, 15),
+   mcPhot = data.mcExpectations()["mcZmumu"],
+   mcPhotErr = data.mcStatError()["mcZmumuErr"],
+   mcZinv = data.mcExpectations()["mcZinv"],
+   mcZinvErr = data.mcStatError()["mcZinvErr"],
+   sysFactor = data.fixedParameters()["sigmaMumuZ"],   
+   scale = data.lumi()["mumu"]/data.lumi()["had"]
    )
