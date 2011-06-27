@@ -39,7 +39,7 @@ class data2011_3(data) :
             "nHad":           (       458,         189,         109,         37,     18,      2,      2,      1),
             "nPhot":     excl((       630,         227,         233,         81,     33,     15,      6,      3), isExcl),
             "nMuon":          (       146,          53,          39,         17,      7,      1,      0,      0),
-            "nMumu":     excl((        22,           5,          11,          0,      0,      0,      0,      0), isExcl),            
+            "nMumu":     excl((        22,           5,          11,          6,      3,      0,      0,      0), isExcl),            
             }
 
         self._mcExpectations = {
@@ -47,14 +47,14 @@ class data2011_3(data) :
             "mcTtw":          scaled((157.63,   59.71,   38.23,  14.09,   2.40,   2.26,   1.10, 0.31), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
             "mcPhot":    excl(scaled((   480,     190,     183,     62,     22,      5,      4,  1.5), self.lumi()["phot"]/self.lumi()["mcPhot"]), isExcl),
             "mcZinv":    excl(scaled((    90,      41,      51,     24,      4,      1,      1,    0), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
-            "mcMumu":    excl(scaled((    16,      10,      11,      0,      0,      0,      0,    0), self.lumi()["mumu"] /self.lumi()["mcMumu"]), isExcl),
+            "mcMumu":    excl(scaled((    16,      10,      11,      8,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcMumu"]), isExcl),
             }
         self._mcStatError = {
             "mcMuonErr":      scaled((  9.55,    5.62,    5.03,   2.95,   1.62,   1.31,   0.11, 0.06), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtwErr":       scaled(( 10.08,    5.97,    4.86,   3.10,   1.33,   1.31,   0.92, 0.14), self.lumi()["had"] /self.lumi()["mcTtw"]),
             "mcPhotErr":      scaled((    30,      10,      10,      6,      4,      2,      1,  0.9), self.lumi()["phot"]/self.lumi()["mcPhot"]),
             "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
-            "mcMumuErr":      scaled((     4,       3,       3,      0,      0,      0,      0,    0), self.lumi()["mumu"] /self.lumi()["mcMumu"]),
+            "mcMumuErr":      scaled((     4,       3,       3,      3,      2,      1,      1,    1), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
             }
         self._fixedParameters = {
             "sigmaLumi":  0.06,
