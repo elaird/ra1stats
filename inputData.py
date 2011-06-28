@@ -11,6 +11,7 @@ class data2011_3(data) :
 
         self._mergeBins = None
         self._constantMcRatioAfterHere = (    1,     0,     0,     0,     0,     0,     0,     0)
+        self._hadControlMax            = (    0,     0,     1,     0,     0,     0,     0,     0)
         
         #self._mergeBins =                (    0,     1,     2,     2,     2,     2,     2,     2)
         #self._constantMcRatioAfterHere = (    0,     0,     1)
@@ -22,8 +23,6 @@ class data2011_3(data) :
             "had":     769.,
             "hadBulk": 769.,
 
-            "had53":   769.,
-            
             "muon":    769.,
             "mcMuon":  769.,
             "mcTtw":   769.,
@@ -44,6 +43,7 @@ class data2011_3(data) :
             "nMuon":          (       262,       100,        78,        31,        12,         4,         0,         0),
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),            
             }
+        self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad"])])
         self._mcExpectations = {
             "mcMuon":         scaled((252.07,  104.36,   67.61,  24.04,   9.39,   4.37,   0.32, 0.22), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtw":          scaled((274.87,  104.11,   66.67,  24.58,   4.18,   3.94,   1.92, 0.54), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
