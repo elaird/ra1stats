@@ -256,9 +256,9 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
     canvas.Print(psFileName)
     return stuff
 
-def akDesc(wspace, var, errors = True) :
+def akDesc(wspace, var, errors = True, var2 = "") :
     varA = wspace.var("A_%s"%var)
-    vark = wspace.var("k_%s"%var)
+    vark = wspace.var("k_%s"%(var if not var2 else var2))
     out = ""
     out += "A = %4.2e%s; "%(varA.getVal(), " #pm %4.2e"%varA.getError() if errors else "")
     out += "k = %4.2e%s"  %(vark.getVal(), " #pm %4.2e"%vark.getError() if errors else "")
@@ -300,9 +300,20 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
         hadVars += [{"example":signalExampleToStack[1], "box":"had", "desc":signalExampleToStack[0], "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
 
     for logY in [False, True] :
-        thisNote = "Hadronic Sample%s"%(" (logY)" if logY else "")
+        thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
                        obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY, printPages = printPages)
+
+    #had control sample
+    for logY in [False, True] :
+        thisNote = "Hadronic Control Sample%s"%(" (logY)" if logY else "")        
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
+                       obsKey = "nHadControl", obsLabel = "hadronic control data (0.53 #leq #alpha_{T} #leq 0.55) [%g/pb]"%inputData.lumi()["had"],
+                       logY = logY, printPages = printPages, otherVars = [
+            {"var":"hadControlB", "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+            {"var":"qcdControl",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcdControl", errors = True, var2 = "qcd"),
+             "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
+            ])
 
     #muon control sample
     muonVars = [
