@@ -220,13 +220,24 @@ def setupLikelihood(w, inputData, REwk, RQcd, signalDict, includeHadTerms = True
     muonTerms(w, inputData, smOnly)
     mumuTerms(w, inputData)
 
-    if includePhotTerms : terms.append("photTerms")
-    if includeMuonTerms : terms.append("muonTerms")
-    if includeMumuTerms : terms.append("mumuTerms")
+    if includePhotTerms :
+        terms.append("photTerms")
+        obs.append("onePhot")
+        multiBinObs.append("nPhot")
+        nuis.append("rhoPhotZ")
         
-    obs += ["onePhot", "oneMuon", "oneMumu"]
-    multiBinObs += ["nPhot", "nMuon", "nMumu"]
-    nuis += ["rhoPhotZ", "rhoMuonW", "rhoMumuZ"]
+    if includeMuonTerms :
+        terms.append("muonTerms")
+        obs.append("oneMuon")
+        multiBinObs.append("nMuon")
+        nuis.append("rhoMuonW")
+        
+    if includeMumuTerms :
+        terms.append("mumuTerms")
+        obs.append("oneMumu")
+        multiBinObs.append("nMumu")
+        nuis.append("rhoMumuZ")
+        
     multiBinNuis += ["fZinv"]
 
     w.factory("PROD::model(%s)"%",".join(terms))
