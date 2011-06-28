@@ -36,7 +36,9 @@ f = fresh.foo(inputData = data2011(),
               #signalExampleToStack = ("m_{0} = 500 GeV;  m_{1/2} = 440 GeV", filips_point2),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
               #trace = True
+              #hadTerms = False,
               #photTerms = False,
+              #muonTerms = False,
               #mumuTerms = True,
               )
 
