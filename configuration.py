@@ -12,10 +12,11 @@ def switches() :
     d["minSignalXsForConsideration"] = 1.0e-6
     d["maxSignalXsForConsideration"] = None
 
-    d["hadTerms" ] = True
-    d["muonTerms"] = True
-    d["photTerms"] = True
-    d["mumuTerms"] = False
+    d["hadTerms"]        = True
+    d["hadControlTerms"] = True
+    d["muonTerms"]       = True
+    d["photTerms"]       = True
+    d["mumuTerms"]       = False
     
     d["REwk"] = ["", "FallingExp", "Constant"][2]
     d["RQcd"] = ["FallingExp", "Zero"][1]

@@ -59,7 +59,8 @@ def onePoint(switches = None, data = None, point = None) :
 
     if "CLs" in switches["method"] :
         f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], signal = signal,
-                      hadTerms = switches["hadTerms"], muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
+                      hadTerms = switches["hadTerms"], hadControlTerms = switches["hadControlTerms"],
+                      muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
         results = f.cls(method = switches["method"], nToys = switches["nToys"])
         for key,value in results.iteritems() : out[key] = (value, description(key))
         for cl in switches["CL"] :
