@@ -16,7 +16,7 @@ def q0q1(inputData, factor, A_ewk_ini) :
     o = inputData.observations()
     return thing(0)/thing(1)
 
-def initialkQcd(inputData, factor, A_ewk_ini) :
+def initialkQcdOld(inputData, factor, A_ewk_ini) :
     obs = inputData.observations()
     htMeans = inputData.htMeans()    
     out = q0q1(inputData, factor, A_ewk_ini)
@@ -25,11 +25,26 @@ def initialkQcd(inputData, factor, A_ewk_ini) :
     out /= (htMeans[1] - htMeans[0])
     return out
 
+def initialkQcd(inputData, factor, A_ewk_ini) :
+    obs = inputData.observations()
+    out = float(obs["nHadControl"][0]*obs["nHadBulk"][1])/float(obs["nHadControl"][1]*obs["nHadBulk"][0])
+    out = math.log(out)
+    htMeans = inputData.htMeans()    
+    out /= (htMeans[1] - htMeans[0])
+    return out
+
 def initialAQcd(inputData, factor, A_ewk_ini) :
     obs = inputData.observations()
     htMeans = inputData.htMeans()
     out = math.exp( initialkQcd(inputData, factor, A_ewk_ini)*htMeans[0] )
     out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
+    return out
+                     
+def initialAQcdControl(inputData) :
+    obs = inputData.observations()
+    htMeans = inputData.htMeans()
+    out = math.exp( initialkQcd(inputData, 1.0, 0.0)*htMeans[0] )
+    out *= (obs["nHadControl"][0]/float(obs["nHadBulk"][0]))
     return out
                      
 def hadTerms(w, inputData, REwk, RQcd, smOnly) :
@@ -87,6 +102,27 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
     if not smOnly :
         terms.append("signalGaus") #defined in signalVariables()
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
+
+def hadControlTerms(w, inputData, REwk, RQcd, smOnly) :
+    o = inputData.observations()
+    htMeans = inputData.htMeans()
+    terms = []
+
+    assert (REwk and RQcd=="FallingExp")
+    wimport(w, r.RooRealVar("A_qcdControl", "A_qcdControl", initialAQcdControl(inputData), 0.0, 1.0))
+
+    for i,htMeanValue,stopHere,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, inputData.hadControlMax(), o["nHadBulk"], o["nHadControl"]) :
+        wimport(w, r.RooFormulaVar("qcdControl%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl"), w.var("k_qcd"), w.var("htMean%d"%i))))
+        wimport(w, r.RooFormulaVar("hadControlB%d"%i, "(@0)", r.RooArgList(w.function("qcdControl%d"%i))))
+        wimport(w, r.RooRealVar("nHadControl%d"%i, "nHadControl%d"%i, nControlValue))
+        if smOnly :
+            wimport(w, r.RooPoisson("hadControlPois%d"%i, "hadControlPois%d"%i, w.var("nHadControl%d"%i), w.function("hadControlB%d"%i)))
+        else :
+            wimport(w, r.RooPoisson("hadControlPois%d"%i, "hadControlPois%d"%i, w.var("nHadControl%d"%i), w.function("hadControlB%d"%i)))            
+        terms.append("hadControlPois%d"%i)
+        if stopHere : break
+    
+    w.factory("PROD::hadControlTerms(%s)"%",".join(terms))
 
 def mumuTerms(w, inputData) :
     terms = []
@@ -199,7 +235,8 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, signalDict, includeHadTerms = True, includeMuonTerms = True, includePhotTerms = True, includeMumuTerms = False) :
+def setupLikelihood(w, inputData, REwk, RQcd, signalDict, includeHadTerms = True, includeHadControlTerms = True,
+                    includeMuonTerms = True, includePhotTerms = True, includeMumuTerms = False) :
     terms = []
     obs = []
     nuis = []
@@ -210,15 +247,22 @@ def setupLikelihood(w, inputData, REwk, RQcd, signalDict, includeHadTerms = True
         signalVariables(w, inputData, signalDict)
 
     smOnly = not signalDict
-    hadTerms(w, inputData, REwk, RQcd, smOnly)
-    if includeHadTerms : terms.append("hadTerms")
-    multiBinObs.append("nHad")
     nuis += ["A_qcd","k_qcd"]
     if REwk : nuis += ["A_ewk","k_ewk"]
 
+    hadTerms(w, inputData, REwk, RQcd, smOnly)
+    hadControlTerms(w, inputData, REwk, RQcd, smOnly)
     photTerms(w, inputData)
     muonTerms(w, inputData, smOnly)
     mumuTerms(w, inputData)
+
+    if includeHadTerms :
+        terms.append("hadTerms")
+        multiBinObs.append("nHad")
+
+    if includeHadControlTerms :
+        terms.append("hadControlTerms")
+        multiBinObs.append("nHadControl")
 
     if includePhotTerms :
         terms.append("photTerms")
@@ -472,9 +516,9 @@ def obs(w) :
 
 class foo(object) :
     def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, signalExampleToStack = ("", {}), trace = False,
-                 hadTerms = True, muonTerms = True, photTerms = True, mumuTerms = False) :
+                 hadTerms = True, hadControlTerms = True, muonTerms = True, photTerms = True, mumuTerms = False) :
         for item in ["inputData", "REwk", "RQcd", "signal", "signalExampleToStack",
-                     "hadTerms", "muonTerms", "photTerms", "mumuTerms"] :
+                     "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -483,7 +527,8 @@ class foo(object) :
 
         self.wspace = r.RooWorkspace("Workspace")
         setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signal,
-                        includeHadTerms = self.hadTerms, includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
+                        includeHadTerms = self.hadTerms, includeHadControlTerms = self.hadControlTerms,
+                        includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
 
