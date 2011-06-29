@@ -555,6 +555,7 @@ class foo(object) :
         if self.REwk : out += "REwk%s_"%self.REwk
         out += "RQcd%s"%self.RQcd
         if self.hadTerms : out+="_had"
+        if self.hadControlTerms : out+="_hadControl"
         if self.muonTerms : out+="_muon"
         if self.photTerms : out+="_phot"
         if self.mumuTerms : out+="_mumu"
