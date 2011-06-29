@@ -374,9 +374,13 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
                    yLabel = "", scale = inputData.lumi()["had"]/inputData.lumi()["mumu"])
 
     #alphaT ratios
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic signal", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
         {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
+        ], yLabel = "R_{#alpha_{T}}")
+    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic control", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
+        {"num":"nHadControl",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHadControl / nHadBulk",    "color":r.kBlack},
+        {"num":"hadControlB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
         ], yLabel = "R_{#alpha_{T}}")
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
         {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack},
