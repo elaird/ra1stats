@@ -7,6 +7,7 @@ try ProfileLikelihoodTestStatistic.SetOneSided()
 
 physics
 -------
+improve mc ratio
 look at g(l) for f = 1
 update muon file
 repair nlo
@@ -15,7 +16,6 @@ systematics on signal eff.
 mc stats as systematic
 consider pdfUncertainty for LO
 consider lognormal vs. gaussian
-ability to use one exponent for both EWK and QCD
 CLs geometric plot
 
 checks
