@@ -100,3 +100,15 @@ go(label = "mumu",
    sysFactor = data.fixedParameters()["sigmaMumuZ"],   
    scale = data.lumi()["mumu"]/data.lumi()["had"]
    )
+
+go(label = "photons_to_muons",
+   yLabel = "MC muon selected / MC photon selected",
+   title = "Spring '11 MadGraph MC#semicolon RA1 selection#semicolon Njets=2",
+   minMax = (0.0, 2.0),
+   mcPhot = data.mcExpectations()["mcPhot2Jet"],
+   mcPhotErr = data.mcStatError()["mcPhot2JetErr"],
+   mcZinv = data.mcExpectations()["mcMuon2Jet"],
+   mcZinvErr = data.mcStatError()["mcMuon2JetErr"],
+   sysFactor = data.fixedParameters()["sigmaPhotZ"],
+   scale = data.lumi()["muon"]/data.lumi()["phot"]
+   )
