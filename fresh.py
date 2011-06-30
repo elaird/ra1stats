@@ -523,6 +523,17 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
+def note(REwk = None, RQcd = None, hadTerms = None, hadControlTerms = None, muonTerms = None, photTerms = None, mumuTerms = None) :
+    out = ""
+    if REwk : out += "REwk%s_"%REwk
+    out += "RQcd%s"%RQcd
+    if hadTerms :        out += "_had"
+    if hadControlTerms : out += "_hadControl"
+    if muonTerms :       out += "_muon"
+    if photTerms :       out += "_phot"
+    if mumuTerms :       out += "_mumu"
+    return out
+
 class foo(object) :
     def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, signalExampleToStack = ("", {}), trace = False,
                  hadTerms = True, hadControlTerms = True, muonTerms = True, photTerms = True, mumuTerms = False) :
@@ -560,16 +571,11 @@ class foo(object) :
         return not self.signal
 
     def note(self) :
-        out = ""
-        if self.REwk : out += "REwk%s_"%self.REwk
-        out += "RQcd%s"%self.RQcd
-        if self.hadTerms : out+="_had"
-        if self.hadControlTerms : out+="_hadControl"
-        if self.muonTerms : out+="_muon"
-        if self.photTerms : out+="_phot"
-        if self.mumuTerms : out+="_mumu"
-        return out
-            
+        d = {}
+        for item in ["REwk", "RQcd", "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
+            d[item] = getattr(self, item)
+        return note(**d)
+    
     def debug(self) :
         self.wspace.Print("v")
         plotting.writeGraphVizTree(self.wspace)
