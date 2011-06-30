@@ -59,11 +59,12 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
     toPrint = []
     for i in range(len(inputData.htBinLowerEdges())) :
         if wspaceMemberFunc :
-            var = getattr(wspace, wspaceMemberFunc)("%s%d"%(varName,i))
-            if not var : continue
-            value = var.getVal()
+            var  = wspace.var("%s%d"%(varName, i))
+            func = wspace.function("%s%d"%(varName, i))
+            if (not var) and (not func) : continue
+            value = (var if var else func).getVal()
             d["value"].SetBinContent(i+1, value)
-            if wspaceMemberFunc=="var" :
+            if var :
                 d["value"].SetBinError(i+1, var.getError())
                 for item in ["min", "max"] :
                     x = getattr(var, "get%s"%item.capitalize())()

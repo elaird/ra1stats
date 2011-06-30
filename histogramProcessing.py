@@ -172,7 +172,7 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
 def mergedFile() :
     s = conf.switches()
     d = {}
-    for item in ["REwk", "RQcd", "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
+    for item in ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
         d[item] = s[item]
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], fresh.note(**d), ".root")
 

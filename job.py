@@ -58,7 +58,7 @@ def onePoint(switches = None, data = None, point = None) :
     out = stuffVars(binsMerged, signal)
 
     if "CLs" in switches["method"] :
-        f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], signal = signal,
+        f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
                       hadTerms = switches["hadTerms"], hadControlTerms = switches["hadControlTerms"],
                       muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
         results = f.cls(method = switches["method"], nToys = switches["nToys"])
@@ -69,7 +69,7 @@ def onePoint(switches = None, data = None, point = None) :
     else :
         for cl in switches["CL"] :
             cl2 = 100*cl
-            f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], signal = signal,
+            f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
                           hadTerms = switches["hadTerms"], hadControlTerms = switches["hadControlTerms"],
                           muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
 
