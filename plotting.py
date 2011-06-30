@@ -468,7 +468,7 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") 
     line.SetLineWidth(2)
     for i,key in enumerate(sorted(q.keys())) :
         line.SetLineColor(2+i)
-        line2 = line.DrawLine(q[key], h.GetMinimum(), q[key], h.GetMaximum())
+        line2 = line.DrawLine(q[key], hist.GetMinimum(), q[key], hist.GetMaximum())
         legend.AddEntry(line2, key, "l")
 
     legend.Draw()
