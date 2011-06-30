@@ -202,13 +202,18 @@ def legSpec(goptions) :
     if "hist" in goptions : out += "l"
     return out
 
+def histoMax(h, factor = 1.1) :
+    i = h.GetMaximumBin()
+    return factor*(h.GetBinContent(i)+h.GetBinError(i))
+
 def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
-              customMax = False, maximum = None, goptions = "p", printPages = False) :
+              customMax = False, maximum = None, goptions = "p", printPages = False, reverseLegend = False) :
     stuff = []
     leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
     leg.SetBorderSize(0)
     leg.SetFillStyle(0)
 
+    legEntries = []
     histos = []
     for spec in specs :
         extraName = spec["num"]+"_".join(spec["dens"])
@@ -229,10 +234,10 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
         num.SetStats(False)
         num.SetLineColor(spec["color"])
         num.SetMarkerColor(spec["color"])
-        leg.AddEntry(num, spec["desc"], legSpec(goptions))
+        legEntries.append( (num, spec["desc"], legSpec(goptions)) )
         histos.append(num)
 
-    m = 1.1*max(map(lambda x:x.GetMaximum(), histos))
+    m = max(map(histoMax, histos))
     for i,h in enumerate(histos) :
         if not i :
             h.Draw(goptions)
@@ -242,6 +247,10 @@ def ratioPlot(wspace = None, canvas = None, psFileName = None, inputData = None,
             if maximum :  h.SetMaximum(maximum)
         else :
             h.Draw("%ssame"%goptions)
+
+
+    for item in reversed(legEntries) if reverseLegend else legEntries :
+        leg.AddEntry(*item)
 
     leg.Draw()
     stuff.append(leg)
@@ -307,10 +316,12 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
     #had control sample
     for logY in [False, True] :
         thisNote = "Hadronic Control Sample%s"%(" (logY)" if logY else "")        
-        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
+        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72),
                        obsKey = "nHadControl", obsLabel = "hadronic control data (0.53 #leq #alpha_{T} #leq 0.55) [%g/pb]"%inputData.lumi()["had"],
                        logY = logY, printPages = printPages, otherVars = [
             {"var":"hadControlB", "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+            {"var":"ewkControl",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewkControl", errors = True),
+             "color":r.kCyan,    "style":2, "width":2, "stack":"background"},
             {"var":"qcdControl",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcdControl", errors = True, var2 = "qcd"),
              "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
             ])
@@ -375,13 +386,17 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
 
     #alphaT ratios
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic signal", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
-        {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
+        {"num":"qcd",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
+        {"num":"ewk",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
-        ], yLabel = "R_{#alpha_{T}}")
+        {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
+        ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic control", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
-        {"num":"nHadControl",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHadControl / nHadBulk",    "color":r.kBlack},
+        {"num":"qcdControl",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
+        {"num":"ewkControl",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
         {"num":"hadControlB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
-        ], yLabel = "R_{#alpha_{T}}")
+        {"num":"nHadControl",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHadControl / nHadBulk",    "color":r.kBlack},
+        ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
         {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack},
         {"num":"ttw",   "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML ttW / nHadBulk",             "color":r.kGreen},        
@@ -394,9 +409,41 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
         {"num":"nMumu", "numType":"data",     "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk", "color":r.kBlack},
         {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",            "color":r.kRed},
         ], yLabel = "R_{#alpha_{T}}")
+
+    printPars(wspace, canvas, psFileName)
     canvas.Print(psFileName+"]")
     utils.ps2pdf(psFileName)
     return out
+
+def printPars(wspace, canvas, psFileName) :
+    def printText(x, y, s) :
+        #print s
+        text.DrawText(x, y, s)
+        y -= slope
+        return y
+        
+    text = r.TText()
+    text.SetNDC()
+    text.SetTextFont(102)
+    text.SetTextSize(0.45*text.GetTextSize())
+    x = 0.1
+    y = 0.9
+    slope = 0.03
+
+    canvas.Clear()
+    y = printText(x, y, "%15s:    %5s   +/-   %5s       [  %5s   -   %5s  ]"%("par name", "value", "error", "min", "max"))
+    y = printText(x, y, "-"*69)
+    vars = wspace.allVars()
+    it = vars.createIterator()    
+    while it.Next() :
+        if it.getMax()==r.RooNumber.infinity() : continue
+        if it.getMin()==-r.RooNumber.infinity() : continue
+        if not it.hasError() : continue
+        s = "%15s:  %5.3e +/- %5.3e     [%5.3e - %5.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
+        y = printText(x, y, s)
+
+    canvas.Print(psFileName)
+    return
 
 def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
     ps = "limits_%s.ps"%note
