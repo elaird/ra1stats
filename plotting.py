@@ -64,6 +64,7 @@ def varHisto(exampleHisto = None, inputData = None, wspace = None, varName = Non
             value = var.getVal()
             d["value"].SetBinContent(i+1, value)
             if wspaceMemberFunc=="var" :
+                d["value"].SetBinError(i+1, var.getError())
                 for item in ["min", "max"] :
                     x = getattr(var, "get%s"%item.capitalize())()
                     if abs(x)==1.0e30 : continue
@@ -431,7 +432,7 @@ def printPars(wspace, canvas, psFileName) :
     slope = 0.03
 
     canvas.Clear()
-    y = printText(x, y, "%15s:    %5s   +/-   %5s       [  %5s   -   %5s  ]"%("par name", "value", "error", "min", "max"))
+    y = printText(x, y, "%15s:    %5s   +/-   %5s       [ %5s    -  %5s   ]"%("par name", "value", "error", "min", "max"))
     y = printText(x, y, "-"*69)
     vars = wspace.allVars()
     it = vars.createIterator()    
