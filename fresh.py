@@ -424,9 +424,11 @@ def limits(wspace, snapName, modelConfig, smOnly, cl, datasets, makePlots = Fals
     return sorted(out)
 
 def quantiles(limits, plusMinus, makePlots = False) :
-    def histoFromList(l, name, title, bins) :
+    def histoFromList(l, name, title, bins, cutZero = False) :
         h = r.TH1D(name, title, *bins)
-        for item in l : h.Fill(item)
+        for item in l :
+            if cutZero and (not item) : continue
+            h.Fill(item)
         return h
     
     def probList(plusMinus) :
@@ -449,7 +451,7 @@ def quantiles(limits, plusMinus, makePlots = False) :
     probSum = array.array('d', probs)
     q = array.array('d', [0.0]*len(probSum))
 
-    h = histoFromList(limits, name = "upperLimit", title = ";upper limit on XS factor;toys / bin", bins = (50, 1, -1)) #enable auto-range
+    h = histoFromList(limits, name = "upperLimit", title = ";upper limit on XS factor;toys / bin", bins = (50, 1, -1), cutZero = True) #enable auto-range
     h.GetQuantiles(len(probSum), q, probSum)
     return dict(zip(names, q)),h
     
@@ -474,12 +476,13 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 
     #fit toys
     l = limits(wspace, snapName, modelConfig, smOnly, cl, toys)
-    q,hist = quantiles(l, plusMinus, makePlots)    
+    q,hist = quantiles(l, plusMinus, makePlots)
+    nSuccesses = hist.GetEntries()
 
     obsLimit = limits(wspace, snapName, modelConfig, smOnly, cl, [dataset])[0]
 
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
-    return q
+    return q,nSuccesses
 
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
