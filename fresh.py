@@ -109,18 +109,22 @@ def hadControlTerms(w, inputData, REwk, RQcd, smOnly) :
     terms = []
 
     assert (REwk and RQcd=="FallingExp")
-    wimport(w, r.RooRealVar("A_qcdControl", "A_qcdControl", initialAQcdControl(inputData), 0.0, 1.0))
+    wimport(w, r.RooRealVar("A_qcdControl", "A_qcdControl", initialAQcdControl(inputData), 0.0, 100.0))
+    wimport(w, r.RooRealVar("A_ewkControl", "A_ewkControl", 10.0e-6, 0.0, 1.0))
+    wimport(w, r.RooRealVar("k_ewkControl", "k_ewkControl", 0.0))
 
-    for i,htMeanValue,stopHere,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, inputData.hadControlMax(), o["nHadBulk"], o["nHadControl"]) :
-        wimport(w, r.RooFormulaVar("qcdControl%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl"), w.var("k_qcd"), w.var("htMean%d"%i))))
-        wimport(w, r.RooFormulaVar("hadControlB%d"%i, "(@0)", r.RooArgList(w.function("qcdControl%d"%i))))
+    for i,htMeanValue,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHadControl"]) :
+        wimport(w, r.RooFormulaVar("qcdControl%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))",
+                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl"), w.var("k_qcd"),        w.var("htMean%d"%i))))
+        wimport(w, r.RooFormulaVar("ewkControl%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))",
+                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewkControl"), w.var("k_ewkControl"), w.var("htMean%d"%i))))
+        wimport(w, r.RooFormulaVar("hadControlB%d"%i, "(@0)+(@1)", r.RooArgList(w.function("ewkControl%d"%i), w.function("qcdControl%d"%i))))
         wimport(w, r.RooRealVar("nHadControl%d"%i, "nHadControl%d"%i, nControlValue))
         if smOnly :
             wimport(w, r.RooPoisson("hadControlPois%d"%i, "hadControlPois%d"%i, w.var("nHadControl%d"%i), w.function("hadControlB%d"%i)))
         else :
             wimport(w, r.RooPoisson("hadControlPois%d"%i, "hadControlPois%d"%i, w.var("nHadControl%d"%i), w.function("hadControlB%d"%i)))            
         terms.append("hadControlPois%d"%i)
-        if stopHere : break
     
     w.factory("PROD::hadControlTerms(%s)"%",".join(terms))
 
