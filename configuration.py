@@ -63,18 +63,15 @@ def checkAndAdjust(d) :
         d["fiftyGeVStepsOnly"] = False
     return
 
-def mergedFile(outputDir, switches) :
+def mergedFileStem(outputDir, switches) :
     out  = "%s/"%outputDir
     out += "_".join([switches["method"],
-                     "REwk%s"%switches["REwk"],
-                     "RQcd%s"%switches["RQcd"],
                      switches["signalModel"],
                      "nlo" if switches["nlo"] else "lo",
                      ])
     for item in ["computeExpectedLimit"] :
         if switches[item] : out += "_%s"%item
     if switches["dataYear"]==2010 : out +="_2010"
-    out += ".root"
     return out
 
 def stringsNoArgs() :
@@ -83,7 +80,7 @@ def stringsNoArgs() :
     d["outputDir"]      = "output"
     d["logDir"]         = "log"
     d["logStem"]        = "%s/job"%d["logDir"]
-    d["mergedFile"]     = mergedFile(d["outputDir"], switches())
+    d["mergedFileStem"] = mergedFileStem(d["outputDir"], switches())
     return d
 
 def strings(xBin, yBin, zBin) :
