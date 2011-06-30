@@ -3,6 +3,7 @@ import collections,cPickle,os,math,utils
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
+import fresh
 import ROOT as r
 
 def setupRoot() :
@@ -168,6 +169,13 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     f.Close()
     return out
 
+def mergedFile() :
+    s = conf.switches()
+    d = {}
+    for item in ["REwk", "RQcd", "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
+        d[item] = s[item]
+    return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], fresh.note(**d), ".root")
+
 def mergePickledFiles() :
     example = xsHisto()
     #print "Here are the example binnings:"
@@ -197,7 +205,7 @@ def mergePickledFiles() :
     for key,histo in histos.iteritems() :
         histo.GetZaxis().SetTitle(zTitles[key])
 
-    f = r.TFile(conf.stringsNoArgs()["mergedFile"], "RECREATE")
+    f = r.TFile(mergedFile(), "RECREATE")
     for histo in histos.values() :
         histo.Write()
     f.Close()
@@ -334,7 +342,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
     s = conf.switches()
     if not (s["signalModel"] in ["T1","T2"]) : return
     
-    inFile = conf.stringsNoArgs()["mergedFile"]
+    inFile = mergedFile()
     f = r.TFile(inFile)
     fileName = inFile.replace(".root","_xsLimit.eps")
 
@@ -376,7 +384,7 @@ def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
     if not (s["signalModel"] in ["T1","T2"]) : return
 
-    inFile = conf.stringsNoArgs()["mergedFile"]
+    inFile = mergedFile()
     f = r.TFile(inFile)
     ranges = conf.smsRanges()
 
@@ -462,7 +470,7 @@ def drawBenchmarks() :
     return out
         
 def makeValidationPlots() :
-    inFile = conf.stringsNoArgs()["mergedFile"]
+    inFile = mergedFile()
     f = r.TFile(inFile)
     fileName = inFile.replace(".root",".ps")
     outFileName = fileName.replace(".ps",".pdf")
