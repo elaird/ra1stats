@@ -70,7 +70,8 @@ def onePoint(switches = None, data = None, point = None) :
         for cl in switches["CL"] :
             cl2 = 100*cl
             f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], signal = signal,
-                          hadTerms = switches["hadTerms"], muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
+                          hadTerms = switches["hadTerms"], hadControlTerms = switches["hadControlTerms"],
+                          muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
 
             if not switches["computeExpectedLimit"] :
                 results = f.interval(cl = cl, method = switches["method"])
