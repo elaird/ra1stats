@@ -55,10 +55,10 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
     A_ewk_ini = 1.5e-5
     if REwk :
         wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ewk_ini, 0.0, 3.0*A_ewk_ini))
-        wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6, 0.0, 1.0))
+        wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6,    0.0, 1.0))
 
-    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 1.0))
-    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0, 1.0))
+    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
+    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
     if RQcd=="Zero" :
         w.var("A_qcd").setVal(0.0)
         w.var("A_qcd").setConstant()
