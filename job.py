@@ -77,11 +77,11 @@ def onePoint(switches = None, data = None, point = None) :
                 for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
                 out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
             else :
-                d = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
+                d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
                 for key,value in d.iteritems() :
                     out["%s%g"%(key, cl2)] = (value, description(key, cl2))
                     out["excluded%s%g"%(key, cl2)] = (2.0*(value<1.0) - 1.0, "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
-
+                out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
     
 def go() :
