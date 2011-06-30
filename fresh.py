@@ -47,7 +47,7 @@ def initialAQcdControl(inputData) :
     out *= (obs["nHadControl"][0]/float(obs["nHadBulk"][0]))
     return out
                      
-def hadTerms(w, inputData, REwk, RQcd, smOnly) :
+def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly) :
     o = inputData.observations()
     htMeans = inputData.htMeans()
     terms = []
@@ -73,10 +73,12 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         w.var("k_ewk").setVal(0.0)
         w.var("k_ewk").setConstant()
 
-    for i,htMeanValue,nBulkValue,nHadValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHad"]) :
+    for i,htMeanValue,nBulkValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"]) :
         for item in ["htMean", "nBulk"] :
             wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
 
+    iLast = len(htMeans)-1
+    for i,nHadValue in zip(range(len(htMeans)), o["nHad"]) :
         wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcd"), w.var("k_qcd"), w.var("htMean%d"%i))))
         if REwk :
             wimport(w, r.RooFormulaVar("ewk%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewk"), w.var("k_ewk"), w.var("htMean%d"%i))))
@@ -84,10 +86,25 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         else :
             wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
             ewk = w.var("ewk%d"%i)
-        wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.2, 0.8))
 
-        wimport(w, r.RooFormulaVar("zInv%d"%i, "(@0)*(@1)",       r.RooArgList(ewk, w.var("fZinv%d"%i))))
-        wimport(w, r.RooFormulaVar("ttw%d"%i,  "(@0)*(1.0-(@1))", r.RooArgList(ewk, w.var("fZinv%d"%i))))
+        if nFZinv=="All" :
+            wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.2, 0.8))
+        elif nFZinv=="One" :
+            if not i :
+                wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.0, 1.0))
+            else :
+                wimport(w, r.RooFormulaVar("fZinv%d"%i, "(@0)", r.RooArgList(w.var("fZinv0"))))
+        elif nFZinv=="Two" :
+            if not i :
+                wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.0, 1.0)); firstFZinv = w.var("fZinv0")
+                wimport(w, r.RooRealVar("fZinv%d"%iLast, "fZinv%d"%iLast, 0.5, 0.0, 1.0)); lastFZinv = w.var("fZinv%d"%iLast)
+            elif i!=iLast :
+                argList = r.RooArgList(firstFZinv, lastFZinv, w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast))
+                wimport(w, r.RooFormulaVar("fZinv%d"%i, "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
+
+        fZinv = w.var("fZinv%d"%i) if w.var("fZinv%d"%i) else w.function("fZinv%d"%i)
+        wimport(w, r.RooFormulaVar("zInv%d"%i, "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
+        wimport(w, r.RooFormulaVar("ttw%d"%i,  "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
         wimport(w, r.RooFormulaVar("hadB%d"%i, "(@0)+(@1)", r.RooArgList(ewk, w.function("qcd%d"%i))))
         wimport(w, r.RooRealVar("nHad%d"%i, "nHad%d"%i, nHadValue))
@@ -103,12 +120,12 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
         terms.append("signalGaus") #defined in signalVariables()
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
-def hadControlTerms(w, inputData, REwk, RQcd, smOnly) :
+def hadControlTerms(w, inputData, REwk, RQcd, smOnly, include) :
     o = inputData.observations()
     htMeans = inputData.htMeans()
     terms = []
 
-    assert (REwk and RQcd=="FallingExp")
+    if include : assert (REwk and RQcd=="FallingExp")
     wimport(w, r.RooRealVar("A_qcdControl", "A_qcdControl", initialAQcdControl(inputData), 0.0, 100.0))
     wimport(w, r.RooRealVar("A_ewkControl", "A_ewkControl", 10.0e-6, 0.0, 1.0))
     wimport(w, r.RooRealVar("k_ewkControl", "k_ewkControl", 0.0, 0.0, 1.0))
@@ -241,7 +258,7 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, signalDict, includeHadTerms = True, includeHadControlTerms = True,
+def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, signalDict, includeHadTerms = True, includeHadControlTerms = True,
                     includeMuonTerms = True, includePhotTerms = True, includeMumuTerms = False) :
     terms = []
     obs = []
@@ -256,11 +273,11 @@ def setupLikelihood(w, inputData, REwk, RQcd, signalDict, includeHadTerms = True
     nuis += ["A_qcd","k_qcd"]
     if REwk : nuis += ["A_ewk","k_ewk"]
 
-    hadTerms(w, inputData, REwk, RQcd, smOnly)
-    hadControlTerms(w, inputData, REwk, RQcd, smOnly)
+    hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly)
     photTerms(w, inputData)
     muonTerms(w, inputData, smOnly)
     mumuTerms(w, inputData)
+    hadControlTerms(w, inputData, REwk, RQcd, smOnly, includeHadControlTerms)
 
     if includeHadTerms :
         terms.append("hadTerms")
@@ -523,10 +540,11 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
-def note(REwk = None, RQcd = None, hadTerms = None, hadControlTerms = None, muonTerms = None, photTerms = None, mumuTerms = None) :
+def note(REwk = None, RQcd = None, nFZinv = None, hadTerms = None, hadControlTerms = None, muonTerms = None, photTerms = None, mumuTerms = None) :
     out = ""
     if REwk : out += "REwk%s_"%REwk
     out += "RQcd%s"%RQcd
+    out += "_fZinv%s"%nFZinv
     if hadTerms :        out += "_had"
     if hadControlTerms : out += "_hadControl"
     if muonTerms :       out += "_muon"
@@ -535,9 +553,9 @@ def note(REwk = None, RQcd = None, hadTerms = None, hadControlTerms = None, muon
     return out
 
 class foo(object) :
-    def __init__(self, inputData = None, REwk = None, RQcd = None, signal = {}, signalExampleToStack = ("", {}), trace = False,
+    def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, signal = {}, signalExampleToStack = ("", {}), trace = False,
                  hadTerms = True, hadControlTerms = True, muonTerms = True, photTerms = True, mumuTerms = False) :
-        for item in ["inputData", "REwk", "RQcd", "signal", "signalExampleToStack",
+        for item in ["inputData", "REwk", "RQcd", "nFZinv", "signal", "signalExampleToStack",
                      "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
             setattr(self, item, eval(item))
 
@@ -546,7 +564,7 @@ class foo(object) :
         r.RooRandom.randomGenerator().SetSeed(1)
 
         self.wspace = r.RooWorkspace("Workspace")
-        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.signal,
+        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.nFZinv, self.signal,
                         includeHadTerms = self.hadTerms, includeHadControlTerms = self.hadControlTerms,
                         includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
         self.data = dataset(obs(self.wspace))
@@ -560,6 +578,7 @@ class foo(object) :
     def checkInputs(self) :
         assert self.REwk in ["", "FallingExp", "Constant"]
         assert self.RQcd in ["FallingExp", "Zero"]
+        assert self.nFZinv in ["One", "Two", "All"]
         bins = self.inputData.htBinLowerEdges()
         for d in [self.signal, self.signalExampleToStack[1]] :
             for key,value in d.iteritems() :
@@ -572,7 +591,7 @@ class foo(object) :
 
     def note(self) :
         d = {}
-        for item in ["REwk", "RQcd", "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
+        for item in ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
             d[item] = getattr(self, item)
         return note(**d)
     

@@ -20,7 +20,8 @@ def switches() :
     
     d["REwk"] = ["", "FallingExp", "Constant"][2]
     d["RQcd"] = ["FallingExp", "Zero"][1]
-    
+    d["nFZinv"] = ["One", "Two", "All"][2]
+              
     d["nlo"] = False
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
     d["drawBenchmarkPoints"] = True
