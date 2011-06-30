@@ -54,7 +54,7 @@ def hadTerms(w, inputData, REwk, RQcd, smOnly) :
 
     A_ewk_ini = 1.5e-5
     if REwk :
-        wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ewk_ini, 0.0, 3.0*A_ewk_ini))
+        wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ewk_ini, 0.0, 1.0))
         wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6,    0.0, 1.0))
 
     wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
@@ -111,7 +111,9 @@ def hadControlTerms(w, inputData, REwk, RQcd, smOnly) :
     assert (REwk and RQcd=="FallingExp")
     wimport(w, r.RooRealVar("A_qcdControl", "A_qcdControl", initialAQcdControl(inputData), 0.0, 100.0))
     wimport(w, r.RooRealVar("A_ewkControl", "A_ewkControl", 10.0e-6, 0.0, 1.0))
-    wimport(w, r.RooRealVar("k_ewkControl", "k_ewkControl", 0.0))
+    wimport(w, r.RooRealVar("k_ewkControl", "k_ewkControl", 0.0, 0.0, 1.0))
+    w.var("k_ewkControl").setVal(0.0)
+    w.var("k_ewkControl").setConstant()
 
     for i,htMeanValue,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHadControl"]) :
         wimport(w, r.RooFormulaVar("qcdControl%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))",
