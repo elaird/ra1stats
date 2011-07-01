@@ -78,7 +78,7 @@ go(label = "photons",
    )
 
 go(label = "muons",
-   yLabel = "t#bar{t} + W (#mu selection) / t#bar{t} + W (had. selection)",
+   yLabel = "t#bar{t} + W (had. selection) / t#bar{t} + W (#mu selection)",
    title = "Spring '11 MadGraph MC#semicolon RA1 selection",
    #minMax = (0.0, 1.5),
    mcPhot = data.mcExpectations()["mcMuon"],
