@@ -18,8 +18,10 @@ mc stats as systematic
 consider pdfUncertainty for LO
 consider lognormal vs. gaussian
 CLs geometric plot
+include an HT-dependent trigger efficiency caused by the MHT leg.
+upgrade dirac delta
 
 checks
 ------
 bin merging
-multiple background models
+R_ewk fall
