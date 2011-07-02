@@ -275,7 +275,7 @@ def akDesc(wspace, var, errors = True, var2 = "") :
     out += "k = %4.2e%s"  %(vark.getVal(), " #pm %4.2e"%vark.getError() if errors else "")
     return out
 
-def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signalExampleToStack = ("", {}), printPages = False) :
+def validationPlots(wspace, results, inputData, REwk, RQcd, hadControlLabels, smOnly, note, signalExampleToStack = ("", {}), printPages = False) :
     if any(signalExampleToStack) : assert smOnly
     
     out = []
@@ -315,18 +315,21 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
         validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
                        obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%inputData.lumi()["had"], otherVars = hadVars, logY = logY, printPages = printPages)
 
-    #had control sample
-    for logY in [False, True] :
-        thisNote = "Hadronic Control Sample%s"%(" (logY)" if logY else "")        
-        validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72),
-                       obsKey = "nHadControl", obsLabel = "hadronic control data (0.53 #leq #alpha_{T} #leq 0.55) [%g/pb]"%inputData.lumi()["had"],
-                       logY = logY, printPages = printPages, otherVars = [
-            {"var":"hadControlB", "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
-            {"var":"ewkControl",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewkControl", errors = True),
-             "color":r.kCyan,    "style":2, "width":2, "stack":"background"},
-            {"var":"qcdControl",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcdControl", errors = True, var2 = "qcd"),
-             "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
-            ])
+    #had control sample(s)
+    for labelRaw in hadControlLabels :
+        label = "_"+labelRaw+"_"
+        label1 = label[:-1]
+        for logY in [False, True] :
+            thisNote = "Hadronic Control Sample %s %s"%(labelRaw, " (logY)" if logY else "")
+            validationPlot(wspace, canvas, psFileName, inputData = inputData, note = thisNote, legend0 = (0.35, 0.72),
+                           obsKey = "nHadControl%s"%label1, obsLabel = "hadronic control data (%s) [%g/pb]"%(labelRaw, inputData.lumi()["had"]),
+                           logY = logY, printPages = printPages, otherVars = [
+                {"var":"hadControlB%s"%label, "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+                {"var":"ewkControl%s"%label,  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewkControl%s"%label1, errors = True),
+                 "color":r.kCyan,    "style":2, "width":2, "stack":"background"},
+                {"var":"qcdControl%s"%label,  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcdControl%s"%label1, errors = True, var2 = "qcd"),
+                 "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
+                ])
 
     #muon control sample
     muonVars = [
@@ -393,12 +396,17 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, smOnly, note, signal
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
         {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
         ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
-    ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic control", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
-        {"num":"qcdControl",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
-        {"num":"ewkControl",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
-        {"num":"hadControlB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
-        {"num":"nHadControl",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHadControl / nHadBulk",    "color":r.kBlack},
-        ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
+
+    for labelRaw in hadControlLabels :
+        label = "_"+labelRaw+"_"
+        label1 = label[:-1]
+        ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic control %s"%labelRaw,
+                  legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
+            {"num":"qcdControl%s"%label,   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
+            {"num":"ewkControl%s"%label,   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
+            {"num":"hadControlB%s"%label,  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
+            {"num":"nHadControl%s"%label1, "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHadControl / nHadBulk",    "color":r.kBlack},
+            ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
         {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack},
         {"num":"ttw",   "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML ttW / nHadBulk",             "color":r.kGreen},        
@@ -433,15 +441,15 @@ def printPars(wspace, canvas, psFileName) :
     slope = 0.03
 
     canvas.Clear()
-    y = printText(x, y, "%15s:    %5s   +/-   %5s       [ %5s    -  %5s   ]"%("par name", "value", "error", "min", "max"))
-    y = printText(x, y, "-"*69)
+    y = printText(x, y, "%20s:    %5s   +/-   %5s       [ %5s    -  %5s   ]"%("par name", "value", "error", "min", "max"))
+    y = printText(x, y, "-"*74)
     vars = wspace.allVars()
     it = vars.createIterator()    
     while it.Next() :
         if it.getMax()==r.RooNumber.infinity() : continue
         if it.getMin()==-r.RooNumber.infinity() : continue
         if not it.hasError() : continue
-        s = "%15s:  %5.3e +/- %5.3e     [%5.3e - %5.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
+        s = "%20s:  %5.3e +/- %5.3e     [%5.3e - %5.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
         y = printText(x, y, s)
 
     canvas.Print(psFileName)

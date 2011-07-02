@@ -1,4 +1,4 @@
-import math,array
+import math,array,copy
 import plotting,utils
 import ROOT as r
 
@@ -16,7 +16,7 @@ def q0q1(inputData, factor, A_ewk_ini) :
     o = inputData.observations()
     return thing(0)/thing(1)
 
-def initialkQcdOld(inputData, factor, A_ewk_ini) :
+def initialkQcd(inputData, factor, A_ewk_ini) :
     obs = inputData.observations()
     htMeans = inputData.htMeans()    
     out = q0q1(inputData, factor, A_ewk_ini)
@@ -25,37 +25,40 @@ def initialkQcdOld(inputData, factor, A_ewk_ini) :
     out /= (htMeans[1] - htMeans[0])
     return out
 
-def initialkQcd(inputData, factor, A_ewk_ini) :
+def initialAQcd(inputData, factor, A_ewk_ini, kQcd) :
     obs = inputData.observations()
-    out = float(obs["nHadControl"][0]*obs["nHadBulk"][1])/float(obs["nHadControl"][1]*obs["nHadBulk"][0])
+    htMeans = inputData.htMeans()
+    out = math.exp(kQcd)
+    out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
+    return out
+                     
+def initialkQcdControl(inputData, label) :
+    obs = inputData.observations()
+    out = float(obs["nHadControl%s"%label][0]*obs["nHadBulk"][1])/float(obs["nHadControl%s"%label][1]*obs["nHadBulk"][0])
     out = math.log(out)
     htMeans = inputData.htMeans()    
     out /= (htMeans[1] - htMeans[0])
     return out
 
-def initialAQcd(inputData, factor, A_ewk_ini) :
+def initialAQcdControl(inputData, label) :
     obs = inputData.observations()
     htMeans = inputData.htMeans()
-    out = math.exp( initialkQcd(inputData, factor, A_ewk_ini)*htMeans[0] )
-    out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
+    out = math.exp( initialkQcdControl(inputData, label)*htMeans[0] )
+    out *= (obs["nHadControl%s"%label][0]/float(obs["nHadBulk"][0]))
     return out
                      
-def initialAQcdControl(inputData) :
-    obs = inputData.observations()
-    htMeans = inputData.htMeans()
-    out = math.exp( initialkQcd(inputData, 1.0, 0.0)*htMeans[0] )
-    out *= (obs["nHadControl"][0]/float(obs["nHadBulk"][0]))
-    return out
-                     
-def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly) :
+def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
     o = inputData.observations()
     htMeans = inputData.htMeans()
     terms = []
 
-    A_ewk_ini = 1.5e-5
+    A_ewk_ini = 1.3e-5
     if REwk :
         wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ewk_ini, 0.0, 1.0))
         wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6,    0.0, 1.0))
+    if REwk=="Constant" :
+        w.var("k_ewk").setVal(0.0)
+        w.var("k_ewk").setConstant()
 
     wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
     wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
@@ -66,12 +69,11 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly) :
         w.var("k_qcd").setConstant()
     else :
         factor = 0.7
-        w.var("A_qcd").setVal(initialAQcd(inputData, factor, A_ewk_ini))
-        w.var("k_qcd").setVal(initialkQcd(inputData, factor, A_ewk_ini))
-
-    if REwk=="Constant" :
-        w.var("k_ewk").setVal(0.0)
-        w.var("k_ewk").setConstant()
+        if not hadControlSamples :
+            w.var("k_qcd").setVal(initialkQcd(inputData, factor, A_ewk_ini))
+        else :
+            w.var("k_qcd").setVal(initialkQcdControl(inputData, "_"+hadControlSamples[0]))
+        w.var("A_qcd").setVal(initialAQcd(inputData, factor, A_ewk_ini, w.var("k_qcd").getVal()))
 
     for i,htMeanValue,nBulkValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"]) :
         for item in ["htMean", "nBulk"] :
@@ -120,32 +122,33 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly) :
         terms.append("signalGaus") #defined in signalVariables()
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
-def hadControlTerms(w, inputData, REwk, RQcd, smOnly, include) :
+def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
+    def s(i = None) : return ("_%s%s"%(label, "_%d"%i if i!=None else ""))
     o = inputData.observations()
     htMeans = inputData.htMeans()
     terms = []
 
-    if include : assert (REwk and RQcd=="FallingExp")
-    wimport(w, r.RooRealVar("A_qcdControl", "A_qcdControl", initialAQcdControl(inputData), 0.0, 100.0))
-    wimport(w, r.RooRealVar("A_ewkControl", "A_ewkControl", 10.0e-6, 0.0, 1.0))
-    wimport(w, r.RooRealVar("k_ewkControl", "k_ewkControl", 0.0, 0.0, 1.0))
-    w.var("k_ewkControl").setVal(0.0)
-    w.var("k_ewkControl").setConstant()
+    assert (REwk and RQcd=="FallingExp")
+    wimport(w, r.RooRealVar("A_qcdControl%s"%s(), "A_qcdControl%s"%s(), initialAQcdControl(inputData, s()), 0.0, 100.0))
+    wimport(w, r.RooRealVar("A_ewkControl%s"%s(), "A_ewkControl%s"%s(), 10.0e-6, 0.0, 1.0))
+    wimport(w, r.RooRealVar("k_ewkControl%s"%s(), "k_ewkControl%s"%s(), 0.0, 0.0, 1.0))
+    w.var("k_ewkControl%s"%s()).setVal(0.0)
+    w.var("k_ewkControl%s"%s()).setConstant()
 
-    for i,htMeanValue,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHadControl"]) :
-        wimport(w, r.RooFormulaVar("qcdControl%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))",
-                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl"), w.var("k_qcd"),        w.var("htMean%d"%i))))
-        wimport(w, r.RooFormulaVar("ewkControl%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))",
-                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewkControl"), w.var("k_ewkControl"), w.var("htMean%d"%i))))
-        wimport(w, r.RooFormulaVar("hadControlB%d"%i, "(@0)+(@1)", r.RooArgList(w.function("ewkControl%d"%i), w.function("qcdControl%d"%i))))
-        wimport(w, r.RooRealVar("nHadControl%d"%i, "nHadControl%d"%i, nControlValue))
+    for i,htMeanValue,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHadControl%s"%s()]) :
+        wimport(w, r.RooFormulaVar("qcdControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
+                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"),        w.var("htMean%d"%i))))
+        wimport(w, r.RooFormulaVar("ewkControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
+                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewkControl%s"%s()), w.var("k_ewkControl%s"%s()), w.var("htMean%d"%i))))
+        wimport(w, r.RooFormulaVar("hadControlB%s"%s(i), "(@0)+(@1)", r.RooArgList(w.function("ewkControl%s"%s(i)), w.function("qcdControl%s"%s(i)))))
+        wimport(w, r.RooRealVar("nHadControl%s"%s(i), "nHadControl%s"%s(i), nControlValue))
         if smOnly :
-            wimport(w, r.RooPoisson("hadControlPois%d"%i, "hadControlPois%d"%i, w.var("nHadControl%d"%i), w.function("hadControlB%d"%i)))
+            wimport(w, r.RooPoisson("hadControlPois%s"%s(i), "hadControlPois%s"%s(i), w.var("nHadControl%s"%s(i)), w.function("hadControlB%s"%s(i))))
         else :
-            wimport(w, r.RooPoisson("hadControlPois%d"%i, "hadControlPois%d"%i, w.var("nHadControl%d"%i), w.function("hadControlB%d"%i)))            
-        terms.append("hadControlPois%d"%i)
+            wimport(w, r.RooPoisson("hadControlPois%s"%s(i), "hadControlPois%s"%s(i), w.var("nHadControl%s"%s(i)), w.function("hadControlB%s"%s(i))))            
+        terms.append("hadControlPois%s"%s(i))
     
-    w.factory("PROD::hadControlTerms(%s)"%",".join(terms))
+    w.factory("PROD::hadControlTerms%s(%s)"%(s(), ",".join(terms)))
 
 def mumuTerms(w, inputData) :
     terms = []
@@ -253,12 +256,13 @@ def multi(w, variables, inputData) :
     bins = range(len(inputData.observations()["nHad"]))
     for item in variables :
         for i in bins :
-            name = "%s%d"%(item,i)
+            if item.count("_") < 2 : name = "%s%d"%(item,i)
+            else : name = "%s_%d"%(item,i)
             if not w.var(name) : continue
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, signalDict, includeHadTerms = True, includeHadControlTerms = True,
+def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, signalDict, includeHadTerms = True, hadControlSamples = [],
                     includeMuonTerms = True, includePhotTerms = True, includeMumuTerms = False) :
     terms = []
     obs = []
@@ -273,19 +277,19 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, signalDict, includeHadTerm
     nuis += ["A_qcd","k_qcd"]
     if REwk : nuis += ["A_ewk","k_ewk"]
 
-    hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly)
+    hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
     photTerms(w, inputData)
     muonTerms(w, inputData, smOnly)
     mumuTerms(w, inputData)
-    hadControlTerms(w, inputData, REwk, RQcd, smOnly, includeHadControlTerms)
 
     if includeHadTerms :
         terms.append("hadTerms")
         multiBinObs.append("nHad")
 
-    if includeHadControlTerms :
-        terms.append("hadControlTerms")
-        multiBinObs.append("nHadControl")
+    for item in hadControlSamples :
+        hadControlTerms(w, inputData, REwk, RQcd, smOnly, item)
+        terms.append("hadControlTerms_%s"%item)
+        multiBinObs.append("nHadControl_%s"%item)
 
     if includePhotTerms :
         terms.append("photTerms")
@@ -540,13 +544,13 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
-def note(REwk = None, RQcd = None, nFZinv = None, hadTerms = None, hadControlTerms = None, muonTerms = None, photTerms = None, mumuTerms = None) :
+def note(REwk = None, RQcd = None, nFZinv = None, hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
     out = ""
     if REwk : out += "REwk%s_"%REwk
     out += "RQcd%s"%RQcd
     out += "_fZinv%s"%nFZinv
     if hadTerms :        out += "_had"
-    if hadControlTerms : out += "_hadControl"
+    for item in hadControlSamples : out += "_hadControl_%s"%item
     if muonTerms :       out += "_muon"
     if photTerms :       out += "_phot"
     if mumuTerms :       out += "_mumu"
@@ -554,9 +558,9 @@ def note(REwk = None, RQcd = None, nFZinv = None, hadTerms = None, hadControlTer
 
 class foo(object) :
     def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, signal = {}, signalExampleToStack = ("", {}), trace = False,
-                 hadTerms = True, hadControlTerms = True, muonTerms = True, photTerms = True, mumuTerms = False) :
+                 hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False) :
         for item in ["inputData", "REwk", "RQcd", "nFZinv", "signal", "signalExampleToStack",
-                     "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
+                     "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -565,7 +569,7 @@ class foo(object) :
 
         self.wspace = r.RooWorkspace("Workspace")
         setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.nFZinv, self.signal,
-                        includeHadTerms = self.hadTerms, includeHadControlTerms = self.hadControlTerms,
+                        includeHadTerms = self.hadTerms, hadControlSamples = self.hadControlSamples,
                         includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
@@ -591,7 +595,7 @@ class foo(object) :
 
     def note(self) :
         d = {}
-        for item in ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlTerms", "muonTerms", "photTerms", "mumuTerms"] :
+        for item in ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
             d[item] = getattr(self, item)
         return note(**d)
     
@@ -623,4 +627,4 @@ class foo(object) :
 
     def bestFit(self, printPages = False) :
         plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
-                                 self.inputData, self.REwk, self.RQcd, self.smOnly(), self.note(), self.signalExampleToStack, printPages = printPages)
+                                 self.inputData, self.REwk, self.RQcd, self.hadControlSamples, self.smOnly(), self.note(), self.signalExampleToStack, printPages = printPages)
