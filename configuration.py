@@ -19,8 +19,8 @@ def switches() :
     d["mumuTerms"] = False
     
     d["REwk"] = ["", "FallingExp", "Constant"][2]
-    d["RQcd"] = ["FallingExp", "Zero"][1]
-    d["nFZinv"] = ["One", "Two", "All"][2]
+    d["RQcd"] = ["Zero", "FallingExp"][0]
+    d["nFZinv"] = ["All", "One", "Two"][0]
               
     d["nlo"] = False
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
