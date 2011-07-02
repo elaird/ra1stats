@@ -283,7 +283,8 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, hadControlLabels, sm
     canvas = utils.numberedCanvas()
     psFileName = "bestFit_%s%s.ps"%(note, "_smOnly" if smOnly else "")
     canvas.Print(psFileName+"[")
-    
+
+    ewkType = "function" if REwk else "var"
     if not smOnly :
         signalDesc  = "signal"
         signalDesc2 = "xs = %5.2f xs^{nom}; #rho = %4.2f"%(wspace.var("f").getVal(), wspace.var("rhoSignal").getVal())
@@ -292,7 +293,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, hadControlLabels, sm
     hadVars = [
         {"var":"hadB", "type":"function", "desc":"expected total background",
          "color":r.kBlue, "style":1, "width":3, "stack":"total"},
-        {"var":"ewk",  "type":"function", "desc":"EWK", "desc2":akDesc(wspace, "ewk", errors = True) if REwk else "[floating]",
+        {"var":"ewk",  "type":ewkType, "desc":"EWK", "desc2":akDesc(wspace, "ewk", errors = True) if REwk else "[floating]",
          "color":r.kCyan, "style":2, "width":2, "stack":"background"},
         {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(wspace, "qcd", errors = True),
          "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
@@ -392,7 +393,7 @@ def validationPlots(wspace, results, inputData, REwk, RQcd, hadControlLabels, sm
     #alphaT ratios
     ratioPlot(wspace, canvas, psFileName, inputData = inputData, note = "hadronic signal", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), printPages = printPages, specs = [
         {"num":"qcd",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
-        {"num":"ewk",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
+        {"num":"ewk",   "numType":ewkType,    "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
         {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
         {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["data"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
         ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
