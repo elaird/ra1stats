@@ -34,17 +34,23 @@ class data2011_3(data) :
             "mcZmumu": 697.,
             }
         self._htMeans =       (   297.51,    347.25,     415.57,     516.2,    617.17,    717.72,    818.33,    919.08)
+        #self._htMeans =      ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02),#newer than previous line
+        
         self._observations = {
             "nHadBulk":scaled(( 4.118e+07, 1.693e+07, 1.158e+07, 3.664e+06, 1.273e+06, 4.934e+05, 2.072e+05, 1.861e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
-            "nHad":           ( 5.720e+02, 2.370e+02, 1.400e+02, 4.500e+01, 1.800e+01, 3.000e+00, 2.000e+00, 1.000e+00),
+            "nHad51":         ( 2.887e+04, 5.499e+03, 1.037e+03, 2.670e+02, 9.200e+01, 2.700e+01, 1.100e+01, 1.100e+01),
+            "nHad52":         ( 6.481e+03, 9.260e+02, 3.570e+02, 1.090e+02, 4.500e+01, 1.300e+01, 5.000e+00, 3.000e+00),
             "nHad53":         ( 1.809e+03, 4.000e+02, 2.230e+02, 6.900e+01, 3.200e+01, 1.000e+01, 4.000e+00, 2.000e+00),
+            "nHad55":         ( 5.720e+02, 2.370e+02, 1.400e+02, 4.500e+01, 1.800e+01, 3.000e+00, 2.000e+00, 1.000e+00),
             "nPhot":     excl((       630,       227,       233,        81,        33,        15,         6,         3), isExcl),
            #"nPhot2Jet": excl((       255,        94,        99,        31,        11,         3,         1,         0), isExcl),
             "nMuon":          (       262,       100,        78,        31,        12,         4,         0,         0),
            #"nMuon2Jet":      (        86,        23,        25,        10,         2,         0,         0,         0),
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
+        self._observations["nHad"] = self._observations["nHad55"]
         self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad"])])
+
         self._mcExpectations = {
             "mcMuon":          scaled((252.07,  104.36,   67.61,  24.04,   9.39,   4.37,   0.32, 0.22), self.lumi()["muon"]/self.lumi()["mcMuon"]),
            #"mcMuon2Jet":      scaled(( 86.03,   28.51,   25.63,   2.02,   4.78,   3.29,  0.107,    0), self.lumi()["muon"]/self.lumi()["mcMuon"]),
