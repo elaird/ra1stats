@@ -544,6 +544,8 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
+def noteArgs() : return ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"]
+
 def note(REwk = None, RQcd = None, nFZinv = None, hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
     out = ""
     if REwk : out += "REwk%s_"%REwk
@@ -595,7 +597,7 @@ class foo(object) :
 
     def note(self) :
         d = {}
-        for item in ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
+        for item in noteArgs() :
             d[item] = getattr(self, item)
         return note(**d)
     
