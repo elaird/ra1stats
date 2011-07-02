@@ -137,7 +137,7 @@ def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
 
     for i,htMeanValue,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHadControl%s"%s()]) :
         wimport(w, r.RooFormulaVar("qcdControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
-                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"),        w.var("htMean%d"%i))))
+                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"), w.var("htMean%d"%i))))
         wimport(w, r.RooFormulaVar("ewkControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
                                    r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewkControl%s"%s()), w.var("k_ewkControl%s"%s()), w.var("htMean%d"%i))))
         wimport(w, r.RooFormulaVar("hadControlB%s"%s(i), "(@0)+(@1)", r.RooArgList(w.function("ewkControl%s"%s(i)), w.function("qcdControl%s"%s(i)))))
