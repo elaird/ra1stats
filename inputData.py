@@ -49,7 +49,9 @@ class data2011_3(data) :
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
         self._observations["nHad"] = self._observations["nHad55"]
-        self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
+        self._observations["nHadControl_53_55"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
+        self._observations["nHadControl_52_53"] = tuple([n52-n53 for n52,n53 in zip(self._observations["nHad52"], self._observations["nHad53"])])
+        self._observations["nHadControl_51_52"] = tuple([n51-n52 for n51,n52 in zip(self._observations["nHad51"], self._observations["nHad52"])])
 
         self._mcExpectations = {
             "mcMuon":          scaled((252.07,  104.36,   67.61,  24.04,   9.39,   4.37,   0.32, 0.22), self.lumi()["muon"]/self.lumi()["mcMuon"]),
