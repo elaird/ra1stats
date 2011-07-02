@@ -49,7 +49,7 @@ class data2011_3(data) :
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
         self._observations["nHad"] = self._observations["nHad55"]
-        self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad"])])
+        self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
 
         self._mcExpectations = {
             "mcMuon":          scaled((252.07,  104.36,   67.61,  24.04,   9.39,   4.37,   0.32, 0.22), self.lumi()["muon"]/self.lumi()["mcMuon"]),
@@ -80,6 +80,18 @@ class data2011_3(data) :
             "sigmaMumuZ": 0.20,
             }
         # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
+
+class data2011_3_no_cleaning_cuts(data2011_3) :
+    """cleaning cuts removed"""
+
+    def _fill(self) :
+        super(data2011_3_no_cleaning_cuts, self)._fill()
+        self._observations["nHad51"] = (1.994e+05, 5.523e+04, 2.745e+04, 4.624e+03, 9.530e+02, 1.860e+02, 6.700e+01, 3.000e+01)
+        self._observations["nHad52"] = (5.524e+04, 1.355e+04, 5.441e+03, 7.020e+02, 1.280e+02, 3.300e+01, 1.300e+01, 7.000e+00)
+        self._observations["nHad53"] = (1.758e+04, 4.171e+03, 1.675e+03, 1.880e+02, 6.000e+01, 2.000e+01, 7.000e+00, 2.000e+00)
+        self._observations["nHad55"] = (3.060e+03, 7.890e+02, 3.390e+02, 7.200e+01, 2.000e+01, 6.000e+00, 2.000e+00, 1.000e+00)
+        self._observations["nHad"] = self._observations["nHad55"]
+        self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
         
 class data2011_2(data) :
     """data used for pre-approval talk"""
