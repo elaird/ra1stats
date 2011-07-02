@@ -59,7 +59,7 @@ def onePoint(switches = None, data = None, point = None) :
 
     if "CLs" in switches["method"] :
         f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
-                      hadTerms = switches["hadTerms"], hadControlTerms = switches["hadControlTerms"],
+                      hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
                       muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
         results = f.cls(method = switches["method"], nToys = switches["nToys"])
         for key,value in results.iteritems() : out[key] = (value, description(key))
@@ -70,7 +70,7 @@ def onePoint(switches = None, data = None, point = None) :
         for cl in switches["CL"] :
             cl2 = 100*cl
             f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
-                          hadTerms = switches["hadTerms"], hadControlTerms = switches["hadControlTerms"],
+                          hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
                           muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
 
             if not switches["computeExpectedLimit"] :
