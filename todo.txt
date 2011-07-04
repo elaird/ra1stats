@@ -1,27 +1,27 @@
+physics
+-------
+1 include an HT-dependent trigger efficiency caused by the MHT leg.
+1 improve mc ratio
+1 mc stats as systematic
+1 bin-by-bin systematics on signal eff.
+1 use scaled yields in lowest two bins
+2 sys on R
+2 update muon file
+2 repair nlo
+3 upgrade dirac delta
+4 look at g(l) for f = 1
+4 CLs geometric plot
+
 technical
 ---------
 fix leaks in pValue() and expectedLimit()
 plot FC belt
 tweak FC running
 try ProfileLikelihoodTestStatistic.SetOneSided()
-
-physics
--------
 query fit status for toys (improve 0 cut)
-improve mc ratio
-look at g(l) for f = 1
-update muon file
-repair nlo
-use scaled yields in lowest two bins
-systematics on signal eff.
-mc stats as systematic
-consider pdfUncertainty for LO
-consider lognormal vs. gaussian
-CLs geometric plot
-include an HT-dependent trigger efficiency caused by the MHT leg.
-upgrade dirac delta
 
 checks
 ------
 bin merging
 R_ewk fall
+lognormal vs. gaussian
