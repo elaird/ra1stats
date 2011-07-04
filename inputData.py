@@ -35,7 +35,7 @@ class data2011_3(data) :
             "mcZmumu": 697.,
             }
 
-        self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02),#newer than previous line
+        self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02)
         
         self._observations = {
             "nHadBulk":scaled(( 4.118e+07, 1.693e+07, 1.158e+07, 3.664e+06, 1.273e+06, 4.934e+05, 2.072e+05, 1.861e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
@@ -61,9 +61,9 @@ class data2011_3(data) :
             "mumu":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
             }
         for item in ["muon"] :
-            self._triggerEfficiencies[item] = self._triggerEfficiencies["had55"]
+            self._triggerEfficiencies[item] = self._triggerEfficiencies["had"]
         #for item in  ["hadControl_51_52", "hadControl_52_53", "hadControl_53_55"] :
-        #    self._triggerEfficiencies[item] = self._triggerEfficiencies["had55"]
+        #    self._triggerEfficiencies[item] = self._triggerEfficiencies["had"]
         
         self._mcExpectations = {
             "mcMuon":          scaled((252.07,  104.36,   67.61,  24.04,   9.39,   4.37,   0.32, 0.22), self.lumi()["muon"]/self.lumi()["mcMuon"]),
