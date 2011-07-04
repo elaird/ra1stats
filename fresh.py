@@ -169,7 +169,7 @@ def mumuTerms(w, inputData) :
         if nMumuValue<0 : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcZmumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nMumu%d"%i, "nMumu%d"%i, nMumuValue))
-        wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, (mcZumuValue/mcZinvValue if not rFinal else rFinal)/purity))
+        wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, (mcZmumuValue/mcZinvValue if not rFinal else rFinal)/purity))
         wimport(w, r.RooFormulaVar("mumuExp%d"%i, "(@0)*(@1)*(@2)", r.RooArgList(w.var("rhoMumuZ"), w.var("rMumu%d"%i), w.function("zInv%d"%i))))
         wimport(w, r.RooPoisson("mumuPois%d"%i, "mumuPois%d"%i, w.var("nMumu%d"%i), w.function("mumuExp%d"%i)))
         terms.append("mumuPois%d"%i)
@@ -242,7 +242,7 @@ def signalVariables(w, inputData, signalDict) :
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
-    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", 2.0*inputData.fixedParameters()["sigmaLumi"]))
+    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", 2.0*inputData.fixedParameters()["sigmaLumiLike"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
     for key,value in signalDict.iteritems() :
