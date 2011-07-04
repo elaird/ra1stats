@@ -1,3 +1,4 @@
+import utils
 from data import data,scaled,excl
 
 class data2011_3(data) :
@@ -33,8 +34,8 @@ class data2011_3(data) :
             "mumu":    697.,
             "mcZmumu": 697.,
             }
-        self._htMeans =       (   297.51,    347.25,     415.57,     516.2,    617.17,    717.72,    818.33,    919.08)
-        #self._htMeans =      ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02),#newer than previous line
+
+        self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02),#newer than previous line
         
         self._observations = {
             "nHadBulk":scaled(( 4.118e+07, 1.693e+07, 1.158e+07, 3.664e+06, 1.273e+06, 4.934e+05, 2.072e+05, 1.861e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
@@ -53,6 +54,17 @@ class data2011_3(data) :
         self._observations["nHadControl_52_53"] = tuple([n52-n53 for n52,n53 in zip(self._observations["nHad52"], self._observations["nHad53"])])
         self._observations["nHadControl_51_52"] = tuple([n51-n52 for n51,n52 in zip(self._observations["nHad51"], self._observations["nHad52"])])
 
+        self._triggerEfficiencies = {
+            "hadBulk":       (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "had":           (     0.957,     0.986,     0.990,     0.990,     0.990,     0.990,     0.990,     0.990),
+            "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "mumu":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            }
+        for item in ["muon"] :
+            self._triggerEfficiencies[item] = self._triggerEfficiencies["had55"]
+        #for item in  ["hadControl_51_52", "hadControl_52_53", "hadControl_53_55"] :
+        #    self._triggerEfficiencies[item] = self._triggerEfficiencies["had55"]
+        
         self._mcExpectations = {
             "mcMuon":          scaled((252.07,  104.36,   67.61,  24.04,   9.39,   4.37,   0.32, 0.22), self.lumi()["muon"]/self.lumi()["mcMuon"]),
            #"mcMuon2Jet":      scaled(( 86.03,   28.51,   25.63,   2.02,   4.78,   3.29,  0.107,    0), self.lumi()["muon"]/self.lumi()["mcMuon"]),
@@ -76,12 +88,11 @@ class data2011_3(data) :
             "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),
             }
         self._fixedParameters = {
-            "sigmaLumi":  0.06,
+            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             "sigmaMumuZ": 0.20,
             }
-        # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
 
 class data2011_3_no_cleaning_cuts(data2011_3) :
     """cleaning cuts removed"""
@@ -146,11 +157,10 @@ class data2011_2(data) :
             "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,    1), self.lumi()["had"] /self.lumi()["mcZinv"]),
             }
         self._fixedParameters = {
-            "sigmaLumi":  0.04,
-            "sigmaPhotZ": 0.40,
-            "sigmaMuonW": 0.30,
+            "sigmaLumiLike": 0.04,
+            "sigmaPhotZ":    0.40,
+            "sigmaMuonW":    0.30,
             }
-        # (3% ECAL, 2.5% vetoes, 2.5% JES and JER + the lumi uncert.) PDF uncertainties we used 10%.
         
 def addLists(l1, l2) :
     out = []
@@ -195,7 +205,7 @@ class data2010(data) :
         self._mcStatError = {}
 
         self._fixedParameters = {
-            "sigmaLumi":  0.04,
-            "sigmaPhotZ": 0.40,
-            "sigmaMuonW": 0.30,
+            "sigmaLumiLike": 0.04,
+            "sigmaPhotZ":    0.40,
+            "sigmaMuonW":    0.30,
             }
