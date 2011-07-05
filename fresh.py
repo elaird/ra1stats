@@ -633,7 +633,7 @@ class foo(object) :
         args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
                 "lumi": self.inputData.lumi(), "htBinLowerEdges": self.inputData.htBinLowerEdges(),
                 "htMaxForPlot": self.inputData.htMaxForPlot(), "REwk": self.REwk, "RQcd": self.RQcd,
-                "hadControlLabels": self.hadControlSamples, "smOnly": self.smOnly(), "note": self.note(),
+                "hadControlLabels": self.hadControlSamples, "mumuTerms": self.mumuTerms, "smOnly": self.smOnly(), "note": self.note(),
                 "signalExampleToStack": self.signalExampleToStack, "printPages": printPages}
         plotter = plotting.validationPlotter(args)
         plotter.inputData = self.inputData

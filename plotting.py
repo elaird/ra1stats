@@ -184,10 +184,10 @@ class validationPlotter(object) :
              "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
             ]
 
+        desc2 = "#rho_{ph} = %4.2f #pm %4.2f"%(self.wspace.var("rhoPhotZ").getVal(), self.wspace.var("rhoPhotZ").getError())
+        if self.mumuTerms : desc2 += "; #rho_{#mu#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMumuZ").getVal(), self.wspace.var("rhoMumuZ").getError())
         vars += [
-            {"var":"zInv", "type":"function", "desc":"Z->inv",
-             "desc2": "#rho_{ph} = %4.2f #pm %4.2f; "%(self.wspace.var("rhoPhotZ").getVal(), self.wspace.var("rhoPhotZ").getError())+\
-             "#rho_{#mu#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMumuZ").getVal(), self.wspace.var("rhoMumuZ").getError()), "color":r.kRed, "style":2, "width":2, "stack":"ewk"},
+            {"var":"zInv", "type":"function", "desc":"Z->inv", "desc2": desc2,  "color":r.kRed, "style":2, "width":2, "stack":"ewk"},
             {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho_{#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMuonW").getVal(), self.wspace.var("rhoMuonW").getError()),
              "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
             ]
