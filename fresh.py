@@ -12,8 +12,8 @@ def modelConfiguration(w, smOnly) :
 
 def q0q1(inputData, factor, A_ewk_ini) :
     def thing(i) :
-        return (o["nHad"][i] - o["nHadBulk"][i]*A_ewk_ini*factor)
-    o = inputData.observations()
+        return (obs["nHad"][i] - obs["nHadBulk"][i]*A_ewk_ini*factor)
+    obs = inputData.observations()
     return thing(0)/thing(1)
 
 def initialkQcd(inputData, factor, A_ewk_ini) :
@@ -48,7 +48,8 @@ def initialAQcdControl(inputData, label) :
     return out
                      
 def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
-    o = inputData.observations()
+    obs = inputData.observations()
+    trg = inputData.triggerEfficiencies()
     htMeans = inputData.htMeans()
     terms = []
 
@@ -75,15 +76,16 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
             w.var("k_qcd").setVal(initialkQcdControl(inputData, "_"+hadControlSamples[0]))
         w.var("A_qcd").setVal(initialAQcd(inputData, factor, A_ewk_ini, w.var("k_qcd").getVal()))
 
-    for i,htMeanValue,nBulkValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"]) :
-        for item in ["htMean", "nBulk"] :
-            wimport(w, r.RooRealVar("%s%d"%(item, i), "%s%d"%(item, i), eval("%sValue"%item)))
+    for i,htMeanValue,nHadBulkValue,hadTrgEffValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"]) :
+        wimport(w, r.RooRealVar("htMean%d"%i, "htMean%d"%i, htMeanValue))
+        wimport(w, r.RooRealVar("nHadBulk%d" %i, "nHadBulk%d" %i, nHadBulkValue))
+        #wimport(w, r.RooRealVar("nHadBulk%d" %i, "nHadBulk%d" %i, nHadBulkValue*hadTrgEffValue))
 
     iLast = len(htMeans)-1
-    for i,nHadValue in zip(range(len(htMeans)), o["nHad"]) :
-        wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcd"), w.var("k_qcd"), w.var("htMean%d"%i))))
+    for i,nHadValue in enumerate(obs["nHad"]) :
+        wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_qcd"), w.var("k_qcd"), w.var("htMean%d"%i))))
         if REwk :
-            wimport(w, r.RooFormulaVar("ewk%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewk"), w.var("k_ewk"), w.var("htMean%d"%i))))
+            wimport(w, r.RooFormulaVar("ewk%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_ewk"), w.var("k_ewk"), w.var("htMean%d"%i))))
             ewk = w.function("ewk%d"%i)
         else :
             wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
@@ -124,7 +126,7 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
 
 def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
     def s(i = None) : return ("_%s%s"%(label, "_%d"%i if i!=None else ""))
-    o = inputData.observations()
+    obs = inputData.observations()
     htMeans = inputData.htMeans()
     terms = []
 
@@ -135,11 +137,11 @@ def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
     w.var("k_ewkControl%s"%s()).setVal(0.0)
     w.var("k_ewkControl%s"%s()).setConstant()
 
-    for i,htMeanValue,nBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, o["nHadBulk"], o["nHadControl%s"%s()]) :
+    for i,htMeanValue,nHadBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], obs["nHadControl%s"%s()]) :
         wimport(w, r.RooFormulaVar("qcdControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
-                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"), w.var("htMean%d"%i))))
+                                   r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"), w.var("htMean%d"%i))))
         wimport(w, r.RooFormulaVar("ewkControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
-                                   r.RooArgList(w.var("nBulk%d"%i), w.var("A_ewkControl%s"%s()), w.var("k_ewkControl%s"%s()), w.var("htMean%d"%i))))
+                                   r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_ewkControl%s"%s()), w.var("k_ewkControl%s"%s()), w.var("htMean%d"%i))))
         wimport(w, r.RooFormulaVar("hadControlB%s"%s(i), "(@0)+(@1)", r.RooArgList(w.function("ewkControl%s"%s(i)), w.function("qcdControl%s"%s(i)))))
         wimport(w, r.RooRealVar("nHadControl%s"%s(i), "nHadControl%s"%s(i), nControlValue))
         if smOnly :
@@ -629,4 +631,5 @@ class foo(object) :
 
     def bestFit(self, printPages = False) :
         plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
-                                 self.inputData, self.REwk, self.RQcd, self.hadControlSamples, self.smOnly(), self.note(), self.signalExampleToStack, printPages = printPages)
+                                 lumi = self.inputData.lumi(), htBins = self.inputData.htBinLowerEdges(),
+                                 self.REwk, self.RQcd, self.hadControlSamples, self.smOnly(), self.note(), self.signalExampleToStack, printPages = printPages)
