@@ -630,6 +630,11 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False) :
-        plotting.validationPlots(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data),
-                                 lumi = self.inputData.lumi(), htBins = self.inputData.htBinLowerEdges(),
-                                 self.REwk, self.RQcd, self.hadControlSamples, self.smOnly(), self.note(), self.signalExampleToStack, printPages = printPages)
+        args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
+                "lumi": self.inputData.lumi(), "htBinLowerEdges": self.inputData.htBinLowerEdges(),
+                "htMaxForPlot": self.inputData.htMaxForPlot(), "REwk": self.REwk, "RQcd": self.RQcd,
+                "hadControlLabels": self.hadControlSamples, "smOnly": self.smOnly(), "note": self.note(),
+                "signalExampleToStack": self.signalExampleToStack, "printPages": printPages}
+        plotter = plotting.validationPlotter(args)
+        plotter.inputData = self.inputData
+        plotter.go()
