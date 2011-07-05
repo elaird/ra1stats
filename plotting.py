@@ -207,7 +207,10 @@ class validationPlotter(object) :
             self.validationPlot(note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
                                 obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = [
                 {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
-                {"var":"hadB", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+                {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "ewk", errors = True) if self.REwk else "[floating]",
+                 "color":r.kCyan, "style":2, "width":2, "stack":"background"},
+                {"var":"hadB", "type":"function", "desc":"expected total background",
+                 "color":r.kBlue, "style":1, "width":3, "stack":"total"},
                 ])
 
     def hadControlPlots(self) :
@@ -217,7 +220,7 @@ class validationPlotter(object) :
             for logY in [False, True] :
                 thisNote = "Hadronic Control Sample %s %s"%(labelRaw, " (logY)" if logY else "")
                 self.validationPlot(note = thisNote, legend0 = (0.35, 0.72),
-                                    obsKey = "nHadControl%s"%label1, obsLabel = "hadronic control data (%s) [%g/pb]"%(labelRaw, self.lumi["had"]),
+                                    obsKey = "nHadControl%s"%label, obsLabel = "hadronic control data (%s) [%g/pb]"%(labelRaw, self.lumi["had"]),
                                     logY = logY, otherVars = [
                     {"var":"hadControlB%s"%label, "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
                     {"var":"ewkControl%s"%label,  "type":"function", "desc":"EWK", "desc2":akDesc(self.wspace, "ewkControl%s"%label1, errors = True),
