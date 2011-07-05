@@ -10,7 +10,7 @@ def excl(counts, isExclusive) :
     return tuple(out)
 
 vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans",
-        "observations", "purities", "mcExpectations", "mcStatError", "fixedParameters"]
+        "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcStatError", "fixedParameters"]
 
 class data(object) :
     def __init__(self) :
@@ -88,6 +88,7 @@ class data(object) :
             for key,value in d.iteritems() :
                 getattr(self, "_%s"%item)[key] = tuple(map(lambda x:math.sqrt(x), value))
 
+        assert False,"Implement trigger efficiency merging."
         assert False,"Implement purity merging."
         #print "ERROR: purity merging is not implemented.  Results are nonsense."
 
