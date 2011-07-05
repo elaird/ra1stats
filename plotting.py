@@ -161,6 +161,7 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName+"[")        
 
         self.hadPlots()
+        self.hadDataMcPlots()
         self.hadControlPlots()
         self.muonPlots()
         self.photPlots()
@@ -199,6 +200,15 @@ class validationPlotter(object) :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             self.validationPlot(note = thisNote, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
                                 obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = vars, logY = logY)
+
+    def hadDataMcPlots(self) :
+        for logY in [False, True] :
+            thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")        
+            self.validationPlot(note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
+                                obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = [
+                {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
+                {"var":"hadB", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+                ])
 
     def hadControlPlots(self) :
         for labelRaw in self.hadControlLabels :
@@ -414,7 +424,8 @@ class validationPlotter(object) :
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
 
-        obs = self.varHisto(varName = obsKey, extraName = str(logY), wspaceMemberFunc = "var", yLabel = yLabel, note = note, printPages = (self.printPages and not logY),
+        extraName = str(logY)+"_".join([inDict(o, "var", "") for o in otherVars])
+        obs = self.varHisto(varName = obsKey, extraName = extraName, wspaceMemberFunc = "var", yLabel = yLabel, note = note, printPages = (self.printPages and not logY),
                             lumiString = obsLabel[obsLabel.find("["):])["value"]
         obs.SetMarkerStyle(20)
         obs.SetStats(False)
@@ -434,7 +445,6 @@ class validationPlotter(object) :
 	stuff += [leg,obs,stacks]
 	legEntries = []
 	for d in otherVars :
-            extraName = str(logY)
 	    if "example" not in d :
 	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"], purityKey = inDict(d, "purityKey", None),
                                        color = d["color"], lineStyle = d["style"], lineWidth = inDict(d, "width", 1),
