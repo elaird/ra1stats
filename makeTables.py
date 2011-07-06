@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import math
+import math,os
 from inputData import data2011
 
 def beginDocument() :
@@ -91,14 +91,18 @@ def truncate(t, index = 2) :
     l = list(t)
     return tuple(l[:index] + [sum(l[index:])]*(len(l)-index))
 
+def purity(data, indices, *args) :
+    return ["%4.2f"%data.purities()[args[0]][i] for i in indices]
+
 def mcYieldHadLumi(data, indices, *args) :
-    return ["%4.1f"%data.mcExpectations()[args[0]][i] for i in indices]
+    return ["%4.1f $\pm$ %4.1f$_{stat}$"%(data.mcExpectations()[args[0]][i], data.mcStatError()[args[0]+"Err"][i]) for i in indices]
 
 def mcYieldOtherLumi(data, indices, *args) :
     mcOther = data.mcExpectations()[args[0]]
+    mcOtherErr = data.mcStatError()[args[0]+"Err"]
     lumiOther = data.lumi()[args[1]]
     lumiHad   = data.lumi()[args[2]]
-    return ["%4.1f"%(mcOther[i]*lumiHad/lumiOther) for i in indices]
+    return ["%4.1f $\pm$ %4.1f$_{stat}$"%(mcOther[i]*lumiHad/lumiOther, mcOtherErr[i]*lumiHad/lumiOther) for i in indices]
 
 def mcRatio(data, indices, *args) :
     mcPhot = truncate(data.mcExpectations()[args[0]])
@@ -122,7 +126,7 @@ def error(obs) :
 def prediction(data, indices, *args) :
     def oneString(obs, ratio, sysFactor = 1.0) :
         return "%5.1f $\pm$ %5.1f$_{stat}$ %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f$_{syst}$"%(obs*ratio*sysFactor))
-    mcPhot = truncate(data.mcExpectations()[args[1]])
+    mcPhot = truncate(data.mcExpectations()[args[1]] if args[1] in data.mcExpectations() else data.mcExtra()[args[1]])
     mcZinv = truncate(data.mcExpectations()[args[2]])
     return [oneString(data.observations()[args[0]][i], mcZinv[i]/mcPhot[i], data.fixedParameters()[args[3]]) for i in indices]
 
@@ -135,8 +139,8 @@ def photon(data) :
                             {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcGjets", "phot", "had")},
                             {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcGjets", "mcZinv", "phot", "had")},
                             {"label": r'''Data $\gamma +$~jets''', "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
-                            #{"label": r'''Sample Purity''',        "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
-                            {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcGjets", "mcZinv", "sigmaPhotZ")},
+                            {"label": r'''Sample Purity''',        "entryFunc":purity,            "args":("phot",)},
+                            {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcPhot", "mcZinv", "sigmaPhotZ")},
                             ])
 
 #muon to W
@@ -174,7 +178,6 @@ def intResultFromTxt(data, indices, *args) :
 
 def fitResults(data, fileName = "") :
     txtData = dictFromFile(fileName)
-    #print txtData
     assert len(set([len(value[1]) for value in txtData.values()]))==1
     data.txtData = txtData
     return oneTable(data,
@@ -182,16 +185,29 @@ def fitResults(data, fileName = "") :
                     label = "results-fit",
                     rows = [{"label": r'''W + $\ttNew$ background''', "entryFunc":floatResultFromTxt,  "args":("ttw",)},
                             {"label": r'''$\znunu$ background''',     "entryFunc":floatResultFromTxt,  "args":("zInv",)},
+                            {"label": r'''QCD background''',          "entryFunc":floatResultFromTxt,  "args":("qcd",)},
                             {"label": r'''Total Background''',        "entryFunc":floatResultFromTxt,  "args":("hadB",)},
                             {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
 
-data = data2011()
+def document() :
+    data = data2011()
+    out = ""
+    for blob in [beginDocument(), RalphaT(data), photon(data), muon(data),
+                 #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
+                 #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt"),
+                 fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v13/numbers_v1.txt"),
+                 endDocument()] :
+        out += blob
+    return out
 
-print beginDocument()
-print RalphaT(data)
-print photon(data)
-print muon(data)
-#print fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
-print fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt")
-print endDocument()
+def write(doc, fileName = "") :
+    assert fileName
+    f = open(fileName, "w")
+    f.write(doc)
+    f.close()
+    os.system("pdflatex %s"%fileName)
+
+write(document(), fileName = "tables.tex")
+
+
