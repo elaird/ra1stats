@@ -6,6 +6,7 @@ physics
 1 mc stats as systematic
 1 bin-by-bin systematics on signal eff.
 1 use scaled yields in lowest two bins
+1 update LM6 muon efficiencies
 2 sys on R
 2 update muon file
 2 repair nlo
