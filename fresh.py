@@ -664,7 +664,7 @@ class foo(object) :
                 "htMaxForPlot": self.inputData.htMaxForPlot(), "REwk": self.REwk, "RQcd": self.RQcd,
                 "hadControlLabels": self.hadControlSamples, "mumuTerms": self.mumuTerms, "smOnly": self.smOnly(), "note": self.note(),
                 "signalExampleToStack": self.signalExampleToStack, "printPages": printPages}
-        plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
+        #plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
         plotter = plotting.validationPlotter(args)
         plotter.inputData = self.inputData
         plotter.go()
