@@ -89,10 +89,6 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     canvas.Print(ps+"]")
     utils.ps2pdf(ps)
 
-#def inputHisto(wspace, htBinLowerEdges, htMaxForPlot, obsKey, note, extraName = "", yLabel = "", printPages = False, lumiString = "") :
-#    if printPages : print obsKey.rjust(10),lumiString.rjust(10),pretty(numList)
-#    return out
-    
 def pretty(l) :
     out = "("
     for i,item in enumerate(l) :
@@ -120,9 +116,7 @@ def drawOne(hist, goptions, errorBand, bandFillStyle = 1001) :
     return [errors, noerrors]
 
 def printOnePage(canvas, fileName) :
-    for item in [(" ","_"), ("(",""), (")","")] :
-        fileName = fileName.replace(*item)
-    fileName = fileName.lower()+".eps"
+    fileName = fileName+".eps"
     super(utils.numberedCanvas, canvas).Print(fileName)
     utils.epsToPdf(fileName)
 
@@ -150,6 +144,7 @@ class validationPlotter(object) :
             setattr(self,key,value)
         if any(self.signalExampleToStack) : assert self.smOnly
 
+        self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
         if not self.smOnly :
             self.signalDesc = "signal"
@@ -170,6 +165,10 @@ class validationPlotter(object) :
         self.mcFactorPlots()
         self.alphaTRatioPlots()
         self.printPars()
+
+	if self.printPages :
+            for item in sorted(list(set(self.toPrint))) :
+                print item
 
         self.canvas.Print(self.psFileName+"]")
         utils.ps2pdf(self.psFileName)
@@ -198,13 +197,15 @@ class validationPlotter(object) :
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
-            self.validationPlot(note = thisNote, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
+            fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
+            self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
                                 obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = vars, logY = logY)
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
-            thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")        
-            self.validationPlot(note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
+            thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
+            fileName = "hadronic_signal_data_mc%s"%("_logy" if logY else "")
+            self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
                                 obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = [
                 {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
                 {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "ewk", errors = True) if self.REwk else "[floating]",
@@ -219,7 +220,8 @@ class validationPlotter(object) :
             label1 = label[:-1]
             for logY in [False, True] :
                 thisNote = "Hadronic Control Sample %s %s"%(labelRaw, " (logY)" if logY else "")
-                self.validationPlot(note = thisNote, legend0 = (0.35, 0.72),
+                fileName = "hadronic_control_fit_%s%s"%(labelRaw, "_logy" if logY else "")
+                self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72),
                                     obsKey = "nHadControl%s"%label, obsLabel = "hadronic control data (%s) [%g/pb]"%(labelRaw, self.lumi["had"]),
                                     logY = logY, otherVars = [
                     {"var":"hadControlB%s"%label, "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
@@ -241,13 +243,15 @@ class validationPlotter(object) :
 
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
-            self.validationPlot(note = thisNote, legend0 = (0.35, 0.7),
+            fileName = "muon_control_fit%s"%("_logy" if logY else "")
+            self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.7),
                                 obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%self.lumi["muon"], otherVars = vars, logY = logY)
 
     def photPlots(self) :
         for logY in [False, True] :
-            thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")        
-            self.validationPlot(note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
+            thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
+            fileName = "photon_control_fit%s"%("_logy" if logY else "")            
+            self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
                                 obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%self.lumi["phot"], otherVars = [
                 {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
                 {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
@@ -255,8 +259,9 @@ class validationPlotter(object) :
 
     def mumuPlots(self) :
         for logY in [False, True] :
-            thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")        
-            self.validationPlot(note = thisNote, legend0 = (0.35, 0.72), reverseLegend = True,
+            thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
+            fileName = "mumu_control_fit%s"%("_logy" if logY else "")
+            self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True,
                                 obsKey = "nMumu", obsLabel = "mumu data [%g/pb]"%self.lumi["mumu"], logY = logY, otherVars = [
                 {"var":"mcZmumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
                 {"var":"mumuExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
@@ -265,10 +270,10 @@ class validationPlotter(object) :
     def ewkPlots(self) :
         self.ratioPlot(note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, specs = [
             {"num":"ttw",   "numType":"function", "dens":["mcTtw"],  "denTypes":[None], "desc":"ML ttW / MC ttW",       "color":r.kGreen}], goptions = "hist")
-        self.ratioPlot(note = "Z->inv scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, specs = [
+        self.ratioPlot(note = "Zinv scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, specs = [
             {"num":"zInv",  "numType":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv", "color":r.kRed}], goptions = "hist")
         
-        self.validationPlot(note = "fraction of EWK background which is Z->inv (result of fit)",
+        self.validationPlot(note = "fraction of EWK background which is Zinv (result of fit)",
                             legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", minimum = 0.0, maximum = 1.0,
                             otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}], yLabel = "")
         
@@ -287,7 +292,7 @@ class validationPlotter(object) :
                        yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
-        self.ratioPlot(note = "hadronic signal", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
+        self.ratioPlot(note = "hadronic signal", fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
             {"num":"qcd",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
             {"num":"ewk",   "numType":self.ewkType,    "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
             {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
@@ -372,7 +377,7 @@ class validationPlotter(object) :
         return out
     
     def varHisto(self, varName = None, extraName = "", wspaceMemberFunc = None, purityKey = None, yLabel = "", note = "",
-                 color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1, printPages = False, lumiString = "") :
+                 color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1, lumiString = "") :
 	d = {}
 	d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
 	d["value"].Reset()
@@ -417,10 +422,10 @@ class validationPlotter(object) :
 	        if key in self.inputData.mcStatError() :
 	            d["value"].SetBinError(i+1, self.inputData.mcStatError()[key][i]/purity)
 	    toPrint.append(value)
-	if printPages : print varName.rjust(10),lumiString.rjust(10),pretty(toPrint)
+        self.toPrint.append( (varName.rjust(10), lumiString.rjust(10), pretty(toPrint)) )
 	return d
 
-    def validationPlot(self, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False, minimum = 0.0, maximum = None,
+    def validationPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False, minimum = 0.0, maximum = None,
                        logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0) :
         stuff = []
         leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "ML values" if (otherVars and obsKey) else "")
@@ -428,8 +433,10 @@ class validationPlotter(object) :
         leg.SetFillStyle(0)
 
         extraName = str(logY)+"_".join([inDict(o, "var", "") for o in otherVars])
-        obs = self.varHisto(varName = obsKey, extraName = extraName, wspaceMemberFunc = "var", yLabel = yLabel, note = note, printPages = (self.printPages and not logY),
-                            lumiString = obsLabel[obsLabel.find("["):])["value"]
+        lumiString = obsLabel[obsLabel.find("["):]
+        obs = self.varHisto(varName = obsKey, extraName = extraName, wspaceMemberFunc = "var",
+                            yLabel = yLabel, note = note, lumiString = lumiString)["value"]
+                            
         obs.SetMarkerStyle(20)
         obs.SetStats(False)
         obs.Draw("p")
@@ -449,9 +456,9 @@ class validationPlotter(object) :
 	legEntries = []
 	for d in otherVars :
 	    if "example" not in d :
-	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"], purityKey = inDict(d, "purityKey", None),
-                                       color = d["color"], lineStyle = d["style"], lineWidth = inDict(d, "width", 1),
-                                       printPages = (self.printPages and not logY), lumiString = obsLabel[obsLabel.find("["):])
+	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"],
+                                       purityKey = inDict(d, "purityKey", None), color = d["color"], lineStyle = d["style"],
+                                       lineWidth = inDict(d, "width", 1), lumiString = lumiString)
 	        hist = histos["value"]
 	    else :
                 d2 = copy.deepcopy(d)
@@ -483,14 +490,14 @@ class validationPlotter(object) :
 	r.gPad.SetTicky()
 	r.gPad.Update()
 	
-	if self.printPages :
+	if self.printPages and fileName :
 	    obs.SetTitle("")
-	    printOnePage(self.canvas, note)
+	    printOnePage(self.canvas, fileName)
 	self.canvas.Print(self.psFileName)
 	return stuff
 
-    def ratioPlot(self, note = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
-                  customMax = False, maximum = None, goptions = "p", printPages = False, reverseLegend = False) :
+    def ratioPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
+                  customMax = False, maximum = None, goptions = "p", reverseLegend = False) :
     	stuff = []
     	leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
     	leg.SetBorderSize(0)
@@ -534,9 +541,9 @@ class validationPlotter(object) :
     	r.gPad.SetTicky()
     	r.gPad.Update()
     	
-    	if printPages :
+    	if self.printPages and fileName :
     	    histos[0].SetTitle("")
-    	    printOnePage(self.canvas, note)
+    	    printOnePage(self.canvas, fileName)
     	self.canvas.Print(self.psFileName)
 
 rootSetup()
