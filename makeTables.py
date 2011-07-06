@@ -3,6 +3,23 @@
 import math
 from inputData import data2011
 
+def beginDocument() :
+    return r'''
+\documentclass[8pt]{article}
+\usepackage{geometry}
+\usepackage{xspace}
+\newcommand{\alt}{\ensuremath{\alpha_{\rm{T}}}\xspace}
+\newcommand{\RaT}{\ensuremath{R_{\alt}}\xspace}
+\def\scalht{\mbox{$H_{\rm{T}}$}\xspace}
+\newcommand{\ra}{\ensuremath{\rightarrow}}
+\newcommand{\znunu}{\ensuremath{{\rm Z} \ra \nu\bar{\nu}}}
+\newcommand{\ttNew}{\ensuremath{\rm{t}\bar{\rm{t}}}\xspace}
+\begin{document}
+'''
+
+def endDocument() :
+    return r'''\end{document}'''
+
 def toString(item) :
     if type(item) is float : return str(int(item))
     else : return str(item)
@@ -115,10 +132,11 @@ def photon(data) :
                     caption = r'''Photon Sample Predictions '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
                     label = "results-PHOTON",
                     rows = [{"label": r'''MC $\znunu$''',          "entryFunc":mcYieldHadLumi,    "args":("mcZinv",)},
-                            {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcPhot", "phot", "had")},
-                            {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcPhot", "mcZinv", "phot", "had")},
+                            {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcGjets", "phot", "had")},
+                            {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcGjets", "mcZinv", "phot", "had")},
                             {"label": r'''Data $\gamma +$~jets''', "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
-                            {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcPhot", "mcZinv", "sigmaPhotZ")},
+                            #{"label": r'''Sample Purity''',        "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
+                            {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcGjets", "mcZinv", "sigmaPhotZ")},
                             ])
 
 #muon to W
@@ -156,6 +174,7 @@ def intResultFromTxt(data, indices, *args) :
 
 def fitResults(data, fileName = "") :
     txtData = dictFromFile(fileName)
+    #print txtData
     assert len(set([len(value[1]) for value in txtData.values()]))==1
     data.txtData = txtData
     return oneTable(data,
@@ -168,8 +187,11 @@ def fitResults(data, fileName = "") :
                             ])
 
 data = data2011()
+
+print beginDocument()
 print RalphaT(data)
 print photon(data)
 print muon(data)
 #print fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
 print fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt")
+print endDocument()
