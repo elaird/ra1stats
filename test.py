@@ -29,7 +29,7 @@ sue_anns_point = {'xs': 2004.,
 
 f = fresh.foo(inputData = data2011(),
               REwk = ["", "FallingExp", "Constant"][2],
-              RQcd = ["Zero", "FallingExp"][0],
+              RQcd = ["Zero", "FallingExp"][1],
               nFZinv = ["All", "One", "Two"][0],
               #signal = [{}, lm6_2011, lm1_2011, lm1_2010, filips_point2, sue_anns_point][1],
               signalExampleToStack = ("LM6", lm6_2011),
