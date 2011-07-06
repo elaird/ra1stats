@@ -10,7 +10,7 @@ def excl(counts, isExclusive) :
     return tuple(out)
 
 vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans",
-        "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcStatError", "fixedParameters"]
+        "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExtra", "mcStatError", "fixedParameters"]
 
 class data(object) :
     def __init__(self) :
@@ -33,7 +33,7 @@ class data(object) :
         if not self._mergeBins :
             assert len(self._constantMcRatioAfterHere)==l
             
-        for item in ["observations", "mcExpectations", "mcStatError"] :
+        for item in ["observations", "mcExpectations", "mcExtra", "mcStatError"] :
             for key,value in getattr(self,"_%s"%item).iteritems() :
                 assert len(value)==l,"%s: %s"%(item, key)
 
@@ -69,7 +69,7 @@ class data(object) :
         self._htBinLowerEdges = tuple(newBins)
 
         #adjust count dictionaries
-        for item in ["observations", "mcExpectations"] :
+        for item in ["observations", "mcExpectations", "mcExtra"] :
             d = {}
             for key,t in getattr(self, "_%s"%item).iteritems() :
                 d[key] = [0]*len(l)

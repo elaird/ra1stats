@@ -16,6 +16,9 @@ class data2011_3(data) :
         #self._mergeBins =                (    0,     1,     2,     3,     4,     4,     4,     4)
         #self._constantMcRatioAfterHere = (    1,     0,     0,     0,     0)
 
+        #self._mergeBins =                (    0,     1,     2,     2,     2,     2,     2,     2)
+        #self._constantMcRatioAfterHere = (    1,     0,     0)
+
         #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
         #self._constantMcRatioAfterHere = (    1,     0,     0,     0,     0)
 
@@ -75,7 +78,6 @@ class data2011_3(data) :
             "mcZinv":     excl(scaled((    90,      41,      51,     24,      4,      1,      1,    0), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
             "mcZmumu":    excl(scaled((    15,       9,      11,      7,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]), isExcl),
             }
-        self._mcExpectations["mcHad"] = tuple([ttw+zinv for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
 
         self._mcStatError = {
             "mcMuonErr":             ( 14.79,   10.39,    8.91,   5.39,  3.244,  2.286,  0.186, 0.152),
@@ -92,6 +94,11 @@ class data2011_3(data) :
             "phot":                  (  0.92,    0.97,    0.99,   0.99,   0.99,   0.99,   0.99, 0.99),
             "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),
             }
+
+        self._mcExtra = {}
+        self._mcExtra["mcHad"]  = tuple([ttw+zinv for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
+        self._mcExtra["mcPhot"] = tuple([gJet/purity for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
+        
         self._fixedParameters = {
             "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
             "sigmaPhotZ": 0.40,

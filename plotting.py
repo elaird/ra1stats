@@ -168,7 +168,7 @@ class validationPlotter(object) :
 
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
-                print item
+                print " ".join(item)
 
         self.canvas.Print(self.psFileName+"]")
         utils.ps2pdf(self.psFileName)
@@ -415,7 +415,7 @@ class validationPlotter(object) :
 	                if abs(x)==1.0e30 : continue
 	                d[item].SetBinContent(i+1, x)
 	    else :
-	        value = self.inputData.mcExpectations()[varName][i]
+	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
 	        purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
 	        d["value"].SetBinContent(i+1, value/purity)
 	        key = varName+"Err"
