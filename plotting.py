@@ -169,6 +169,7 @@ class validationPlotter(object) :
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
                 print " ".join(item)
+            #self.hadronicSummaryTable()
 
         self.canvas.Print(self.psFileName+"]")
         utils.ps2pdf(self.psFileName)
@@ -352,6 +353,17 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName)
         return
 
+    def hadronicSummaryTable(self) :
+        N = len(self.htBinLowerEdges)
+        print "HT bins :",pretty(self.htBinLowerEdges)
+        print "MC EWK  :",pretty(self.inputData.mcExtra()["mcHad"])
+        print "Data    :",pretty([self.wspace.var("nHad%d"%i).getVal() for i in range(N)])
+        print "fit SM  :",pretty([self.wspace.function("hadB%d"%i).getVal() for i in range(N)])
+        print "fit EWK :",pretty([self.wspace.function("ewk%d"%i).getVal() for i in range(N)])
+        print "fit Zinv:",pretty([self.wspace.function("zInv%d"%i).getVal() for i in range(N)])
+        print "fit TTw :",pretty([self.wspace.function("ttw%d"%i).getVal() for i in range(N)])
+        print "fit QCD :",pretty([self.wspace.function("qcd%d"%i).getVal() for i in range(N)])
+        
     def htHisto(self, name = "example", note = "", yLabel = "counts / bin") :
         bins = array.array('d', list(self.htBinLowerEdges)+[self.htMaxForPlot])
         out = r.TH1D(name, "%s;H_{T} (GeV);%s"%(note, yLabel), len(bins)-1, bins)
