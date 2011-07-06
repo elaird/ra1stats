@@ -236,7 +236,8 @@ class validationPlotter(object) :
     def muonPlots(self) :
         vars = [
             {"var":"muonB",   "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":"total"},
-            {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray}
+            {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2,
+             "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if not self.printPages else {},
             ]
         if not self.smOnly :
             vars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "width":2, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
@@ -255,7 +256,8 @@ class validationPlotter(object) :
             fileName = "photon_control_fit%s"%("_logy" if logY else "")            
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
                                 obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%self.lumi["phot"], otherVars = [
-                {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
+                {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
+                 "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray}  if not self.printPages else {},
                 {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
                 ])
 
@@ -469,6 +471,7 @@ class validationPlotter(object) :
 	legEntries = []
 	for d in otherVars :
 	    if "example" not in d :
+                if "var" not in d : continue
 	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"],
                                        purityKey = inDict(d, "purityKey", None), color = d["color"], lineStyle = d["style"],
                                        lineWidth = inDict(d, "width", 1), lumiString = lumiString)
