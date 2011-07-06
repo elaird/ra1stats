@@ -3,6 +3,8 @@
 import fresh
 from inputData import data2010,data2011
 
+def scaled(t, factor) : return tuple([factor*item for item in t])
+
 lm1_2011 = {"xs": 4.9,
             "effHad":  (0.006,    0.01,    0.02,   0.029,  0.034,  0.023,  0.011,  0.005),
             "effMuon": (0.0,     0.001,   0.002,   0.003,  0.003,  0.002,  0.001,  0.0, )}
@@ -13,7 +15,9 @@ lm1_2010 = {"xs": 4.9,
 
 lm6_2011 = {"xs": 0.3104,
             "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
-            "effMuon":(0.0,     0.0,     0.005/6, 0.012/6,0.019/6,0.022/6,0.018/6,0.029/6)}
+            "effMuon":(0.0,     0.0,     0.005/6, 0.012/6,0.019/6,0.022/6,0.018/6,0.029/6),#approx. for pT>20 GeV
+            #"effMuon":scaled((0.045, 0.044, 0.2123, 0.1565, 0.2990, 0.3214, 0.2614, 0.3218), 1.0e-2),#pT>10 GeV
+            }
 
 filips_point1 = {'xs': 0.0909,
                 'effMuon': [0.0003, 0.0003, 0.0004, 0.0007, 0.0012, 0.0011, 0.0015, 0.0032],
@@ -31,6 +35,7 @@ f = fresh.foo(inputData = data2011(),
               REwk = ["", "FallingExp", "Constant"][2],
               RQcd = ["Zero", "FallingExp"][1],
               nFZinv = ["All", "One", "Two"][0],
+              #qcdSearch = True,
               #signal = [{}, lm6_2011, lm1_2011, lm1_2010, filips_point2, sue_anns_point][1],
               signalExampleToStack = ("LM6", lm6_2011),
               #signalExampleToStack = ("m0=540 GeV, m12=440 GeV", filips_point1),
