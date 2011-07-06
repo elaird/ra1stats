@@ -100,7 +100,8 @@ class data2011_3(data) :
         self._mcExtra["mcPhot"] = tuple([gJet/purity for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
         self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
+            #"sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
+            "sigmaLumiLike": 0.06,
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             "sigmaMumuZ": 0.20,
