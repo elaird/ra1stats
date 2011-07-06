@@ -264,7 +264,7 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, signalDict, includeHadTerms = True, hadControlSamples = [],
+def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, includeHadTerms = True, hadControlSamples = [],
                     includeMuonTerms = True, includePhotTerms = True, includeMumuTerms = False) :
     terms = []
     obs = []
@@ -319,6 +319,8 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, signalDict, includeHadTerm
         obs.append("oneRhoSignal")
         nuis.append("rhoSignal")
         w.defineSet("poi", "f")
+    elif qcdSearch :
+        w.defineSet("poi", "A_qcd,k_qcd")
 
     obs += multi(w, multiBinObs, inputData)
     nuis += multi(w, multiBinNuis, inputData)
@@ -341,6 +343,28 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
     out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
 
+    if makePlots :
+        canvas = r.TCanvas()
+        canvas.SetTickx()
+        canvas.SetTicky()
+        psFile = "intervalPlot_%s_%g.ps"%(note, 100*cl)
+        plot = r.RooStats.LikelihoodIntervalPlot(lInt)
+        plot.Draw(); print
+        canvas.Print(psFile)
+        utils.ps2pdf(psFile)
+
+    utils.delete(lInt)
+    return out
+
+def plIntervalQcd(dataset, modelconfig, wspace, note, cl = None, makePlots = True) :
+    out = {}
+    calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
+    calc.SetConfidenceLevel(cl)
+    lInt = calc.GetInterval()
+    #out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+    #out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
+
+    lInt.Print()
     if makePlots :
         canvas = r.TCanvas()
         canvas.SetTickx()
@@ -561,9 +585,9 @@ def note(REwk = None, RQcd = None, nFZinv = None, hadTerms = None, hadControlSam
     return out
 
 class foo(object) :
-    def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, signal = {}, signalExampleToStack = ("", {}), trace = False,
+    def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, qcdSearch = False, signal = {}, signalExampleToStack = ("", {}), trace = False,
                  hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False) :
-        for item in ["inputData", "REwk", "RQcd", "nFZinv", "signal", "signalExampleToStack",
+        for item in ["inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "signalExampleToStack",
                      "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
             setattr(self, item, eval(item))
 
@@ -572,7 +596,7 @@ class foo(object) :
         r.RooRandom.randomGenerator().SetSeed(1)
 
         self.wspace = r.RooWorkspace("Workspace")
-        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.nFZinv, self.signal,
+        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.nFZinv, self.qcdSearch, self.signal,
                         includeHadTerms = self.hadTerms, hadControlSamples = self.hadControlSamples,
                         includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
         self.data = dataset(obs(self.wspace))
@@ -587,6 +611,9 @@ class foo(object) :
         assert self.REwk in ["", "FallingExp", "Constant"]
         assert self.RQcd in ["FallingExp", "Zero"]
         assert self.nFZinv in ["One", "Two", "All"]
+        if self.qcdSearch :
+            assert self.smOnly()
+            assert self.RQcd=="FallingExp"
         bins = self.inputData.htBinLowerEdges()
         for d in [self.signal, self.signalExampleToStack[1]] :
             for key,value in d.iteritems() :
@@ -611,7 +638,9 @@ class foo(object) :
         #wspace.Print("v")
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False) :
-        if method=="profileLikelihood" :
+        if self.qcdSearch :
+            plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
+        elif method=="profileLikelihood" :
             return plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
@@ -635,6 +664,7 @@ class foo(object) :
                 "htMaxForPlot": self.inputData.htMaxForPlot(), "REwk": self.REwk, "RQcd": self.RQcd,
                 "hadControlLabels": self.hadControlSamples, "mumuTerms": self.mumuTerms, "smOnly": self.smOnly(), "note": self.note(),
                 "signalExampleToStack": self.signalExampleToStack, "printPages": printPages}
+        plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
         plotter = plotting.validationPlotter(args)
         plotter.inputData = self.inputData
         plotter.go()
