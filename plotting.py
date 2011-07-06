@@ -14,11 +14,12 @@ def writeGraphVizTree(wspace, pdfName = "model") :
     
 def errorsPlot(wspace, results) :
     results.Print("v")
-    k = wspace.var("k")
-    A = wspace.var("A")
-    plot = r.RooPlot(k, A, 0.0, 1.0e-5, 0.0, 1.0e-4)
+    k = wspace.var("k_qcd")
+    A = wspace.var("A_qcd")
+    plot = r.RooPlot(k, A, 0.0, 2.0e-2, 0.0, 0.5e-4)
     results.plotOn(plot, k, A, "ME12VHB")
     plot.Draw()
+    r.gPad.Print("Ak.png")
     return plot
 
 def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
