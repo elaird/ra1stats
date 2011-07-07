@@ -46,7 +46,12 @@ def initialAQcdControl(inputData, label) :
     out = math.exp( initialkQcdControl(inputData, label)*htMeans[0] )
     out *= (obs["nHadControl%s"%label][0]/float(obs["nHadBulk"][0]))
     return out
-                     
+
+def parametrizedEwk(w = None, ewk = "", i = None, iLast = None) :
+    return r.RooFormulaVar("%s%d"%(ewk, i), "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
+                           r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%ewk), w.var("d_%s"%ewk),
+                                        w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast)))
+    
 def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -56,10 +61,10 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
     A_ewk_ini = 1.3e-5
     if REwk :
         wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ewk_ini, 0.0, 1.0))
-        wimport(w, r.RooRealVar("k_ewk", "k_ewk", 1.0e-6,    0.0, 1.0))
+        wimport(w, r.RooRealVar("d_ewk", "d_ewk", 0.0, -1.0, 1.0))
     if REwk=="Constant" :
-        w.var("k_ewk").setVal(0.0)
-        w.var("k_ewk").setConstant()
+        w.var("d_ewk").setVal(0.0)
+        w.var("d_ewk").setConstant()
 
     wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
     wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
@@ -85,8 +90,9 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
     for i,nHadValue in enumerate(obs["nHad"]) :
         wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_qcd"), w.var("k_qcd"), w.var("htMean%d"%i))))
         if REwk :
-            wimport(w, r.RooFormulaVar("ewk%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_ewk"), w.var("k_ewk"), w.var("htMean%d"%i))))
-            ewk = w.function("ewk%d"%i)
+            s = "ewk"
+            wimport(w, parametrizedEwk(w = w, ewk = s, i = i, iLast = iLast))
+            ewk = w.function("%s%d"%(s, i))
         else :
             wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
             ewk = w.var("ewk%d"%i)
@@ -133,15 +139,15 @@ def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
     assert (REwk and RQcd=="FallingExp")
     wimport(w, r.RooRealVar("A_qcdControl%s"%s(), "A_qcdControl%s"%s(), initialAQcdControl(inputData, s()), 0.0, 100.0))
     wimport(w, r.RooRealVar("A_ewkControl%s"%s(), "A_ewkControl%s"%s(), 10.0e-6, 0.0, 1.0))
-    wimport(w, r.RooRealVar("k_ewkControl%s"%s(), "k_ewkControl%s"%s(), 0.0, 0.0, 1.0))
-    w.var("k_ewkControl%s"%s()).setVal(0.0)
-    w.var("k_ewkControl%s"%s()).setConstant()
+    wimport(w, r.RooRealVar("d_ewkControl%s"%s(), "d_ewkControl%s"%s(), 0.0, -1.0, 1.0))
+    w.var("d_ewkControl%s"%s()).setVal(0.0)
+    w.var("d_ewkControl%s"%s()).setConstant()
 
     for i,htMeanValue,nHadBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], obs["nHadControl%s"%s()]) :
         wimport(w, r.RooFormulaVar("qcdControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
                                    r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"), w.var("htMean%d"%i))))
-        wimport(w, r.RooFormulaVar("ewkControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
-                                   r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_ewkControl%s"%s()), w.var("k_ewkControl%s"%s()), w.var("htMean%d"%i))))
+
+        wimport(w, parametrizedEwk(w = w, ewk = "ewkControl", i = i, iLast = iLast))
         wimport(w, r.RooFormulaVar("hadControlB%s"%s(i), "(@0)+(@1)", r.RooArgList(w.function("ewkControl%s"%s(i)), w.function("qcdControl%s"%s(i)))))
         wimport(w, r.RooRealVar("nHadControl%s"%s(i), "nHadControl%s"%s(i), nControlValue))
         if smOnly :
@@ -277,7 +283,7 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, inc
 
     smOnly = not signalDict
     nuis += ["A_qcd","k_qcd"]
-    if REwk : nuis += ["A_ewk","k_ewk"]
+    if REwk : nuis += ["A_ewk","d_ewk"]
 
     hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
     photTerms(w, inputData)
@@ -608,7 +614,7 @@ class foo(object) :
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
 
     def checkInputs(self) :
-        assert self.REwk in ["", "FallingExp", "Constant"]
+        assert self.REwk in ["", "Linear", "Constant"]
         assert self.RQcd in ["FallingExp", "Zero"]
         assert self.nFZinv in ["One", "Two", "All"]
         if self.qcdSearch :
