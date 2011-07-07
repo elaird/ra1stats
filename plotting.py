@@ -131,12 +131,12 @@ def histoMax(h, factor = 1.1) :
     i = h.GetMaximumBin()
     return factor*(h.GetBinContent(i)+h.GetBinError(i))
 
-def akDesc(wspace, var, errors = True, var2 = "") :
-    varA = wspace.var("A_%s"%var)
-    vark = wspace.var("k_%s"%(var if not var2 else var2))
+def akDesc(wspace, var1 = "", var2 = "", errors = True) :
+    varA = wspace.var("%s"%var1)
+    vark = wspace.var("%s"%var2)
     out = ""
-    out += "A = %4.2e%s; "%(varA.getVal(), " #pm %4.2e"%varA.getError() if errors else "")
-    out += "k = %4.2e%s"  %(vark.getVal(), " #pm %4.2e"%vark.getError() if errors else "")
+    out += "%s = %4.2e%s; "%(var1[0], varA.getVal(), " #pm %4.2e"%varA.getError() if errors else "")
+    out += "%s = %4.2e%s"  %(var2[0], vark.getVal(), " #pm %4.2e"%vark.getError() if errors else "")
     return out
 
 class validationPlotter(object) :
@@ -179,9 +179,9 @@ class validationPlotter(object) :
         vars = [
             {"var":"hadB", "type":"function", "desc":"expected total background",
              "color":r.kBlue, "style":1, "width":3, "stack":"total"},
-            {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "ewk", errors = True) if self.REwk else "[floating]",
+            {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "d_ewk", errors = True) if self.REwk else "[floating]",
              "color":r.kCyan, "style":2, "width":2, "stack":"background"},
-            {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "qcd", errors = True),
+            {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcd", "k_qcd", errors = True),
              "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
             ]
 
@@ -210,7 +210,7 @@ class validationPlotter(object) :
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
                                 obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = [
                 {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
-                {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "ewk", errors = True) if self.REwk else "[floating]",
+                {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "d_ewk", errors = True) if self.REwk else "[floating]",
                  "color":r.kCyan, "style":2, "width":2, "stack":"background"},
                 {"var":"hadB", "type":"function", "desc":"expected total background",
                  "color":r.kBlue, "style":1, "width":3, "stack":"total"},
@@ -227,9 +227,9 @@ class validationPlotter(object) :
                                     obsKey = "nHadControl%s"%label, obsLabel = "hadronic control data (%s) [%g/pb]"%(labelRaw, self.lumi["had"]),
                                     logY = logY, otherVars = [
                     {"var":"hadControlB%s"%label, "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
-                    {"var":"ewkControl%s"%label,  "type":"function", "desc":"EWK", "desc2":akDesc(self.wspace, "ewkControl%s"%label1, errors = True),
+                    {"var":"ewkControl%s"%label,  "type":"function", "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewkControl%s"%label1, "d_ewkControl%s"%label1, errors = True),
                      "color":r.kCyan,    "style":2, "width":2, "stack":"background"},
-                    {"var":"qcdControl%s"%label,  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "qcdControl%s"%label1, errors = True, var2 = "qcd"),
+                    {"var":"qcdControl%s"%label,  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcdControl%s"%label1, "k_qcd", errors = True),
                      "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
                     ])
 
@@ -343,15 +343,15 @@ class validationPlotter(object) :
         slope = 0.03
         
         self.canvas.Clear()
-        y = printText(x, y, "%20s:    %5s   +/-   %5s       [ %5s    -  %5s   ]"%("par name", "value", "error", "min", "max"))
-        y = printText(x, y, "-"*74)
+        y = printText(x, y, "%20s:    %6s   +/-   %6s       [ %6s    -  %6s   ]"%("par name", "value", "error", "min", "max"))
+        y = printText(x, y, "-"*78)
         vars = self.wspace.allVars()
         it = vars.createIterator()    
         while it.Next() :
             if it.getMax()==r.RooNumber.infinity() : continue
             if it.getMin()==-r.RooNumber.infinity() : continue
             if not it.hasError() : continue
-            s = "%20s:  %5.3e +/- %5.3e     [%5.3e - %5.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
+            s = "%20s:  %10.3e +/- %10.3e     [%10.3e - %10.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
             y = printText(x, y, s)
         self.canvas.Print(self.psFileName)
         return
