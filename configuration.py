@@ -18,8 +18,8 @@ def switches() :
     d["photTerms"] = True
     d["mumuTerms"] = False
     
-    d["REwk"] = ["", "FallingExp", "Constant"][2]
-    d["RQcd"] = ["Zero", "FallingExp"][0]
+    d["REwk"] = ["", "Linear", "Constant"][2]
+    d["RQcd"] = ["Zero", "FallingExp"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
               
     d["nlo"] = False
