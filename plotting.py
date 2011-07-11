@@ -485,7 +485,7 @@ class validationPlotter(object) :
 	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), "l") )
 	    if d["stack"] :
 	        if d["stack"] not in stacks :
-	            stacks[d["stack"]] = r.THStack(d["stack"], d["stack"])
+	            stacks[d["stack"]] = utils.thstack(name = d["stack"])
 	        stacks[d["stack"]].Add(hist)
 	    else :
 	        hist.Scale(scale)
@@ -496,7 +496,7 @@ class validationPlotter(object) :
 
         stuff.append(stacks)
 	for stack in stacks.values() :
-	    stack.Draw(goptions)
+	    stack.Draw(goptions, reverse = True)
             
 	obs.Draw("psame")#redraw data
 
