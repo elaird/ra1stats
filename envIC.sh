@@ -4,7 +4,7 @@
 TAG=x86_64-slc5-gcc43-opt
 BASEDIR=/vols/cms02/elaird1/18_root_from_afs/lcg/
 source ${BASEDIR}/contrib/gcc/4.3.2/${TAG}/setup.sh ${BASEDIR}/contrib
-source ${BASEDIR}/app/releases/ROOT/5.28.00/${TAG}/root/bin/thisroot.sh
+source ${BASEDIR}/app/releases/ROOT/5.30.00/${TAG}/root/bin/thisroot.sh
 
 export PATH=${BASEDIR}/contrib/gcc/4.3.2/${TAG}/bin:${PATH}
 export LD_LIBRARY_PATH=${BASEDIR}/contrib/gcc/4.3.2/${TAG}/lib64:${LD_LIBRARY_PATH}
