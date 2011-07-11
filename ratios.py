@@ -7,7 +7,7 @@ import ROOT as r
 def setupRoot() :
     r.gROOT.SetBatch(True)
     r.gErrorIgnoreLevel = 2000
-    r.gROOT.SetStyle("Plain")
+    #r.gROOT.SetStyle("Plain")
     r.gStyle.SetOptStat(0)
     r.gStyle.SetOptFit(1011)
 
@@ -79,8 +79,8 @@ go(label = "photons",
 
 go(label = "muons",
    yLabel = "t#bar{t} + W (had. selection) / t#bar{t} + W (#mu selection)",
-   title = "Spring '11 MadGraph MC#semicolon RA1 selection",
-   #minMax = (0.0, 1.5),
+   title = "Summer '11 MadGraph MC#semicolon RA1 selection",
+   minMax = (0.0, 2.5),
    mcPhot = data.mcExpectations()["mcMuon"],
    mcPhotErr = data.mcStatError()["mcMuonErr"],
    mcZinv = data.mcExpectations()["mcTtw"],
