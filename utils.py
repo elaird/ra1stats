@@ -13,7 +13,22 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::map<std::string,std::string>","string;map")
     r.gInterpreter.GenerateDictionary("std::pair<std::string,std::vector<double> >","string;vector")
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
-#####################################    
+#####################################
+class thstack(object) :
+    """work-around for bugging THStacks in ROOT 5.30.00"""
+    def __init__(self, name = "") :
+        self.name = name
+        self.histos = []
+    def Add(self, inHisto) :
+        histo = inHisto.Clone("%s_%s"%(inHisto.GetName(), self.name))
+        self.histos.append(histo)
+        if len(self.histos)>1 :
+            self.histos[-1].Add(self.histos[-2])
+    def Draw(self, goptions, reverse = False) :
+        histos = self.histos if not reverse else reversed(self.histos)
+        for histo in histos :
+            histo.Draw(goptions)
+#####################################
 class numberedCanvas(r.TCanvas) :
     page = 0
     text = r.TText()
