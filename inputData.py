@@ -26,9 +26,9 @@ class data2011_4(data) :
             "had":    1080.,
             "hadBulk":1080.,
 
-            "muon":    769.,
-            "mcMuon":  769.,
-            "mcTtw":   769.,
+            "muon":    1080.,
+            "mcMuon":  1080.,
+            "mcTtw":   1080.,
 
             "phot":    771.2,
             "mcGjets": 771.2,
@@ -44,7 +44,7 @@ class data2011_4(data) :
             "nHad":           ( 7.820e+02, 3.210e+02, 1.960e+02, 6.200e+01, 2.100e+01, 6.000e+00, 3.000e+00, 1.000e+00),
             "nPhot":     excl((       630,       227,       233,        81,        33,        15,         6,         3), isExcl),
            #"nPhot2Jet": excl((       255,        94,        99,        31,        11,         3,         1,         0), isExcl),
-            "nMuon":          (       262,       100,        78,        31,        12,         4,         0,         0),
+            "nMuon":          (       389,       156,       113,        39,        17,         5,         0,         0),
            #"nMuon2Jet":      (        86,        23,        25,        10,         2,         0,         0,         0),
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
@@ -61,9 +61,9 @@ class data2011_4(data) :
         #    self._triggerEfficiencies[item] = self._triggerEfficiencies["had"]
         
         self._mcExpectations = {
-            "mcMuon":          scaled((252.07,  104.36,   67.61,  24.04,   9.39,   4.37,   0.32, 0.22), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcMuon":          scaled((411.20,  179.11,  131.59,  48.68,  13.32,   7.95,   3.20, 0.90), self.lumi()["muon"]/self.lumi()["mcMuon"]),
            #"mcMuon2Jet":      scaled(( 86.03,   28.51,   25.63,   2.02,   4.78,   3.29,  0.107,    0), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-            "mcTtw":           scaled((274.87,  104.11,   66.67,  24.58,   4.18,   3.94,   1.92, 0.54), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
+            "mcTtw":           scaled((467.25,  171.16,  116.33,  43.68,  17.50,   5.08,   1.09, 1.81), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
             "mcGjets":    excl(scaled((   440,     190,     181,     62,     22,      5,      4,  1.5), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
            #"mcPhot2Jet": excl(scaled((   210,      91,      71,     20,      8,    0.4,    0.4,  0.4), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             "mcZinv":     excl(scaled((    90,      41,      51,     24,      4,      1,      1,    0), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
@@ -71,9 +71,9 @@ class data2011_4(data) :
             }
 
         self._mcStatError = {
-            "mcMuonErr":             ( 14.79,   10.39,    8.91,   5.39,  3.244,  2.286,  0.186, 0.152),
+            "mcMuonErr":             ( 14.51,    9.57,    8.78,   5.54,   2.92,   2.29,   1.44,  0.73),
            #"mcMuon2JetErr":         ( 11.59,    7.23,    6.92,   2.84,   2.83,   2.31,   0.11,   0.1),
-            "mcTtwErr":              ( 17.58,   10.41,    8.47,   5.40,   2.32,   2.28,   1.60,  0.24),
+            "mcTtwErr":              ( 16.00,    9.47,    8.26,   5.06,   3.17,   1.80,   0.73,  1.03),
             "mcGjetsErr":     scaled((    20,      10,      10,      6,      4,      2,      1,   0.9), self.lumi()["phot"]/self.lumi()["mcGjets"]),
            #"mcPhot2JetErr":  scaled((    20,      10,       6,      3,      2,    0.4,    0.4,   0.4), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcZinvErr":      scaled((    10,       7,       8,      5,      2,      1,      1,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),
