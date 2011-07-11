@@ -32,7 +32,7 @@ sue_anns_point = {'xs': 2004.,
                   'effHad': [0.0009, 0.0006, 0.0009, 0.0003, 0.0003, 9.99e-05, 0.0, 0.0]}
 
 f = fresh.foo(inputData = data2011(),
-              REwk = ["", "Linear", "Constant"][1],
+              REwk = ["", "Linear", "Constant"][2],
               RQcd = ["Zero", "FallingExp"][1],
               nFZinv = ["All", "One", "Two"][0],
               #qcdSearch = True,
