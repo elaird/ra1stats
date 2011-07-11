@@ -3,6 +3,9 @@ import math,copy
 def scaled(t, factor) :
     return tuple([factor*a for a in t])
 
+def trig(t, eff) :
+    return tuple([a*b for a,b in zip(t,eff)])
+
 def excl(counts, isExclusive) :
     out = []
     for i,count,isExcl in zip(range(len(counts)), counts, isExclusive) :
