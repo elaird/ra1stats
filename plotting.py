@@ -3,7 +3,7 @@ import utils
 import ROOT as r
 
 def rootSetup() :
-    r.gROOT.SetStyle("Plain")
+    #r.gROOT.SetStyle("Plain")
     r.gErrorIgnoreLevel = 2000
 
 def writeGraphVizTree(wspace, pdfName = "model") :
@@ -493,23 +493,25 @@ class validationPlotter(object) :
 	        for item in ["min", "max"] :
 	            if item not in histos : continue
 	            histos[item].Draw(goptions)
-	
+
+        stuff.append(stacks)
 	for stack in stacks.values() :
 	    stack.Draw(goptions)
-	
+            
 	obs.Draw("psame")#redraw data
-	
+
 	for item in reversed(legEntries) if reverseLegend else legEntries :
 	    leg.AddEntry(*item)
 	leg.Draw()
 	r.gPad.SetTickx()
 	r.gPad.SetTicky()
 	r.gPad.Update()
-	
+
 	if self.printPages and fileName :
 	    obs.SetTitle("")
 	    printOnePage(self.canvas, fileName)
 	self.canvas.Print(self.psFileName)
+
 	return stuff
 
     def ratioPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
