@@ -140,7 +140,7 @@ def akDesc(wspace, var1 = "", var2 = "", errors = True) :
     return out
 
 def lumi(lumiInInvPb) :
-    return "[%g/fb]"%(lumiInInvPb/1000.)
+    return "[%4.2f/fb]"%(lumiInInvPb/1000.)
 
 class validationPlotter(object) :
     def __init__(self, args) :
