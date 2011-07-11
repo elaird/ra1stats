@@ -1,7 +1,6 @@
 physics
 -------
-1 include an HT-dependent trigger efficiency caused by the MHT leg.
-1 trig. eff for hadControl
+1 trigger efficiency in signal efficiency
 1 improve mc ratio
 1 mc stats as systematic
 1 bin-by-bin systematics on signal eff.
@@ -10,6 +9,8 @@ physics
 2 sys on R
 2 update muon file
 2 repair nlo
+2 trigger efficiency in had control sample
+2 trigger efficiency in mu-mu control sample
 3 upgrade dirac delta
 4 look at g(l) for f = 1
 4 CLs geometric plot
