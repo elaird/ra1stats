@@ -139,6 +139,9 @@ def akDesc(wspace, var1 = "", var2 = "", errors = True) :
     out += "%s = %4.2e%s"  %(var2[0], vark.getVal(), " #pm %4.2e"%vark.getError() if errors else "")
     return out
 
+def lumi(lumiInInvPb) :
+    return "[%g/fb]"%(lumiInInvPb/1000.)
+
 class validationPlotter(object) :
     def __init__(self, args) :
         for key,value in args.iteritems() :
@@ -201,14 +204,14 @@ class validationPlotter(object) :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.63), legend1 = (0.85, 0.88),
-                                obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = vars, logY = logY)
+                                obsKey = "nHad", obsLabel = "hadronic data %s"%lumi(self.lumi["had"]), otherVars = vars, logY = logY)
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_data_mc%s"%("_logy" if logY else "")
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
-                                obsKey = "nHad", obsLabel = "hadronic data [%g/pb]"%self.lumi["had"], otherVars = [
+                                obsKey = "nHad", obsLabel = "hadronic data %s"%lumi(self.lumi["had"]), otherVars = [
                 {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
                 {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "d_ewk", errors = True) if self.REwk else "[floating]",
                  "color":r.kCyan, "style":2, "width":2, "stack":"background"},
@@ -224,7 +227,7 @@ class validationPlotter(object) :
                 thisNote = "Hadronic Control Sample %s %s"%(labelRaw, " (logY)" if logY else "")
                 fileName = "hadronic_control_fit_%s%s"%(labelRaw, "_logy" if logY else "")
                 self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72),
-                                    obsKey = "nHadControl%s"%label, obsLabel = "hadronic control data (%s) [%g/pb]"%(labelRaw, self.lumi["had"]),
+                                    obsKey = "nHadControl%s"%label, obsLabel = "hadronic control data (%s) %s"%(labelRaw, lumi(self.lumi["had"])),
                                     logY = logY, otherVars = [
                     {"var":"hadControlB%s"%label, "type":"function", "color":r.kBlue, "style":1, "width":3, "desc":"expected SM yield", "stack":None},
                     {"var":"ewkControl%s"%label,  "type":"function", "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewkControl%s"%label1, "d_ewkControl%s"%label1, errors = True),
@@ -248,14 +251,14 @@ class validationPlotter(object) :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "muon_control_fit%s"%("_logy" if logY else "")
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.7),
-                                obsKey = "nMuon", obsLabel = "muon data [%g/pb]"%self.lumi["muon"], otherVars = vars, logY = logY)
+                                obsKey = "nMuon", obsLabel = "muon data %s"%lumi(self.lumi["muon"]), otherVars = vars, logY = logY)
 
     def photPlots(self) :
         for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "photon_control_fit%s"%("_logy" if logY else "")            
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
-                                obsKey = "nPhot", obsLabel = "photon data [%g/pb]"%self.lumi["phot"], otherVars = [
+                                obsKey = "nPhot", obsLabel = "photon data %s"%lumi(self.lumi["phot"]), otherVars = [
                 {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray}  if not self.printPages else {},
                 {"var":"photExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
@@ -266,7 +269,7 @@ class validationPlotter(object) :
             thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
             fileName = "mumu_control_fit%s"%("_logy" if logY else "")
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True,
-                                obsKey = "nMumu", obsLabel = "mumu data [%g/pb]"%self.lumi["mumu"], logY = logY, otherVars = [
+                                obsKey = "nMumu", obsLabel = "mumu data %s"%lumi(self.lumi["mumu"]), logY = logY, otherVars = [
                 {"var":"mcZmumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
                 {"var":"mumuExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
                 ])
