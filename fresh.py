@@ -83,8 +83,7 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
 
     for i,htMeanValue,nHadBulkValue,hadTrgEffValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"]) :
         wimport(w, r.RooRealVar("htMean%d"%i, "htMean%d"%i, htMeanValue))
-        wimport(w, r.RooRealVar("nHadBulk%d" %i, "nHadBulk%d" %i, nHadBulkValue))
-        #wimport(w, r.RooRealVar("nHadBulk%d" %i, "nHadBulk%d" %i, nHadBulkValue*hadTrgEffValue))
+        wimport(w, r.RooRealVar("nHadBulk%d"%i, "nHadBulk%d" %i, nHadBulkValue*hadTrgEffValue))
 
     iLast = len(htMeans)-1
     for i,nHadValue in enumerate(obs["nHad"]) :
