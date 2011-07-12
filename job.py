@@ -18,12 +18,13 @@ def description(key, cl = None) :
 
 def signalEff(switches, data, binsInput, binsMerged, point) :
     out = {}
-    for item in ["effHad", "effMuon"] :
+    for item in ["effHad"]+([] if switches["ignoreSignalContaminationInMuonSample"] else ["effMuon"]) :
         box = item.replace("eff","").lower()
         out[item] = [hp.effHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
                      for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
         out[item] = data.mergeEfficiency(out[item])
-    #out["muon"] = tuple([0.0]*len(out["muon"])); print "HACK: muon sig eff set to 0"
+
+    if switches["ignoreSignalContaminationInMuonSample"] : out["effMuon"] = tuple([0.0]*len(out["effHad"]))
     return out
 
 def stuffVars(binsMerged, signal) :
@@ -72,7 +73,7 @@ def onePoint(switches = None, data = None, point = None) :
             f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
                           hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
                           muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
-
+    
             if not switches["computeExpectedLimit"] :
                 results = f.interval(cl = cl, method = switches["method"])
                 for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))

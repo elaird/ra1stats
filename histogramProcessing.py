@@ -45,7 +45,7 @@ def checkHistoBinning() :
     def histos() :
         binsInput = conf.data().htBinLowerEdgesInput()
         out = [xsHisto()]
-        for item in ["had", "muon"] :
+        for item in ["had"]+([] if conf.switches()["ignoreSignalContaminationInMuonSample"] else ["muon"]) :
             out += [effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper) for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
         return out
     

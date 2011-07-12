@@ -26,6 +26,7 @@ def switches() :
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
     d["drawBenchmarkPoints"] = True
     d["effRatioPlots"] = False
+    d["ignoreSignalContaminationInMuonSample"] = True
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
     #d["listOfTestPoints"] = [(51, 44, 1)] #Filip's request
     #d["listOfTestPoints"] = [(11, 11, 1)] #Sue Ann's request
