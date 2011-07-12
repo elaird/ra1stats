@@ -304,7 +304,7 @@ class validationPlotter(object) :
             {"num":"ewk",   "numType":self.ewkType,    "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
             {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
             {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
-            ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
+            ], yLabel = "R_{#alpha_{T}}", customMaxFactor = 1.5, reverseLegend = True)
 
         for labelRaw in self.hadControlLabels :
             label = "_"+labelRaw+"_"
@@ -315,7 +315,7 @@ class validationPlotter(object) :
                 {"num":"ewkControl%s"%label,   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
                 {"num":"hadControlB%s"%label,  "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
                 {"num":"nHadControl%s"%label1, "numType":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"nHadControl / nHadBulk",    "color":r.kBlack},
-                ], yLabel = "R_{#alpha_{T}}", customMax = True, reverseLegend = True)
+                ], yLabel = "R_{#alpha_{T}}", customMaxFactor = 1.5, reverseLegend = True)
 
         self.ratioPlot(note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
             {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack},
@@ -518,7 +518,7 @@ class validationPlotter(object) :
 	return stuff
 
     def ratioPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
-                  customMax = False, maximum = None, goptions = "p", reverseLegend = False) :
+                  customMaxFactor = None, maximum = None, goptions = "p", reverseLegend = False) :
     	stuff = []
     	leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
     	leg.SetBorderSize(0)
@@ -540,13 +540,12 @@ class validationPlotter(object) :
     	    legEntries.append( (num, spec["desc"], legSpec(goptions)) )
     	    histos.append(num)
     	
-    	m = max(map(histoMax, histos))
     	for i,h in enumerate(histos) :
     	    if not i :
     	        h.Draw(goptions)
     	        r.gPad.SetLogy(False)
     	        h.SetMinimum(0.0)
-    	        if customMax : h.SetMaximum(m)
+    	        if customMaxFactor : h.SetMaximum(max([histoMax(histo, customMaxFactor) for histo in histos]))
     	        if maximum :  h.SetMaximum(maximum)
     	    else :
     	        h.Draw("%ssame"%goptions)
