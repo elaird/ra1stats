@@ -17,19 +17,14 @@ def smsRanges() :
 
 def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
     assert box in ["had", "muon"]
-    versions = {"had":"v2", "muon":"v1"}
-    #versions = {"had":"v2", "muon":"v3"}
     assert scale in ["1", "05", "2"]
-
-    dir = "/vols/cms02/elaird1/20_yieldHistograms/2011"
-    if box=="muon" :
-        fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_%s_All.root"%(conf.switches()["signalModel"].lower(), box.capitalize())
-        #fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_%s_100.root"%(conf.switches()["signalModel"].lower(), box.capitalize())
-    elif box=="had" :
-        fileName = "AK5Calo_PhysicsProcesses_mSUGRA_%sFall10v1_%s_100.root"%(conf.switches()["signalModel"].lower(), box)
+    
+    scan = [{"cmssw": "38", "had":"v2", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/38_scan/"},
+            {"cmssw": "42", "had":"v1", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/42_scan/"},
+            ][1]
     
     out = {}
-    out["file"] = "/".join([dir, box, versions[box], fileName])
+    out["file"] = "/".join([scan["dir"], box, scan[box], box+".root"])
     out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
     if htLower!=None :
         out["afterDir"] = "mSuGraScan_%d%s_scale%s"%(htLower, "_%d"%htUpper if htUpper else "",scale)
