@@ -577,12 +577,14 @@ def obs(w) :
 
 def noteArgs() : return ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"]
 
-def note(REwk = None, RQcd = None, nFZinv = None, hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
+def note(REwk = None, RQcd = None, nFZinv = None, ignoreSignalContaminationInMuonSample = None,
+         hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
     out = ""
     if REwk : out += "REwk%s_"%REwk
     out += "RQcd%s"%RQcd
     out += "_fZinv%s"%nFZinv
     if hadTerms :        out += "_had"
+    if ignoreSignalContaminationInMuonSample :  out += "_ignoreMuCont"
     for item in hadControlSamples : out += "_hadControl_%s"%item
     if muonTerms :       out += "_muon"
     if photTerms :       out += "_phot"

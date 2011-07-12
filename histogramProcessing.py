@@ -172,7 +172,7 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
 def mergedFile() :
     s = conf.switches()
     d = {}
-    for item in fresh.noteArgs() :
+    for item in fresh.noteArgs()+["ignoreSignalContaminationInMuonSample"] :
         d[item] = s[item]
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], fresh.note(**d), ".root")
 
