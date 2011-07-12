@@ -11,13 +11,16 @@ class data2011_4(data) :
         self._htMaxForPlot = 975.0
         
         self._mergeBins = None
-        self._constantMcRatioAfterHere = (    1,     0,     0,     0,     0,     0,     0,     0)
+        self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
         
-        #self._mergeBins =                (    0,     1,     2,     3,     4,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    1,     0,     0,     0,     0)
-
         #self._mergeBins =                (    0,     1,     2,     2,     2,     2,     2,     2)
-        #self._constantMcRatioAfterHere = (    1,     0,     0)
+        #self._constantMcRatioAfterHere = (    0,     0,     0)
+
+        #self._mergeBins =                (    0,     1,     2,     3,     3,     3,     3,     3)
+        #self._constantMcRatioAfterHere = (    0,     0,     0,     0)
+
+        #self._mergeBins =                (    0,     1,     2,     3,     4,     4,     4,     4)
+        #self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0)
 
         #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
         #self._constantMcRatioAfterHere = (    1,     0,     0,     0,     0)
@@ -72,7 +75,6 @@ class data2011_4(data) :
                                self._triggerEfficiencies["had"]),
             "mcZmumu":         excl(scaled((    15,       9,      11,      7,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]), isExcl),
             }
-MC Errors for NJet2 = 
 
         self._mcStatError = {
             "mcMuonErr":                   ( 14.51,    9.57,    8.78,   5.54,   2.92,   2.29,   1.44,  0.73),
