@@ -298,9 +298,13 @@ class validationPlotter(object) :
                        yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
+        ewk = {"num":"ewk",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk",  "color":r.kCyan, "numErrorsFrom":"A_ewk"}
+        if self.ewkType=="var" :
+            {  "num":"ewk",   "numType":"var",      "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk",  "color":r.kCyan},
+            
         self.ratioPlot(note = "hadronic signal", fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), specs = [
-            {"num":"qcd",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
-            {"num":"ewk",   "numType":self.ewkType,    "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
+            {"num":"qcd",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML QCD / nHadBulk",  "color":r.kMagenta, "numErrorsFrom":"A_qcd"},
+            ewk,
             {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML hadB / nHadBulk", "color":r.kBlue},
             {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"nHad / nHadBulk",    "color":r.kBlack},
             ], yLabel = "R_{#alpha_{T}}", customMaxFactor = 1.5, reverseLegend = True)
@@ -394,7 +398,7 @@ class validationPlotter(object) :
         return out
     
     def varHisto(self, varName = None, extraName = "", wspaceMemberFunc = None, purityKey = None, yLabel = "", note = "",
-                 color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1, lumiString = "") :
+                 color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1, lumiString = "", errorsFrom = "") :
 	d = {}
 	d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
 	d["value"].Reset()
@@ -431,6 +435,9 @@ class validationPlotter(object) :
 	                x = getattr(var, "get%s"%item.capitalize())()
 	                if abs(x)==1.0e30 : continue
 	                d[item].SetBinContent(i+1, x)
+                elif errorsFrom :
+                    errorsVar = self.wspace.var(errorsFrom)
+                    if errorsVar and errorsVar.getVal() : d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
 	    else :
 	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
 	        purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
@@ -526,7 +533,7 @@ class validationPlotter(object) :
     	legEntries = []
     	histos = []
     	for spec in specs :
-            num = self.varHisto(spec["num"], extraName = spec["num"]+"_".join(spec["dens"]),
+            num = self.varHisto(spec["num"], extraName = spec["num"]+"_".join(spec["dens"]), errorsFrom = inDict(spec, "numErrorsFrom", ""),
                                 wspaceMemberFunc = spec["numType"], yLabel = yLabel, note = note)["value"]
     	
     	    for den,denType in zip(spec["dens"], spec["denTypes"]) :
