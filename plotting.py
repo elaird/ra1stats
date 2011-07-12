@@ -106,7 +106,6 @@ def drawOne(hist, goptions, errorBand, bandFillStyle = 1001) :
         return
 
     goptions = "he2"+goptions
-    out = []
     errors   = hist.Clone(hist.GetName()+"_errors")
     noerrors = hist.Clone(hist.GetName()+"_noerrors")
     for i in range(1, 1+noerrors.GetNbinsX()) : noerrors.SetBinError(i, 0.0)
