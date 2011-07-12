@@ -18,7 +18,7 @@ def fill(h, contents, errors) :
         h.SetBinError(1+i, e)
     return h
 
-data = data2011()
+data = data2011(requireFullImplementation = False)
 
 htBins    = data.htBinLowerEdges()
 constR    = data.constantMcRatioAfterHere()
