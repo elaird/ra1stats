@@ -584,7 +584,7 @@ def note(REwk = None, RQcd = None, nFZinv = None, ignoreSignalContaminationInMuo
     out += "RQcd%s"%RQcd
     out += "_fZinv%s"%nFZinv
     if hadTerms :        out += "_had"
-    if ignoreSignalContaminationInMuonSample :  out += "_ignoreMuCont"
+    if ignoreSignalContaminationInMuonSample :  out += "_ignoreMuContam"
     for item in hadControlSamples : out += "_hadControl_%s"%item
     if muonTerms :       out += "_muon"
     if photTerms :       out += "_phot"
