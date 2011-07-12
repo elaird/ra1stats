@@ -16,7 +16,8 @@ vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlo
         "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExtra", "mcStatError", "fixedParameters"]
 
 class data(object) :
-    def __init__(self) :
+    def __init__(self, requireFullImplementation = True) :
+        self.requireFullImplementation = requireFullImplementation
         self._fill()
         self._checkVars()
         self._checkLengths()
@@ -91,9 +92,12 @@ class data(object) :
             for key,value in d.iteritems() :
                 getattr(self, "_%s"%item)[key] = tuple(map(lambda x:math.sqrt(x), value))
 
-        assert False,"Implement trigger efficiency merging."
-        assert False,"Implement purity merging."
-        #print "ERROR: purity merging is not implemented.  Results are nonsense."
+        if self.requireFullImplementation :
+            assert False,"Implement trigger efficiency merging."
+            assert False,"Implement purity merging."
+        else :
+            print "WARNING: Purity merging is not implemented.  Results are nonsense."
+            print "WARNING: Trigger efficiency merging is not implemented.  Results are nonsense."
 
         return
 
