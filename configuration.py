@@ -42,7 +42,7 @@ def switches() :
     d["icfDefaultNEventsIn"] = 10000
     
     d["subCmd"] = "qsub -q hep%s.q"%(["short", "medium", "long"][0])
-    d["envScript"] = "icJob.sh"
+    d["envScript"] = ["icJob.sh", "envIC.sh"][0]
 
     checkAndAdjust(d)
     return d
