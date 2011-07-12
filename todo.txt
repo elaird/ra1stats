@@ -1,19 +1,22 @@
 physics
 -------
+1 error propagation in plots
 1 trigger efficiency in signal efficiency
+1 correction to signal efficiency central value
 1 improve mc ratio
 1 mc stats as systematic
 1 bin-by-bin systematics on signal eff.
 1 use scaled yields in lowest two bins
-1 update LM6 muon efficiencies
+2 sided-ness
 2 sys on R
 2 update muon file
 2 repair nlo
-2 trigger efficiency in had control sample
-2 trigger efficiency in mu-mu control sample
-3 upgrade dirac delta
-4 look at g(l) for f = 1
-4 CLs geometric plot
+3 CLs
+3 trigger efficiency in had control sample
+3 trigger efficiency in mu-mu control sample
+4 upgrade dirac delta
+5 look at g(l) for f = 1
+6 lognormal vs. gaussian
 
 technical
 ---------
@@ -22,9 +25,3 @@ plot FC belt
 tweak FC running
 try ProfileLikelihoodTestStatistic.SetOneSided()
 query fit status for toys (improve 0 cut)
-
-checks
-------
-bin merging
-R_ewk fall
-lognormal vs. gaussian
