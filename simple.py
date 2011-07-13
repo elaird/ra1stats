@@ -2,18 +2,20 @@
 
 import math,plotting,utils
 import ROOT as r
+from runInverter import RunInverter
 
 def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
+    modelConfig.SetObservables(w.set("obs"))
     modelConfig.SetParametersOfInterest(w.set("poi"))
     modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
 
 def hadTerms(w) :
     wimport(w, r.RooRealVar("b", "b", 4.0))
-    wimport(w, r.RooRealVar("nHad", "nHad", 1.0))
-    wimport(w, r.RooRealVar("s", "s", 1.0, 0.0, 5.0))
+    wimport(w, r.RooRealVar("nHad", "nHad", 2.0))
+    wimport(w, r.RooRealVar("s", "s", 1.0, 0.0, 10.0))
     wimport(w, r.RooAddition("exp", "exp", r.RooArgSet(w.function("b"), w.function("s"))))
     wimport(w, r.RooPoisson("hadPois", "hadPois", w.var("nHad"), w.function("exp")))
 
@@ -96,35 +98,20 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
 
     return out
 
-def cls(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
+def cls(dataset, modelconfig, wspace, smOnly) :
     assert not smOnly
 
-    out = {}
+    wimport(wspace, dataset)
+    wimport(wspace, modelconfig)
+    result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
+                         type = 0, testStatType = 3,
+                         npoints = 20, poimin = 0.0, poimax = 10.0)
 
-    if method=="CLs" :
-        calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
-
-        wspace.var("f").setVal(0.0)
-        wspace.var("f").setConstant()
-        calc.SetNullParameters(r.RooArgSet(wspace.var("f")))
-        out["CLb"] = 1.0 - calc.GetHypoTest().NullPValue()
-
-        wspace.var("f").setVal(1.0)
-        wspace.var("f").setConstant()
-        calc.SetNullParameters(r.RooArgSet(wspace.var("f")))
-        out["CLs+b"] = calc.GetHypoTest().NullPValue()
-
-    if method=="CLsViaToys" :
-        wspace.var("f").setVal(0.0)
-        wspace.var("f").setConstant()
-        out["CLb"] = 1.0 - pValue(wspace, dataset, nToys = nToys, note = "", plots = makePlots)
-
-        wspace.var("f").setVal(1.0)
-        wspace.var("f").setConstant()
-        out["CLs+b"] = pValue(wspace, dataset, nToys = nToys, note = "", plots = makePlots)
-        
-    out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
-    return out
+    print "upper limit = %g +- %g"%(result.UpperLimit(), result.UpperLimitEstimatedError())
+    plot = r.RooStats.HypoTestInverterPlot("HTI_Result_Plot", "", result)
+    plot.Draw("CLb 2CL")
+    r.gPad.Print("foo.png")
+    return result
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
     assert not smOnly
@@ -177,13 +164,6 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
     return out
 
-def pValueOld(dataset, modelconfig) :
-    plc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
-    plc.SetNullParameters(modelconfig.GetParametersOfInterest())
-    htr = plc.GetHypoTest()
-    print "p-value = %g +/- %g"%(htr.NullPValue(), htr.NullPValueError())
-    print "significance = %g"%htr.Significance()
-
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
     getattr(w, "import")(item)
@@ -224,8 +204,8 @@ class foo(object) :
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note, self.smOnly(), cl = cl, makePlots = makePlots)
 
-    def cls(self, method = "CLs", nToys = 300, makePlots = False) :
-        return cls(self.data, self.modelConfig, self.wspace, self.smOnly(), method = method, nToys = nToys, makePlots = makePlots)
+    def cls(self) :
+        return cls(self.data, self.modelConfig, self.wspace, self.smOnly())
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note, self.smOnly())
@@ -238,8 +218,8 @@ class foo(object) :
 
 
 f = foo()
-out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(method = ["CLs", "CLsViaToys"][1], nToys = 100, makePlots = False); print out
+#out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
+out = f.cls(); print out
 #f.profile()
 #f.bestFit()
 #f.pValue(nToys = 500)
