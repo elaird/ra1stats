@@ -25,7 +25,7 @@ import ROOT as r
 def RunInverter(w = None, modelSBName = "", modelBName = "",
                 dataName = "", type = None, testStatType = None, 
                 npoints = None, poimin = None, poimax = None, 
-                ntoys = 1000, useCls = True,
+                ntoys = 1000, useCls = True, CL = 0.95, 
                 nworkers = 1, optimize = False, debug = False) :
 
     if debug : w.Print()
@@ -111,7 +111,7 @@ def RunInverter(w = None, modelSBName = "", modelBName = "",
     poihat = poi.getVal()
     
     calc = r.RooStats.HypoTestInverter(hc)
-    calc.SetConfidenceLevel(0.95)
+    calc.SetConfidenceLevel(CL)
     
     calc.UseCLs(useCls)
     calc.SetVerbose(True)
