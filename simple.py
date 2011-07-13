@@ -134,7 +134,7 @@ def cls(dataset, modelconfig, wspace, smOnly) :
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
     result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
-                         type = 0, testStatType = 3,
+                         nworkers = 6, type = 0, testStatType = 3,
                          npoints = 20, poimin = 0.0, poimax = 10.0)
 
     print "upper limit = %g +- %g"%(result.UpperLimit(), result.UpperLimitEstimatedError())
