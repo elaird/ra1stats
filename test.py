@@ -37,7 +37,7 @@ f = fresh.foo(inputData = data2011(),
               nFZinv = ["All", "One", "Two"][0],
               #qcdSearch = True,
               #signal = [{}, lm6_2011, lm1_2011, lm1_2010, filips_point2, sue_anns_point][1],
-              signalExampleToStack = ("LM6", lm6_2011),
+              signalExampleToStack = ("LM6 (LO)", lm6_2011),
               #signalExampleToStack = ("m0=540 GeV, m12=440 GeV", filips_point1),
               #signalExampleToStack = ("m_{0} = 500 GeV;  m_{1/2} = 440 GeV", filips_point2),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
@@ -52,7 +52,7 @@ f = fresh.foo(inputData = data2011(),
               )
 
 #out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(method = ["CLs", "CLsViaToys"][1], nToys = 100, makePlots = False); print out
+#out = f.cls(cl = 0.95, nToys = 100, makePlots = True, nWorkers = 6); print out
 #f.profile()
 f.bestFit()
 #f.bestFit(printPages = True)
