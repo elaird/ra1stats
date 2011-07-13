@@ -510,6 +510,9 @@ def makeValidationPlots() :
             continue
         canvas.SetLogz(name in logZ)
         if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
+        if "NLO_over_LO" in name :
+            h2.SetMinimum(0.5)
+            h2.SetMaximum(3.0)
         stuff = drawBenchmarks()
 
         if "excluded" in name :
