@@ -195,7 +195,7 @@ class validationPlotter(object) :
              "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
             ]
         if not self.smOnly :
-            vars += [{"var":"hadS", "type":"function", "desc":signalDesc, "desc2":signalDesc2, "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
+            vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
         elif any(self.signalExampleToStack) :
             vars += [{"example":self.signalExampleToStack[1], "box":"had", "desc":self.signalExampleToStack[0], "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
 
@@ -242,7 +242,7 @@ class validationPlotter(object) :
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if not self.printPages else {},
             ]
         if not self.smOnly :
-            vars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "width":2, "desc":signalDesc, "desc2":signalDesc2, "stack":"total"}]
+            vars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "width":2, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
         elif any(self.signalExampleToStack) :
             vars += [{"example":self.signalExampleToStack[1], "box":"muon", "desc":self.signalExampleToStack[0], "color":r.kOrange, "style":1, "width":2, "stack":"total"}]
 
