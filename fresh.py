@@ -1,10 +1,12 @@
 import math,array,copy
 import plotting,utils
 import ROOT as r
+from runInverter import RunInverter
 
 def modelConfiguration(w, smOnly) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
+    modelConfig.SetObservables(w.set("obs"))
     if not smOnly :
         modelConfig.SetParametersOfInterest(w.set("poi"))
         modelConfig.SetNuisanceParameters(w.set("nuis"))
@@ -410,7 +412,7 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
     return out
 
-def cls(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
+def clsOld(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
     assert not smOnly
 
     out = {}
@@ -439,6 +441,23 @@ def cls(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
         
     out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
     return out
+
+def cls(dataset, modelconfig, wspace, smOnly, cl, nToys, makePlots, nWorkers) :
+    assert not smOnly
+
+    wimport(wspace, dataset)
+    wimport(wspace, modelconfig)
+    result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
+                         nworkers = nWorkers, type = 0, testStatType = 3,
+                         npoints = 8, poimin = 0.2, poimax = 0.6)
+
+    print "upper limit = %g +- %g"%(result.UpperLimit(), result.UpperLimitEstimatedError())
+
+    if makePlots :
+        plot = r.RooStats.HypoTestInverterPlot("HTI_Result_Plot", "", result)
+        plot.Draw("CLb 2CL")
+        r.gPad.Print("foo.png")
+    return {"upperLimit":result.UpperLimit(), "UpperLimitError":result.UpperLimitEstimatedError()}
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
     assert not smOnly
@@ -653,8 +672,8 @@ class foo(object) :
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
-    def cls(self, method = "CLs", nToys = 300, makePlots = False) :
-        return cls(self.data, self.modelConfig, self.wspace, self.smOnly(), method = method, nToys = nToys, makePlots = makePlots)
+    def cls(self, cl = 0.95, nToys = 300, makePlots = False, nWorkers = 1) :
+        return cls(self.data, self.modelConfig, self.wspace, self.smOnly(), cl = cl, nToys = nToys, nWorkers = nWorkers, makePlots = makePlots)
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
