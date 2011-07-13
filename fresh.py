@@ -449,7 +449,7 @@ def cls(dataset, modelconfig, wspace, smOnly, cl, nToys, makePlots, nWorkers) :
     wimport(wspace, modelconfig)
     result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
                          nworkers = nWorkers, type = 0, testStatType = 3,
-                         npoints = 8, poimin = 0.2, poimax = 0.6)
+                         npoints = 8, poimin = 0.0, poimax = 2.0)
 
     print "upper limit = %g +- %g"%(result.UpperLimit(), result.UpperLimitEstimatedError())
 
