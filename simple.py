@@ -4,6 +4,36 @@ import math,plotting,utils
 import ROOT as r
 from runInverter import RunInverter
 
+def clsPoisson(n = None, b = None, s = None) :
+    num = 0.0
+    den = 0.0
+    for i in range(1+n) :
+        num+=r.TMath.PoissonI(i, b+s)
+        den+=r.TMath.PoissonI(i, b)
+    return num/den
+
+def oneGraph(n = None, b = None) :
+    gr = r.TGraph()
+    gr.SetMarkerStyle(20)
+    gr.SetLineColor(r.kBlack)
+    gr.SetLineWidth(2)
+    gr.SetMarkerColor(r.kRed)
+    index = 0
+    for p in range(0, 50) :
+        s = p/5.0
+        gr.SetPoint(index, s, clsPoisson(n, b, s))
+        index += 1
+    gr.Draw("apl")
+    line = r.TLine()
+    line.SetLineColor(r.kRed)
+    line.DrawLine(0.0, 0.05, 10.0, 0.05)
+    r.gPad.Print("analytic_b%d_n%d.png"%(b, n))
+
+def clsPoissonGraph() :
+    r.gROOT.SetBatch(True)
+    for n in [1,2,4,6] :
+        oneGraph(n = n, b = 4)
+
 def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
@@ -220,6 +250,7 @@ class foo(object) :
 f = foo()
 #out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 out = f.cls(); print out
+#clsPoissonGraph()
 #f.profile()
 #f.bestFit()
 #f.pValue(nToys = 500)
