@@ -23,16 +23,28 @@ def signalEff(switches, data, binsInput, binsMerged, point) :
         out[item] = [hp.effHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
                      for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
         out[item] = data.mergeEfficiency(out[item])
-
-    if switches["ignoreSignalContaminationInMuonSample"] : out["effMuon"] = tuple([0.0]*len(out["effHad"]))
+        if switches["nloToLoRatios"] :
+            out[item+"_NLO_over_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
+                                    for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
+            out[item+"_NLO_over_LO"] = data.mergeEfficiency(out[item+"_NLO_over_LO"])
+            out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_NLO_over_LO"])]
+        
+    if switches["ignoreSignalContaminationInMuonSample"] :
+        out["effMuon"] = tuple([0.0]*len(out["effHad"]))
+        if switches["nloToLoRatios"] :        
+            out["effMuon_NLO_over_LO"] = tuple([0.0]*len(out["effHad"]))
     return out
 
-def stuffVars(binsMerged, signal) :
+def stuffVars(switches, binsMerged, signal) :
     out = {}
     out["xs"] = (signal["xs"], "#sigma (pb)")
+    if switches["nloToLoRatios"] :
+        out["xs_NLO_over_LO"] = (signal["xs_NLO_over_LO"], "#sigma (NLO) / #sigma (LO)")
     for i,bin in enumerate(binsMerged) :
         for sel in ["effHad", "effMuon"] :
             out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
+            if switches["nloToLoRatios"] :
+                out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")
     return out
 
 def printDict(signal) :
@@ -52,11 +64,14 @@ def onePoint(switches = None, data = None, point = None) :
     
     signal = {}
     signal["xs"] = hp.xsHisto().GetBinContent(*point)
+    if switches["nloToLoRatios"] :    
+        signal["xs_NLO_over_LO"] = signal["xs"]/hp.loXsHisto().GetBinContent(*point) if hp.loXsHisto().GetBinContent(*point) else 0.0
+
     for key,value in signalEff(switches, data, binsInput, binsMerged, point).iteritems() :
         signal[key] = value
 
     printDict(signal)
-    out = stuffVars(binsMerged, signal)
+    out = stuffVars(switches, binsMerged, signal)
 
     if "CLs" in switches["method"] :
         f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
