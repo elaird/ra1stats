@@ -19,8 +19,8 @@ def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
     assert box in ["had", "muon"]
     assert scale in ["1", "05", "2"]
     
-    scan = [{"cmssw": "38", "had":"v2", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/38_scan/"},
-            {"cmssw": "42", "had":"v1", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/42_scan/"},
+    scan = [{"cmssw": "38", "had":"v2", "muon":"v5", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/38_scan/"},
+            {"cmssw": "42", "had":"v2", "muon":"v2", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/42_scan/"},
             ][1]
     
     out = {}
