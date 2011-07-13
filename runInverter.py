@@ -26,7 +26,7 @@ def RunInverter(w = None, modelSBName = "", modelBName = "",
                 dataName = "", type = None, testStatType = None, 
                 npoints = None, poimin = None, poimax = None, 
                 ntoys = 1000, useCls = True,
-                nWorkers = 1, optimize = False, debug = False) :
+                nworkers = 1, optimize = False, debug = False) :
 
     if debug : w.Print()
 
@@ -117,7 +117,7 @@ def RunInverter(w = None, modelSBName = "", modelBName = "",
     calc.SetVerbose(True)
     
     # can speed up using proof-lite
-    if nWorkers>1 : toymcs.SetProofConfig(r.ProofConfig(w, nworkers, "", r.kFALSE))
+    if nworkers>1 : toymcs.SetProofConfig(r.RooStats.ProofConfig(w, nworkers, "", r.kFALSE))
    
     if (npoints > 0) :
         if (poimin >= poimax) :
