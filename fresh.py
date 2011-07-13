@@ -49,11 +49,46 @@ def initialAQcdControl(inputData, label) :
     out *= (obs["nHadControl%s"%label][0]/float(obs["nHadBulk"][0]))
     return out
 
-def parametrizedEwk(w = None, ewk = "", i = None, iLast = None) :
+def parametrizedExp(w = None, sample = "", i = None) :
+    return r.RooFormulaVar("%s%d"%(sample, i), "(@0)*(@1)*exp(-(@2)*(@3))",
+                           r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%sample), w.var("k_%s"%sample), w.var("htMean%d"%i)))
+    
+def parametrizedLinearEwk(w = None, ewk = "", i = None, iLast = None) :
     return r.RooFormulaVar("%s%d"%(ewk, i), "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
                            r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%ewk), w.var("d_%s"%ewk),
                                         w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast)))
+
+def importEwk(w = None, REwk = None, name = "", i = None, iLast = None, nHadValue = None, A_ini = None) :
+    if REwk and not i :
+        wimport(w, r.RooRealVar("A_%s"%name, "A_%s"%name, A_ini, 0.0, 1.0))
+        wimport(w, r.RooRealVar("k_%s"%name, "k_%s"%name, 0.0,  -1.0, 1.0))
+    if REwk=="Constant" and not i :
+        w.var("k_%s"%name).setVal(0.0)
+        w.var("k_%s"%name).setConstant()
     
+    if REwk=="Linear" : wimport(w, parametrizedLinearEwk(w = w, ewk = name, i = i, iLast = iLast))
+    elif (REwk=="Exp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, sample = name, i = i))
+    else : wimport(w, r.RooRealVar("%s%d"%(name, i), "%s%d"%(name, i), 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
+    return varOrFunc(w, name, i)
+
+def importFZinv(w = None, nFZinv = "", name = "", i = None, iLast = None) :
+    if nFZinv=="All" :
+        wimport(w, r.RooRealVar("%s%d"%(name, i), "%s%d"%(name, i), 0.5, 0.2, 0.8))
+    elif nFZinv=="One" :
+        if not i : wimport(w, r.RooRealVar("%s%d"%(name, i), "%s%d"%(name, i), 0.5, 0.0, 1.0))
+        else     : wimport(w, r.RooFormulaVar("%s%d"%(name, i), "(@0)", r.RooArgList(w.var("%s0"%name))))
+    elif nFZinv=="Two" :
+        if not i :
+            wimport(w, r.RooRealVar("%s%d"%(name, i),     "%s%d"%(name, i),     0.5, 0.0, 1.0)); firstFZinv = w.var("%s%d"%(name, 0))
+            wimport(w, r.RooRealVar("%s%d"%(name, iLast), "%s%d"%(name, iLast), 0.5, 0.0, 1.0)); lastFZinv  = w.var("%s%d"%(name, iLast))
+        elif i!=iLast :
+            argList = r.RooArgList(firstFZinv, lastFZinv, w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast))
+            wimport(w, r.RooFormulaVar("%s%d"%(name, i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
+    return varOrFunc(w, name, i)
+
+def varOrFunc(w = None, name = "", i = None) :
+    return w.var("%s%d"%(name, i)) if w.var("%s%d"%(name, i)) else w.function("%s%d"%(name, i))
+
 def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -61,13 +96,6 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
     terms = []
 
     A_ewk_ini = 1.3e-5
-    if REwk :
-        wimport(w, r.RooRealVar("A_ewk", "A_ewk", A_ewk_ini, 0.0, 1.0))
-        wimport(w, r.RooRealVar("d_ewk", "d_ewk", 0.0, -1.0, 1.0))
-    if REwk=="Constant" :
-        w.var("d_ewk").setVal(0.0)
-        w.var("d_ewk").setConstant()
-
     wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
     wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
     if RQcd=="Zero" :
@@ -89,31 +117,10 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
 
     iLast = len(htMeans)-1
     for i,nHadValue in enumerate(obs["nHad"]) :
-        wimport(w, r.RooFormulaVar("qcd%d"%i, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_qcd"), w.var("k_qcd"), w.var("htMean%d"%i))))
-        if REwk :
-            s = "ewk"
-            wimport(w, parametrizedEwk(w = w, ewk = s, i = i, iLast = iLast))
-            ewk = w.function("%s%d"%(s, i))
-        else :
-            wimport(w, r.RooRealVar("ewk%d"%i, "ewk%d"%i, 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
-            ewk = w.var("ewk%d"%i)
+        wimport(w, parametrizedExp(w = w, sample = "qcd", i = i))
+        ewk = importEwk(w = w, REwk = REwk, name = "ewk", i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", i = i, iLast = iLast)
 
-        if nFZinv=="All" :
-            wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.2, 0.8))
-        elif nFZinv=="One" :
-            if not i :
-                wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.0, 1.0))
-            else :
-                wimport(w, r.RooFormulaVar("fZinv%d"%i, "(@0)", r.RooArgList(w.var("fZinv0"))))
-        elif nFZinv=="Two" :
-            if not i :
-                wimport(w, r.RooRealVar("fZinv%d"%i, "fZinv%d"%i, 0.5, 0.0, 1.0)); firstFZinv = w.var("fZinv0")
-                wimport(w, r.RooRealVar("fZinv%d"%iLast, "fZinv%d"%iLast, 0.5, 0.0, 1.0)); lastFZinv = w.var("fZinv%d"%iLast)
-            elif i!=iLast :
-                argList = r.RooArgList(firstFZinv, lastFZinv, w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast))
-                wimport(w, r.RooFormulaVar("fZinv%d"%i, "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
-
-        fZinv = w.var("fZinv%d"%i) if w.var("fZinv%d"%i) else w.function("fZinv%d"%i)
         wimport(w, r.RooFormulaVar("zInv%d"%i, "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
         wimport(w, r.RooFormulaVar("ttw%d"%i,  "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
@@ -127,8 +134,6 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
             wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nHad%d"%i), w.function("hadExp%d"%i)))
         terms.append("hadPois%d"%i)
     
-    if not smOnly :
-        terms.append("signalGaus") #defined in signalVariables()
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
 def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
@@ -148,7 +153,7 @@ def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
         wimport(w, r.RooFormulaVar("qcdControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
                                    r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"), w.var("htMean%d"%i))))
 
-        wimport(w, parametrizedEwk(w = w, ewk = "ewkControl", i = i, iLast = iLast))
+        wimport(w, parametrizedLinearEwk(w = w, ewk = "ewkControl", i = i, iLast = iLast))
         wimport(w, r.RooFormulaVar("hadControlB%s"%s(i), "(@0)+(@1)", r.RooArgList(w.function("ewkControl%s"%s(i)), w.function("qcdControl%s"%s(i)))))
         wimport(w, r.RooRealVar("nHadControl%s"%s(i), "nHadControl%s"%s(i), nControlValue))
         if smOnly :
@@ -243,7 +248,7 @@ def muonTerms(w, inputData, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def signalVariables(w, inputData, signalDict) :
+def signalTerms(w, inputData, signalDict) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", signalDict["xs"]))
@@ -260,6 +265,8 @@ def signalVariables(w, inputData, signalDict) :
         for iBin,eff in enumerate(value) :
             name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
             wimport(w, r.RooRealVar(name, name, eff))
+
+    w.factory("PROD::signalTerms(%s)"%",".join(["signalGaus"]))
 
 def multi(w, variables, inputData) :
     out = []
@@ -280,12 +287,13 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, inc
     multiBinObs = []
     multiBinNuis = []
 
-    if signalDict :
-        signalVariables(w, inputData, signalDict)
-
     smOnly = not signalDict
     nuis += ["A_qcd","k_qcd"]
-    if REwk : nuis += ["A_ewk","d_ewk"]
+    if REwk : nuis += ["A_ewk","k_ewk"]
+
+    if not smOnly :
+        signalTerms(w, inputData, signalDict)
+        terms.append("signalTerms")
 
     hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
     photTerms(w, inputData)
@@ -635,7 +643,7 @@ class foo(object) :
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
 
     def checkInputs(self) :
-        assert self.REwk in ["", "Linear", "Constant"]
+        assert self.REwk in ["", "Exp", "Linear", "Constant"]
         assert self.RQcd in ["FallingExp", "Zero"]
         assert self.nFZinv in ["One", "Two", "All"]
         if self.qcdSearch :
