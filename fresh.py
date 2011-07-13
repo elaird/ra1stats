@@ -254,6 +254,7 @@ def signalVariables(w, inputData, signalDict) :
 
     for key,value in signalDict.iteritems() :
         if key=="xs" : continue
+        if "NLO_over_LO" in key : continue
         for iBin,eff in enumerate(value) :
             name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
             wimport(w, r.RooRealVar(name, name, eff))
@@ -624,8 +625,8 @@ class foo(object) :
         bins = self.inputData.htBinLowerEdges()
         for d in [self.signal, self.signalExampleToStack[1]] :
             for key,value in d.iteritems() :
-                if key=="xs" : continue
-                assert key in ["effHad", "effMuon"]
+                if "xs" in key : continue
+                assert ("effHad" in key) or ("effMuon" in key)
                 assert len(value)==len(bins)
             
     def smOnly(self) :
