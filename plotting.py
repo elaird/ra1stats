@@ -192,7 +192,8 @@ class validationPlotter(object) :
         if self.mumuTerms : desc2 += "; #rho_{#mu#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMumuZ").getVal(), self.wspace.var("rhoMumuZ").getError())
         vars += [
             {"var":"zInv", "type":"function", "desc":"Z->inv", "desc2": desc2,  "color":r.kRed, "style":2, "width":2, "stack":"ewk"},
-            {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W", "desc2": "#rho_{#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMuonW").getVal(), self.wspace.var("rhoMuonW").getError()),
+            {"var":"ttw",  "type":"function", "desc":"t#bar{t} + W",
+             "desc2": "#rho_{#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMuonW").getVal(), self.wspace.var("rhoMuonW").getError()),
              "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
             ]
         if not self.smOnly :
@@ -437,7 +438,7 @@ class validationPlotter(object) :
 	                if abs(x)==1.0e30 : continue
 	                d[item].SetBinContent(i+1, x)
                 elif errorsFrom :
-                    errorsVar = self.wspace.var(errorsFrom)
+                    errorsVar = self.wspace.var(errorsFrom) if self.wspace.var(errorsFrom) else self.wspace.var(errorsFrom+"%d"%i)
                     if errorsVar and errorsVar.getVal() : d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
 	    else :
 	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
@@ -484,7 +485,7 @@ class validationPlotter(object) :
                 if "var" not in d : continue
 	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"],
                                        purityKey = inDict(d, "purityKey", None), color = d["color"], lineStyle = d["style"],
-                                       lineWidth = inDict(d, "width", 1), lumiString = lumiString)
+                                       lineWidth = inDict(d, "width", 1), lumiString = lumiString, errorsFrom = inDict(d, "errorsFrom", ""))
 	        hist = histos["value"]
 	    else :
                 d2 = copy.deepcopy(d)
@@ -496,7 +497,7 @@ class validationPlotter(object) :
 	    if d["stack"] :
 	        if d["stack"] not in stacks :
 	            stacks[d["stack"]] = utils.thstack(name = d["stack"])
-	        stacks[d["stack"]].Add(hist)
+	        stacks[d["stack"]].Add(hist, inDict(d, "stackOptions", ""))
 	    else :
 	        hist.Scale(scale)
 	        stuff.append( drawOne(hist, goptions, inDict(d, "errorBand", False)) )
