@@ -19,15 +19,15 @@ class thstack(object) :
     def __init__(self, name = "") :
         self.name = name
         self.histos = []
-    def Add(self, inHisto) :
+    def Add(self, inHisto, options = "") :
         histo = inHisto.Clone("%s_%s"%(inHisto.GetName(), self.name))
-        self.histos.append(histo)
+        self.histos.append( (histo, options) )
         if len(self.histos)>1 :
-            self.histos[-1].Add(self.histos[-2])
+            self.histos[-1][0].Add(self.histos[-2][0])
     def Draw(self, goptions, reverse = False) :
         histos = self.histos if not reverse else reversed(self.histos)
-        for histo in histos :
-            histo.Draw(goptions)
+        for histo,options in histos :
+            histo.Draw(goptions+options)
 #####################################
 class numberedCanvas(r.TCanvas) :
     page = 0
