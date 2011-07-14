@@ -522,6 +522,8 @@ def makeValidationPlots() :
             super(utils.numberedCanvas, canvas).Print(eps)
             utils.epsToPdf(eps)
             h2.SetTitle(title)
+        canvas.SetTickx()
+        canvas.SetTicky()
         canvas.Print(fileName)
 
     #effMu/effHad
