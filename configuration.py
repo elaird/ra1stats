@@ -31,6 +31,7 @@ def switches() :
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
     #d["listOfTestPoints"] = [(51, 44, 1)] #Filip's request
     #d["listOfTestPoints"] = [(11, 11, 1)] #Sue Ann's request
+    #d["listOfTestPoints"] = [(29, 55, 1)]
     d["listOfTestPoints"] = []
 
     d["computeExpectedLimit"] = False
