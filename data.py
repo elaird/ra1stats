@@ -12,7 +12,7 @@ def excl(counts, isExclusive) :
         out.append(count if isExcl else (count-counts[i+1]))
     return tuple(out)
 
-vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans",
+vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "sigEffCorr",
         "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExtra", "mcStatError", "fixedParameters"]
 
 class data(object) :
@@ -95,10 +95,11 @@ class data(object) :
         if self.requireFullImplementation :
             assert False,"Implement trigger efficiency merging."
             assert False,"Implement purity merging."
+            assert False,"Implement sigEffCorr merging."
         else :
             print "WARNING: Purity merging is not implemented.  Results are nonsense."
             print "WARNING: Trigger efficiency merging is not implemented.  Results are nonsense."
-
+            print "WARNING: Signal efficiency correction merging is not implemented.  Results are nonsense."
         return
 
     #define functions called by outside world
