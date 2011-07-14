@@ -24,6 +24,9 @@ def oneGraph(n = None, b = None) :
         gr.SetPoint(index, s, clsPoisson(n, b, s))
         index += 1
     gr.Draw("apl")
+    gr.GetXaxis().SetTitle("s")
+    gr.GetYaxis().SetTitle("CL_{s}")
+    gr.SetTitle("L = Pois( %d | %g + s )"%(n,b))
     line = r.TLine()
     line.SetLineColor(r.kRed)
     line.DrawLine(0.0, 0.05, 10.0, 0.05)
@@ -249,9 +252,10 @@ class foo(object) :
 
 f = foo()
 #out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-out = f.cls(); print out
+#out = f.cls(); print out
 #clsPoissonGraph()
 #f.profile()
 #f.bestFit()
 #f.pValue(nToys = 500)
 #f.debug()
+#oneGraph(n = 1, b = 3.0)
