@@ -149,6 +149,7 @@ class validationPlotter(object) :
 
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
+
         if not self.smOnly :
             self.signalDesc = "signal"
             self.signalDesc2 = "xs = %5.2f xs^{nom}; #rho = %4.2f"%(self.wspace.var("f").getVal(), self.wspace.var("rhoSignal").getVal())
@@ -181,7 +182,7 @@ class validationPlotter(object) :
         vars = [
             {"var":"hadB", "type":"function", "desc":"expected total background",
              "color":r.kBlue, "style":1, "width":3, "stack":"total"},
-            {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "d_ewk", errors = True) if self.REwk else "[floating]",
+            {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "k_ewk", errors = True) if self.REwk else "[floating]",
              "color":r.kCyan, "style":2, "width":2, "stack":"background"},
             {"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcd", "k_qcd", errors = True),
              "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
@@ -212,7 +213,7 @@ class validationPlotter(object) :
             self.validationPlot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
                                 obsKey = "nHad", obsLabel = "hadronic data %s"%lumi(self.lumi["had"]), otherVars = [
                 {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
-                {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "d_ewk", errors = True) if self.REwk else "[floating]",
+                {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "k_ewk", errors = True) if self.REwk else "[floating]",
                  "color":r.kCyan, "style":2, "width":2, "stack":"background"},
                 {"var":"hadB", "type":"function", "desc":"expected total background",
                  "color":r.kBlue, "style":1, "width":3, "stack":"total"},
@@ -416,7 +417,7 @@ class validationPlotter(object) :
 	          
 	d["value"].SetMarkerColor(color)
 	d["value"].SetMarkerStyle(markerStyle)
-	
+
 	toPrint = []
 	for i in range(len(self.htBinLowerEdges)) :
 	    if wspaceMemberFunc :
