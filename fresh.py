@@ -262,9 +262,9 @@ def signalTerms(w, inputData, signalDict) :
     for key,value in signalDict.iteritems() :
         if key=="xs" : continue
         if "NLO_over_LO" in key : continue
-        for iBin,eff in enumerate(value) :
+        for iBin,eff,corr in zip(range(len(value)), value, inputData.sigEffCorr()) :
             name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
-            wimport(w, r.RooRealVar(name, name, eff))
+            wimport(w, r.RooRealVar(name, name, eff*corr))
 
     w.factory("PROD::signalTerms(%s)"%",".join(["signalGaus"]))
 
