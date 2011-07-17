@@ -73,32 +73,28 @@ def onePoint(switches = None, data = None, point = None) :
     printDict(signal)
     out = stuffVars(switches, binsMerged, signal)
 
-    if "CLs" in switches["method"] :
+    for cl in switches["CL"] :
+        cl2 = 100*cl
         f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
-                      hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
+                      simpleOneBin = switches["simpleOneBin"], hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
                       muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
-        results = f.cls(method = switches["method"], nToys = switches["nToys"])
-        for key,value in results.iteritems() : out[key] = (value, description(key))
-        for cl in switches["CL"] :
-            value = 1.0 - cl
-            out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
-    else :
-        for cl in switches["CL"] :
-            cl2 = 100*cl
-            f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
-                          hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
-                          muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
-    
-            if not switches["computeExpectedLimit"] :
-                results = f.interval(cl = cl, method = switches["method"])
-                for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-                out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
-            else :
-                d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
-                for key,value in d.iteritems() :
-                    out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-                    out["excluded%s%g"%(key, cl2)] = (2.0*(value<1.0) - 1.0, "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
-                out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
+
+        if switches["method"]=="CLs" :
+            results = f.cls(cl = cl, nToys = switches["nToys"])
+            for key,value in results.iteritems() : out[key] = (value, description(key))
+            for cl in switches["CL"] :
+                value = 1.0 - cl
+                out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
+        elif not switches["computeExpectedLimit"] :
+            results = f.interval(cl = cl, method = switches["method"])
+            for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+            out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
+        else :
+            d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
+            for key,value in d.iteritems() :
+                out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+                out["excluded%s%g"%(key, cl2)] = (2.0*(value<1.0) - 1.0, "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
+            out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
     
 def go() :
