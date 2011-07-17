@@ -632,11 +632,13 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
-def noteArgs() : return ["REwk", "RQcd", "nFZinv", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"]
+def noteArgs() : return ["REwk", "RQcd", "nFZinv", "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"]
 
 def note(REwk = None, RQcd = None, nFZinv = None, ignoreSignalContaminationInMuonSample = None,
-         hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
+         simpleOneBin = None, hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
     out = ""
+    if simpleOneBin : return "simpleOneBin"
+    
     if REwk : out += "REwk%s_"%REwk
     out += "RQcd%s"%RQcd
     out += "_fZinv%s"%nFZinv
