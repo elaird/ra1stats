@@ -100,9 +100,6 @@ def onePoint(switches = None, data = None, point = None) :
 def go() :
     s = conf.switches()
     data = conf.data()
-
-    if s["computeExpectedLimit"] : assert s["method"]=="profileLikelihood"
-    
     for point in points() :
         onePoint(switches = s, data = data, point = point)
 
