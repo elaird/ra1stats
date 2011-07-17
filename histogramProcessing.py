@@ -485,7 +485,7 @@ def makeValidationPlots() :
     canvas.Clear()
 
     logZ = ["xs"]
-    special = ["excluded", "upperLimit", "lowerLimit", "CLs", "CLs+b", "CLb", "xs"]
+    special = ["excluded", "upperLimit", "lowerLimit", "CLs", "CLb", "xs"]
     suppressed = []
     
     first = []
@@ -494,6 +494,7 @@ def makeValidationPlots() :
         for name in names :
             if item==name[:len(item)] :
                 first.append(name)
+
     for item in first :
         names.remove(item)
 
