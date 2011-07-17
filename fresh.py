@@ -136,6 +136,23 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
     
     w.factory("PROD::hadTerms(%s)"%",".join(terms))
 
+def simpleOneBinTerm(w, inputData, smOnly, varDict) :
+    assert not smOnly
+    obs = inputData.observations()
+    terms = []
+
+    i = len(obs["nHad"])-1
+    nHad = obs["nHad"][i]
+
+    wimport(w, r.RooRealVar("nHad%d"%i, "nHad%d"%i, nHad))
+    wimport(w, r.RooRealVar("hadB%d"%i, "hadB%d"%i, varDict["b"]))
+    wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("hadLumi"), w.var("signalEffHad%d"%i))))
+    wimport(w, r.RooAddition("hadExp%d"%i, "hadExp%d"%i, r.RooArgSet(w.function("hadB%d"%i), w.function("hadS%d"%i))))
+    wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nHad%d"%i), w.function("hadExp%d"%i)))
+    terms.append("hadPois%d"%i)
+    
+    w.factory("PROD::simpleOneBinTerm(%s)"%",".join(terms))
+
 def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
     def s(i = None) : return ("_%s%s"%(label, "_%d"%i if i!=None else ""))
     obs = inputData.observations()
@@ -256,7 +273,7 @@ def signalTerms(w, inputData, signalDict) :
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
-    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", 2.0*inputData.fixedParameters()["sigmaLumiLike"]))
+    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", inputData.fixedParameters()["sigmaLumiLike"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
     for key,value in signalDict.iteritems() :
@@ -279,8 +296,8 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, includeHadTerms = True, hadControlSamples = [],
-                    includeMuonTerms = True, includePhotTerms = True, includeMumuTerms = False) :
+def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, simpleOneBin = {}, includeHadTerms = None, hadControlSamples = [],
+                    includeMuonTerms = None, includePhotTerms = None, includeMumuTerms = None) :
     terms = []
     obs = []
     nuis = []
@@ -288,18 +305,25 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, inc
     multiBinNuis = []
 
     smOnly = not signalDict
-    nuis += ["A_qcd","k_qcd"]
-    if REwk : nuis += ["A_ewk","k_ewk"]
 
     if not smOnly :
         signalTerms(w, inputData, signalDict)
         terms.append("signalTerms")
 
-    hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
-    photTerms(w, inputData)
-    muonTerms(w, inputData, smOnly)
-    mumuTerms(w, inputData)
+    if simpleOneBin :
+        simpleOneBinTerm(w, inputData, smOnly, simpleOneBin)
+        terms.append("simpleOneBinTerm")
+        multiBinObs.append("nHad")
+    else :
+        nuis += ["A_qcd","k_qcd"]
+        if REwk : nuis += ["A_ewk","k_ewk"]
+        multiBinNuis += ["fZinv"]
 
+        hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
+        photTerms(w, inputData)
+        muonTerms(w, inputData, smOnly)
+        mumuTerms(w, inputData)
+        
     if includeHadTerms :
         terms.append("hadTerms")
         multiBinObs.append("nHad")
@@ -327,8 +351,6 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, inc
         multiBinObs.append("nMumu")
         nuis.append("rhoMumuZ")
         
-    multiBinNuis += ["fZinv"]
-
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if not smOnly :
@@ -621,9 +643,9 @@ def note(REwk = None, RQcd = None, nFZinv = None, ignoreSignalContaminationInMuo
 
 class foo(object) :
     def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, qcdSearch = False, signal = {}, signalExampleToStack = ("", {}), trace = False,
-                 hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False) :
+                 simpleOneBin = {}, hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False) :
         for item in ["inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "signalExampleToStack",
-                     "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
+                     "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -632,7 +654,7 @@ class foo(object) :
 
         self.wspace = r.RooWorkspace("Workspace")
         setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.nFZinv, self.qcdSearch, self.signal,
-                        includeHadTerms = self.hadTerms, hadControlSamples = self.hadControlSamples,
+                        simpleOneBin = self.simpleOneBin, includeHadTerms = self.hadTerms, hadControlSamples = self.hadControlSamples,
                         includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
@@ -646,6 +668,9 @@ class foo(object) :
         assert self.REwk in ["", "Exp", "Linear", "Constant"]
         assert self.RQcd in ["FallingExp", "Zero"]
         assert self.nFZinv in ["One", "Two", "All"]
+        if self.simpleOneBin : 
+            for item in ["hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
+                assert not getattr(self,item),item
         if self.qcdSearch :
             assert self.smOnly()
             assert self.RQcd=="FallingExp"
