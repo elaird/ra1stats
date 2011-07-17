@@ -6,17 +6,18 @@ def switches() :
     d["dataYear"] = [2010, 2011][1]
     
     d["CL"] = [0.95, 0.90][:1]
-    d["nToys"] = 200
+    d["nToys"] = 500
     
-    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsViaToys"][0]
+    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs"][0]
     d["minSignalXsForConsideration"] = 1.0e-6
     d["maxSignalXsForConsideration"] = None
 
-    d["hadTerms"] = True
-    d["hadControlSamples"] = []
+    d["simpleOneBin"] = [{}, {"b":3.0}][0]
+    d["hadTerms"]  = True
     d["muonTerms"] = True
     d["photTerms"] = True
     d["mumuTerms"] = False
+    d["hadControlSamples"] = []
     
     d["REwk"] = ["", "Linear", "Constant"][2]
     d["RQcd"] = ["Zero", "FallingExp"][1]
@@ -29,8 +30,6 @@ def switches() :
     d["effRatioPlots"] = False
     d["ignoreSignalContaminationInMuonSample"] = False
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
-    #d["listOfTestPoints"] = [(51, 44, 1)] #Filip's request
-    #d["listOfTestPoints"] = [(11, 11, 1)] #Sue Ann's request
     #d["listOfTestPoints"] = [(29, 55, 1)]
     d["listOfTestPoints"] = []
 
@@ -45,7 +44,7 @@ def switches() :
     d["icfDefaultNEventsIn"] = 10000
     
     d["subCmd"] = "qsub -q hep%s.q"%(["short", "medium", "long"][0])
-    d["envScript"] = ["icJob.sh", "envIC.sh"][1]
+    d["envScript"] = ["icJob.sh", "env.sh"][1]
 
     checkAndAdjust(d)
     return d
@@ -56,6 +55,8 @@ def data() :
 
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
+    if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
+    
     d["lateDivision"] = False
     if len(d["signalModel"])==2 :
         d["nlo"] = False
