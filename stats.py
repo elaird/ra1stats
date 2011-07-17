@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-import os,cPickle,utils
-import configuration as conf
-import histogramProcessing as hp
+from optparse import OptionParser
+import os
 ############################################
 def opts() :
-    from optparse import OptionParser
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
@@ -52,49 +50,15 @@ def mkdirs() :
     utils.mkdir(s["logDir"])
     utils.mkdir(s["outputDir"])
 ############################################
-def mergeRootFiles(nSlices) :
-    def cleanUp(stderr, files) :
-        if stderr :
-            print "hadd had this stderr: %s"%stderr
-            return
-        else :
-            for fileName in files :
-                os.remove(fileName)
+options = opts()
 
-    def prunedList(l) :
-        out = []
-        for fileName in l :
-            if os.path.exists(fileName) :
-                out.append(fileName)
-            else :
-                print "Skipping %s"%fileName
-        return out
+import utils
+import configuration as conf
+import histogramProcessing as hp
 
-    def go(outFile, inList) :
-        inList2 = prunedList(inList)
-        hAdd = utils.getCommandOutput("hadd -f %s %s"%(outFile, " ".join(prunedList(inList2))))
-        cleanUp(hAdd["stderr"], inList2)
-        return outFile if inList2 else None
-        
-    def mergeOneType(attr) :
-        inList = [conf.strings(*point)["%sFileName"%attr] for point in hp.points()]
-        outFile = "%s.root"%conf.stringsNoArgs()["%sStem"%attr]
-
-        outFiles = []
-        for iSlice in range(nSlices) :
-            tmpFile = outFile.replace(".root","_%d.root"%iSlice)
-            addedFile = go(tmpFile, inList[iSlice::nSlices])
-            if addedFile : outFiles.append(addedFile)
-        go(outFile, outFiles)
-
-    mergeOneType("plot")
-    if conf.switches()["writeWorkspaceFile"] :
-        mergeOneType("workspace")
-############################################
 hp.checkHistoBinning()
 mkdirs()
 
-options = opts()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
 if options.merge : hp.mergePickledFiles()
