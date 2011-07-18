@@ -22,19 +22,12 @@ def errorsPlot(wspace, results) :
     r.gPad.Print("Ak.png")
     return plot
 
-def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
-    ps = "limits_%s.ps"%note
-    canvas = r.TCanvas("canvas")
-    canvas.SetTickx()
-    canvas.SetTicky()
-    canvas.Print(ps+"[")
-
-    hist
+def drawDecoratedHisto(quantiles = {}, hist = None, obs = None) :
     hist.Draw()
     hist.SetStats(False)
 
     q = copy.deepcopy(quantiles)
-    q["Observed Limit"] = obsLimit
+    q["Observed"] = obs
 
     legend = r.TLegend(0.1, 0.7, 0.5, 0.9)
     legend.SetFillStyle(0)
@@ -46,8 +39,18 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") 
         line.SetLineColor(2+i)
         line2 = line.DrawLine(q[key], hist.GetMinimum(), q[key], hist.GetMaximum())
         legend.AddEntry(line2, key, "l")
-
     legend.Draw()
+    return legend
+
+def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
+    ps = "limits_%s.ps"%note
+    canvas = r.TCanvas("canvas")
+    canvas.SetTickx()
+    canvas.SetTicky()
+    canvas.Print(ps+"[")
+
+    l = drawDecoratedHisto(quantiles, hist, obsLimit)
+
     canvas.Print(ps)
     canvas.Print(ps+"]")
     utils.ps2pdf(ps)
@@ -557,7 +560,6 @@ class validationPlotter(object) :
     	        if maximum :  h.SetMaximum(maximum)
     	    else :
     	        h.Draw("%ssame"%goptions)
-    	
     	
     	for item in reversed(legEntries) if reverseLegend else legEntries :
     	    leg.AddEntry(*item)
