@@ -472,7 +472,7 @@ def clsOld(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
     out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
     return out
 
-def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, makePlots = None, nWorkers = None) :
+def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, plusMinus = {}, makePlots = None, nWorkers = None) :
     assert not smOnly
 
     wimport(wspace, dataset)
@@ -491,9 +491,30 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     print "upper limit = %g +- %g"%(result.UpperLimit(), result.UpperLimitEstimatedError())
 
     if makePlots :
-        plot = r.RooStats.HypoTestInverterPlot("HTI_Result_Plot", "", result)
-        plot.Draw("CLb 2CL")
-        r.gPad.Print("foo.png")
+        ps = "cls.ps"
+        canvas = r.TCanvas()
+        canvas.Print(ps+"[")
+        
+        resultPlot = r.RooStats.HypoTestInverterPlot("HTI_Result_Plot", "", result)
+        resultPlot.Draw("CLb 2CL")
+        canvas.Print(ps)
+
+        tsPlot = resultPlot.MakeTestStatPlot(iPoint)
+        #tsPlot.SetLogYaxis(True)
+        tsPlot.Draw()
+        canvas.Print(ps)
+
+        values = result.GetExpectedPValueDist(iPoint).GetSamplingDistribution()
+
+        q,hist = quantiles(values, plusMinus, histoName = "expected_CLs_distribution",
+                           histoTitle = "expected CLs distribution;CL_{s};toys / bin",
+                           histoBins = (105, 0.0, 1.05), cutZero = False)
+
+        leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = out["CLs"])
+        canvas.Print(ps)
+        
+        canvas.Print(ps+"]")
+        utils.ps2pdf(ps)
     return out
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
@@ -532,7 +553,7 @@ def limits(wspace, snapName, modelConfig, smOnly, cl, datasets, makePlots = Fals
         out.append(interval["upperLimit"])
     return sorted(out)
 
-def quantiles(limits, plusMinus, makePlots = False) :
+def quantiles(values = [], plusMinus = {}, histoName = "", histoTitle = "", histoBins = [], cutZero = None) :
     def histoFromList(l, name, title, bins, cutZero = False) :
         h = r.TH1D(name, title, *bins)
         for item in l :
@@ -560,7 +581,7 @@ def quantiles(limits, plusMinus, makePlots = False) :
     probSum = array.array('d', probs)
     q = array.array('d', [0.0]*len(probSum))
 
-    h = histoFromList(limits, name = "upperLimit", title = ";upper limit on XS factor;toys / bin", bins = (50, 1, -1), cutZero = True) #enable auto-range
+    h = histoFromList(values, name = histoName, title = histoTitle, bins = histoBins, cutZero = cutZero)
     h.GetQuantiles(len(probSum), q, probSum)
     return dict(zip(names, q)),h
     
@@ -585,7 +606,8 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 
     #fit toys
     l = limits(wspace, snapName, modelConfig, smOnly, cl, toys)
-    q,hist = quantiles(l, plusMinus, makePlots)
+
+    q,hist = quantiles(l, plusMinus, histoName = "upperLimit", histoTitle = ";upper limit on XS factor;toys / bin", histoBins = (50, 1, -1), cutZero = True) #enable auto-range
     nSuccesses = hist.GetEntries()
 
     obsLimit = limits(wspace, snapName, modelConfig, smOnly, cl, [dataset])[0]
@@ -714,9 +736,9 @@ class foo(object) :
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
-    def cls(self, cl = 0.95, nToys = 300, makePlots = False, nWorkers = 1) :
+    def cls(self, cl = 0.95, nToys = 300, plusMinus = {}, makePlots = False, nWorkers = 1) :
         return cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
-                   cl = cl, nToys = nToys, nWorkers = nWorkers, makePlots = makePlots)
+                   cl = cl, nToys = nToys, plusMinus = plusMinus, nWorkers = nWorkers, makePlots = makePlots)
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
