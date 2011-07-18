@@ -479,7 +479,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     wimport(wspace, modelconfig)
     result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
                          nworkers = nWorkers, ntoys = nToys, type = 0, testStatType = 3,
-                         npoints = 2, poimin = 1.0, poimax = 2.0)
+                         npoints = 1, poimin = 1.0, poimax = 1.0)
 
     iPoint = 0
     out = {}
