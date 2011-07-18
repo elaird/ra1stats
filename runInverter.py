@@ -119,15 +119,17 @@ def RunInverter(w = None, modelSBName = "", modelBName = "",
     # can speed up using proof-lite
     if nworkers>1 : toymcs.SetProofConfig(r.RooStats.ProofConfig(w, nworkers, "", r.kFALSE))
    
-    if (npoints > 0) :
-        if (poimin >= poimax) :
-            # if no min/max given scan between MLE and +4 sigma 
-            poimin = poihat
-            poimax = poihat + 4*poi.getError()
+    if npoints>1 :
         print "Doing a fixed scan  in interval : %g , %g"%(poimin, poimax)
         calc.SetFixedScan(npoints, poimin, poimax)
-    else :
+    elif npoints<1 :
         #poi.setMax(10*int( (poihat+ 10 *poi.getError() )/10 ) )
         print "Doing an  automatic scan  in interval : %g , %g"%(poi.getMin(), poi.getMax())
+    else :
+        pass
+        #assert poimin==poimax
+        #calc.SetFixedScan(npoints, poimin, 2.0*poimax)
+        #print "Running one point: %g"%poimin
+        #calc.RunOnePoint(poimin)
 
     return calc.GetInterval()
