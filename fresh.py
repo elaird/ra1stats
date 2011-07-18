@@ -472,7 +472,7 @@ def clsOld(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
     out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
     return out
 
-def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, plusMinus = {}, makePlots = None, nWorkers = None) :
+def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, plusMinus = {}, note = "", makePlots = None, nWorkers = None) :
     assert not smOnly
 
     wimport(wspace, dataset)
@@ -487,11 +487,18 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     out["CLs+b"] = result.CLsplusb(iPoint)
     out["CLs"] = result.CLs(iPoint)
     out["CLsError"] = result.CLsError(iPoint)
-    
-    print "upper limit = %g +- %g"%(result.UpperLimit(), result.UpperLimitEstimatedError())
 
+    values = result.GetExpectedPValueDist(iPoint).GetSamplingDistribution()
+    q,hist = quantiles(values, plusMinus, histoName = "expected_CLs_distribution",
+                       histoTitle = "expected CLs distribution;CL_{s};toys / bin",
+                       histoBins = (105, 0.0, 1.05), cutZero = False)
+
+    for key,value in q.iteritems() :
+        assert not (key in out),"%s %s"%(key, str(out))
+        out[key] = value
+        
     if makePlots :
-        ps = "cls.ps"
+        ps = "cls_%s.ps"%note
         canvas = r.TCanvas()
         canvas.Print(ps+"[")
         
@@ -503,12 +510,6 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         #tsPlot.SetLogYaxis(True)
         tsPlot.Draw()
         canvas.Print(ps)
-
-        values = result.GetExpectedPValueDist(iPoint).GetSamplingDistribution()
-
-        q,hist = quantiles(values, plusMinus, histoName = "expected_CLs_distribution",
-                           histoTitle = "expected CLs distribution;CL_{s};toys / bin",
-                           histoBins = (105, 0.0, 1.05), cutZero = False)
 
         leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = out["CLs"])
         canvas.Print(ps)
@@ -738,7 +739,7 @@ class foo(object) :
 
     def cls(self, cl = 0.95, nToys = 300, plusMinus = {}, makePlots = False, nWorkers = 1) :
         return cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
-                   cl = cl, nToys = nToys, plusMinus = plusMinus, nWorkers = nWorkers, makePlots = makePlots)
+                   cl = cl, nToys = nToys, plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots)
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
