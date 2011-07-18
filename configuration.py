@@ -12,10 +12,18 @@ def switches() :
     d["minSignalXsForConsideration"] = 1.0e-6
     d["maxSignalXsForConsideration"] = None
 
-    d["simpleOneBin"] = [{}, {"b":3.0}][0]
-    d["hadTerms"]  = True
-    d["muonTerms"] = True
-    d["photTerms"] = True
+
+    if True :
+        d["simpleOneBin"] = [{}, {"b":3.0}][1]
+        d["hadTerms"]  = False
+        d["muonTerms"] = False
+        d["photTerms"] = False
+    else :
+        d["simpleOneBin"] = [{}, {"b":3.0}][0]
+        d["hadTerms"]  = True
+        d["muonTerms"] = True
+        d["photTerms"] = True
+
     d["mumuTerms"] = False
     d["hadControlSamples"] = []
     
