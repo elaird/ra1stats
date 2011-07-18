@@ -491,12 +491,12 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     values = result.GetExpectedPValueDist(iPoint).GetSamplingDistribution()
     q,hist = quantiles(values, plusMinus, histoName = "expected_CLs_distribution",
                        histoTitle = "expected CLs distribution;CL_{s};toys / bin",
-                       histoBins = (105, 0.0, 1.05), cutZero = False)
+                       histoBins = (205, -1.0, 1.05), cutZero = False)
 
     for key,value in q.iteritems() :
         assert not (key in out),"%s %s"%(key, str(out))
         out[key] = value
-        
+
     if makePlots :
         ps = "cls_%s.ps"%note
         canvas = r.TCanvas()
@@ -506,10 +506,10 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         resultPlot.Draw("CLb 2CL")
         canvas.Print(ps)
 
-        tsPlot = resultPlot.MakeTestStatPlot(iPoint)
-        #tsPlot.SetLogYaxis(True)
-        tsPlot.Draw()
-        canvas.Print(ps)
+        #tsPlot = resultPlot.MakeTestStatPlot(iPoint)
+        ##tsPlot.SetLogYaxis(True)
+        #tsPlot.Draw()
+        #canvas.Print(ps)
 
         leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = out["CLs"])
         canvas.Print(ps)
