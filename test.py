@@ -44,11 +44,12 @@ f = fresh.foo(inputData = data2011(),
               #signalExampleToStack = ("m_{0} = 500 GeV;  m_{1/2} = 440 GeV", filips_point2),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
               #trace = True
-
+              
               #simpleOneBin = {"b": 3.0},
               #hadTerms = False,
               #photTerms = False,
               #muonTerms = False,
+              
               #mumuTerms = True,
               #hadControlSamples = ["52_53"],
               #hadControlSamples = ["53_55"],
@@ -56,7 +57,7 @@ f = fresh.foo(inputData = data2011(),
               )
 
 #out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = 0.95, nToys = 100, makePlots = True, nWorkers = 6); print out
+#out = f.cls(cl = 0.95, nToys = 1000, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 1); print out
 #f.profile()
 f.bestFit()
 #f.bestFit(printPages = True)
