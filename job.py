@@ -80,7 +80,7 @@ def onePoint(switches = None, data = None, point = None) :
                       muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
 
         if switches["method"]=="CLs" :
-            results = f.cls(cl = cl, nToys = switches["nToys"])
+            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"])
             for key,value in results.iteritems() : out[key] = (value, description(key))
             for cl in switches["CL"] :
                 value = 1.0 - cl
