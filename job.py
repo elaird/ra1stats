@@ -81,22 +81,26 @@ def onePoint(switches = None, data = None, point = None) :
 
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"])
-            for key,value in results.iteritems() : out[key] = (value, description(key))
-            for cl in switches["CL"] :
-                value = 1.0 - cl
-                out["excluded%g"%(100*cl)] = (2.0*(results["CLs"]<value) - 1.0, "is CLs<%g ?"%value)
+            for key,value in results.iteritems() :
+                out[key] = (value, description(key))
+                if key=="CLs" or ("Median" in key) :
+                    threshold = 1.0 - cl
+                    out["excluded_%s_%g"%(key, cl2)] = (compare(results["CLs"], threshold), "is %s<%g ?"%(key, threshold))
         elif not switches["computeExpectedLimit"] :
             results = f.interval(cl = cl, method = switches["method"])
             for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-            out["excluded%g"%cl2] = (2.0*(results["upperLimit"]<1.0) - 1.0, "is (%g%% upper limit on XS factor)<1?"%cl2)
+            out["excluded%g"%cl2] = (compare(results["upperLimit"], 1.0), "is (%g%% upper limit on XS factor)<1?"%cl2)
         else :
             d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
             for key,value in d.iteritems() :
                 out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-                out["excluded%s%g"%(key, cl2)] = (2.0*(value<1.0) - 1.0, "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
+                out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
             out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
-    
+
+def compare(item, threshold) :
+    return 2.0*(item<threshold)-1.0
+
 def go() :
     s = conf.switches()
     data = conf.data()
