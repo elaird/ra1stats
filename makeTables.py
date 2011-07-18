@@ -162,7 +162,7 @@ def dictFromFile(fileName) :
     for line in f :
         fields = line.split()
         key = fields[0]
-        lumi = fields[1].replace("/pb]","").replace("[","")
+        lumi = fields[1].replace("/pb]","").replace("[","").replace("/fb]","")
         values = []
         for item in [item.replace(",","").replace("(","").replace(")","") for item in fields[2:]] :
             if item!="" : values.append(float(item))
@@ -194,9 +194,10 @@ def document() :
     data = data2011()
     out = ""
     for blob in [beginDocument(), RalphaT(data), photon(data), muon(data),
-                 #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
-                 #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt"),
-                 fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v13/numbers_v1.txt"),
+                 ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
+                 ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt"),
+                 #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v13/numbers_v1.txt"),
+                 fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v15/fitResults.txt"),
                  endDocument()] :
         out += blob
     return out
