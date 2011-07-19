@@ -11,27 +11,37 @@ def histo(inputData, name, title = "") :
     #out.SetStats(False)
     return out
 
-def fill(h, contents, errors) :
+def fill(constantR, h, contents, errors) :
     h.Reset()
+    cFinal = None
+    eFinal = None
     for i,c,e in zip(range(len(contents)), contents, errors) :
-        h.SetBinContent(1+i, c)
-        h.SetBinError(1+i, e)
+        if constantR[i] :
+            cFinal = sum(contents[i:])
+            eFinal = e
+        content = c if cFinal is None else cFinal
+        error   = e if eFinal is None else eFinal
+        h.SetBinContent(1+i, content)
+        h.SetBinError(1+i, error)
     return h
 
 data = data2011(requireFullImplementation = False)
 
-htBins    = data.htBinLowerEdges()
-constR    = data.constantMcRatioAfterHere()
+htBins = data.htBinLowerEdges()
+constantR = data.constantMcRatioAfterHere()
+
 nMuon     = data.observations()["nMuon2Jet"]
-mcMuon    = data.mcExpectations()["mcMuon2Jet"]
-mcMuonErr = data.mcStatError()["mcMuon2JetErr"]
+mcMuon    = data.mcExpectations()["mcMuon2JetSpring11"]
+mcMuonErr = data.mcStatError()["mcMuon2JetSpring11Err"]
+
 nPhot     = data.observations()["nPhot2Jet"]
 mcPhot    = data.mcExpectations()["mcPhot2Jet"]
 mcPhotErr = data.mcStatError()["mcPhot2JetErr"]
+
 syst      = data.fixedParameters()["sigmaPhotZ"]
 
-muon = fill(histo(data, name = "mcMuon2Jet", title = "mcMuon2Jet"), mcMuon, mcMuonErr)
-phot = fill(histo(data, name = "mcPhot2Jet", title = "mcPhot2Jet"), mcPhot, mcPhotErr)
+muon = fill(constantR, histo(data, name = "mcMuon2Jet", title = "mcMuon2Jet"), mcMuon, mcMuonErr)
+phot = fill(constantR, histo(data, name = "mcPhot2Jet", title = "mcPhot2Jet"), mcPhot, mcPhotErr)
 muon.Divide(phot)
 
 print     "HT   nPhoton    MC ratio(err)       prediction                                            nMuon"
