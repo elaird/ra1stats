@@ -23,7 +23,7 @@ class data2011_4(data) :
         #self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0)
 
         #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    1,     0,     0,     0,     0)
+        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
 
         self._lumi = {
             "had":     1080.,
@@ -67,7 +67,7 @@ class data2011_4(data) :
             "mcMuon":     trig(     scaled((411.20,  179.11,  131.59,  48.68,  13.32,   7.95,   3.20, 0.90), self.lumi()["muon"]/self.lumi()["mcMuon"]),
                                     self._triggerEfficiencies["had"]),
             "mcMuon2Jet":           scaled((121.83,   54.43,   45.06,  14.89,   3.69,   0.72,   0.72, 0.00), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-            
+            "mcMuon2JetSpring11":   scaled((139.39,   53.17,   40.62,   2.84,   6.71,   4.63,   0.15, 0.00), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtw":      trig(     scaled((467.25,  171.16,  116.33,  43.68,  17.50,   5.08,   1.09, 1.81), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
                                     self._triggerEfficiencies["had"]),
             "mcGjets":         excl(scaled((   600,     260,     250,     85,     31,      8,      5,    2), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
@@ -80,6 +80,7 @@ class data2011_4(data) :
         self._mcStatError = {
             "mcMuonErr":                   ( 14.51,    9.57,    8.78,   5.54,   2.92,   2.29,   1.44,  0.73),
             "mcMuon2JetErr":               (  9.01,    6.07,    5.54,   3.22,   1.61,   0.72,   0.72,  0.00),
+            "mcMuon2JetSpring11Err":       ( 17.06,   10.50,    9.25,   2.26,   3.88,   3.17,   0.15,  0.00),
             "mcTtwErr":                    ( 16.00,    9.47,    8.26,   5.06,   3.17,   1.80,   0.73,  1.03),
             "mcGjetsErr":           scaled((    20,      10,      10,      8,      5,      2,      2,     1), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcPhot2JetErr":        scaled((    40,      10,       8,      4,      3,    0.5,    0.5,   0.5), self.lumi()["phot"]/self.lumi()["mcGjets"]),
