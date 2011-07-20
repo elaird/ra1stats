@@ -79,10 +79,10 @@ def importFZinv(w = None, nFZinv = "", name = "", i = None, iLast = None) :
         else     : wimport(w, r.RooFormulaVar("%s%d"%(name, i), "(@0)", r.RooArgList(w.var("%s0"%name))))
     elif nFZinv=="Two" :
         if not i :
-            wimport(w, r.RooRealVar("%s%d"%(name, i),     "%s%d"%(name, i),     0.5, 0.0, 1.0)); firstFZinv = w.var("%s%d"%(name, 0))
-            wimport(w, r.RooRealVar("%s%d"%(name, iLast), "%s%d"%(name, iLast), 0.5, 0.0, 1.0)); lastFZinv  = w.var("%s%d"%(name, iLast))
+            wimport(w, r.RooRealVar("%s%d"%(name, i),     "%s%d"%(name, i),     0.5, 0.0, 1.0))
+            wimport(w, r.RooRealVar("%s%d"%(name, iLast), "%s%d"%(name, iLast), 0.5, 0.0, 1.0))
         elif i!=iLast :
-            argList = r.RooArgList(firstFZinv, lastFZinv, w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast))
+            argList = r.RooArgList(w.var("%s%d"%(name, 0)), w.var("%s%d"%(name, iLast)), w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast))
             wimport(w, r.RooFormulaVar("%s%d"%(name, i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, i)
 
@@ -272,7 +272,8 @@ def signalTerms(w, inputData, signalDict) :
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
-    wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
+    #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
+    wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.8, 1.2))
     wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", inputData.fixedParameters()["sigmaLumiLike"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
@@ -309,15 +310,22 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, sim
     if not smOnly :
         signalTerms(w, inputData, signalDict)
         terms.append("signalTerms")
+        obs.append("oneRhoSignal")
+        nuis.append("rhoSignal")
 
     if simpleOneBin :
         simpleOneBinTerm(w, inputData, smOnly, simpleOneBin)
         terms.append("simpleOneBinTerm")
         multiBinObs.append("nHad")
     else :
-        nuis += ["A_qcd","k_qcd"]
-        if REwk : nuis += ["A_ewk","k_ewk"]
-        multiBinNuis += ["fZinv"]
+        if RQcd=="FallingExp" :
+            nuis += ["A_qcd","k_qcd"]
+        if REwk :
+            nuis += ["A_ewk"]
+            if REwk!="Constant" :
+                nuis += ["k_ewk"]
+        if includeMuonTerms or includePhotTerms :
+            multiBinNuis += ["fZinv"]
 
         hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
         photTerms(w, inputData)
@@ -354,8 +362,6 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, sim
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if not smOnly :
-        obs.append("oneRhoSignal")
-        nuis.append("rhoSignal")
         w.defineSet("poi", "f")
     elif qcdSearch :
         w.defineSet("poi", "A_qcd,k_qcd")
