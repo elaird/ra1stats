@@ -31,8 +31,8 @@ htBins = data.htBinLowerEdges()
 constantR = data.constantMcRatioAfterHere()
 
 nMuon     = data.observations()["nMuon2Jet"]
-mcMuon    = data.mcExpectations()["mcMuon2JetSpring11"]
-mcMuonErr = data.mcStatError()["mcMuon2JetSpring11Err"]
+mcMuon    = data.mcExpectations()["mcMuon2JetSpring11Re"]
+mcMuonErr = data.mcStatError()["mcMuon2JetSpring11ReErr"]
 
 nPhot     = data.observations()["nPhot2Jet"]
 mcPhot    = data.mcExpectations()["mcPhot2Jet"]
