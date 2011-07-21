@@ -63,7 +63,7 @@ def go(label = None, yLabel = "", title = "", minMax = (0.0, 2.0), mcPhot = None
     utils.epsToPdf(fileName)
 
 setupRoot()
-data = data2011()
+data = data2011(requireFullImplementation = False)
 
 go(label = "photons",
    yLabel = "Z#rightarrow #nu#bar{#nu} + jets / #gamma + jets",
@@ -107,8 +107,8 @@ go(label = "photons_to_muons",
    minMax = (0.0, 2.0),
    mcPhot = data.mcExpectations()["mcPhot2Jet"],
    mcPhotErr = data.mcStatError()["mcPhot2JetErr"],
-   mcZinv = data.mcExpectations()["mcMuon2Jet"],
-   mcZinvErr = data.mcStatError()["mcMuon2JetErr"],
+   mcZinv = data.mcExpectations()["mcMuon2JetSpring11Re"],
+   mcZinvErr = data.mcStatError()["mcMuon2JetSpring11ReErr"],
    sysFactor = data.fixedParameters()["sigmaPhotZ"],
    scale = data.lumi()["muon"]/data.lumi()["phot"]
    )
