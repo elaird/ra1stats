@@ -12,25 +12,27 @@ def clsPoisson(n = None, b = None, s = None) :
         den+=r.TMath.PoissonI(i, b)
     return num/den
 
-def oneGraph(n = None, b = None) :
+def oneGraph(n = None, b = None, npoints = None, poimin = None, poimax = None) :
     gr = r.TGraph()
-    gr.SetMarkerStyle(20)
-    gr.SetLineColor(r.kBlack)
+    gr.SetMarkerStyle(26)
+    gr.SetLineColor(r.kCyan)
     gr.SetLineWidth(2)
-    gr.SetMarkerColor(r.kRed)
-    index = 0
-    for p in range(0, 50) :
-        s = p/5.0
-        gr.SetPoint(index, s, clsPoisson(n, b, s))
-        index += 1
-    gr.Draw("apl")
-    gr.GetXaxis().SetTitle("s")
-    gr.GetYaxis().SetTitle("CL_{s}")
-    gr.SetTitle("L = Pois( %d | %g + s )"%(n,b))
-    line = r.TLine()
-    line.SetLineColor(r.kRed)
-    line.DrawLine(0.0, 0.05, 10.0, 0.05)
-    r.gPad.Print("analytic_b%d_n%d.png"%(b, n))
+    gr.SetMarkerColor(r.kMagenta)
+    for i in range(npoints) :
+        s = poimin
+        if i : s += i*(poimax-poimin)/(npoints-1)
+        gr.SetPoint(i, s, clsPoisson(n, b, s))
+
+    #gr.Draw("apl")
+    #gr.GetXaxis().SetTitle("s")
+    #gr.GetYaxis().SetTitle("CL_{s}")
+    #gr.SetTitle("L = Pois( %d | %g + s )"%(n,b))
+
+    #line = r.TLine()
+    #line.SetLineColor(r.kRed)
+    #line.DrawLine(0.0, 0.05, 10.0, 0.05)
+    #r.gPad.Print("analytic_b%d_n%d.png"%(b, n))
+    return gr
 
 def clsPoissonGraph() :
     r.gROOT.SetBatch(True)
@@ -46,9 +48,9 @@ def modelConfiguration(w) :
     return modelConfig
 
 def hadTerms(w) :
-    wimport(w, r.RooRealVar("b", "b", 4.0))
-    wimport(w, r.RooRealVar("nHad", "nHad", 2.0))
-    wimport(w, r.RooRealVar("s", "s", 1.0, 0.0, 10.0))
+    wimport(w, r.RooRealVar("b", "b", 3.0))
+    wimport(w, r.RooRealVar("nHad", "nHad", 1.0))
+    wimport(w, r.RooRealVar("s", "s", 1.0, 0.0, 30.0))
     wimport(w, r.RooAddition("exp", "exp", r.RooArgSet(w.function("b"), w.function("s"))))
     wimport(w, r.RooPoisson("hadPois", "hadPois", w.var("nHad"), w.function("exp")))
 
@@ -134,16 +136,40 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
 def cls(dataset, modelconfig, wspace, smOnly) :
     assert not smOnly
 
+    testStatType = 3
+
+    npoints = 11
+    poimin = 0.0
+    poimax = 30.0
+
+    n = wspace.var("nHad").getVal()
+    b = wspace.var("b").getVal()
+
+    desc = "n_%d_b_%g_TS%d"%(n, b, testStatType)
+    
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
     result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
-                         nworkers = 6, type = 0, testStatType = 3,
-                         npoints = 20, poimin = 0.0, poimax = 10.0)
+                         nworkers = 6, type = 0, testStatType = testStatType, ntoys = 2000,
+                         npoints = npoints, poimin = poimin, poimax = poimax)
 
     print "upper limit = %g +- %g"%(result.UpperLimit(), result.UpperLimitEstimatedError())
     plot = r.RooStats.HypoTestInverterPlot("HTI_Result_Plot", "", result)
     plot.Draw("CLb 2CL")
-    r.gPad.Print("foo.png")
+
+    gr = oneGraph(n = n, b = b, npoints = 3*npoints, poimin = poimin, poimax = poimax)
+    gr.Draw("lpsame")
+
+    for s in [3.0, 30.0] :
+        tsPlot = plot.MakeTestStatPlot(result.FindIndex(s))
+        #tsPlot.SetLogYaxis(True)
+        t = "tsPlot_s_%g_%s"%(s, desc)
+        tsPlot.Draw()
+        tsPlot.SetTitle(t)
+        r.gPad.Print("%s.png"%t)
+    
+    plot.SetTitle(desc)
+    r.gPad.Print("simple_%s.png"%desc)
     return result
 
 def profilePlots(dataset, modelconfig, note, smOnly) :
@@ -252,7 +278,7 @@ class foo(object) :
 
 f = foo()
 #out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(); print out
+out = f.cls(); print out
 #clsPoissonGraph()
 #f.profile()
 #f.bestFit()
