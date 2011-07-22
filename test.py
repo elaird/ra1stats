@@ -70,7 +70,7 @@ f = fresh.foo(inputData = data2011(),
 
 #out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = 0.95, calculatorType = 0, testStatType = 3, nToys = 2000,
-#            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 1); print out
+#            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
 f.bestFit()
 #f.bestFit(printPages = True)
