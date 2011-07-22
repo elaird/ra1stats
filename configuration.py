@@ -12,8 +12,7 @@ def switches() :
     d["minSignalXsForConsideration"] = 1.0e-6
     d["maxSignalXsForConsideration"] = None
 
-
-    if True :
+    if False :
         d["simpleOneBin"] = [{}, {"b":3.0}][1]
         d["hadTerms"]  = False
         d["muonTerms"] = False
@@ -39,6 +38,8 @@ def switches() :
     d["ignoreSignalContaminationInMuonSample"] = False
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
     #d["listOfTestPoints"] = [(29, 55, 1)]
+    #d["listOfTestPoints"] = [(29, 25, 1)]
+    #d["listOfTestPoints"] = [(181, 19, 1)]
     d["listOfTestPoints"] = []
 
     d["computeExpectedLimit"] = False
