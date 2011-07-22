@@ -272,6 +272,7 @@ def signalTerms(w, inputData, signalDict) :
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
+    #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
     #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.8, 1.2))
     wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", inputData.fixedParameters()["sigmaLumiLike"]))
@@ -492,6 +493,8 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
 
     iPoint = 0
+    #iPoint = result.FindIndex(1.0); print "iPoint=",iPoint
+    #iPoint = 5
     out = {}
     out["CLb"] = result.CLb(iPoint)
     out["CLs+b"] = result.CLsplusb(iPoint)
