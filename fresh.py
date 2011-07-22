@@ -272,8 +272,8 @@ def signalTerms(w, inputData, signalDict) :
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
-    #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
-    wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.8, 1.2))
+    wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
+    #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.8, 1.2))
     wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", inputData.fixedParameters()["sigmaLumiLike"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
@@ -478,14 +478,18 @@ def clsOld(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
     out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
     return out
 
-def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, plusMinus = {}, note = "", makePlots = None, nWorkers = None) :
+def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
+        plusMinus = {}, note = "", makePlots = None, nWorkers = None) :
     assert not smOnly
 
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
     result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
-                         nworkers = nWorkers, ntoys = nToys, type = 0, testStatType = 3,
-                         npoints = 1, poimin = 1.0, poimax = 1.0)
+                         nworkers = nWorkers, ntoys = nToys, type = calculatorType, testStatType = testStatType,
+                         npoints = 1, poimin = 1.0, poimax = 1.0, debug = False)
+
+    #r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
+    #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
 
     iPoint = 0
     out = {}
@@ -504,7 +508,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         out[key] = value
 
     if makePlots :
-        ps = "cls_%s.ps"%note
+        ps = "cls_%s_TS%d.ps"%(note, testStatType)
         canvas = r.TCanvas()
         canvas.Print(ps+"[")
         
@@ -743,9 +747,10 @@ class foo(object) :
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
-    def cls(self, cl = 0.95, nToys = 300, plusMinus = {}, makePlots = False, nWorkers = 1) :
+    def cls(self, cl = 0.95, nToys = 300, calculatorType = 0, testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1) :
         return cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
-                   cl = cl, nToys = nToys, plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots)
+                   cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
+                   plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots)
 
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
