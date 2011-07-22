@@ -29,7 +29,9 @@ def switches() :
     d["REwk"] = ["", "Linear", "Constant"][2]
     d["RQcd"] = ["Zero", "FallingExp"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
-              
+
+    d["testStatistic"] = 0
+    
     d["nlo"] = True
     d["nloToLoRatios"] = False
     d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]

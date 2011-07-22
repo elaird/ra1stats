@@ -80,7 +80,7 @@ def onePoint(switches = None, data = None, point = None) :
                       muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
 
         if switches["method"]=="CLs" :
-            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"])
+            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"])
             for key,value in results.iteritems() :
                 out[key] = (value, description(key))
                 if key=="CLs" or ("Median" in key) :
