@@ -105,7 +105,7 @@ class data2011_4(data) :
         
         self._fixedParameters = {
             "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            #"sigmaLumiLike": 0.06,
+            #"sigmaLumiLike": 0.0001,
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             "sigmaMumuZ": 0.20,
