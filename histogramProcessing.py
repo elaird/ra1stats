@@ -215,6 +215,7 @@ def fullPoints() :
     s = conf.switches()
     h = xsHisto()
     for iBinX in range(1, 1+h.GetNbinsX()) :
+        if "xWhiteList" in s and s["xWhiteList"] and iBinX not in s["xWhiteList"] : continue
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 content = h.GetBinContent(iBinX, iBinY, iBinZ)
