@@ -325,7 +325,7 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, sim
             nuis += ["A_ewk"]
             if REwk!="Constant" :
                 nuis += ["k_ewk"]
-        if includeMuonTerms or includePhotTerms :
+        if includeMuonTerms or includePhotTerms or includeMumuTerms :
             multiBinNuis += ["fZinv"]
 
         hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
