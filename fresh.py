@@ -1,5 +1,5 @@
-import math,array,copy
-import plotting,utils
+import math,array,copy,utils
+import plotting as plotting
 import ROOT as r
 from runInverter import RunInverter
 
@@ -483,18 +483,24 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         plusMinus = {}, note = "", makePlots = None, nWorkers = None) :
     assert not smOnly
 
+    npoints = 1
+    poimin = 1.0
+    poimax = 1.0
+    
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
     result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
                          nworkers = nWorkers, ntoys = nToys, type = calculatorType, testStatType = testStatType,
-                         npoints = 1, poimin = 1.0, poimax = 1.0, debug = False)
+                         npoints = npoints, poimin = poimin, poimax = poimax, debug = False)
 
     #r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
     #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
 
-    iPoint = 0
-    #iPoint = result.FindIndex(1.0); print "iPoint=",iPoint
-    #iPoint = 5
+    iPoint = result.FindIndex(1.0)
+    if iPoint<0 :
+        print "WARNING: No index for POI value 1.0.  Will use 0."
+        iPoint = 0
+
     out = {}
     out["CLb"] = result.CLb(iPoint)
     out["CLs+b"] = result.CLsplusb(iPoint)
@@ -519,12 +525,19 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         resultPlot.Draw("CLb 2CL")
         canvas.Print(ps)
 
-        #tsPlot = resultPlot.MakeTestStatPlot(iPoint)
-        ##tsPlot.SetLogYaxis(True)
-        #tsPlot.Draw()
-        #canvas.Print(ps)
+        text = r.TText()
+        text.SetNDC()
+
+        for i in range(npoints) :
+            tsPlot = resultPlot.MakeTestStatPlot(i)
+            #tsPlot.SetLogYaxis(True)
+            tsPlot.Draw()
+        
+            text.DrawText(0.1, 0.95, "Point %d"%i)
+            canvas.Print(ps)
 
         leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = out["CLs"])
+        text.DrawText(0.1, 0.95, "Point %d"%iPoint)
         canvas.Print(ps)
         
         canvas.Print(ps+"]")
