@@ -155,7 +155,7 @@ class validationPlotter(object) :
 
         if not self.smOnly :
             self.signalDesc = "signal"
-            self.signalDesc2 = "xs = %5.2f xs^{nom}; #rho = %4.2f"%(self.wspace.var("f").getVal(), self.wspace.var("rhoSignal").getVal())
+            self.signalDesc2 = "xs/xs^{nom} = %4.2e #pm %4.2e; #rho = %4.2f"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), self.wspace.var("rhoSignal").getVal())
 
     def go(self) :
         self.canvas = utils.numberedCanvas()
