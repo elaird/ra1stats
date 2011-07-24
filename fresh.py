@@ -1,4 +1,5 @@
-import math,array,copy,utils
+import math,array,copy,collections
+import utils
 import plotting as plotting
 import ROOT as r
 from runInverter import RunInverter
@@ -449,34 +450,42 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
     return out
 
-def clsOld(dataset, modelconfig, wspace, smOnly, method, nToys, makePlots) :
+def ts(wspace, data, snapSb = None, snapB = None) :
+        wspace.loadSnapshot(snapSb)
+        results = utils.rooFitResults(pdf(wspace), data)
+        sbLl = -results.minNll()
+        utils.delete(results)
+        
+        wspace.loadSnapshot(snapB)
+        results = utils.rooFitResults(pdf(wspace), data)
+        bLl = -results.minNll()
+        utils.delete(results)
+
+        return -2.0*(sbLl-bLl)
+        
+def clsCustom(wspace, data, nToys = 100, smOnly = None, note = "", plots = True) :
     assert not smOnly
 
+    toys = {}
+    for label,f in {"b":0.0, "sb":1.0}.iteritems() :
+        wspace.var("f").setVal(f)
+        wspace.var("f").setConstant()
+        results = utils.rooFitResults(pdf(wspace), data) #fit to data
+        wspace.saveSnapshot("snap_%s"%label, wspace.allVars())
+        toys[label] = pseudoData(wspace, nToys)
+        utils.delete(results)
+
+    obs = ts(wspace, data, snapSb = "snap_sb", snapB = "snap_b")
+
     out = {}
+    values = collections.defaultdict(list)
+    for label in ["b", "sb"] :
+        for toy in toys[label] : 
+            values[label].append(ts(wspace, toy, snapSb = "snap_sb", snapB = "snap_b"))
+        out["CL%s"%label] = 1.0-indexFraction(obs, values[label])
+    if plots : plotting.clsCustomPlots(obs = obs, valuesDict = values)
 
-    if method=="CLs" :
-        calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
-
-        wspace.var("f").setVal(0.0)
-        wspace.var("f").setConstant()
-        calc.SetNullParameters(r.RooArgSet(wspace.var("f")))
-        out["CLb"] = 1.0 - calc.GetHypoTest().NullPValue()
-
-        wspace.var("f").setVal(1.0)
-        wspace.var("f").setConstant()
-        calc.SetNullParameters(r.RooArgSet(wspace.var("f")))
-        out["CLs+b"] = calc.GetHypoTest().NullPValue()
-
-    if method=="CLsViaToys" :
-        wspace.var("f").setVal(0.0)
-        wspace.var("f").setConstant()
-        out["CLb"] = 1.0 - pValue(wspace, dataset, nToys = nToys, note = "", plots = makePlots)
-
-        wspace.var("f").setVal(1.0)
-        wspace.var("f").setConstant()
-        out["CLs+b"] = pValue(wspace, dataset, nToys = nToys, note = "", plots = makePlots)
-        
-    out["CLs"] = out["CLs+b"]/out["CLb"] if out["CLb"] else 9.9
+    out["CLs"] = out["CLsb"]/out["CLb"] if out["CLb"] else 9.9
     return out
 
 def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
@@ -642,16 +651,16 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
 
+def indexFraction(item, l) :
+    totalList = sorted(l+[item])
+    assert totalList.count(item)==1
+    return totalList.index(item)/(0.0+len(totalList))
+        
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
         #return math.exp(-results.minNll())
         return -results.minNll()
     
-    def indexFraction(item, l) :
-        totalList = sorted(l+[item])
-        assert totalList.count(item)==1
-        return totalList.index(item)/(0.0+len(totalList))
-        
     results = utils.rooFitResults(pdf(wspace), data) #fit to data
     wspace.saveSnapshot("snap", wspace.allVars())    
     lMaxData = lMax(results)
@@ -755,6 +764,9 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
+    def profile(self) :
+        profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
+
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False) :
         if self.qcdSearch :
             plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
@@ -768,8 +780,8 @@ class foo(object) :
                    cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
                    plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots)
 
-    def profile(self) :
-        profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
+    def clsCustom(self, nToys = 200) :
+        return clsCustom(self.wspace, self.data, nToys = nToys, smOnly = self.smOnly(), note = self.note())
 
     def pValue(self, nToys = 200) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note())
