@@ -63,7 +63,7 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     canvas.SetTickx()
     canvas.SetTicky()
     canvas.Print(ps+"[")
-    
+
     graph.SetMarkerStyle(20)
     graph.SetTitle(";toy number;p-value")
     graph.Draw("ap")
@@ -87,6 +87,56 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     legend.SetBorderSize(0)
     legend.AddEntry(histo, "log(L_{max}) in pseudo-experiments", "l")
     legend.AddEntry(line, "log(L_{max}) observed", "l")
+    legend.Draw()
+    
+    canvas.Print(ps)
+    canvas.Print(ps+"]")
+    utils.ps2pdf(ps)
+
+def clsCustomPlots(obs = None, valuesDict = {}, note = "") :
+    ps = "cls_%s.ps"%note
+
+    canvas = r.TCanvas("canvas")
+    canvas.SetTickx()
+    canvas.SetTicky()
+    canvas.Print(ps+"[")
+
+    totalList = [obs]
+    for v in valuesDict.values() :
+        totalList += v
+
+    colors = {"b":r.kBlue, "sb":r.kRed, "obs":r.kBlack}
+    maxes = []
+    histos = {}
+    for key,values in valuesDict.iteritems() :
+        h = histos[key] = r.TH1D(key,";TS;pseudo experiments / bin", 100, min(totalList), max(totalList))
+        map(h.Fill, values)
+        h.SetStats(False)
+        h.SetMinimum(0.0)
+        h.SetLineColor(colors[key])
+        maxes.append( (h.GetMaximum(), h) )
+
+    maxes.sort()
+    maxes.reverse()
+    first = True
+    for m,h in maxes :
+        h.Draw("" if first else "same")
+        first = False
+    
+    line = r.TLine()
+    line.SetLineColor(colors["obs"])
+    line.SetLineWidth(2)
+    line.SetLineStyle(3)
+    line = line.DrawLine(obs, 0.0, obs, maxes[0][0])
+
+    legend = r.TLegend(0.1, 0.7, 0.5, 0.9)
+    legend.SetFillStyle(0)
+    legend.SetBorderSize(0)
+
+    for key in valuesDict.keys() :
+        legend.AddEntry(histos[key], key, "l")
+
+    legend.AddEntry(line, "observed", "l")
     legend.Draw()
     
     canvas.Print(ps)
