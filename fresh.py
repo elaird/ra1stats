@@ -450,7 +450,7 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
     return out
 
-def ts(wspace, data, snapSb = None, snapB = None, verbose = False) :
+def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapSb)
         results = utils.rooFitResults(pdf(wspace), data)
         if verbose :
@@ -472,28 +472,52 @@ def ts(wspace, data, snapSb = None, snapB = None, verbose = False) :
         out = -2.0*(sbLl-bLl)
         if verbose : print "TS:",out
         return out
-        
-def clsCustom(wspace, data, nToys = 100, smOnly = None, note = "", plots = True) :
+
+def ts4(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
+        wspace.loadSnapshot(snapB)
+        results = utils.rooFitResults(pdf(wspace), data)
+        if verbose :
+            print " B "
+            print "---"            
+            results.Print("v")        
+        out = -results.minNll()
+        utils.delete(results)
+
+        if verbose : print "TS:",out
+        return out
+
+def ts(testStatType = None, **args) :
+    if testStatType==1 : return ts1(**args)
+    if testStatType==2 : return ts2(**args)
+    if testStatType==3 : return ts3(**args)
+    if testStatType==4 : return ts4(**args)
+
+def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, note = "", plots = True) :
     assert not smOnly
 
     toys = {}
-    for label,f in {"b":0.0, "sb":1.0}.iteritems() :
-        wspace.var("f").setVal(f)
-        wspace.var("f").setConstant()
-        results = utils.rooFitResults(pdf(wspace), data) #fit to data
+    for label,f in {"b":0.0, "sb":1.0, "fHat":None}.iteritems() :
+        if f!=None :
+            wspace.var("f").setVal(f)
+            wspace.var("f").setConstant()
+        else :
+            wspace.var("f").setVal(1.0)
+            wspace.var("f").setConstant(False)
+        results = utils.rooFitResults(pdf(wspace), data)
         wspace.saveSnapshot("snap_%s"%label, wspace.allVars())
         toys[label] = pseudoData(wspace, nToys)
         utils.delete(results)
 
-    obs = ts(wspace, data, snapSb = "snap_sb", snapB = "snap_b")
+    args = {"wspace": wspace, "testStatType": testStatType, "snapSb": "snap_sb", "snapB": "snap_b", "snapfHat": "snap_fHat"}
+    obs = ts(data = data, **args)
 
     out = {}
     values = collections.defaultdict(list)
     for label in ["b", "sb"] :
         for toy in toys[label] : 
-            values[label].append(ts(wspace, toy, snapSb = "snap_sb", snapB = "snap_b"))
+            values[label].append(ts(data = toy, **args))
         out["CL%s"%label] = 1.0-indexFraction(obs, values[label])
-    if plots : plotting.clsCustomPlots(obs = obs, valuesDict = values, note = note)
+    if plots : plotting.clsCustomPlots(obs = obs, valuesDict = values, note = "TS%d_%s"%(testStatType, note))
 
     out["CLs"] = out["CLsb"]/out["CLb"] if out["CLb"] else 9.9
     return out
@@ -663,9 +687,11 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 
 def indexFraction(item, l) :
     totalList = sorted(l+[item])
-    assert totalList.count(item)==1
-    return totalList.index(item)/(0.0+len(l))
-        
+    i1 = totalList.index(item)
+    totalList.reverse()
+    i2 = len(totalList)-totalList.index(item)-1
+    return (i1+i2)/2.0/len(l)
+
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
         #return math.exp(-results.minNll())
@@ -790,8 +816,8 @@ class foo(object) :
                    cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
                    plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots)
 
-    def clsCustom(self, nToys = 200) :
-        return clsCustom(self.wspace, self.data, nToys = nToys, smOnly = self.smOnly(), note = self.note())
+    def clsCustom(self, nToys = 200, testStatType = 3) :
+        return clsCustom(self.wspace, self.data, nToys = nToys, testStatType = testStatType, smOnly = self.smOnly(), note = self.note())
 
     def pValue(self, nToys = 200) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note())
