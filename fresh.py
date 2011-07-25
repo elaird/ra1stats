@@ -654,7 +654,7 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 def indexFraction(item, l) :
     totalList = sorted(l+[item])
     assert totalList.count(item)==1
-    return totalList.index(item)/(0.0+len(totalList))
+    return totalList.index(item)/(0.0+len(l))
         
 def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     def lMax(results) :
