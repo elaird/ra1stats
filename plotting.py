@@ -94,7 +94,7 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     utils.ps2pdf(ps)
 
 def clsCustomPlots(obs = None, valuesDict = {}, note = "") :
-    ps = "cls_%s.ps"%note
+    ps = "clsCustom_%s.ps"%note
 
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
