@@ -86,6 +86,13 @@ def onePoint(switches = None, data = None, point = None) :
                 if key=="CLs" or ("Median" in key) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
+        elif switches["method"]=="CLsCustom" :
+            results = f.clsCustom(nToys = switches["nToys"])
+            for key,value in results.iteritems() :
+                out[key] = (value, description(key))
+                if key=="CLs" or ("Median" in key) :
+                    threshold = 1.0 - cl
+                    out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
         elif not switches["computeExpectedLimit"] :
             results = f.interval(cl = cl, method = switches["method"])
             for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
