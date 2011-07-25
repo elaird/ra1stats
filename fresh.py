@@ -450,18 +450,28 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
     out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
     return out
 
-def ts(wspace, data, snapSb = None, snapB = None) :
+def ts(wspace, data, snapSb = None, snapB = None, verbose = False) :
         wspace.loadSnapshot(snapSb)
         results = utils.rooFitResults(pdf(wspace), data)
+        if verbose :
+            print "S+B"
+            print "---"            
+            results.Print("v")
         sbLl = -results.minNll()
         utils.delete(results)
         
         wspace.loadSnapshot(snapB)
         results = utils.rooFitResults(pdf(wspace), data)
+        if verbose :
+            print " B "
+            print "---"            
+            results.Print("v")        
         bLl = -results.minNll()
         utils.delete(results)
 
-        return -2.0*(sbLl-bLl)
+        out = -2.0*(sbLl-bLl)
+        if verbose : print "TS:",out
+        return out
         
 def clsCustom(wspace, data, nToys = 100, smOnly = None, note = "", plots = True) :
     assert not smOnly
@@ -483,7 +493,7 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, note = "", plots = True)
         for toy in toys[label] : 
             values[label].append(ts(wspace, toy, snapSb = "snap_sb", snapB = "snap_b"))
         out["CL%s"%label] = 1.0-indexFraction(obs, values[label])
-    if plots : plotting.clsCustomPlots(obs = obs, valuesDict = values)
+    if plots : plotting.clsCustomPlots(obs = obs, valuesDict = values, note = note)
 
     out["CLs"] = out["CLsb"]/out["CLb"] if out["CLb"] else 9.9
     return out
