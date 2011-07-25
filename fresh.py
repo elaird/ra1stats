@@ -452,6 +452,19 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
 
 def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapSb)
+        nll = pdf(wspace).createNLL(data)
+        sbLl = -nll.getVal()
+        utils.delete(nll)
+        
+        wspace.loadSnapshot(snapB)
+        nll = pdf(wspace).createNLL(data)
+        bLl = -nll.getVal()
+        utils.delete(nll)
+
+        return -2.0*(sbLl-bLl)
+
+def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
+        wspace.loadSnapshot(snapSb)
         results = utils.rooFitResults(pdf(wspace), data)
         if verbose :
             print "S+B"
@@ -474,6 +487,13 @@ def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None
         return out
 
 def ts4(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
+        wspace.loadSnapshot(snapB)
+        nll = pdf(wspace).createNLL(data)
+        bLl = -nll.getVal()
+        utils.delete(nll)
+        return bLl
+
+def ts40(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapB)
         results = utils.rooFitResults(pdf(wspace), data)
         if verbose :
