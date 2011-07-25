@@ -87,7 +87,7 @@ def onePoint(switches = None, data = None, point = None) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
         elif switches["method"]=="CLsCustom" :
-            results = f.clsCustom(nToys = switches["nToys"])
+            results = f.clsCustom(nToys = switches["nToys"], testStatType = switches["testStatistic"])
             for key,value in results.iteritems() :
                 out[key] = (value, description(key))
                 if key=="CLs" or ("Median" in key) :
