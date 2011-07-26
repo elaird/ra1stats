@@ -106,28 +106,28 @@ def go(name = "out", items = []) :
     os.remove(psFile)
 
 nToys = 8000
-go("oneBin_varying_sOverb", [foo(sList = [60.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys), 
-                             foo(sList = [30.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                             foo(sList = [12.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                             foo(sList = [ 6.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                             foo(sList = [ 3.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                             foo(sList = [ 1.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                             foo(sList = [0.25], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                             ])
+go("oneBin_varying_s", [foo(sList = [60.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys), 
+                        foo(sList = [30.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+                        foo(sList = [12.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+                        foo(sList = [ 6.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+                        foo(sList = [ 3.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+                        foo(sList = [ 1.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+                        foo(sList = [0.25], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+                        ])
+
+go("multiBin_different_sOverb", [foo(sList = [60.0,  6.0], tsIndex = 2, nToys = nToys), 
+                                 foo(sList = [30.0,  6.0], tsIndex = 2, nToys = nToys),
+                                 foo(sList = [12.0,  6.0], tsIndex = 2, nToys = nToys),
+                                 foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
+                                 foo(sList = [ 3.0,  6.0], tsIndex = 2, nToys = nToys),
+                                 foo(sList = [ 0.0,  6.0], tsIndex = 2, nToys = nToys),
+                                 ])
    
-go("multiBin_varying_sOverb", [foo(sList = [60.0,  6.0], tsIndex = 2, nToys = nToys), 
-                               foo(sList = [30.0,  6.0], tsIndex = 2, nToys = nToys),
-                               foo(sList = [12.0,  6.0], tsIndex = 2, nToys = nToys),
-                               foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
-                               foo(sList = [ 3.0,  6.0], tsIndex = 2, nToys = nToys),
-                               foo(sList = [ 0.0,  6.0], tsIndex = 2, nToys = nToys),
-                               ])
-   
-go("multiBin_constant_sOverb", [foo(sList = [60.0, 60.0], tsIndex = 2, nToys = nToys), 
-                                foo(sList = [30.0, 30.0], tsIndex = 2, nToys = nToys),
-                                foo(sList = [12.0, 12.0], tsIndex = 2, nToys = nToys),
-                                foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
-                                foo(sList = [ 3.0,  3.0], tsIndex = 2, nToys = nToys),
-                                foo(sList = [ 1.0,  1.0], tsIndex = 2, nToys = nToys),
-                                foo(sList = [0.25, 0.25], tsIndex = 2, nToys = nToys),
-                                ])
+go("multiBin_same_sOverb", [foo(sList = [60.0, 60.0], tsIndex = 2, nToys = nToys), 
+                            foo(sList = [30.0, 30.0], tsIndex = 2, nToys = nToys),
+                            foo(sList = [12.0, 12.0], tsIndex = 2, nToys = nToys),
+                            foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
+                            foo(sList = [ 3.0,  3.0], tsIndex = 2, nToys = nToys),
+                            foo(sList = [ 1.0,  1.0], tsIndex = 2, nToys = nToys),
+                            foo(sList = [0.25, 0.25], tsIndex = 2, nToys = nToys),
+                            ])
