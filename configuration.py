@@ -8,7 +8,7 @@ def switches() :
     d["CL"] = [0.95, 0.90][:1]
     d["nToys"] = 500
     
-    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs"][0]
+    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0]
     d["minSignalXsForConsideration"] = 1.0e-6
     d["maxSignalXsForConsideration"] = None
 
@@ -30,7 +30,7 @@ def switches() :
     d["RQcd"] = ["Zero", "FallingExp"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
 
-    d["testStatistic"] = 0
+    d["testStatistic"] = 3
     
     d["nlo"] = True
     d["nloToLoRatios"] = False
@@ -89,6 +89,7 @@ def mergedFileStem(outputDir, switches) :
     for item in ["computeExpectedLimit"] :
         if switches[item] : out += "_%s"%item
     if switches["dataYear"]==2010 : out +="_2010"
+    if "CLs" in switches["method"] : out +="_TS%d"%switches["testStatistic"]
     return out
 
 def stringsNoArgs() :
