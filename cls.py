@@ -63,8 +63,12 @@ class foo(object) :
         bValues = self.tsValues(self.bList)
         sbValues = self.tsValues(self.sbList)
 
+        factor = 1.1
         minimum = min(bValues + sbValues) if not self.tsMin else self.tsMin
         maximum = max(bValues + sbValues) if not self.tsMax else self.tsMax
+        maximum = factor*maximum if maximum>0 else maximum/factor
+        minimum = factor*minimum if maximum<0 else minimum/factor
+        
         bHist  = hist(bValues,  name = "b",  title = ";%s;toys / bin"%self.tsDesc, min = minimum, max = maximum)
         sbHist = hist(sbValues, name = "sb", title = ";%s;toys / bin"%self.tsDesc, min = minimum, max = maximum)
 
@@ -74,9 +78,6 @@ class foo(object) :
         obsLine.SetLineWidth(1)
         obsLine.SetLineStyle(3)
 
-        pValue,pValueError = indexFraction(x, bValues)
-        text = r.TText(bHist.GetXaxis().GetXmin(), bHist.GetMaximum(), "CLb = %6.4f +- %6.4f"%(pValue, pValueError))
-            
         leg = r.TLegend(0.5, 0.7, 0.9, 0.9)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
@@ -90,7 +91,21 @@ class foo(object) :
         bHist.SetStats(False)
         bHist.SetFillStyle(3001)
 
-        draw([bHist, sbHist, obsLine, leg, text])
+        draw([bHist, sbHist, obsLine, leg])
+
+        text = r.TText()
+        text.SetNDC()
+
+        xBin = bHist.FindBin(x)
+        value = bHist.Integral(0, xBin)
+        error = bHist.Integral(xBin, xBin)/2.0
+        value -= error
+        total  = bHist.Integral(0, bHist.GetNbinsX()+1)
+        t2 = text.DrawText(0.13, 0.85, "CLb = %6.3f +- %6.3f"%(1.0-value/total, error/total))
+
+        #pValueFromLeft,pValueFromLeftError = indexFraction(x, bValues)
+        #t1 = text.DrawText(0.1, 0.85, "CLb (v2) = %6.3f +- %6.3f"%(1.0 - pValueFromLeft, pValueFromLeftError))
+
         canvas.Print(psFile)
 
 def go(name = "out", items = []) :
@@ -106,28 +121,42 @@ def go(name = "out", items = []) :
     os.remove(psFile)
 
 nToys = 8000
-go("oneBin_varying_s", [foo(sList = [60.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys), 
-                        foo(sList = [30.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                        foo(sList = [12.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                        foo(sList = [ 6.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                        foo(sList = [ 3.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                        foo(sList = [ 1.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                        foo(sList = [0.25], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
-                        ])
+go("oneBin_varying_s_obs1",
+   [foo(sList = [60.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys), 
+    foo(sList = [30.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+    foo(sList = [12.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 6.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 3.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 1.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+    foo(sList = [0.25], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
+    ])
 
-go("multiBin_different_sOverb", [foo(sList = [60.0,  6.0], tsIndex = 2, nToys = nToys), 
-                                 foo(sList = [30.0,  6.0], tsIndex = 2, nToys = nToys),
-                                 foo(sList = [12.0,  6.0], tsIndex = 2, nToys = nToys),
-                                 foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
-                                 foo(sList = [ 3.0,  6.0], tsIndex = 2, nToys = nToys),
-                                 foo(sList = [ 0.0,  6.0], tsIndex = 2, nToys = nToys),
-                                 ])
-   
-go("multiBin_same_sOverb", [foo(sList = [60.0, 60.0], tsIndex = 2, nToys = nToys), 
-                            foo(sList = [30.0, 30.0], tsIndex = 2, nToys = nToys),
-                            foo(sList = [12.0, 12.0], tsIndex = 2, nToys = nToys),
-                            foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
-                            foo(sList = [ 3.0,  3.0], tsIndex = 2, nToys = nToys),
-                            foo(sList = [ 1.0,  1.0], tsIndex = 2, nToys = nToys),
-                            foo(sList = [0.25, 0.25], tsIndex = 2, nToys = nToys),
-                            ])
+go("oneBin_varying_s_obs6",
+   [foo(sList = [60.0], bList = [3.0], obsList = [6], tsIndex = 2, nToys = nToys), 
+    foo(sList = [30.0], bList = [3.0], obsList = [6], tsIndex = 2, nToys = nToys),
+    foo(sList = [12.0], bList = [3.0], obsList = [6], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 6.0], bList = [3.0], obsList = [6], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 3.0], bList = [3.0], obsList = [6], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 1.0], bList = [3.0], obsList = [6], tsIndex = 2, nToys = nToys),
+    foo(sList = [0.25], bList = [3.0], obsList = [6], tsIndex = 2, nToys = nToys),
+    ])
+
+go("multiBin_different_sOverb",
+   [foo(sList = [60.0,  6.0], tsIndex = 2, nToys = nToys), 
+    foo(sList = [30.0,  6.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [12.0,  6.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 3.0,  6.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 1.0,  6.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [0.25,  6.0], tsIndex = 2, nToys = nToys),
+    ])
+
+go("multiBin_same_sOverb",
+   [foo(sList = [60.0, 60.0], tsIndex = 2, nToys = nToys), 
+    foo(sList = [30.0, 30.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [12.0, 12.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 6.0,  6.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 3.0,  3.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [ 1.0,  1.0], tsIndex = 2, nToys = nToys),
+    foo(sList = [0.25, 0.25], tsIndex = 2, nToys = nToys),
+    ])
