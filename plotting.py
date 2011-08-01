@@ -1,4 +1,4 @@
-import os,array,math,copy
+import os,array,math,copy,collections
 import utils
 import ROOT as r
 
@@ -222,6 +222,7 @@ class validationPlotter(object) :
         self.mcFactorPlots()
         self.alphaTRatioPlots()
         self.printPars()
+        self.propagatedErrorsPlots()
 
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -415,6 +416,63 @@ class validationPlotter(object) :
             s = "%20s:  %10.3e +/- %10.3e     [%10.3e - %10.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
             y = printText(x, y, s)
         self.canvas.Print(self.psFileName)
+        return
+
+    def propagatedErrorsPlots(self, nValues = 1000) :
+        #http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8892&p=37735
+        funcs = self.wspace.allFunctions()
+        func = funcs.createIterator()
+
+        bestFit = {}
+        while func.Next() : bestFit[func.GetName()] = func.getVal()
+
+        func = funcs.createIterator()
+        histos = {}
+        while func.Next() :
+            propError = func.getPropagatedError(self.results)
+            h = r.TH1D(func.GetName(), func.GetName(), 100, 1.0, -1.0)
+            h.Sumw2()
+
+            for i in range(nValues) :
+                values = self.results.randomizePars()
+                func.getVariables().assignValueOnly(values)
+                value = func.getVal()
+                #if value<0.0 : values.Print("v")
+                h.Fill(value)
+
+            histos[h.GetName()] = h
+
+        lines = collections.defaultdict(list)
+        line = r.TLine(); line.SetLineColor(r.kRed)
+        line2 = r.TLine(); line2.SetLineColor(r.kGreen)
+        
+        for i,key in enumerate(sorted(histos.keys())) :
+            j = i%4
+            if not j :
+                self.canvas.cd(0)
+                self.canvas.Clear()                
+                self.canvas.Divide(2, 2)
+                
+            self.canvas.cd(1+j)
+            histos[key].Draw()
+
+            best = bestFit[key]
+            mean = histos[key].GetMean()
+            rms = histos[key].GetRMS()
+            min = histos[key].GetMinimum()
+            max = histos[key].GetMaximum()
+            lines[key].append(line.DrawLine(mean,     min, mean,     max))
+            lines[key].append(line.DrawLine(mean-rms, min, mean-rms, max))
+            lines[key].append(line.DrawLine(mean+rms, min, mean+rms, max))
+            lines[key].append(line2.DrawLine(best, min, best, max))
+            
+            needPrint = True
+
+            if j==3 :
+                self.canvas.Print(self.psFileName)
+                needPrint = False
+
+        if needPrint : self.canvas.Print(self.psFileName)
         return
 
     def hadronicSummaryTable(self) :
