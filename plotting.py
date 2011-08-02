@@ -222,6 +222,7 @@ class validationPlotter(object) :
         self.mcFactorPlots()
         self.alphaTRatioPlots()
         self.printPars()
+        self.correlationHist()
         self.propagatedErrorsPlots()
 
 	if self.printPages :
@@ -418,6 +419,12 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName)
         return
 
+    def correlationHist(self) :
+        h = self.results.correlationHist()
+        h.SetStats(False)
+        h.Draw("colz")
+        self.canvas.Print(self.psFileName)
+        
     def randomizedPars(self, nValues) :
         return [copy.copy(self.results.randomizePars()) for i in range(nValues)]
 
@@ -470,7 +477,7 @@ class validationPlotter(object) :
             histos[h.GetName()] = h
         return histos
 
-    def parHistos(self, pars = [], randPars = []) :
+    def parHistos1D(self, pars = [], randPars = []) :
         histos = {}
 
         for par in pars :
@@ -481,6 +488,25 @@ class validationPlotter(object) :
                 index = parList.index(par)
                 if index<0 : continue
                 h.Fill(parList[index].getVal())
+
+            histos[h.GetName()] = h
+        return histos
+
+    def parHistos2D(self, pairs = [], randPars = []) :
+        histos = {}
+
+        for pair in pairs :
+            name = "_".join(pair)
+            title = ";".join([""]+list(pair))
+            h = r.TH2D(name, title, 100, 1.0, -1.0, 100, 1.0, -1.0)
+            h.Sumw2()
+            h.SetStats(False)
+            h.SetTitleOffset(1.3)
+            
+            for parList in randPars :
+                indices = map(parList.index, pair)
+                if any(map(lambda x:x<0, indices)) : continue
+                h.Fill(*tuple(map(lambda i:parList[i].getVal(), indices)))
 
             histos[h.GetName()] = h
         return histos
@@ -505,11 +531,15 @@ class validationPlotter(object) :
         out.append(errorLine.DrawLine(best - error,  max/2.0, best + error, max/2.0))
         return out
         
-    def cyclePlot(self, d = {}, histoLinesArgs = {}, optStat = 1110) :
+    def dummy(self, args = {}, key = None, histo = None) :
+        pass
+    
+    def cyclePlot(self, d = {}, f = None, args = {}, optStat = 1110) :
         if optStat!=None :
             oldOptStat = r.gStyle.GetOptStat()
             r.gStyle.SetOptStat(optStat)
 
+        stuff = []
         for i,key in enumerate(sorted(d.keys())) :
             j = i%4
             if not j :
@@ -519,22 +549,26 @@ class validationPlotter(object) :
                 
             self.canvas.cd(1+j)
             d[key].Draw()
-            stuff = self.histoLines(args = histoLinesArgs, key = key, histo = d[key])
+            stuff.append( f(args = args, key = key, histo = d[key]) )
             needPrint = True
 
             #move stat box
             r.gPad.Update()
             tps = d[key].FindObject("stats")
-            tps.SetX1NDC(0.78)
-            tps.SetX2NDC(0.98)
-            tps.SetY1NDC(0.90)
-            tps.SetY2NDC(1.00)
+            if tps :
+                tps.SetX1NDC(0.78)
+                tps.SetX2NDC(0.98)
+                tps.SetY1NDC(0.90)
+                tps.SetY2NDC(1.00)
 
             if j==3 :
+                self.canvas.cd(0)                
                 self.canvas.Print(self.psFileName)
                 needPrint = False
 
-        if needPrint : self.canvas.Print(self.psFileName)
+        if needPrint :
+            self.canvas.cd(0)
+            self.canvas.Print(self.psFileName)
         if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
         return
 
@@ -547,12 +581,15 @@ class validationPlotter(object) :
         randPars = self.randomizedPars(nValues)
 
         funcHistos = self.funcHistos(randPars)
-        parHistos = self.parHistos(pars = parBestFit.keys(), randPars = randPars)
+        parHistos1D = self.parHistos1D(pars = parBestFit.keys(), randPars = randPars)
+        parHistos2D = self.parHistos2D(pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")], randPars = randPars)
 
-        self.cyclePlot(d = parHistos,  histoLinesArgs = {"bestColor":r.kGreen, "meanColor":r.kRed,
-                                                         "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
-        self.cyclePlot(d = funcHistos, histoLinesArgs = {"bestColor":r.kGreen, "meanColor":r.kRed,
-                                                         "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
+        self.cyclePlot(d = parHistos1D, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
+                                                                     "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
+        self.cyclePlot(d = parHistos2D, f = self.dummy, args = {})
+                                                                     
+        self.cyclePlot(d = funcHistos, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
+                                                                    "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
 
     def hadronicSummaryTable(self) :
         N = len(self.htBinLowerEdges)
