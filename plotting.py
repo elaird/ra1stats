@@ -485,43 +485,31 @@ class validationPlotter(object) :
             histos[h.GetName()] = h
         return histos
 
-    def funcLines(self, bestDict = {}, linPropErrorDict = {}, key = None, histo = None) :
-        hLine = r.TLine(); hLine.SetLineColor(r.kRed)
-        bestLine = r.TLine(); bestLine.SetLineColor(r.kGreen)
+    def histoLines(self, args = {}, key = None, histo = None) :
+        hLine = r.TLine(); hLine.SetLineColor(args["meanColor"])
+        bestLine = r.TLine(); bestLine.SetLineColor(args["bestColor"])
+        errorLine = r.TLine(); errorLine.SetLineColor(args["errorColor"])
 
         mean = histo.GetMean()
         rms  = histo.GetRMS()
         min  = histo.GetMinimum()
         max  = histo.GetMaximum()
 
-        best = bestDict[key]
-        linPropError = linPropErrorDict[key]
+        best = args["bestDict"][key]
+        error = args["errorDict"][key]
         out = []
         out.append(hLine.DrawLine(mean,     min, mean,     max))
         out.append(hLine.DrawLine(mean-rms, min, mean-rms, max))
         out.append(hLine.DrawLine(mean+rms, min, mean+rms, max))
         out.append(bestLine.DrawLine(best,  min, best,     max))
-        out.append(bestLine.DrawLine(best - linPropError,  max/2.0, best + linPropError, max/2.0))
+        out.append(errorLine.DrawLine(best - error,  max/2.0, best + error, max/2.0))
         return out
         
-    def parLines(self, bestDict = {}, key = None, histo = None) :
-        #hLine = r.TLine(); hLine.SetLineColor(r.kRed)
-        #bestLine = r.TLine(); bestLine.SetLineColor(r.kGreen)
-        #
-        #mean = histo.GetMean()
-        #rms  = histo.GetRMS()
-        #min  = histo.GetMinimum()
-        #max  = histo.GetMaximum()
-        #
-        #best = bestDict[key]
-        out = []
-        #out.append(hLine.DrawLine(mean,     min, mean,     max))
-        #out.append(hLine.DrawLine(mean-rms, min, mean-rms, max))
-        #out.append(hLine.DrawLine(mean+rms, min, mean+rms, max))
-        #out.append(bestLine.DrawLine(best,  min, best,     max))
-        return out
-        
-    def cyclePlot(self, d = {}, f = None, fArgs = {}) :
+    def cyclePlot(self, d = {}, histoLinesArgs = {}, optStat = 1110) :
+        if optStat!=None :
+            oldOptStat = r.gStyle.GetOptStat()
+            r.gStyle.SetOptStat(optStat)
+
         for i,key in enumerate(sorted(d.keys())) :
             j = i%4
             if not j :
@@ -531,17 +519,23 @@ class validationPlotter(object) :
                 
             self.canvas.cd(1+j)
             d[key].Draw()
-            args = copy.copy(fArgs)
-            args["key"] = key
-            args["histo"] = d[key]
-            stuff = f(**args)
+            stuff = self.histoLines(args = histoLinesArgs, key = key, histo = d[key])
             needPrint = True
+
+            #move stat box
+            r.gPad.Update()
+            tps = d[key].FindObject("stats")
+            tps.SetX1NDC(0.78)
+            tps.SetX2NDC(0.98)
+            tps.SetY1NDC(0.90)
+            tps.SetY2NDC(1.00)
 
             if j==3 :
                 self.canvas.Print(self.psFileName)
                 needPrint = False
 
         if needPrint : self.canvas.Print(self.psFileName)
+        if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
         return
 
     def propagatedErrorsPlots(self, nValues = 1000) :
@@ -555,8 +549,10 @@ class validationPlotter(object) :
         funcHistos = self.funcHistos(randPars)
         parHistos = self.parHistos(pars = parBestFit.keys(), randPars = randPars)
 
-        self.cyclePlot(d = parHistos,  f = self.parLines, fArgs = {})
-        self.cyclePlot(d = funcHistos, f = self.funcLines, fArgs = {"bestDict": funcBestFit, "linPropErrorDict": funcLinPropError})
+        self.cyclePlot(d = parHistos,  histoLinesArgs = {"bestColor":r.kGreen, "meanColor":r.kRed,
+                                                         "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
+        self.cyclePlot(d = funcHistos, histoLinesArgs = {"bestColor":r.kGreen, "meanColor":r.kRed,
+                                                         "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
 
     def hadronicSummaryTable(self) :
         N = len(self.htBinLowerEdges)
