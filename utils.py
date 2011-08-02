@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #####################################
 from multiprocessing import Process,JoinableQueue
-import os,subprocess,math,traceback,sys
+import os,subprocess,math,traceback,sys,array
 import ROOT as r
 #####################################
 def delete(thing) :
@@ -102,4 +102,11 @@ def getCommandOutput(command):
 #####################################
 def quadSum(l) :
     return math.sqrt(sum([x**2 for x in l]))
+#####################################
+def quantiles(histo = None, sigmaList = []) :
+    areaFractions = [ ( 1.0+r.TMath.Erf(nSigma/math.sqrt(2.0)) )/2.0 for nSigma in sigmaList]
+    probSum = array.array('d', areaFractions)
+    q = array.array('d', [0.0]*len(probSum))
+    histo.GetQuantiles(len(probSum), q, probSum)
+    return q
 #####################################
