@@ -418,54 +418,123 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName)
         return
 
-    def propagatedErrorsPlots(self, nValues = 1000) :
-        #http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8892&p=37735
+    def randomizedPars(self, nValues) :
+        return [copy.copy(self.results.randomizePars()) for i in range(nValues)]
+
+    def funcCollect(self) :
         funcs = self.wspace.allFunctions()
         func = funcs.createIterator()
 
-        bestFit = {}
-        while func.Next() : bestFit[func.GetName()] = func.getVal()
-
-        func = funcs.createIterator()
-        histos = {}
+        funcBestFit = {}
+        funcLinPropError = {}
         while func.Next() :
-            propError = func.getPropagatedError(self.results)
+            key = func.GetName()
+            funcBestFit[key] = func.getVal()
+            funcLinPropError[key] = func.getPropagatedError(self.results)
+        return funcBestFit,funcLinPropError
+
+    def parCollect(self) :
+        vars = self.wspace.allVars()
+        it = vars.createIterator()
+
+        parBestFit = {}
+        parError = {}
+        parMin = {}
+        parMax = {}
+        while it.Next() :
+            if it.getMax()==r.RooNumber.infinity() : continue
+            if it.getMin()==-r.RooNumber.infinity() : continue
+            if not it.hasError() : continue
+            key = it.GetName()
+            parBestFit[key] = it.getVal()
+            parError[key] = it.getError()
+            parMin[key] = it.getMin()
+            parMax[key] = it.getMax()
+        return parBestFit,parError,parMin,parMax
+    
+    def funcHistos(self, randPars = []) :
+        histos = {}
+        
+        funcs = self.wspace.allFunctions()
+        func = funcs.createIterator()
+        while func.Next() :
             h = r.TH1D(func.GetName(), func.GetName(), 100, 1.0, -1.0)
             h.Sumw2()
 
-            for i in range(nValues) :
-                values = self.results.randomizePars()
-                func.getVariables().assignValueOnly(values)
+            for parSet in randPars :
+                func.getVariables().assignValueOnly(parSet)
                 value = func.getVal()
                 #if value<0.0 : values.Print("v")
                 h.Fill(value)
 
             histos[h.GetName()] = h
+        return histos
 
-        lines = collections.defaultdict(list)
-        line = r.TLine(); line.SetLineColor(r.kRed)
-        line2 = r.TLine(); line2.SetLineColor(r.kGreen)
+    def parHistos(self, pars = [], randPars = []) :
+        histos = {}
+
+        for par in pars :
+            h = r.TH1D(par, par, 100, 1.0, -1.0)
+            h.Sumw2()
+
+            for parList in randPars :
+                index = parList.index(par)
+                if index<0 : continue
+                h.Fill(parList[index].getVal())
+
+            histos[h.GetName()] = h
+        return histos
+
+    def funcLines(self, bestDict = {}, linPropErrorDict = {}, key = None, histo = None) :
+        hLine = r.TLine(); hLine.SetLineColor(r.kRed)
+        bestLine = r.TLine(); bestLine.SetLineColor(r.kGreen)
+
+        mean = histo.GetMean()
+        rms  = histo.GetRMS()
+        min  = histo.GetMinimum()
+        max  = histo.GetMaximum()
+
+        best = bestDict[key]
+        linPropError = linPropErrorDict[key]
+        out = []
+        out.append(hLine.DrawLine(mean,     min, mean,     max))
+        out.append(hLine.DrawLine(mean-rms, min, mean-rms, max))
+        out.append(hLine.DrawLine(mean+rms, min, mean+rms, max))
+        out.append(bestLine.DrawLine(best,  min, best,     max))
+        out.append(bestLine.DrawLine(best - linPropError,  max/2.0, best + linPropError, max/2.0))
+        return out
         
-        for i,key in enumerate(sorted(histos.keys())) :
+    def parLines(self, bestDict = {}, key = None, histo = None) :
+        #hLine = r.TLine(); hLine.SetLineColor(r.kRed)
+        #bestLine = r.TLine(); bestLine.SetLineColor(r.kGreen)
+        #
+        #mean = histo.GetMean()
+        #rms  = histo.GetRMS()
+        #min  = histo.GetMinimum()
+        #max  = histo.GetMaximum()
+        #
+        #best = bestDict[key]
+        out = []
+        #out.append(hLine.DrawLine(mean,     min, mean,     max))
+        #out.append(hLine.DrawLine(mean-rms, min, mean-rms, max))
+        #out.append(hLine.DrawLine(mean+rms, min, mean+rms, max))
+        #out.append(bestLine.DrawLine(best,  min, best,     max))
+        return out
+        
+    def cyclePlot(self, d = {}, f = None, fArgs = {}) :
+        for i,key in enumerate(sorted(d.keys())) :
             j = i%4
             if not j :
                 self.canvas.cd(0)
-                self.canvas.Clear()                
+                self.canvas.Clear()
                 self.canvas.Divide(2, 2)
                 
             self.canvas.cd(1+j)
-            histos[key].Draw()
-
-            best = bestFit[key]
-            mean = histos[key].GetMean()
-            rms = histos[key].GetRMS()
-            min = histos[key].GetMinimum()
-            max = histos[key].GetMaximum()
-            lines[key].append(line.DrawLine(mean,     min, mean,     max))
-            lines[key].append(line.DrawLine(mean-rms, min, mean-rms, max))
-            lines[key].append(line.DrawLine(mean+rms, min, mean+rms, max))
-            lines[key].append(line2.DrawLine(best, min, best, max))
-            
+            d[key].Draw()
+            args = copy.copy(fArgs)
+            args["key"] = key
+            args["histo"] = d[key]
+            stuff = f(**args)
             needPrint = True
 
             if j==3 :
@@ -474,6 +543,20 @@ class validationPlotter(object) :
 
         if needPrint : self.canvas.Print(self.psFileName)
         return
+
+    def propagatedErrorsPlots(self, nValues = 1000) :
+        #http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8892&p=37735
+
+        funcBestFit,funcLinPropError = self.funcCollect()
+        parBestFit,parError,parMin,parMax = self.parCollect()
+
+        randPars = self.randomizedPars(nValues)
+
+        funcHistos = self.funcHistos(randPars)
+        parHistos = self.parHistos(pars = parBestFit.keys(), randPars = randPars)
+
+        self.cyclePlot(d = parHistos,  f = self.parLines, fArgs = {})
+        self.cyclePlot(d = funcHistos, f = self.funcLines, fArgs = {"bestDict": funcBestFit, "linPropErrorDict": funcLinPropError})
 
     def hadronicSummaryTable(self) :
         N = len(self.htBinLowerEdges)
