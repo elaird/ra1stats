@@ -663,13 +663,13 @@ class validationPlotter(object) :
                           funcBestFit = funcBestFit, funcLinPropError = funcLinPropError,
                           parBestFit = parBestFit, parError = parError)
                           
-        funcHistos,parHistos1D,parHistos2D = self.propPlotSet(randPars = self.filteredPars(randPars, maxPdfValue = maxPdfValue, pdfName = pdfName),
-                                                              suffix = "_filtered",
-                                                              pars = parBestFit.keys())
-        
-        self.cyclePlotSet(funcHistos = funcHistos, parHistos1D = parHistos1D, parHistos2D = parHistos2D,
-                          funcBestFit = funcBestFit, funcLinPropError = funcLinPropError,
-                          parBestFit = parBestFit, parError = parError)
+        #funcHistos,parHistos1D,parHistos2D = self.propPlotSet(randPars = self.filteredPars(randPars, maxPdfValue = maxPdfValue, pdfName = pdfName),
+        #                                                      suffix = "_filtered",
+        #                                                      pars = parBestFit.keys())
+        #
+        #self.cyclePlotSet(funcHistos = funcHistos, parHistos1D = parHistos1D, parHistos2D = parHistos2D,
+        #                  funcBestFit = funcBestFit, funcLinPropError = funcLinPropError,
+        #                  parBestFit = parBestFit, parError = parError)
         return
     
     def hadronicSummaryTable(self) :
