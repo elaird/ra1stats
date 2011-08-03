@@ -391,8 +391,9 @@ class validationPlotter(object) :
             ], yLabel = "R_{#alpha_{T}}")
 
     def printPars(self) :
-        def printText(x, y, s) :
+        def printText(x, y, s, color = r.kBlack) :
             #print s
+            text.SetTextColor(color)
             text.DrawText(x, y, s)
             y -= slope
             return y
@@ -415,7 +416,9 @@ class validationPlotter(object) :
             if it.getMin()==-r.RooNumber.infinity() : continue
             if not it.hasError() : continue
             s = "%20s:  %10.3e +/- %10.3e     [%10.3e - %10.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
-            y = printText(x, y, s)
+            factor = 2.0
+            close = (it.getVal() + factor*it.getError() > it.getMax()) or (it.getVal() - factor*it.getError() < it.getMin())
+            y = printText(x, y, s, color = r.kRed if close else r.kBlack)
         self.canvas.Print(self.psFileName)
         return
 
@@ -663,7 +666,7 @@ class validationPlotter(object) :
         funcHistos,parHistos1D,parHistos2D = self.propPlotSet(randPars = self.filteredPars(randPars, maxPdfValue = maxPdfValue, pdfName = pdfName),
                                                               suffix = "_filtered",
                                                               pars = parBestFit.keys())
-
+        
         self.cyclePlotSet(funcHistos = funcHistos, parHistos1D = parHistos1D, parHistos2D = parHistos2D,
                           funcBestFit = funcBestFit, funcLinPropError = funcLinPropError,
                           parBestFit = parBestFit, parError = parError)
