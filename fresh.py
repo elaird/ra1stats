@@ -54,6 +54,10 @@ def parametrizedExp(w = None, sample = "", i = None) :
     return r.RooFormulaVar("%s%d"%(sample, i), "(@0)*(@1)*exp(-(@2)*(@3))",
                            r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%sample), w.var("k_%s"%sample), w.var("htMean%d"%i)))
     
+def parametrizedExpA(w = None, sample = "", i = None) :
+    return r.RooFormulaVar("%s%d"%(sample, i), "(@0)*exp((@1)-(@2)*(@3))",
+                           r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%sample), w.var("k_%s"%sample), w.var("htMean%d"%i)))
+    
 def parametrizedLinearEwk(w = None, ewk = "", i = None, iLast = None) :
     return r.RooFormulaVar("%s%d"%(ewk, i), "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
                            r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%ewk), w.var("d_%s"%ewk),
@@ -98,13 +102,20 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamp
 
     A_ewk_ini = 1.3e-5
     if not qcdSearch :
-        wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
+        if RQcd=="FallingExp" :
+            wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
+        elif RQcd=="FallingExpA" :
+            wimport(w, r.RooRealVar("A_qcd", "A_qcd", math.log(1.5e-5), -20.0, math.log(100.0)))
         wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
     else :
-        wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 2.0))
+        if RQcd=="FallingExp" :
+            wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 20.0))
+        elif RQcd=="FallingExpA" :
+            wimport(w, r.RooRealVar("A_qcd", "A_qcd", math.log(1.5e-5), -20.0, math.log(2.0)))
         #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0, 1.0))
         #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 4.7e-2, 3.7e-2, 5.7e-2))
         wimport(w, r.RooRealVar("k_qcd", "k_qcd", 4.7e-2, 4.5e-2, 4.9e-2))
+        #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 4.7e-2, 3.5e-2, 4.9e-2))
     
     if RQcd=="Zero" :
         w.var("A_qcd").setVal(0.0)
@@ -117,7 +128,8 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamp
             w.var("k_qcd").setVal(initialkQcd(inputData, factor, A_ewk_ini))
         else :
             w.var("k_qcd").setVal(initialkQcdControl(inputData, "_"+hadControlSamples[0]))
-        w.var("A_qcd").setVal(initialAQcd(inputData, factor, A_ewk_ini, w.var("k_qcd").getVal()))
+        value = initialAQcd(inputData, factor, A_ewk_ini, w.var("k_qcd").getVal())
+        w.var("A_qcd").setVal(value if RQcd=="FallingExp" else math.log(value))
 
     for i,htMeanValue,nHadBulkValue,hadTrgEffValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"]) :
         wimport(w, r.RooRealVar("htMean%d"%i, "htMean%d"%i, htMeanValue))
@@ -125,7 +137,8 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamp
 
     iLast = len(htMeans)-1
     for i,nHadValue in enumerate(obs["nHad"]) :
-        wimport(w, parametrizedExp(w = w, sample = "qcd", i = i))
+        if RQcd=="FallingExp"  : wimport(w, parametrizedExp (w = w, sample = "qcd", i = i))
+        if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, sample = "qcd", i = i))            
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
         fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", i = i, iLast = iLast)
 
@@ -167,7 +180,7 @@ def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
     htMeans = inputData.htMeans()
     terms = []
 
-    assert (REwk and RQcd=="FallingExp")
+    assert (REwk and ("FallingExp" in RQcd))
     wimport(w, r.RooRealVar("A_qcdControl%s"%s(), "A_qcdControl%s"%s(), initialAQcdControl(inputData, s()), 0.0, 100.0))
     wimport(w, r.RooRealVar("A_ewkControl%s"%s(), "A_ewkControl%s"%s(), 10.0e-6, 0.0, 1.0))
     wimport(w, r.RooRealVar("d_ewkControl%s"%s(), "d_ewkControl%s"%s(), 0.0, -1.0, 1.0))
@@ -329,7 +342,7 @@ def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, n
         terms.append("simpleOneBinTerm")
         multiBinObs.append("nHad")
     else :
-        if RQcd=="FallingExp" :
+        if "FallingExp" in RQcd :
             nuis += ["k_qcd"]
             if not qcdSearch : nuis += ["A_qcd"]
         if REwk :
@@ -806,14 +819,14 @@ class foo(object) :
 
     def checkInputs(self) :
         assert self.REwk in ["", "Exp", "Linear", "Constant"]
-        assert self.RQcd in ["FallingExp", "Zero"]
+        assert self.RQcd in ["FallingExp", "FallingExpA", "Zero"]
         assert self.nFZinv in ["One", "Two", "All"]
         if self.simpleOneBin : 
             for item in ["hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
                 assert not getattr(self,item),item
         if self.qcdSearch :
             assert self.smOnly()
-            assert self.RQcd=="FallingExp"
+            assert "FallingExp" in self.RQcd
         bins = self.inputData.htBinLowerEdges()
         for d in [self.signal, self.signalExampleToStack[1]] :
             for key,value in d.iteritems() :
