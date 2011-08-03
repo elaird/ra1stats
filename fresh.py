@@ -4,11 +4,11 @@ import plotting as plotting
 import ROOT as r
 from runInverter import RunInverter
 
-def modelConfiguration(w, smOnly) :
+def modelConfiguration(w, smOnly, qcdSearch) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
     modelConfig.SetObservables(w.set("obs"))
-    if not smOnly :
+    if (not smOnly) or qcdSearch :
         modelConfig.SetParametersOfInterest(w.set("poi"))
         modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
@@ -90,15 +90,22 @@ def importFZinv(w = None, nFZinv = "", name = "", i = None, iLast = None) :
 def varOrFunc(w = None, name = "", i = None) :
     return w.var("%s%d"%(name, i)) if w.var("%s%d"%(name, i)) else w.function("%s%d"%(name, i))
 
-def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples = []) :
+def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamples = []) :
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
     htMeans = inputData.htMeans()
     terms = []
 
     A_ewk_ini = 1.3e-5
-    wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
-    wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
+    if not qcdSearch :
+        wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
+        wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
+    else :
+        wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 2.0))
+        #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0, 1.0))
+        #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 4.7e-2, 3.7e-2, 5.7e-2))
+        wimport(w, r.RooRealVar("k_qcd", "k_qcd", 4.7e-2, 4.5e-2, 4.9e-2))
+    
     if RQcd=="Zero" :
         w.var("A_qcd").setVal(0.0)
         w.var("A_qcd").setConstant()
@@ -299,7 +306,9 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, simpleOneBin = {}, includeHadTerms = None, hadControlSamples = [],
+def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, nFZinv = None,
+                    qcdSearch = None, signal = {}, smOnly = None, simpleOneBin = {},
+                    includeHadTerms = None, hadControlSamples = [],
                     includeMuonTerms = None, includePhotTerms = None, includeMumuTerms = None) :
     terms = []
     obs = []
@@ -307,10 +316,10 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, sim
     multiBinObs = []
     multiBinNuis = []
 
-    smOnly = not signalDict
+    w = wspace
 
     if not smOnly :
-        signalTerms(w, inputData, signalDict)
+        signalTerms(w, inputData, signal)
         terms.append("signalTerms")
         obs.append("oneRhoSignal")
         nuis.append("rhoSignal")
@@ -321,7 +330,8 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, sim
         multiBinObs.append("nHad")
     else :
         if RQcd=="FallingExp" :
-            nuis += ["A_qcd","k_qcd"]
+            nuis += ["k_qcd"]
+            if not qcdSearch : nuis += ["A_qcd"]
         if REwk :
             nuis += ["A_ewk"]
             if REwk!="Constant" :
@@ -329,7 +339,7 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, sim
         if includeMuonTerms or includePhotTerms or includeMumuTerms :
             multiBinNuis += ["fZinv"]
 
-        hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, hadControlSamples)
+        hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamples)
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
         mumuTerms(w, inputData)
@@ -366,7 +376,7 @@ def setupLikelihood(w, inputData, REwk, RQcd, nFZinv, qcdSearch, signalDict, sim
     if not smOnly :
         w.defineSet("poi", "f")
     elif qcdSearch :
-        w.defineSet("poi", "A_qcd,k_qcd")
+        w.defineSet("poi", "A_qcd")
 
     obs += multi(w, multiBinObs, inputData)
     nuis += multi(w, multiBinNuis, inputData)
@@ -407,8 +417,8 @@ def plIntervalQcd(dataset, modelconfig, wspace, note, cl = None, makePlots = Tru
     calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
-    #out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
-    #out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
+    out["upperLimit"] = lInt.UpperLimit(wspace.var("A_qcd"))
+    out["lowerLimit"] = lInt.LowerLimit(wspace.var("A_qcd"))
 
     lInt.Print()
     if makePlots :
@@ -607,8 +617,8 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         utils.ps2pdf(ps)
     return out
 
-def profilePlots(dataset, modelconfig, note, smOnly) :
-    assert not smOnly
+def profilePlots(dataset, modelconfig, note, smOnly, qcdSearch) :
+    assert (not smOnly) or qcdSearch
 
     canvas = r.TCanvas()
     canvas.SetTickx()
@@ -746,9 +756,9 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
-def noteArgs() : return ["REwk", "RQcd", "nFZinv", "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"]
+def noteArgs() : return ["REwk", "RQcd", "nFZinv", "qcdSearch", "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"]
 
-def note(REwk = None, RQcd = None, nFZinv = None, ignoreSignalContaminationInMuonSample = None,
+def note(REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, ignoreSignalContaminationInMuonSample = None,
          simpleOneBin = None, hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
     out = ""
     if simpleOneBin : return "simpleOneBin"
@@ -756,6 +766,7 @@ def note(REwk = None, RQcd = None, nFZinv = None, ignoreSignalContaminationInMuo
     if REwk : out += "REwk%s_"%REwk
     out += "RQcd%s"%RQcd
     out += "_fZinv%s"%nFZinv
+    if qcdSearch :        out += "_qcdSearch"
     if hadTerms :        out += "_had"
     if ignoreSignalContaminationInMuonSample :  out += "_ignoreMuContam"
     for item in hadControlSamples : out += "_hadControl_%s"%item
@@ -776,11 +787,17 @@ class foo(object) :
         r.RooRandom.randomGenerator().SetSeed(1)
 
         self.wspace = r.RooWorkspace("Workspace")
-        setupLikelihood(self.wspace, self.inputData, self.REwk, self.RQcd, self.nFZinv, self.qcdSearch, self.signal,
-                        simpleOneBin = self.simpleOneBin, includeHadTerms = self.hadTerms, hadControlSamples = self.hadControlSamples,
-                        includeMuonTerms = self.muonTerms, includePhotTerms = self.photTerms, includeMumuTerms = self.mumuTerms)
+
+        args = {}
+        for item in ["wspace", "inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "simpleOneBin", "hadControlSamples"] :
+            args[item] = getattr(self, item)
+        for item in ["had", "muon", "phot", "mumu"] :
+            args["include%s%sTerms"%(item[0].capitalize(),item[1:])] = getattr(self,"%sTerms"%item)
+        args["smOnly"] = self.smOnly()
+        setupLikelihood(**args)
+        
         self.data = dataset(obs(self.wspace))
-        self.modelConfig = modelConfiguration(self.wspace, self.smOnly())
+        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), self.qcdSearch)
 
         if trace :
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
@@ -821,11 +838,11 @@ class foo(object) :
         #wspace.Print("v")
 
     def profile(self) :
-        profilePlots(self.data, self.modelConfig, self.note(), self.smOnly())
+        profilePlots(self.data, self.modelConfig, self.note(), self.smOnly(), self.qcdSearch)
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False) :
         if self.qcdSearch :
-            plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
+            return plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
         elif method=="profileLikelihood" :
             return plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
         elif method=="feldmanCousins" :
