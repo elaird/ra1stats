@@ -428,6 +428,27 @@ class validationPlotter(object) :
     def randomizedPars(self, nValues) :
         return [copy.copy(self.results.randomizePars()) for i in range(nValues)]
 
+    def filteredPars(self, randPars = [], maxPdfValue = None, pdfName = "") :
+        out = []
+        #for parSet in randPars :
+        #    func = self.wspace.function("hadB0")
+        #    func.getVariables().assignValueOnly(parSet)
+        #    if func.getVal()>650.0 : continue
+        #    out.append(parSet)
+
+        #for parSet in randPars :
+        #    index = parSet.index("k_qcd")
+        #    if index<0 : continue
+        #    if parSet[index].getVal()<0.003 : continue
+        #    out.append(parSet)
+
+        for parSet in randPars :
+            self.wspace.allVars().assignValueOnly(parSet)
+            value = self.wspace.pdf(pdfName).getVal()
+            if -2.0*math.log(value/maxPdfValue)>60.0 : continue
+            out.append(parSet)
+        return out
+    
     def funcCollect(self) :
         funcs = self.wspace.allFunctions()
         func = funcs.createIterator()
@@ -459,13 +480,39 @@ class validationPlotter(object) :
             parMax[key] = it.getMax()
         return parBestFit,parError,parMin,parMax
     
-    def funcHistos(self, randPars = []) :
+    def llHisto(self, randPars = [], pdfName = "", maxPdfValue = None, minNll = None, ndf = None) :
+        values = []
+        for parSet in randPars :
+            self.wspace.allVars().assignValueOnly(parSet)
+            value = self.wspace.pdf(pdfName).getVal()
+            values.append(-2.0*math.log(value/maxPdfValue))
+
+        h = r.TH1D("logPdfValue", ";-2*log(pdfValue/max.pdfValue);parameter value set / bin", 100, 0.0, 1.1*max(values))
+        h.Sumw2()
+        map(h.Fill, values)
+        h.Draw()
+
+        #chi2 = r.TH1D("chi2","", h.GetNbinsX(), h.GetXaxis().GetXmin(), h.GetXaxis().GetXmax())
+        #for i in range(1, 1+h.GetNbinsX()) :
+        #    xLo = chi2.GetBinLowEdge(  i)
+        #    xHi = chi2.GetBinLowEdge(1+i)
+        #    chi2.SetBinContent(i, r.TMath.Prob(xLo, ndf) - r.TMath.Prob(xHi, ndf))
+        #
+        #chi2.SetLineColor(r.kRed)
+        #chi2.Scale(h.GetMaximum()/chi2.GetMaximum())
+        #chi2.Draw("same")
+
+        self.canvas.Print(self.psFileName)            
+        return h
+
+    def funcHistos(self, randPars = [], suffix = "") :
         histos = {}
         
         funcs = self.wspace.allFunctions()
         func = funcs.createIterator()
         while func.Next() :
-            h = r.TH1D(func.GetName(), func.GetName(), 100, 1.0, -1.0)
+            name = "%s%s"%(func.GetName(), suffix)
+            h = r.TH1D(name, name, 100, 1.0, -1.0)
             h.Sumw2()
 
             for parSet in randPars :
@@ -474,14 +521,15 @@ class validationPlotter(object) :
                 #if value<0.0 : values.Print("v")
                 h.Fill(value)
 
-            histos[h.GetName()] = h
+            histos[func.GetName()] = h
         return histos
 
-    def parHistos1D(self, pars = [], randPars = []) :
+    def parHistos1D(self, pars = [], randPars = [], suffix = "") :
         histos = {}
 
         for par in pars :
-            h = r.TH1D(par, par, 100, 1.0, -1.0)
+            name = "%s%s"%(par,suffix)
+            h = r.TH1D(name, name, 100, 1.0, -1.0)
             h.Sumw2()
 
             for parList in randPars :
@@ -489,14 +537,15 @@ class validationPlotter(object) :
                 if index<0 : continue
                 h.Fill(parList[index].getVal())
 
-            histos[h.GetName()] = h
+            histos[par] = h
         return histos
 
-    def parHistos2D(self, pairs = [], randPars = []) :
+    def parHistos2D(self, pairs = [], randPars = [], suffix = "") :
         histos = {}
 
         for pair in pairs :
             name = "_".join(pair)
+            name += suffix
             title = ";".join([""]+list(pair))
             h = r.TH2D(name, title, 100, 1.0, -1.0, 100, 1.0, -1.0)
             h.Sumw2()
@@ -573,25 +622,53 @@ class validationPlotter(object) :
         if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
         return
 
-    def propagatedErrorsPlots(self, nValues = 1000) :
+    def propPlotSet(self, randPars = [], suffix = "", pars = []) :
+        return self.funcHistos(randPars, suffix = suffix),\
+               self.parHistos1D(pars = pars, randPars = randPars, suffix = suffix),\
+               self.parHistos2D(pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")], randPars = randPars, suffix = suffix)
+
+    def cyclePlotSet(self, funcHistos = None, parHistos1D = None, parHistos2D = None,
+                     funcBestFit = None, funcLinPropError = None,
+                     parBestFit = None, parError = None) :
+        
+        self.cyclePlot(d = parHistos1D, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
+                                                                     "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
+        self.cyclePlot(d = parHistos2D, f = self.dummy, args = {})
+        self.cyclePlot(d = funcHistos, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
+                                                                    "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
+        return
+        
+    def propagatedErrorsPlots(self, nValues = 1000, pdfName = "model") :
         #http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8892&p=37735
 
         funcBestFit,funcLinPropError = self.funcCollect()
         parBestFit,parError,parMin,parMax = self.parCollect()
 
+        minNll = self.results.minNll()
+        print "minNll =",minNll
+        maxPdfValue = self.wspace.pdf(pdfName).getVal()
+        print "nLMaxPdfValue =",-math.log(maxPdfValue)
+        ndf = 13
+        print "ndf =",ndf
+
         randPars = self.randomizedPars(nValues)
 
-        funcHistos = self.funcHistos(randPars)
-        parHistos1D = self.parHistos1D(pars = parBestFit.keys(), randPars = randPars)
-        parHistos2D = self.parHistos2D(pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")], randPars = randPars)
+        llHisto = self.llHisto(randPars, pdfName = pdfName, maxPdfValue = maxPdfValue, minNll = minNll, ndf = ndf)
 
-        self.cyclePlot(d = parHistos1D, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
-                                                                     "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
-        self.cyclePlot(d = parHistos2D, f = self.dummy, args = {})
-                                                                     
-        self.cyclePlot(d = funcHistos, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
-                                                                    "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
+        funcHistos,parHistos1D,parHistos2D = self.propPlotSet(randPars = randPars, suffix = "", pars = parBestFit.keys())
+        self.cyclePlotSet(funcHistos = funcHistos, parHistos1D = parHistos1D, parHistos2D = parHistos2D,
+                          funcBestFit = funcBestFit, funcLinPropError = funcLinPropError,
+                          parBestFit = parBestFit, parError = parError)
+                          
+        funcHistos,parHistos1D,parHistos2D = self.propPlotSet(randPars = self.filteredPars(randPars, maxPdfValue = maxPdfValue, pdfName = pdfName),
+                                                              suffix = "_filtered",
+                                                              pars = parBestFit.keys())
 
+        self.cyclePlotSet(funcHistos = funcHistos, parHistos1D = parHistos1D, parHistos2D = parHistos2D,
+                          funcBestFit = funcBestFit, funcLinPropError = funcLinPropError,
+                          parBestFit = parBestFit, parError = parError)
+        return
+    
     def hadronicSummaryTable(self) :
         N = len(self.htBinLowerEdges)
         print "HT bins :",pretty(self.htBinLowerEdges)
