@@ -168,10 +168,10 @@ def drawOne(hist, goptions, errorBand, bandFillStyle = 1001) :
     noerrors.Draw("h"+goptions)
     return [errors, noerrors]
 
-def printOnePage(canvas, fileName) :
-    fileName = fileName+".eps"
+def printOnePage(canvas, fileName, ext = ".eps") :
+    fileName = fileName + ext
     super(utils.numberedCanvas, canvas).Print(fileName)
-    utils.epsToPdf(fileName)
+    if ext==".eps" : utils.epsToPdf(fileName)
 
 def legSpec(goptions) :
     out = ""
@@ -231,7 +231,7 @@ class validationPlotter(object) :
         self.alphaTRatioPlots()
         self.printPars()
         self.correlationHist()
-        self.propagatedErrorsPlots(printResults = False)
+        #self.propagatedErrorsPlots(printResults = False)
 
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -364,13 +364,16 @@ class validationPlotter(object) :
 
     def alphaTRatioPlots(self) :
         ewk = {"num":"ewk",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK",  "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lpe",
-               "numErrorsFrom":"A_ewk"}#, "errorBand":self.ewk}
+               #"numErrorsFrom":"A_ewk"}
+               "errorBand":self.ewk}
                
         if self.ewkType=="var" :
           ewk =  {  "num":"ewk", "numType":"var",   "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk",  "color":self.ewk, "width":self.width1, "legSpec":"l"},
 
         qcd = {"num":"qcd",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"QCD",  "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lpe",
-               "numErrorsFrom":"A_qcd"}#, "errorBand":self.qcd, "bandStyle":3005}
+               #"numErrorsFrom":"A_qcd"}
+               "errorBand":self.qcd, "bandStyle":3005}
+        
         qcd2 = copy.deepcopy(qcd)
         qcd2["legend"] = False
         self.ratioPlot(note = self.label, fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88), specs = [
@@ -766,7 +769,7 @@ class validationPlotter(object) :
                 elif errorsFrom :
                     errorsVar = self.wspace.var(errorsFrom) if self.wspace.var(errorsFrom) else self.wspace.var(errorsFrom+"%d"%i)
                     if errorsVar and errorsVar.getVal() : d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
-                #else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
+                else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
 	    else :
 	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
 	        purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
@@ -862,6 +865,7 @@ class validationPlotter(object) :
 	if self.printPages and fileName :
 	    #obs.SetTitle("")
 	    printOnePage(self.canvas, fileName)
+	    #printOnePage(self.canvas, fileName, ext = ".C")
 	self.canvas.Print(self.psFileName)
 
 	return stuff
@@ -918,6 +922,8 @@ class validationPlotter(object) :
     	if self.printPages and fileName :
     	    #histos[0][0].SetTitle("")
     	    printOnePage(self.canvas, fileName)
+	    #printOnePage(self.canvas, fileName, ext = ".C")
+            
     	self.canvas.Print(self.psFileName)
 
 rootSetup()
