@@ -140,4 +140,30 @@ def parCollect(wspace) :
         parMin[key] = it.getMin()
         parMax[key] = it.getMax()
     return parBestFit,parError,parMin,parMax
+##############################
+def combineBinContentAndError(histo, binToContainCombo, binToBeKilled) :
+    xflows     = histo.GetBinContent(binToBeKilled)
+    xflowError = histo.GetBinError(binToBeKilled)
+
+    if xflows==0.0 : return #ugly
+
+    currentContent = histo.GetBinContent(binToContainCombo)
+    currentError   = histo.GetBinError(binToContainCombo)
     
+    histo.SetBinContent(binToBeKilled, 0.0)
+    histo.SetBinContent(binToContainCombo, currentContent+xflows)
+    
+    histo.SetBinError(binToBeKilled, 0.0)
+    histo.SetBinError(binToContainCombo, math.sqrt(xflowError**2+currentError**2))
+##############################
+def shiftUnderAndOverflows(dimension, histos, dontShiftList = []) :
+    if dimension!=1 : return
+    for histo in histos:
+        if not histo : continue
+        if histo.GetName() in dontShiftList : continue
+        bins = histo.GetNbinsX()
+        entries = histo.GetEntries()
+        combineBinContentAndError(histo, binToContainCombo = 1   , binToBeKilled = 0     )
+        combineBinContentAndError(histo, binToContainCombo = bins, binToBeKilled = bins+1)
+        histo.SetEntries(entries)
+##############################
