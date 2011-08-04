@@ -745,13 +745,13 @@ def collect(wspace, results) :
 
     out = {}
     out["lMax"] = lMax(results)
-    #funcBestFit,funcLinPropError = utils.funcCollect(wspace, results)
-    #parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
-    #
-    #assert set(funcBestFit.keys()).isdisjoint(set(parBestFit.keys()))
-    #for d in [funcBestFit, parBestFit] :
-    #    for key,value in d.iteritems() :
-    #        out[key] = value
+    funcBestFit,funcLinPropError = utils.funcCollect(wspace, results, linPropError = False)
+    parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
+    
+    assert set(funcBestFit.keys()).isdisjoint(set(parBestFit.keys()))
+    for d in [funcBestFit, parBestFit] :
+        for key,value in d.iteritems() :
+            out[key] = value
     return out
 
 def ntupleOfFitToys(wspace = None, data = None, nToys = None) :
