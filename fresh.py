@@ -102,18 +102,18 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamp
 
     A_ewk_ini = 1.3e-5
     if not qcdSearch :
-        if RQcd=="FallingExp" :
+        if RQcd=="FallingExpA" :
+            wimport(w, r.RooRealVar("A_qcd", "A_qcd", math.log(1.5e-5), -20.0, math.log(100.0)))
+        else :
             wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
             #wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, -100.0, 100.0))
-        elif RQcd=="FallingExpA" :
-            wimport(w, r.RooRealVar("A_qcd", "A_qcd", math.log(1.5e-5), -20.0, math.log(100.0)))
         wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
         #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, -1.0,   1.0))
     else :
-        if RQcd=="FallingExp" :
-            wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 5.0))
-        elif RQcd=="FallingExpA" :
+        if RQcd=="FallingExpA" :
             wimport(w, r.RooRealVar("A_qcd", "A_qcd", math.log(1.5e-5), -20.0, math.log(2.0)))
+        else :
+            wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 5.0))
         #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0, 1.0))
         #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 4.7e-2, 3.7e-2, 5.7e-2))
         wimport(w, r.RooRealVar("k_qcd", "k_qcd", 4.7e-2, 4.5e-2, 4.9e-2))
@@ -139,8 +139,9 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamp
 
     iLast = len(htMeans)-1
     for i,nHadValue in enumerate(obs["nHad"]) :
-        if RQcd=="FallingExp"  : wimport(w, parametrizedExp (w = w, sample = "qcd", i = i))
         if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, sample = "qcd", i = i))            
+        else :                   wimport(w, parametrizedExp (w = w, sample = "qcd", i = i))
+        
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
         fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", i = i, iLast = iLast)
 
@@ -737,24 +738,46 @@ def indexFraction(item, l) :
     i2 = len(totalList)-totalList.index(item)-1
     return (i1+i2)/2.0/len(l)
 
-def pValue(wspace, data, nToys = 100, note = "", plots = True) :
+def collect(wspace, results) :
     def lMax(results) :
         #return math.exp(-results.minNll())
         return -results.minNll()
-    
+
+    out = {}
+    out["lMax"] = lMax(results)
+    #funcBestFit,funcLinPropError = utils.funcCollect(wspace, results)
+    #parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
+    #
+    #assert set(funcBestFit.keys()).isdisjoint(set(parBestFit.keys()))
+    #for d in [funcBestFit, parBestFit] :
+    #    for key,value in d.iteritems() :
+    #        out[key] = value
+    return out
+
+def ntupleOfFitToys(wspace = None, data = None, nToys = None) :
     results = utils.rooFitResults(pdf(wspace), data) #fit to data
     wspace.saveSnapshot("snap", wspace.allVars())    
-    lMaxData = lMax(results)
-    
-    graph = r.TGraph()
-    lMaxs = []
+
+    obs = collect(wspace, results)
+
+    toys = []
     for i,dataSet in enumerate(pseudoData(wspace, nToys)) :
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
         results = utils.rooFitResults(pdf(wspace), dataSet)
-        lMaxs.append(lMax(results))
-        graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
+        toys.append( collect(wspace, results) )
         utils.delete(results)
+    return obs,toys
+
+def pValue(wspace, data, nToys = 100, note = "", plots = True) :
+    graph = r.TGraph()
+    lMaxs = []
+
+    obs,toys = ntupleOfFitToys(wspace, data, nToys)
+    lMaxData = obs["lMax"]
+    for i,toy in enumerate(toys) :
+        lMaxs.append(toy["lMax"])
+        graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
     
     out = indexFraction(lMaxData, lMaxs)
     if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
