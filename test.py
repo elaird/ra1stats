@@ -44,7 +44,7 @@ sue_anns_point = {'xs': 2004.,
 
 f = fresh.foo(inputData = data2011(),
               REwk = ["", "Linear", "Constant"][2],
-              RQcd = ["Zero", "FallingExp"][1],
+              RQcd = ["Zero", "FallingExp", "FallingExpA"][1],
               nFZinv = ["All", "One", "Two"][0],
               #qcdSearch = True,
               #signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point][2],
@@ -68,7 +68,8 @@ f = fresh.foo(inputData = data2011(),
               #hadControlSamples = ["52_53", "53_55"],
               )
 
-#out = f.interval(cl = 0.95, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
+cl = 0.95 if not f.qcdSearch else 0.68
+#out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = 0.95, calculatorType = 0, testStatType = 3, nToys = 2000,
 #            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
