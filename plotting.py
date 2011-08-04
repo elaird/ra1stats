@@ -221,17 +221,17 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName+"[")        
 
         self.hadPlots()
-        self.hadDataMcPlots()
+        #self.hadDataMcPlots()
         self.hadControlPlots()
         self.muonPlots()
         self.photPlots()
-        self.mumuPlots()
+        #self.mumuPlots()
         self.ewkPlots()
         self.mcFactorPlots()
         self.alphaTRatioPlots()
         self.printPars()
         self.correlationHist()
-        self.propagatedErrorsPlots()
+        self.propagatedErrorsPlots(printResults = False)
 
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -318,7 +318,7 @@ class validationPlotter(object) :
                                 obsKey = "nMuon", obsLabel = "Data (muon sample)", otherVars = vars, logY = logY)
 
     def photPlots(self) :
-        for logY in [True] :
+        for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "photon_control_fit%s"%("_logy" if logY else "")            
             self.validationPlot(note = self.label, fileName = fileName, legend0 = (0.48, 0.73), reverseLegend = True, logY = logY,
@@ -357,10 +357,10 @@ class validationPlotter(object) :
                        legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 4.0,
                        otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC #gamma / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                        yLabel = "", scale = self.lumi["had"]/self.lumi["phot"])
-        self.validationPlot(note = "muon-muon translation factor (from MC)",
-                       legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 1.0,
-                       otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
-                       yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
+        #self.validationPlot(note = "muon-muon translation factor (from MC)",
+        #               legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 1.0,
+        #               otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
+        #               yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
         ewk = {"num":"ewk",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK",  "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lpe",
@@ -401,10 +401,10 @@ class validationPlotter(object) :
             {"num":"nPhot", "numType":"data",     "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk", "color":r.kBlack},
             {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",          "color":r.kRed},
             ], yLabel = "R_{#alpha_{T}}")
-        self.ratioPlot(note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
-            {"num":"nMumu", "numType":"data",     "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk", "color":r.kBlack},
-            {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",            "color":r.kRed},
-            ], yLabel = "R_{#alpha_{T}}")
+        #self.ratioPlot(note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
+        #    {"num":"nMumu", "numType":"data",     "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk", "color":r.kBlack},
+        #    {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",            "color":r.kRed},
+        #    ], yLabel = "R_{#alpha_{T}}")
 
     def printPars(self) :
         def printText(x, y, s, color = r.kBlack) :
@@ -659,7 +659,7 @@ class validationPlotter(object) :
                                                                     "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
         return
         
-    def propagatedErrorsPlots(self, nValues = 1000, pdfName = "model") :
+    def propagatedErrorsPlots(self, nValues = 1000, pdfName = "model", printResults = None) :
         #http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8892&p=37735
 
         funcBestFit,funcLinPropError = self.funcCollect()
@@ -779,7 +779,7 @@ class validationPlotter(object) :
 	return d
 
     def validationPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False, minimum = 0.0, maximum = None,
-                       logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0, printFitResults = False) :
+                       logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
         stuff = []
         leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
         leg.SetBorderSize(0)
@@ -845,14 +845,14 @@ class validationPlotter(object) :
 	r.gPad.SetTicky()
 	r.gPad.Update()
 
-        if printFitResults :
+        if obsKey=="nHad" and not self.printPages :
             text = r.TLatex()
             text.SetNDC()
-            x = 0.15
-            y = 0.3
-            s = 0.03
+            x = 0.25
+            y = 0.85
+            s = 0.023
             text.SetTextSize(0.5*text.GetTextSize())
-            text.DrawLatex(x, y +   s, "ML fit values")
+            #text.DrawLatex(x, y +   s, "ML fit values")
             text.DrawLatex(x, y      , "A_{EWK} = %4.2e #pm %4.2e"   %(self.wspace.var("A_ewk").getVal(),    self.wspace.var("A_ewk").getError()))
             text.DrawLatex(x, y -   s, "A_{QCD } = %4.2e #pm %4.2e"   %(self.wspace.var("A_qcd").getVal(),    self.wspace.var("A_qcd").getError()))
             text.DrawLatex(x, y - 2*s, "k_{QCD  } = %4.2e #pm %4.2e"   %(self.wspace.var("k_qcd").getVal(),    self.wspace.var("k_qcd").getError()))
