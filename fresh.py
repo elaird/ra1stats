@@ -745,7 +745,7 @@ def collect(wspace, results, extraStructure = False) :
 
     out = {}
     out["lMax"] = lMax(results)
-    funcBestFit,funcLinPropError = utils.funcCollect(wspace, results, linPropError = False)
+    funcBestFit,funcLinPropError = utils.funcCollect(wspace)
     parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
 
     if extraStructure :
@@ -790,25 +790,41 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     return out
 
 def ensemble(wspace, data, nToys = None, note = "", plots = True) :
+    def parHistos(pars = None, shift = True) :
+        histos = {}
+        factor = 2.0
+        for par in pars :
+            mean  = obs["parBestFit"][par]
+            error = obs["parError"][par]
+            h = histos[par] = r.TH1D(par, par, 100, mean - factor*error, mean + factor*error)
+            h.Sumw2()
+            for toy in toys : h.Fill(toy[par])
+        if shift : utils.shiftUnderAndOverflows(1, histos.values())
+        return histos
+    
+    def funcHistos(funcs = None, shift = True) :
+        histos = {}
+        factor = 3.0
+        for func in funcs :
+            mean  = obs["funcBestFit"][func]
+            error = math.sqrt(mean)
+            h = histos[func] = r.TH1D(func, func, 100, mean - factor*error, mean + factor*error)
+            h.Sumw2()
+            for toy in toys : h.Fill(toy[func])
+        if shift : utils.shiftUnderAndOverflows(1, histos.values())
+        return histos
+    
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
+    pHistos = parHistos(pars = utils.parCollect(wspace)[0].keys())
+    fHistos = funcHistos(funcs = utils.funcCollect(wspace)[0].keys())
 
-    pars = utils.parCollect(wspace)[0].keys()
-
-    histos = {}
-    factor = 2.0
-    for par in pars :
-        mean  = obs["parBestFit"][par]
-        error = obs["parError"][par]
-        h = histos[par] = r.TH1D(par, par, 100, mean - factor*error, mean + factor*error)
-        h.Sumw2()
-        for toy in toys : h.Fill(toy[par])
-
-    utils.shiftUnderAndOverflows(1, histos.values())
     canvas = r.TCanvas()
     psFileName = "ensemble_%s.ps"%note
     canvas.Print(psFileName+"[")
-    plotting.cyclePlot(d = histos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
+    plotting.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
+    plotting.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
+                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen})
         
     canvas.Print(psFileName+"]")        
     utils.ps2pdf(psFileName)
