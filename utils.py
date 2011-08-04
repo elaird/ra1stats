@@ -110,3 +110,34 @@ def quantiles(histo = None, sigmaList = []) :
     histo.GetQuantiles(len(probSum), q, probSum)
     return q
 #####################################
+def funcCollect(wspace, results) :
+    funcs = wspace.allFunctions()
+    func = funcs.createIterator()
+
+    funcBestFit = {}
+    funcLinPropError = {}
+    while func.Next() :
+        key = func.GetName()
+        funcBestFit[key] = func.getVal()
+        funcLinPropError[key] = func.getPropagatedError(results)
+    return funcBestFit,funcLinPropError
+#####################################
+def parCollect(wspace) :
+    vars = wspace.allVars()
+    it = vars.createIterator()
+
+    parBestFit = {}
+    parError = {}
+    parMin = {}
+    parMax = {}
+    while it.Next() :
+        if it.getMax()==r.RooNumber.infinity() : continue
+        if it.getMin()==-r.RooNumber.infinity() : continue
+        if not it.hasError() : continue
+        key = it.GetName()
+        parBestFit[key] = it.getVal()
+        parError[key] = it.getError()
+        parMin[key] = it.getMin()
+        parMax[key] = it.getMax()
+    return parBestFit,parError,parMin,parMax
+    

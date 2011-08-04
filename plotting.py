@@ -471,37 +471,6 @@ class validationPlotter(object) :
             out.append(parSet)
         return out
     
-    def funcCollect(self) :
-        funcs = self.wspace.allFunctions()
-        func = funcs.createIterator()
-
-        funcBestFit = {}
-        funcLinPropError = {}
-        while func.Next() :
-            key = func.GetName()
-            funcBestFit[key] = func.getVal()
-            funcLinPropError[key] = func.getPropagatedError(self.results)
-        return funcBestFit,funcLinPropError
-
-    def parCollect(self) :
-        vars = self.wspace.allVars()
-        it = vars.createIterator()
-
-        parBestFit = {}
-        parError = {}
-        parMin = {}
-        parMax = {}
-        while it.Next() :
-            if it.getMax()==r.RooNumber.infinity() : continue
-            if it.getMin()==-r.RooNumber.infinity() : continue
-            if not it.hasError() : continue
-            key = it.GetName()
-            parBestFit[key] = it.getVal()
-            parError[key] = it.getError()
-            parMin[key] = it.getMin()
-            parMax[key] = it.getMax()
-        return parBestFit,parError,parMin,parMax
-    
     def llHisto(self, randPars = [], pdfName = "", maxPdfValue = None, minNll = None, ndf = None) :
         values = []
         for parSet in randPars :
@@ -665,8 +634,8 @@ class validationPlotter(object) :
     def propagatedErrorsPlots(self, nValues = 1000, pdfName = "model", printResults = None) :
         #http://root.cern.ch/phpBB3/viewtopic.php?f=15&t=8892&p=37735
 
-        funcBestFit,funcLinPropError = self.funcCollect()
-        parBestFit,parError,parMin,parMax = self.parCollect()
+        funcBestFit,funcLinPropError = utils.funcCollect(self.wspace, self.results)
+        parBestFit,parError,parMin,parMax = utils.parCollect(self.wspace)
 
         #minNll = self.results.minNll()
         #print "minNll =",minNll
