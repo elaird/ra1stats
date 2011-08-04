@@ -90,14 +90,14 @@ def histoLines(args = {}, key = None, histo = None) :
     max  = histo.GetMaximum()
 
     best = args["bestDict"][key]
-    error = args["errorDict"][key]
+    error = args["errorDict"][key] if "errorDict" in args else None
     out = []
     out.append(hLine.DrawLine(q[1], min, q[1], max))
     out.append(hLine.DrawLine(q[0], min, q[0], max))
     out.append(hLine.DrawLine(q[2], min, q[2], max))
     
     out.append(bestLine.DrawLine(best, min, best, max))
-    out.append(errorLine.DrawLine(best - error, max/2.0, best + error, max/2.0))
+    if error!=None : out.append(errorLine.DrawLine(best - error, max/2.0, best + error, max/2.0))
 
     if "print" in args and args["print"] : print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
     return out
