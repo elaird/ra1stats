@@ -80,6 +80,28 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
     if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
     return
 
+def histoLines(args = {}, key = None, histo = None) :
+    hLine = r.TLine(); hLine.SetLineColor(args["quantileColor"])
+    bestLine = r.TLine(); bestLine.SetLineColor(args["bestColor"])
+    errorLine = r.TLine(); errorLine.SetLineColor(args["errorColor"])
+
+    q = utils.quantiles(histo, sigmaList = [-1.0, 0.0, 1.0])
+    min  = histo.GetMinimum()
+    max  = histo.GetMaximum()
+
+    best = args["bestDict"][key]
+    error = args["errorDict"][key]
+    out = []
+    out.append(hLine.DrawLine(q[1], min, q[1], max))
+    out.append(hLine.DrawLine(q[0], min, q[0], max))
+    out.append(hLine.DrawLine(q[2], min, q[2], max))
+    
+    out.append(bestLine.DrawLine(best, min, best, max))
+    out.append(errorLine.DrawLine(best - error, max/2.0, best + error, max/2.0))
+
+    if "print" in args and args["print"] : print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
+    return out
+        
 def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
     ps = "limits_%s.ps"%note
     canvas = r.TCanvas("canvas")
@@ -589,29 +611,6 @@ class validationPlotter(object) :
             histos[h.GetName()] = h
         return histos
 
-    def histoLines(self, args = {}, key = None, histo = None) :
-        hLine = r.TLine(); hLine.SetLineColor(args["meanColor"])
-        bestLine = r.TLine(); bestLine.SetLineColor(args["bestColor"])
-        errorLine = r.TLine(); errorLine.SetLineColor(args["errorColor"])
-
-
-        q = utils.quantiles(histo, sigmaList = [-1.0, 0.0, 1.0])
-        min  = histo.GetMinimum()
-        max  = histo.GetMaximum()
-
-        best = args["bestDict"][key]
-        error = args["errorDict"][key]
-        out = []
-        out.append(hLine.DrawLine(q[1], min, q[1], max))
-        out.append(hLine.DrawLine(q[0], min, q[0], max))
-        out.append(hLine.DrawLine(q[2], min, q[2], max))
-        
-        out.append(bestLine.DrawLine(best, min, best, max))
-        out.append(errorLine.DrawLine(best - error, max/2.0, best + error, max/2.0))
-
-        print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
-        return out
-        
     def propPlotSet(self, randPars = [], suffix = "", pars = []) :
         return self.funcHistos(randPars, suffix = suffix),\
                self.parHistos1D(pars = pars, randPars = randPars, suffix = suffix),\
@@ -621,12 +620,12 @@ class validationPlotter(object) :
                      funcBestFit = None, funcLinPropError = None,
                      parBestFit = None, parError = None) :
         
-        cyclePlot(d = parHistos1D, f = self.histoLines, canvas = self.canvas, psFileName = self.psFileName,
-                  args = {"bestColor":r.kGreen, "meanColor":r.kRed, "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
+        cyclePlot(d = parHistos1D, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
+                  args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
         
         cyclePlot(d = parHistos2D, canvas = self.canvas, psFileName = self.psFileName)
-        cyclePlot(d = funcHistos, f = self.histoLines, canvas = self.canvas, psFileName = self.psFileName,
-                  args = {"bestColor":r.kGreen, "meanColor":r.kRed, "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
+        cyclePlot(d = funcHistos, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
+                  args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
                                
         return
         
