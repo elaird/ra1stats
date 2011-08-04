@@ -582,6 +582,8 @@ class validationPlotter(object) :
         
         out.append(bestLine.DrawLine(best, min, best, max))
         out.append(errorLine.DrawLine(best - error, max/2.0, best + error, max/2.0))
+
+        print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
         return out
         
     def dummy(self, args = {}, key = None, histo = None) :
