@@ -104,12 +104,14 @@ def hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamp
     if not qcdSearch :
         if RQcd=="FallingExp" :
             wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 100.0))
+            #wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, -100.0, 100.0))
         elif RQcd=="FallingExpA" :
             wimport(w, r.RooRealVar("A_qcd", "A_qcd", math.log(1.5e-5), -20.0, math.log(100.0)))
         wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0,   1.0))
+        #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, -1.0,   1.0))
     else :
         if RQcd=="FallingExp" :
-            wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 20.0))
+            wimport(w, r.RooRealVar("A_qcd", "A_qcd", 1.5e-5, 0.0, 5.0))
         elif RQcd=="FallingExpA" :
             wimport(w, r.RooRealVar("A_qcd", "A_qcd", math.log(1.5e-5), -20.0, math.log(2.0)))
         #wimport(w, r.RooRealVar("k_qcd", "k_qcd", 1.0e-5, 0.0, 1.0))
@@ -389,7 +391,7 @@ def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, n
     if not smOnly :
         w.defineSet("poi", "f")
     elif qcdSearch :
-        w.defineSet("poi", "A_qcd")
+        w.defineSet("poi", "A_qcd,k_qcd")
 
     obs += multi(w, multiBinObs, inputData)
     nuis += multi(w, multiBinNuis, inputData)
