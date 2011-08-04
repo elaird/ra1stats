@@ -42,6 +42,44 @@ def drawDecoratedHisto(quantiles = {}, hist = None, obs = None) :
     legend.Draw()
     return legend
 
+def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFileName = None) :
+    if optStat!=None :
+        oldOptStat = r.gStyle.GetOptStat()
+        r.gStyle.SetOptStat(optStat)
+
+    stuff = []
+    for i,key in enumerate(sorted(d.keys())) :
+        j = i%4
+        if not j :
+            canvas.cd(0)
+            canvas.Clear()
+            canvas.Divide(2, 2)
+            
+        canvas.cd(1+j)
+        d[key].Draw()
+        if f!=None : stuff.append( f(args = args, key = key, histo = d[key]) )
+        needPrint = True
+
+        #move stat box
+        r.gPad.Update()
+        tps = d[key].FindObject("stats")
+        if tps :
+            tps.SetX1NDC(0.78)
+            tps.SetX2NDC(0.98)
+            tps.SetY1NDC(0.90)
+            tps.SetY2NDC(1.00)
+
+        if j==3 :
+            canvas.cd(0)                
+            canvas.Print(psFileName)
+            needPrint = False
+
+    if needPrint :
+        canvas.cd(0)
+        canvas.Print(psFileName)
+    if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
+    return
+
 def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
     ps = "limits_%s.ps"%note
     canvas = r.TCanvas("canvas")
@@ -231,7 +269,7 @@ class validationPlotter(object) :
         self.alphaTRatioPlots()
         self.printPars()
         self.correlationHist()
-        #self.propagatedErrorsPlots(printResults = False)
+        self.propagatedErrorsPlots(printResults = False)
 
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -574,47 +612,6 @@ class validationPlotter(object) :
         print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
         return out
         
-    def dummy(self, args = {}, key = None, histo = None) :
-        pass
-    
-    def cyclePlot(self, d = {}, f = None, args = {}, optStat = 1110) :
-        if optStat!=None :
-            oldOptStat = r.gStyle.GetOptStat()
-            r.gStyle.SetOptStat(optStat)
-
-        stuff = []
-        for i,key in enumerate(sorted(d.keys())) :
-            j = i%4
-            if not j :
-                self.canvas.cd(0)
-                self.canvas.Clear()
-                self.canvas.Divide(2, 2)
-                
-            self.canvas.cd(1+j)
-            d[key].Draw()
-            stuff.append( f(args = args, key = key, histo = d[key]) )
-            needPrint = True
-
-            #move stat box
-            r.gPad.Update()
-            tps = d[key].FindObject("stats")
-            if tps :
-                tps.SetX1NDC(0.78)
-                tps.SetX2NDC(0.98)
-                tps.SetY1NDC(0.90)
-                tps.SetY2NDC(1.00)
-
-            if j==3 :
-                self.canvas.cd(0)                
-                self.canvas.Print(self.psFileName)
-                needPrint = False
-
-        if needPrint :
-            self.canvas.cd(0)
-            self.canvas.Print(self.psFileName)
-        if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
-        return
-
     def propPlotSet(self, randPars = [], suffix = "", pars = []) :
         return self.funcHistos(randPars, suffix = suffix),\
                self.parHistos1D(pars = pars, randPars = randPars, suffix = suffix),\
@@ -624,11 +621,13 @@ class validationPlotter(object) :
                      funcBestFit = None, funcLinPropError = None,
                      parBestFit = None, parError = None) :
         
-        self.cyclePlot(d = parHistos1D, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
-                                                                     "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
-        self.cyclePlot(d = parHistos2D, f = self.dummy, args = {})
-        self.cyclePlot(d = funcHistos, f = self.histoLines, args = {"bestColor":r.kGreen, "meanColor":r.kRed,
-                                                                    "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
+        cyclePlot(d = parHistos1D, f = self.histoLines, canvas = self.canvas, psFileName = self.psFileName,
+                  args = {"bestColor":r.kGreen, "meanColor":r.kRed, "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
+        
+        cyclePlot(d = parHistos2D, canvas = self.canvas, psFileName = self.psFileName)
+        cyclePlot(d = funcHistos, f = self.histoLines, canvas = self.canvas, psFileName = self.psFileName,
+                  args = {"bestColor":r.kGreen, "meanColor":r.kRed, "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
+                               
         return
         
     def propagatedErrorsPlots(self, nValues = 1000, pdfName = "model", printResults = None) :
