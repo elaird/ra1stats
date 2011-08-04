@@ -738,7 +738,7 @@ def indexFraction(item, l) :
     i2 = len(totalList)-totalList.index(item)-1
     return (i1+i2)/2.0/len(l)
 
-def collect(wspace, results) :
+def collect(wspace, results, extraStructure = False) :
     def lMax(results) :
         #return math.exp(-results.minNll())
         return -results.minNll()
@@ -747,6 +747,12 @@ def collect(wspace, results) :
     out["lMax"] = lMax(results)
     funcBestFit,funcLinPropError = utils.funcCollect(wspace, results, linPropError = False)
     parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
+
+    if extraStructure :
+        out["funcBestFit"] = funcBestFit
+        out["parBestFit"] = parBestFit
+        out["parError"] = parError
+        return out
     
     assert set(funcBestFit.keys()).isdisjoint(set(parBestFit.keys()))
     for d in [funcBestFit, parBestFit] :
@@ -755,13 +761,13 @@ def collect(wspace, results) :
     return out
 
 def ntupleOfFitToys(wspace = None, data = None, nToys = None) :
-    results = utils.rooFitResults(pdf(wspace), data) #fit to data
-    wspace.saveSnapshot("snap", wspace.allVars())    
+    results = utils.rooFitResults(pdf(wspace), data)
+    wspace.saveSnapshot("snap", wspace.allVars())
 
-    obs = collect(wspace, results)
+    obs = collect(wspace, results, extraStructure = True)
 
     toys = []
-    for i,dataSet in enumerate(pseudoData(wspace, nToys)) :
+    for dataSet in pseudoData(wspace, nToys) :
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
         results = utils.rooFitResults(pdf(wspace), dataSet)
@@ -783,6 +789,30 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
     return out
 
+def ensemble(wspace, data, nToys = None, note = "", plots = True) :
+    obs,toys = ntupleOfFitToys(wspace, data, nToys)
+
+    pars = utils.parCollect(wspace)[0].keys()
+
+    histos = {}
+    factor = 2.0
+    for par in pars :
+        mean  = obs["parBestFit"][par]
+        error = obs["parError"][par]
+        h = histos[par] = r.TH1D(par, par, 100, mean - factor*error, mean + factor*error)
+        h.Sumw2()
+        for toy in toys : h.Fill(toy[par])
+
+    utils.shiftUnderAndOverflows(1, histos.values())
+    canvas = r.TCanvas()
+    psFileName = "ensemble_%s.ps"%note
+    canvas.Print(psFileName+"[")
+    plotting.cyclePlot(d = histos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
+                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
+        
+    canvas.Print(psFileName+"]")        
+    utils.ps2pdf(psFileName)
+    
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
     getattr(w, "import")(item)
@@ -896,6 +926,9 @@ class foo(object) :
 
     def pValue(self, nToys = 200) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note())
+
+    def ensemble(self, nToys = 200) :
+        ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
 
     def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
