@@ -665,16 +665,16 @@ class validationPlotter(object) :
         funcBestFit,funcLinPropError = self.funcCollect()
         parBestFit,parError,parMin,parMax = self.parCollect()
 
-        minNll = self.results.minNll()
-        print "minNll =",minNll
-        maxPdfValue = self.wspace.pdf(pdfName).getVal()
-        print "nLMaxPdfValue =",-math.log(maxPdfValue)
-        ndf = 13
-        print "ndf =",ndf
+        #minNll = self.results.minNll()
+        #print "minNll =",minNll
+        #maxPdfValue = self.wspace.pdf(pdfName).getVal()
+        #print "nLMaxPdfValue =",-math.log(maxPdfValue)
+        #ndf = 13
+        #print "ndf =",ndf
 
         randPars = self.randomizedPars(nValues)
 
-        llHisto = self.llHisto(randPars, pdfName = pdfName, maxPdfValue = maxPdfValue, minNll = minNll, ndf = ndf)
+        #llHisto = self.llHisto(randPars, pdfName = pdfName, maxPdfValue = maxPdfValue, minNll = minNll, ndf = ndf)
 
         funcHistos,parHistos1D,parHistos2D = self.propPlotSet(randPars = randPars, suffix = "", pars = parBestFit.keys())
         self.cyclePlotSet(funcHistos = funcHistos, parHistos1D = parHistos1D, parHistos2D = parHistos2D,
