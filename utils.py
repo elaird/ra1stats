@@ -15,7 +15,7 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
 #####################################
 class thstack(object) :
-    """work-around for bugging THStacks in ROOT 5.30.00"""
+    """work-around for buggy THStacks in ROOT 5.30.00"""
     def __init__(self, name = "") :
         self.name = name
         self.histos = []
