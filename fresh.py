@@ -760,7 +760,7 @@ def collect(wspace, results, extraStructure = False) :
             out[key] = value
     return out
 
-def ntupleOfFitToys(wspace = None, data = None, nToys = None) :
+def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None ) :
     results = utils.rooFitResults(pdf(wspace), data)
     wspace.saveSnapshot("snap", wspace.allVars())
 
@@ -771,6 +771,12 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None) :
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
         results = utils.rooFitResults(pdf(wspace), dataSet)
+
+        if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
+            wspace.allVars().assignValueOnly(dataSet.get())
+            wspace.saveSnapshot("snapA", wspace.allVars())
+            return obs,results
+        
         toys.append( collect(wspace, results) )
         utils.delete(results)
     return obs,toys
@@ -837,13 +843,16 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True) :
             for toy in toys : h.Fill(toy[pair[0]], toy[pair[1]])
         return histos
 
+    obs,toys = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys
+
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
+    
     pHistos = parHistos(pars = utils.parCollect(wspace)[0].keys())
     fHistos = funcHistos(funcs = utils.funcCollect(wspace)[0].keys())
     oHistos = otherHistos(keys = ["lMax"])
     pHistos2 = parHistos2D(pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
-    canvas = r.TCanvas()
+    canvas = utils.numberedCanvas()
     psFileName = "ensemble_%s.ps"%note
     canvas.Print(psFileName+"[")
     plotting.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
@@ -971,7 +980,14 @@ class foo(object) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note())
 
     def ensemble(self, nToys = 200) :
-        ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
+        results = ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
+        if results :
+            args = {"wspace": self.wspace, "results": results, "lumi": self.inputData.lumi(), "htBinLowerEdges": self.inputData.htBinLowerEdges(),
+                    "htMaxForPlot": self.inputData.htMaxForPlot(), "REwk": self.REwk, "RQcd": self.RQcd, "hadControlLabels": self.hadControlSamples,
+                    "mumuTerms": self.mumuTerms, "smOnly": self.smOnly(), "note": self.note(), "signalExampleToStack": self.signalExampleToStack, "printPages": False}
+            plotter = plotting.validationPlotter(args)
+            plotter.inputData = self.inputData
+            plotter.go()
 
     def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
