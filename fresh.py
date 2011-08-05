@@ -767,7 +767,7 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
     obs = collect(wspace, results, extraStructure = True)
 
     toys = []
-    for dataSet in pseudoData(wspace, nToys) :
+    for i,dataSet in enumerate(pseudoData(wspace, nToys)) :
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
         results = utils.rooFitResults(pdf(wspace), dataSet)
@@ -775,7 +775,7 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
         if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
             wspace.allVars().assignValueOnly(dataSet.get())
             wspace.saveSnapshot("snapA", wspace.allVars())
-            return obs,results
+            return obs,results,i
         
         toys.append( collect(wspace, results) )
         utils.delete(results)
@@ -843,8 +843,8 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True) :
             for toy in toys : h.Fill(toy[pair[0]], toy[pair[1]])
         return histos
 
-    obs,toys = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys
-
+    #obs,toys,i = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
+    #obs,toys,i = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "rhoPhotZ"), cutFunc = lambda x:x>2.0); return toys,i
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     
     pHistos = parHistos(pars = utils.parCollect(wspace)[0].keys())
@@ -980,11 +980,13 @@ class foo(object) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note())
 
     def ensemble(self, nToys = 200) :
-        results = ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
+        results,i = ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
         if results :
-            args = {"wspace": self.wspace, "results": results, "lumi": self.inputData.lumi(), "htBinLowerEdges": self.inputData.htBinLowerEdges(),
-                    "htMaxForPlot": self.inputData.htMaxForPlot(), "REwk": self.REwk, "RQcd": self.RQcd, "hadControlLabels": self.hadControlSamples,
-                    "mumuTerms": self.mumuTerms, "smOnly": self.smOnly(), "note": self.note(), "signalExampleToStack": self.signalExampleToStack, "printPages": False}
+            args = {"wspace": self.wspace, "results": results, "lumi": self.inputData.lumi(),
+                    "htBinLowerEdges": self.inputData.htBinLowerEdges(), "htMaxForPlot": self.inputData.htMaxForPlot(),
+                    "REwk": self.REwk, "RQcd": self.RQcd, "hadControlLabels": self.hadControlSamples, "mumuTerms": self.mumuTerms,
+                    "smOnly": self.smOnly(), "note": self.note()+"_toy%d"%i, "signalExampleToStack": self.signalExampleToStack,
+                    "printPages": False, "toyNumber":i}
             plotter = plotting.validationPlotter(args)
             plotter.inputData = self.inputData
             plotter.go()
