@@ -263,6 +263,8 @@ class validationPlotter(object) :
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
         self.label = "CMS Preliminary 2011       1.1 fb^{-1}          #sqrt{s} = 7 TeV"
+        self.obsLabel = "Data" if not hasattr(self, "toyNumber") else "Toy %d"%self.toyNumber
+        
         if not self.smOnly :
             self.signalDesc = "signal"
             self.signalDesc2 = "xs/xs^{nom} = %4.2e #pm %4.2e; #rho = %4.2f"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), self.wspace.var("rhoSignal").getVal())
@@ -328,7 +330,7 @@ class validationPlotter(object) :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
             self.validationPlot(note = self.label, fileName = fileName, legend0 = (0.48, 0.65), legend1 = (0.88, 0.85),
-                                obsKey = "nHad", obsLabel = "Data (hadronic sample)", otherVars = vars, logY = logY)
+                                obsKey = "nHad", obsLabel = "%s (hadronic sample)"%self.obsLabel, otherVars = vars, logY = logY)
             
     def hadDataMcPlots(self) :
         for logY in [False, True] :
@@ -375,14 +377,14 @@ class validationPlotter(object) :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "muon_control_fit%s"%("_logy" if logY else "")
             self.validationPlot(note = self.label, fileName = fileName, legend0 = (0.48, 0.70), 
-                                obsKey = "nMuon", obsLabel = "Data (muon sample)", otherVars = vars, logY = logY)
+                                obsKey = "nMuon", obsLabel = "%s (muon sample)"%self.obsLabel, otherVars = vars, logY = logY)
 
     def photPlots(self) :
         for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "photon_control_fit%s"%("_logy" if logY else "")            
             self.validationPlot(note = self.label, fileName = fileName, legend0 = (0.48, 0.73), reverseLegend = True, logY = logY,
-                                obsKey = "nPhot", obsLabel = "Data (photon sample)", otherVars = [
+                                obsKey = "nPhot", obsLabel = "%s (photon sample)"%self.obsLabel, otherVars = [
                 {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray}  if not self.printPages else {},
                 {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2, "desc":"SM", "stack":None},
@@ -442,7 +444,7 @@ class validationPlotter(object) :
             qcd2,
             {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"SM (QCD + EWK)", "color":self.sm, "width":self.width2,
              "errorBand":self.sm, "markerStyle":1, "legSpec":"l"},
-            {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"Data (hadronic sample)", "color":r.kBlack, "legSpec":"lpe"},
+            {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel, "color":r.kBlack, "legSpec":"lpe"},
             ], yLabel = "R_{#alpha_{T}}", customMaxFactor = 1.5, reverseLegend = True)
 
         for labelRaw in self.hadControlLabels :
