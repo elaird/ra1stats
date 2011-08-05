@@ -291,7 +291,7 @@ class validationPlotter(object) :
         self.alphaTRatioPlots()
         self.printPars()
         self.correlationHist()
-        self.propagatedErrorsPlots(printResults = False)
+        #self.propagatedErrorsPlots(printResults = False)
 
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -736,7 +736,7 @@ class validationPlotter(object) :
                 elif errorsFrom :
                     errorsVar = self.wspace.var(errorsFrom) if self.wspace.var(errorsFrom) else self.wspace.var(errorsFrom+"%d"%i)
                     if errorsVar and errorsVar.getVal() : d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
-                else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
+                #else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
 	    else :
 	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
 	        purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
