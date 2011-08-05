@@ -813,10 +813,35 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True) :
             for toy in toys : h.Fill(toy[func])
         if shift : utils.shiftUnderAndOverflows(1, histos.values())
         return histos
-    
+
+    def otherHistos(keys = [], shift = True) :
+        histos = {}
+        for key in keys :
+            h = histos[key] = r.TH1D(key, key, 100, 1.0, -1.0)
+            h.Sumw2()
+            for toy in toys : h.Fill(toy[key])
+        if shift : utils.shiftUnderAndOverflows(1, histos.values())
+        return histos
+
+    def parHistos2D(pairs = [], suffix = "") :
+        histos = {}
+
+        for pair in pairs :
+            name = "_".join(pair)
+            name += suffix
+            title = ";".join([""]+list(pair))
+            h = histos[name] = r.TH2D(name, title, 100, 1.0, -1.0, 100, 1.0, -1.0)
+            h.Sumw2()
+            h.SetStats(False)
+            h.SetTitleOffset(1.3)
+            for toy in toys : h.Fill(toy[pair[0]], toy[pair[1]])
+        return histos
+
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     pHistos = parHistos(pars = utils.parCollect(wspace)[0].keys())
     fHistos = funcHistos(funcs = utils.funcCollect(wspace)[0].keys())
+    oHistos = otherHistos(keys = ["lMax"])
+    pHistos2 = parHistos2D(pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
     canvas = r.TCanvas()
     psFileName = "ensemble_%s.ps"%note
@@ -824,7 +849,9 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True) :
     plotting.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
     plotting.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
-                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen})
+                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
+    plotting.cyclePlot(d = oHistos, canvas = canvas, psFileName = psFileName)
+    plotting.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
         
     canvas.Print(psFileName+"]")        
     utils.ps2pdf(psFileName)
