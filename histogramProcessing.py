@@ -92,7 +92,7 @@ def pdfUncHisto(spec) :
     h.SetDirectory(0)
     f.Close()
 
-    if conf.switches()["fillHolesInEffUncRelPdf"] :
+    if conf.switches()["fillHolesInInput"] :
         return fillHoles(h, 2)
     else :
         return h
@@ -163,7 +163,7 @@ def smsEffHisto(model, box, scale, htLower, htUpper) :
     s = hs.smsHistoSpec(model = model, box = box, htLower = htLower, htUpper = htUpper)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    return out
+    return out if not conf.switches()["fillHolesInInput"] else fillHoles(out, 2)
 
 def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     def counts(dirs) :
@@ -347,7 +347,7 @@ def makeEfficiencyPlots(item = "sig10") :
     num.Divide(den)
     h2 = threeToTwo(num)
 
-    if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
+    if s["fillHolesInInput"] : h2 = fillHoles(h2, 0)
 
     #output a root file
     f = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
@@ -376,16 +376,17 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    if s["fillHolesInXsLimitPlot"] : h2 = fillHoles(h2, 1)
-    
-    adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"]))
+    #if s["fillHolesInXsLimitPlot"] : h2 = fillHoles(h2, 1)
+
+    assert len(s["CL"])==1
+    adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0]))
 
     #output a root file
     g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
     h2.Write()
     g.Close()
     
-    ranges = conf.smsRanges()
+    ranges = hs.smsRanges()
     setRange("smsXRange", ranges, h2, "X")
     setRange("smsYRange", ranges, h2, "Y")
         
@@ -420,7 +421,7 @@ def makeEfficiencyUncertaintyPlots() :
         fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
         c = squareCanvas()
         h2 = threeToTwo(f.Get(name))
-        if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
+        #if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
         adjustHisto(h2, zTitle = zTitle)
         setRange("smsXRange", ranges, h2, "X")
         setRange("smsYRange", ranges, h2, "Y")
@@ -510,7 +511,7 @@ def makeValidationPlots() :
     	    names.remove(item)
         return first+names
     
-    model = conf.switches()["signalModel"]
+    sms = "tanBeta" not in conf.switches()["signalModel"]
     
     inFile = mergedFile()
     f = r.TFile(inFile)
@@ -549,8 +550,10 @@ def makeValidationPlots() :
 
         stuff = drawBenchmarks()
 
-        printSinglePage  = "tanBeta" in model and "excluded" in name
-        printSinglePage |= "tanBeta" not in model and "upperLimit" in name
+        if "excluded" in name and sms : continue
+        
+        printSinglePage  = (not sms) and "excluded" in name
+        printSinglePage |= sms and "upperLimit" in name
         
         if printSinglePage :
             title = h2.GetTitle()
