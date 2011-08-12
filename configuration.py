@@ -29,15 +29,16 @@ def switches() :
     d["REwk"] = ["", "Linear", "Constant"][2]
     d["RQcd"] = ["Zero", "FallingExp"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
+    d["qcdSearch"] = False
 
     d["testStatistic"] = 3
     
     d["nlo"] = True
     d["nloToLoRatios"] = False
-    d["signalModel"] = ["tanBeta3", "tanBeta10", "tanBeta50", "T1", "T2"][1]
+    d["signalModel"] = ["tanBeta10", "tanBeta40", "T1", "T2"][2]
     d["drawBenchmarkPoints"] = True
     d["effRatioPlots"] = False
-    d["ignoreSignalContaminationInMuonSample"] = False
+    d["ignoreSignalContaminationInMuonSample"] = True
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
     #d["listOfTestPoints"] = [(29, 55, 1)]
     #d["listOfTestPoints"] = [(29, 25, 1)]
@@ -66,7 +67,7 @@ def data() :
     return data()
 
 def checkAndAdjust(d) :
-    assert d["signalModel"] in ["T1", "T2", "tanBeta3", "tanBeta10", "tanBeta50"]
+    assert d["signalModel"] in ["T1", "T2", "tanBeta10", "tanBeta40"]
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
     
     d["lateDivision"] = False
