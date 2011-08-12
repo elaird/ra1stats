@@ -32,6 +32,7 @@ def switches() :
     d["qcdSearch"] = False
 
     d["testStatistic"] = 3
+    d["fillHolesInInput"] = True
     
     d["nlo"] = True
     d["nloToLoRatios"] = False
@@ -49,10 +50,6 @@ def switches() :
 
     d["computeExpectedLimit"] = False
     d["expectedPlusMinus"] = {"OneSigma": 1.0}#, "TwoSigma": 2.0}
-
-    d["fillHolesInEffUncRelPdf"] = True
-    d["fillHolesInEfficiencyPlots"] = True
-    d["fillHolesInXsLimitPlot"] = True
 
     d["icfDefaultLumi"] = 100.0 #/pb
     d["icfDefaultNEventsIn"] = 10000
