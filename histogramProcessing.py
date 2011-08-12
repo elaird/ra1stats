@@ -143,8 +143,20 @@ def nloEffHisto(box, scale, htLower, htUpper) :
     out.Divide(nloXsHisto(scale)) #divide by total xs
     return out
 
-def smsXsHisto(model) :
+def smsXsHisto(model, minXs = 1.0e-6) :
+    totalEff = None
+    
     h = smsEffHisto(model = model, box = "had", scale = None, htLower = 875, htUpper = None)
+    xsHisto = rxs.refXsHisto(model)
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        x = h.GetBinLowEdge(iBinX)
+        xs = xsHisto.GetBinContent(xsHisto.FindBin(x))
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            y = h.GetBinLowEdge(iBinY)
+            if y>x : continue
+            iBinZ = 1
+            #h.SetBinContent(iBinX, iBinY, iBinZ, xs)
+            h.SetBinContent(iBinX, iBinY, iBinZ, 1.0)
     return h
 
 def smsEffHisto(model, box, scale, htLower, htUpper) :
