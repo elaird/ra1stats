@@ -1,5 +1,6 @@
 physics
 -------
+CMSSM
 1 error propagation in plots
 1 trigger efficiency in signal efficiency
 1 correction to signal efficiency central value
@@ -17,6 +18,9 @@ physics
 4 upgrade dirac delta
 5 look at g(l) for f = 1
 6 lognormal vs. gaussian
+
+SMS
+remove hard-coded HT thresholds in specs and smsXsHisto()
 
 technical
 ---------
