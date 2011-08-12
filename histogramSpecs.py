@@ -35,9 +35,12 @@ def smsHistoSpec(model = "", box = None, htLower = None, htUpper = None) :
     assert box in ["had", "muon"]
     
     scan = {"had":"v1", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
+    thresh = ""
+    if htLower==275 : thresh = "0"
+    if htLower==325 : thresh = "1"
     
     out = {}
-    out["file"] = "/".join([scan["dir"], box, scan[box], box+".root"])
+    out["file"] = "/".join([scan["dir"], box, scan[box], box+"%s.root"%thresh])
     out["beforeDir"] = "smsScan_before"
     if htLower!=None :
         out["afterDir"] = "smsScan_%d%s"%(htLower, "_%d"%htUpper if htUpper else "")
