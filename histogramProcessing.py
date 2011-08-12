@@ -19,6 +19,7 @@ def ratio(file, numDir, numHisto, denDir, denHisto) :
     assert not f.IsZombie(), file
         
     hOld = f.Get("%s/%s"%(numDir, numHisto))
+    assert hOld,"%s/%s"%(numDir, numHisto)
     h = hOld.Clone("%s_clone"%hOld.GetName())
     h.SetDirectory(0)
     h.Divide(f.Get("%s/%s"%(denDir, denHisto)))
@@ -97,10 +98,14 @@ def pdfUncHisto(spec) :
         return h
 
 def xsHisto() :
-    return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
+    s = conf.switches()
+    if "tanBeta" in s["signalModel"] : return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
+    else : return smsXsHisto(s["signalModel"])
 
 def effHisto(**args) :
-    return nloEffHisto(**args) if conf.switches()["nlo"] else loEffHisto(**args)
+    s = conf.switches()
+    if "tanBeta" in s["signalModel"] : return nloEffHisto(**args) if conf.switches()["nlo"] else loEffHisto(**args)
+    else : return smsEffHisto(s["signalModel"], **args)
 
 def loXsHisto() :
     s = hs.histoSpec(box = "had", scale = "1")
@@ -136,6 +141,16 @@ def nloEffHisto(box, scale, htLower, htUpper) :
         else :           out.Add(h)
     out.SetDirectory(0)
     out.Divide(nloXsHisto(scale)) #divide by total xs
+    return out
+
+def smsXsHisto(model) :
+    h = smsEffHisto(model = model, box = "had", scale = None, htLower = 875, htUpper = None)
+    return h
+
+def smsEffHisto(model, box, scale, htLower, htUpper) :
+    s = hs.smsHistoSpec(model = model, box = box, htLower = htLower, htUpper = htUpper)
+    #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
+    out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
     return out
 
 def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
