@@ -5,10 +5,10 @@ import configuration as conf
 def smsRanges() :
     d = {}
 
-    d["smsXRange"] = (400.0, 999.9) #(min, max)
-    d["smsYRange"] = (100.0, 999.9)
-    d["smsXsZRangeLin"] = (0.0, 40.0, 40) #(zMin, zMax, nContours)
-    d["smsXsZRangeLog"] = (0.4, 40.0, 40)
+    #d["smsXRange"] = (400.0, 999.9) #(min, max)
+    #d["smsYRange"] = (100.0, 999.9)
+    d["smsXsZRangeLin"] = (0.0,    2.0, 20) #(zMin, zMax, nContours)
+    d["smsXsZRangeLog"] = (1.0e-2, 2.0, 20)
     d["smsEffZRange"]   = (0.0, 0.35, 35)
 
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
