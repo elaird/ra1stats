@@ -43,6 +43,7 @@ def switches() :
     #d["listOfTestPoints"] = [(29, 55, 1)]
     #d["listOfTestPoints"] = [(29, 25, 1)]
     #d["listOfTestPoints"] = [(181, 19, 1)]
+    #d["listOfTestPoints"] = [(21, 1, 1)]
     #d["xWhiteList"] = [29, 181]
     d["listOfTestPoints"] = []
 
