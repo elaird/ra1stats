@@ -498,6 +498,20 @@ def drawBenchmarks() :
     return out
         
 def makeValidationPlots() :
+    def categorized(histos = [], special = []) :
+    	first = []
+    	names = sorted([histo.GetName() for histo in histos])
+    	for item in special :
+    	    for name in names :
+    	        if item==name[:len(item)] :
+    	            first.append(name)
+    	
+    	for item in first :
+    	    names.remove(item)
+        return first+names
+    
+    model = conf.switches()["signalModel"]
+    
     inFile = mergedFile()
     f = r.TFile(inFile)
     fileName = inFile.replace(".root",".ps")
@@ -513,24 +527,14 @@ def makeValidationPlots() :
     canvas.Clear()
 
     logZ = ["xs"]
-    special = ["excluded", "upperLimit", "lowerLimit", "CLs", "CLb", "xs"]
+    names = categorized(histos = f.GetListOfKeys(), special = ["excluded", "upperLimit", "lowerLimit", "CLs", "CLb", "xs"])
+
     suppressed = []
-    
-    first = []
-    names = sorted([key.GetName() for key in f.GetListOfKeys()])
-    for item in special :
-        for name in names :
-            if item==name[:len(item)] :
-                first.append(name)
-
-    for item in first :
-        names.remove(item)
-
-    for name in first+names :
+    for name in names :
         h2 = threeToTwo(f.Get(name))
-        if name=="UpperLimit" :
+        if "upper" in name :
             printHoles(h2)
-            printMaxes(h2)
+            #printMaxes(h2)
         h2.SetStats(False)
         h2.SetTitle("%s%s"%(name, hs.histoTitle()))
         h2.Draw("colz")
@@ -542,15 +546,20 @@ def makeValidationPlots() :
         if "NLO_over_LO" in name :
             h2.SetMinimum(0.5)
             h2.SetMaximum(3.0)
+
         stuff = drawBenchmarks()
 
-        if "excluded" in name :
+        printSinglePage  = "tanBeta" in model and "excluded" in name
+        printSinglePage |= "tanBeta" not in model and "upperLimit" in name
+        
+        if printSinglePage :
             title = h2.GetTitle()
             h2.SetTitle("")
             eps = fileName.replace(".ps","_%s.eps"%name)
             super(utils.numberedCanvas, canvas).Print(eps)
             utils.epsToPdf(eps)
             h2.SetTitle(title)
+
         canvas.SetTickx()
         canvas.SetTicky()
         canvas.Print(fileName)
