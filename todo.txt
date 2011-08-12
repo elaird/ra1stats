@@ -21,6 +21,9 @@ CMSSM
 
 SMS
 remove hard-coded HT thresholds in specs and smsXsHisto()
+remove hard-coded restrictions in smsXsHisto()
+
+check signal efficiency merging
 
 technical
 ---------
