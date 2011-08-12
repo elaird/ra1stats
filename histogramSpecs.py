@@ -29,7 +29,20 @@ def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
     if htLower!=None :
         out["afterDir"] = "mSuGraScan_%d%s_scale%s"%(htLower, "_%d"%htUpper if htUpper else "",scale)
     return out
-     
+
+def smsHistoSpec(model = "", box = None, htLower = None, htUpper = None) :
+    assert model in ["T1", "T2"]
+    assert box in ["had", "muon"]
+    
+    scan = {"had":"v1", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
+    
+    out = {}
+    out["file"] = "/".join([scan["dir"], box, scan[box], box+".root"])
+    out["beforeDir"] = "smsScan_before"
+    if htLower!=None :
+        out["afterDir"] = "smsScan_%d%s"%(htLower, "_%d"%htUpper if htUpper else "")
+    return out
+
     #for model in ["T1", "T2"] :
     #    d[model] = {}
     #
@@ -84,8 +97,6 @@ def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
     #    d[model]["ht"]["300Dirs"]   = ["Reco_Bin_300_HT_350"]
     #    d[model]["ht"]["350Dirs"]   = ["Reco_Bin_350_HT_400", "Reco_Bin_400_HT_450"]
     #    d[model]["ht"]["450Dirs"]   = ["Reco_Bin_450_HT_500", "Reco_Bin_500_HT_Inf"]
-
-    return d[modelIn]
 
 def histoTitle() :
     if conf.switches()["signalModel"]=="T1" :
