@@ -273,7 +273,7 @@ class validationPlotter(object) :
         self.width2 = 3
 
         self.sm = r.kAzure+6
-        self.lm6 = r.kPink+7
+        self.sig = r.kPink+7
         self.ewk = r.kBlue+1
         self.qcd = r.kGreen+3
         
@@ -322,9 +322,9 @@ class validationPlotter(object) :
             # "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
             ]
         if not self.smOnly :
-            vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":r.kOrange, "style":1, "width":self.width1, "stack":"total"}]
+            vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif any(self.signalExampleToStack) :
-            vars += [{"example":self.signalExampleToStack[1], "box":"had", "desc":self.signalExampleToStack[0], "color":r.kPink+7, "style":1, "width":self.width1, "stack":"total"}]
+            vars += [{"example":self.signalExampleToStack[1], "box":"had", "desc":self.signalExampleToStack[0], "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
@@ -369,9 +369,9 @@ class validationPlotter(object) :
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if not self.printPages else {},
             ]
         if not self.smOnly :
-            vars += [{"var":"muonS",   "type":"function", "color":r.kOrange, "style":1, "width":self.width1, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
+            vars += [{"var":"muonS",   "type":"function", "color":self.sig, "style":1, "width":self.width1, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
         elif any(self.signalExampleToStack) :
-            vars += [{"example":self.signalExampleToStack[1], "box":"muon", "desc":self.signalExampleToStack[0], "color":r.kPink+7, "style":1, "width":self.width1, "stack":"total"}]
+            vars += [{"example":self.signalExampleToStack[1], "box":"muon", "desc":self.signalExampleToStack[0], "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
