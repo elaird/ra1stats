@@ -151,16 +151,13 @@ def smsXsHisto(model, cutFunc = None) :
     totalEff = None
     
     h = smsEffHisto(model = model, box = "had", scale = None, htLower = 875, htUpper = None)
-    #xsHisto = rxs.refXsHisto(model)
     for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetBinLowEdge(iBinX)
-        #xs = xsHisto.GetBinContent(xsHisto.FindBin(x))
+        x = h.GetXaxis().GetBinLowEdge(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
-            y = h.GetBinLowEdge(iBinY)
+            y = h.GetYaxis().GetBinLowEdge(iBinY)
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                z = h.GetBinLowEdge(iBinZ)
+                z = h.GetZaxis().GetBinLowEdge(iBinZ)
                 if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
-                #h.SetBinContent(iBinX, iBinY, iBinZ, xs)
                 h.SetBinContent(iBinX, iBinY, iBinZ, 1.0)
     return h
 
