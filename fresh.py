@@ -970,8 +970,11 @@ class foo(object) :
 
             s = self.wspace.set("poi"); assert s.getSize()==1
             m = s.first().getMax()
-            if   d["upperLimit"]>upperItCut*m : s.first().setMax(m*itFactor)
-            elif d["upperLimit"]<lowerItCut*m : s.first().setMax(m/itFactor)
+            if d["upperLimit"]>upperItCut*m :
+                s.first().setMax(m*itFactor)
+                s.first().setMin(m/itFactor)
+            elif d["upperLimit"]<lowerItCut*m :
+                s.first().setMax(m/itFactor)
             else : return d
         return d
     
