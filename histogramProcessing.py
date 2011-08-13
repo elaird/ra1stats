@@ -166,7 +166,8 @@ def smsEffHisto(model, box, scale, htLower, htUpper) :
     s = hs.smsHistoSpec(model = model, box = box, htLower = htLower, htUpper = htUpper)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    return out if not switches["fillHolesInInput"] else fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"])
+    if switches["fillHolesInInput" ] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"])
+    return out
 
 def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     def counts(dirs) :
