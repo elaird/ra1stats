@@ -58,23 +58,27 @@ def checkHistoBinning() :
                 print h,properties([h])
             assert False
 
-def fillHoles(h, nZeroNeighborsAllowed = 0) :
+def fillHoles(h, nZeroNeighborsAllowed = 0, cutFunc = None) :
     def avg(items) :
         out = sum(items)
         n = len(items) - items.count(0.0)
         if n : return out/n
         return None
 
-    for iBinX in range(2, h.GetNbinsX()) :
-        for iBinY in range(2, h.GetNbinsY()) :
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :                
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        x = h.GetXaxis().GetBinLowEdge(iBinX)
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            y = h.GetYaxis().GetBinLowEdge(iBinY)
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :
+                z = h.GetZaxis().GetBinLowEdge(iBinZ)
                 if h.GetBinContent(iBinX, iBinY, iBinZ) : continue
-                l = h.GetBinContent(iBinX-1, iBinY  , iBinZ)
-                r = h.GetBinContent(iBinX+1, iBinY  , iBinZ)
-                u = h.GetBinContent(iBinX  , iBinY+1, iBinZ)
-                d = h.GetBinContent(iBinX  , iBinY-1, iBinZ)
-                items = [l, r, u, d]
-                if items.count(0.0)>nZeroNeighborsAllowed : continue #require at least n neighbors
+                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
+                items = []
+                if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
+                if iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
+                if iBinY!=h.GetNbinsY() : items.append(h.GetBinContent(iBinX  , iBinY+1, iBinZ))
+                if iBinY!=1             : items.append(h.GetBinContent(iBinX  , iBinY-1, iBinZ))
+                if items.count(0.0)>nZeroNeighborsAllowed : continue
                 value = avg(items)
                 if value!=None :
                     h.SetBinContent(iBinX, iBinY, iBinZ, value)
@@ -100,7 +104,7 @@ def pdfUncHisto(spec) :
 def xsHisto() :
     s = conf.switches()
     if "tanBeta" in s["signalModel"] : return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
-    else : return smsXsHisto(s["signalModel"])
+    else : return smsXsHisto(s["signalModel"], cutFunc = s["smsCutFunc"])
 
 def effHisto(**args) :
     s = conf.switches()
@@ -143,7 +147,7 @@ def nloEffHisto(box, scale, htLower, htUpper) :
     out.Divide(nloXsHisto(scale)) #divide by total xs
     return out
 
-def smsXsHisto(model) :
+def smsXsHisto(model, cutFunc = None) :
     totalEff = None
     
     h = smsEffHisto(model = model, box = "had", scale = None, htLower = 875, htUpper = None)
@@ -153,17 +157,19 @@ def smsXsHisto(model) :
         #xs = xsHisto.GetBinContent(xsHisto.FindBin(x))
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = h.GetBinLowEdge(iBinY)
-            if y>x : continue
-            iBinZ = 1
-            #h.SetBinContent(iBinX, iBinY, iBinZ, xs)
-            h.SetBinContent(iBinX, iBinY, iBinZ, 1.0)
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :
+                z = h.GetBinLowEdge(iBinZ)
+                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
+                #h.SetBinContent(iBinX, iBinY, iBinZ, xs)
+                h.SetBinContent(iBinX, iBinY, iBinZ, 1.0)
     return h
 
 def smsEffHisto(model, box, scale, htLower, htUpper) :
+    switches = conf.switches()
     s = hs.smsHistoSpec(model = model, box = box, htLower = htLower, htUpper = htUpper)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    return out if not conf.switches()["fillHolesInInput"] else fillHoles(out, 2)
+    return out if not switches["fillHolesInInput"] else fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"])
 
 def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     def counts(dirs) :
@@ -366,7 +372,7 @@ def makeEfficiencyPlots(item = "sig10") :
     printOnce(c, fileName)
     printHoles(h2)
 
-def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
+def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = True, mDeltaFuncs = {}) :
     s = conf.switches()
     if not (s["signalModel"] in ["T1","T2"]) : return
     
@@ -395,17 +401,20 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit") :
 
     if not logZ :
         setRange("smsXsZRangeLin", ranges, h2, "Z")
-        printOnce(c, fileName)
-
-        stuff = rxs.drawGraphs(graphs)
+        if drawGraphs : stuff = rxs.drawGraphs(graphs)
         printOnce(c, fileName.replace(".eps", "_refXs.eps"))
     else :
         c.SetLogz()
         setRange("smsXsZRangeLog", ranges, h2, "Z")
-        printOnce(c, fileName.replace(".eps","_logZ.eps"))
-
-        stuff = rxs.drawGraphs(graphs)
-        printOnce(c, fileName.replace(".eps", "_refXs_logZ.eps"))
+        if drawGraphs :
+            stuff = rxs.drawGraphs(graphs)
+            fileName = fileName.replace(".eps", "_refXs.eps")
+        if mDeltaFuncs :
+            fileName = fileName.replace(".eps", "_mDelta.eps")
+            funcs = rxs.mDeltaFuncs(**mDeltaFuncs)
+            for func in funcs :
+                func.Draw("same")
+        printOnce(c, fileName.replace(".eps", "_logZ.eps"))
 
     printHoles(h2)
     
