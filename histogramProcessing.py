@@ -282,10 +282,12 @@ def threeToTwo(h3) :
     h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
     return h2
 
-def squareCanvas(margin = 0.18) :
+def squareCanvas(margin = 0.18, ticks = True) :
     canvas = r.TCanvas("canvas","canvas",2)
     for side in ["Left", "Right", "Top", "Bottom"] :
         getattr(canvas, "Set%sMargin"%side)(margin)
+    canvas.SetTickx(ticks)
+    canvas.SetTicky(ticks)
     return canvas
 
 def epsToPdf(fileName, tight = True) :
