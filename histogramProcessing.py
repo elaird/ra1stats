@@ -505,17 +505,21 @@ def drawBenchmarks() :
     return out
         
 def makeValidationPlots() :
-    def categorized(histos = [], special = []) :
-    	first = []
+    def categorized(histos = [], first = [], last = []) :
+    	start = []
+        end = []
     	names = sorted([histo.GetName() for histo in histos])
-    	for item in special :
-    	    for name in names :
+        for name in names :
+            for item in first :
     	        if item==name[:len(item)] :
-    	            first.append(name)
+    	            start.append(name)
+            for item in last :
+    	        if item==name[:len(item)] :
+    	            end.append(name)
     	
-    	for item in first :
+    	for item in list(set(start+end)) :
     	    names.remove(item)
-        return first+names
+        return start+names+end
     
     sms = "tanBeta" not in conf.switches()["signalModel"]
     
@@ -534,7 +538,7 @@ def makeValidationPlots() :
     canvas.Clear()
 
     logZ = ["xs"]
-    names = categorized(histos = f.GetListOfKeys(), special = ["excluded", "upperLimit", "lowerLimit", "CLs", "CLb", "xs"])
+    names = categorized(histos = f.GetListOfKeys(), first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
 
     suppressed = []
     for name in names :
