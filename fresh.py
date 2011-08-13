@@ -960,7 +960,22 @@ class foo(object) :
     def profile(self) :
         profilePlots(self.data, self.modelConfig, self.note(), self.smOnly(), self.qcdSearch)
 
-    def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False) :
+    def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
+                 nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
+        
+        for i in range(nIterationsMax) :
+            d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
+            d["nIterations"] = i+1
+            if nIterationsMax==1 : return d
+
+            s = self.wspace.set("poi"); assert s.getSize()==1
+            m = s.first().getMax()
+            if   d["upperLimit"]>upperItCut*m : s.first().setMax(m*itFactor)
+            elif d["upperLimit"]<lowerItCut*m : s.first().setMax(m/itFactor)
+            else : return d
+        return d
+    
+    def intervalSimple(self, cl = None, method = "", makePlots = None) :
         if self.qcdSearch :
             return plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
         elif method=="profileLikelihood" :
