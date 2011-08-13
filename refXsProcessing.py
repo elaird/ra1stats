@@ -19,6 +19,19 @@ def refXsHisto(model) :
     out.Scale(hs["factor"])
     return out
 
+def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None) :
+    out = []
+    for iStep in range(1+nSteps) :
+        mDelta = mDeltaMin + (mDeltaMax - mDeltaMin)*(iStep+0.0)/nSteps
+        out.append( r.TF1("ml_vs_mg_%d"%iStep, "sqrt(x*x-x*(%g))"%mDelta, mDelta, mGMax) )
+
+    for f in out :
+        f.SetLineWidth(1)
+        f.SetNpx(1000)
+        f.SetLineColor(r.kBlack)
+
+    return out
+        
 def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
@@ -159,4 +172,3 @@ def drawGraphs(graphs) :
         if g.GetN() : g.Draw("lsame")
     legend.Draw("same")
     return legend,graphs
-
