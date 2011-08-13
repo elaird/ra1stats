@@ -94,7 +94,7 @@ def onePoint(switches = None, data = None, point = None) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
         elif not switches["computeExpectedLimit"] :
-            results = f.interval(cl = cl, method = switches["method"])
+            results = f.interval(cl = cl, method = switches["method"], nIterationsMax = switches["nIterationsMax"])
             for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
             out["excluded%g"%cl2] = (compare(results["upperLimit"], 1.0), "is (%g%% upper limit on XS factor)<1?"%cl2)
         else :
