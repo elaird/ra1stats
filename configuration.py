@@ -33,7 +33,7 @@ def switches() :
 
     d["testStatistic"] = 3
     d["fillHolesInInput"] = True
-    d["smsCutFunc"] = lambda iX,x,iY,y,iZ,z:(y<=x-49.9 and iZ==1)
+    d["smsCutFunc"] = lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1)
     
     d["nlo"] = True
     d["nloToLoRatios"] = False
@@ -68,12 +68,12 @@ def data() :
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta10", "tanBeta40"]
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
-    
-    d["lateDivision"] = False
+
+    d["nIterationsMax"] = 1
     if len(d["signalModel"])==2 :
         d["nlo"] = False
-        d["lateDivision"] = True
-
+        d["nIterationsMax"] = 10
+        
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
     else :
