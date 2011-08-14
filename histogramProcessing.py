@@ -14,6 +14,8 @@ def setupRoot() :
     #r.gStyle.SetPadTickX(True)
     #r.gStyle.SetPadTickY(True)
 
+setupRoot()
+
 def ratio(file, numDir, numHisto, denDir, denHisto) :
     f = r.TFile(file)
     assert not f.IsZombie(), file
@@ -258,16 +260,10 @@ def fullPoints() :
                 out.append( (iBinX, iBinY, iBinZ) )
     return out
 
-def cachedPoints() :
+def points() :
     p = conf.switches()["listOfTestPoints"]
     if p : return p
     return fullPoints()
-
-def points() :
-    return _points
-
-_points = cachedPoints()
-setupRoot()
 
 def threeToTwo(h3) :
     name = h3.GetName()

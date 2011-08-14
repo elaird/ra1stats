@@ -22,13 +22,14 @@ def jobCmds(nSlices = None) :
 
     pwd = os.environ["PWD"]
 
-    if nSlices<=0 : nSlices = len(hp.points())
+    points = hp.points()
+    if nSlices<=0 : nSlices = len(points)
     out = []
 
     strings = conf.stringsNoArgs()
     switches = conf.switches()
     for iSlice in range(nSlices) :
-        args = [ "%d %d %d"%point for point in hp.points()[iSlice::nSlices] ]
+        args = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
         s += " %s"%switches["envScript"]                 #2
