@@ -569,23 +569,29 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
     return out
 
 def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
-        plusMinus = {}, note = "", makePlots = None, nWorkers = None) :
+        plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints = 1, poiMin = 1.0, poiMax = 1.0) :
     assert not smOnly
 
-    npoints = 1
-    poimin = 1.0
-    poimax = 1.0
-    
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
     result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
                          nworkers = nWorkers, ntoys = nToys, type = calculatorType, testStatType = testStatType,
-                         npoints = npoints, poimin = poimin, poimax = poimax, debug = False)
+                         npoints = nPoints, poimin = poiMin, poimax = poiMax, debug = False)
 
     #r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
     #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
 
-    iPoint = result.FindIndex(1.0)
+    if nPoints==1 and poiMin==poiMax :
+        args = {}
+        for item in ["testStatType", "plusMinus", "note", "makePlots"] :
+            args[item] = eval(item)
+        args["result"] = result
+        args["poiPoint"] = poiMin
+        return clsOnePoint(args)
+
+def clsOnePoint(args) :
+    result = args["result"]
+    iPoint = result.FindIndex(args["poiPoint"])
     if iPoint<0 :
         print "WARNING: No index for POI value 1.0.  Will use 0."
         iPoint = 0
@@ -597,7 +603,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     out["CLsError"] = result.CLsError(iPoint)
 
     values = result.GetExpectedPValueDist(iPoint).GetSamplingDistribution()
-    q,hist = quantiles(values, plusMinus, histoName = "expected_CLs_distribution",
+    q,hist = quantiles(values, args["plusMinus"], histoName = "expected_CLs_distribution",
                        histoTitle = "expected CLs distribution;CL_{s};toys / bin",
                        histoBins = (205, -1.0, 1.05), cutZero = False)
 
@@ -605,8 +611,8 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         assert not (key in out),"%s %s"%(key, str(out))
         out[key] = value
 
-    if makePlots :
-        ps = "cls_%s_TS%d.ps"%(note, testStatType)
+    if args["makePlots"] :
+        ps = "cls_%s_TS%d.ps"%(args["note"], args["testStatType"])
         canvas = r.TCanvas()
         canvas.Print(ps+"[")
         
