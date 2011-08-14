@@ -150,8 +150,6 @@ def nloEffHisto(box, scale, htLower, htUpper) :
     return out
 
 def smsXsHisto(model, cutFunc = None) :
-    totalEff = None
-    
     h = smsEffHisto(model = model, box = "had", scale = None, htLower = 875, htUpper = None)
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = h.GetXaxis().GetBinLowEdge(iBinX)
