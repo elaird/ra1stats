@@ -372,7 +372,7 @@ def makeEfficiencyPlots(item = "sig10") :
     printOnce(c, fileName)
     printHoles(h2)
 
-def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = True, mDeltaFuncs = {}) :
+def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False) :
     s = conf.switches()
     if not (s["signalModel"] in ["T1","T2"]) : return
     
@@ -395,10 +395,22 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     ranges = hs.smsRanges()
     setRange("smsXRange", ranges, h2, "X")
     setRange("smsYRange", ranges, h2, "Y")
-        
+    
     h2.Draw("colz")
     graphs = rxs.graphs(h2, s["signalModel"], "LowEdge")
 
+    if simpleExcl :
+        ps = fileName.replace(".eps","_simpleExcl.ps")
+        c.Print(ps+"[")
+        for d in graphs :
+            d["histo"].Draw("colz")
+            d["histo"].SetTitle(d["label"])
+            d["graph"].Draw("psame")
+            c.Print(ps)
+        c.Print(ps+"]")
+        utils.ps2pdf(ps)
+        return
+    
     if not logZ :
         setRange("smsXsZRangeLin", ranges, h2, "Z")
         if drawGraphs : stuff = rxs.drawGraphs(graphs)
