@@ -4,9 +4,9 @@ import os
 ############################################
 def opts() :
     parser = OptionParser("usage: %prog [options]")
-    parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N<=0 means max splitting)")
+    parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N=0 means max splitting)")
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
-    parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "profile merge job output")
+    parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "merge job output")
     parser.add_option("--efficiency", dest = "efficiency", default = False, action  = "store_true", help = "make efficiency plots")
     parser.add_option("--validation", dest = "validation", default = False, action  = "store_true", help = "make validation plots")
     parser.add_option("--output",     dest = "output",     default = False, action  = "store_true", help = "write stdout&stderr to disk rather than to /dev/null")
@@ -21,9 +21,8 @@ def jobCmds(nSlices = None) :
         return "%s_%d.log"%(conf.stringsNoArgs()["logStem"], iSlice)
 
     pwd = os.environ["PWD"]
-
     points = hp.points()
-    if nSlices<=0 : nSlices = len(points)
+    if not nSlices : nSlices = len(points)
     out = []
 
     strings = conf.stringsNoArgs()
@@ -63,7 +62,7 @@ mkdirs()
 if options.batch : batch(int(options.batch))
 if options.local : local(int(options.local))
 if options.merge : hp.mergePickledFiles()
-    
+
 if options.merge or options.validation :
     hp.makeValidationPlots()
 if options.efficiency :
