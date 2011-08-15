@@ -58,10 +58,10 @@ def printDict(signal) :
         print out+","
     print "}"
 
-def effSum(signal = None) :
+def effSum(signal = None, samples = []) :
     total = 0.0
     for key,value in signal.iteritems() :
-        if "eff" not in key : continue
+        if not any([key=="eff"+sample for sample in samples]) : continue
         total += sum(value)
     return total
         
@@ -79,8 +79,8 @@ def onePoint(switches = None, data = None, point = None) :
 
     printDict(signal)
     out = stuffVars(switches, binsMerged, signal)
-    out["effSum"] = (effSum(signal), "effSum")
-    if out["effSum"] : results(switches = switches, data = data, signal = signal, out = out)
+    out["effHadSum"] = (effSum(signal, samples = ["Had"]), "effHadSum")
+    if out["effHadSum"] : results(switches = switches, data = data, signal = signal, out = out)
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
 
 def results(switches = None, data = None, signal = None, out = None) :
