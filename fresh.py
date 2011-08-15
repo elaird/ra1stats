@@ -289,7 +289,7 @@ def muonTerms(w, inputData, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def signalTerms(w, inputData, signalDict) :
+def signalTerms(w, inputData, signalDict, rhoSignalMin) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", signalDict["xs"]))
@@ -297,7 +297,7 @@ def signalTerms(w, inputData, signalDict) :
 
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
     #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0))
-    wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.0, 2.0))
+    wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, rhoSignalMin, 2.0))
     #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.8, 1.2))
     wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", inputData.fixedParameters()["sigmaLumiLike"]))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
@@ -323,7 +323,7 @@ def multi(w, variables, inputData) :
     return out
 
 def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, nFZinv = None,
-                    qcdSearch = None, signal = {}, smOnly = None, simpleOneBin = {},
+                    qcdSearch = None, signal = {}, smOnly = None, simpleOneBin = {}, rhoSignalMin = 0.0,
                     includeHadTerms = None, hadControlSamples = [],
                     includeMuonTerms = None, includePhotTerms = None, includeMumuTerms = None) :
     terms = []
@@ -335,7 +335,7 @@ def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, n
     w = wspace
 
     if not smOnly :
-        signalTerms(w, inputData, signal)
+        signalTerms(w, inputData, signal, rhoSignalMin)
         terms.append("signalTerms")
         obs.append("oneRhoSignal")
         nuis.append("rhoSignal")
@@ -914,9 +914,9 @@ def note(REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, ignoreSignal
 
 class foo(object) :
     def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, qcdSearch = False, signal = {}, signalExampleToStack = ("", {}), trace = False,
-                 simpleOneBin = {}, hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False) :
+                 simpleOneBin = {}, hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False, rhoSignalMin = 0.0) :
         for item in ["inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "signalExampleToStack",
-                     "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
+                     "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms", "rhoSignalMin"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -926,7 +926,7 @@ class foo(object) :
         self.wspace = r.RooWorkspace("Workspace")
 
         args = {}
-        for item in ["wspace", "inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "simpleOneBin", "hadControlSamples"] :
+        for item in ["wspace", "inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "simpleOneBin", "hadControlSamples", "rhoSignalMin"] :
             args[item] = getattr(self, item)
         for item in ["had", "muon", "phot", "mumu"] :
             args["include%s%sTerms"%(item[0].capitalize(),item[1:])] = getattr(self,"%sTerms"%item)

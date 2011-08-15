@@ -95,7 +95,8 @@ def results(switches = None, data = None, signal = None, out = None) :
         cl2 = 100*cl
         f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
                       simpleOneBin = switches["simpleOneBin"], hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
-                      muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
+                      muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"],
+                      rhoSignalMin = switches["rhoSignalMin"])
 
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"],
