@@ -32,10 +32,9 @@ def switches() :
     d["qcdSearch"] = False
 
     d["testStatistic"] = 3
-    d["plSeedForCLs"] = False
 
-    d["fillHolesInInput"] = True
-    d["fillHolesInOutput"] = True
+    d["fillHolesInInput"] = False
+    d["fillHolesInOutput"] = False
     d["smsCutFunc"] = lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1)
     
     d["nlo"] = True
@@ -73,9 +72,12 @@ def checkAndAdjust(d) :
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
 
     d["nIterationsMax"] = 1
+    d["plSeedForCLs"] = False
+    
     if len(d["signalModel"])==2 :
         d["nlo"] = False
         d["nIterationsMax"] = 10
+        d["plSeedForCLs"] = True
         
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
