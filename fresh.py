@@ -598,7 +598,12 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         args["poiPoint"] = poiMin
         args["out"] = out
         clsOnePoint(args)
-
+    else :
+        out["UpperLimit"] = result.UpperLimit()
+        out["UpperLimitError"] = result.UpperLimitEstimatedError()
+        out["LowerLimit"] = result.LowerLimit()
+        out["LowerLimitError"] = result.LowerLimitEstimatedError()
+        
     return out
 
 def clsOnePoint(args) :
@@ -998,10 +1003,18 @@ class foo(object) :
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
-    def cls(self, cl = 0.95, nToys = 300, calculatorType = 0, testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1) :
+    def cls(self, cl = 0.95, nToys = 300, calculatorType = 0, testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1,
+            plSeed = False, plNIterationsMax = None) :
+        args = {}
+        if plSeed :
+            plUpperLimit = self.interval(cl = cl, nIterationsMax = plNIterationsMax)["upperLimit"]
+            args["nPoints"] = 3
+            args["poiMin"] = plUpperLimit*0.5
+            args["poiMax"] = plUpperLimit*1.5
+            
         return cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
                    cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
-                   plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots)
+                   plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
 
     def clsCustom(self, nToys = 200, testStatType = 3) :
         return clsCustom(self.wspace, self.data, nToys = nToys, testStatType = testStatType, smOnly = self.smOnly(), note = self.note())
