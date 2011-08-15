@@ -117,7 +117,7 @@ def pdfUncHisto(spec) :
 def xsHisto() :
     s = conf.switches()
     if "tanBeta" in s["signalModel"] : return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
-    else : return smsXsHisto(s["signalModel"], cutFunc = s["smsCutFunc"])
+    else : return smsXsHisto(s["signalModel"], cutFunc = s["smsCutFunc"][s["signalModel"]])
 
 def nEventsInHisto() :
     s = conf.switches()
@@ -186,7 +186,7 @@ def smsEffHisto(model, box, scale, htLower, htUpper) :
     s = hs.smsHistoSpec(model = model, box = box, htLower = htLower, htUpper = htUpper)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    if switches["fillHolesInInput"] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"])
+    if switches["fillHolesInInput"] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"][switches["signalModel"]])
     return out
 
 def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
@@ -400,7 +400,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 2, cutFunc = s["smsCutFunc"])
+    if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 2, cutFunc = s["smsCutFunc"][s["signalModel"]])
 
     assert len(s["CL"])==1
     adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0]))
@@ -588,7 +588,7 @@ def makeValidationPlots() :
             continue
         canvas.SetLogz(name in logZ)
         if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
-        if name=="nEventsHad" and name in logZ : h2.SetMinimum(1.0e-1)
+        if name=="nEventsHad" and name in logZ : h2.SetMinimum(0.9)
         if "NLO_over_LO" in name :
             h2.SetMinimum(0.5)
             h2.SetMaximum(3.0)
