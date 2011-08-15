@@ -34,7 +34,7 @@ def switches() :
     d["testStatistic"] = 3
 
     d["fillHolesInInput"] = False
-    d["fillHolesInOutput"] = False
+    d["fillHolesInOutput"] = True
     d["smsCutFunc"] = lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1)
     
     d["nlo"] = True
@@ -73,11 +73,15 @@ def checkAndAdjust(d) :
 
     d["nIterationsMax"] = 1
     d["plSeedForCLs"] = False
+    d["minEventsIn"] = None
+    d["maxEventsIn"] = None
     
     if len(d["signalModel"])==2 :
         d["nlo"] = False
         d["nIterationsMax"] = 10
         d["plSeedForCLs"] = True
+        d["minEventsIn"] =  9900.
+        d["maxEventsIn"] = 10100.
         
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
