@@ -28,6 +28,17 @@ def ratio(file, numDir, numHisto, denDir, denHisto) :
     f.Close()
     return h
 
+def oneHisto(file, dir, name) :
+    f = r.TFile(file)
+    assert not f.IsZombie(), file
+        
+    hOld = f.Get("%s/%s"%(dir, name))
+    assert hOld,"%s/%s"%(dir, name)
+    h = hOld.Clone("%s_clone"%hOld.GetName())
+    h.SetDirectory(0)
+    f.Close()
+    return h
+
 def checkHistoBinning() :
     def axisStuff(axis) :
         return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
@@ -108,6 +119,11 @@ def xsHisto() :
     if "tanBeta" in s["signalModel"] : return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
     else : return smsXsHisto(s["signalModel"], cutFunc = s["smsCutFunc"])
 
+def nEventsInHisto() :
+    s = conf.switches()
+    if "tanBeta" in s["signalModel"] : assert False,"Implement this."
+    else : return smsNEventsInHisto(s["signalModel"])
+
 def effHisto(**args) :
     s = conf.switches()
     if "tanBeta" in s["signalModel"] : return nloEffHisto(**args) if conf.switches()["nlo"] else loEffHisto(**args)
@@ -160,6 +176,10 @@ def smsXsHisto(model, cutFunc = None) :
                 if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
                 h.SetBinContent(iBinX, iBinY, iBinZ, 1.0)
     return h
+
+def smsNEventsInHisto(model) :
+    s = hs.smsHistoSpec(model = model, box = "had", htLower = 875, htUpper = None)
+    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 def smsEffHisto(model, box, scale, htLower, htUpper) :
     switches = conf.switches()
@@ -533,8 +553,9 @@ def makeValidationPlots() :
     	for item in list(set(start+end)) :
     	    names.remove(item)
         return start+names+end
-    
-    sms = "tanBeta" not in conf.switches()["signalModel"]
+
+    switches = conf.switches()
+    sms = "tanBeta" not in switches["signalModel"]
     
     inFile = mergedFile()
     f = r.TFile(inFile)
@@ -550,7 +571,7 @@ def makeValidationPlots() :
     canvas.Print(fileName)
     canvas.Clear()
 
-    logZ = ["xs"]
+    logZ = ["xs", "nEventsHad"]
     names = categorized(histos = f.GetListOfKeys(), first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
 
     suppressed = []
@@ -567,6 +588,7 @@ def makeValidationPlots() :
             continue
         canvas.SetLogz(name in logZ)
         if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
+        if name=="nEventsHad" and name in logZ : h2.SetMinimum(1.0e-1)
         if "NLO_over_LO" in name :
             h2.SetMinimum(0.5)
             h2.SetMaximum(3.0)
@@ -588,10 +610,15 @@ def makeValidationPlots() :
 
         canvas.SetTickx()
         canvas.SetTicky()
+
         canvas.Print(fileName)
+        if "nEventsIn" in name :
+            h2.SetMinimum(switches["minEventsIn"])
+            h2.SetMaximum(switches["maxEventsIn"])
+            canvas.Print(fileName)
 
     #effMu/effHad
-    if conf.switches()["effRatioPlots"] :
+    if switches["effRatioPlots"] :
         for name in names :
             num = threeToTwo(f.Get(name))
             if name[:7]!="effmuon" : continue
