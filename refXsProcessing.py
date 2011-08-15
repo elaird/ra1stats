@@ -1,3 +1,4 @@
+import collections
 import ROOT as r
 
 def histoSpec(model) :
@@ -78,35 +79,41 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
+    assert not pruneAndExtrapolate,"Implement this."
     refHisto = refXsHisto(model)
 
-    out = r.TGraph()
-    out.SetName("%s_graph"%h.GetName())
-    index = 0
+    d = collections.defaultdict(list)
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
         xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
-        nHit = 0
-        lastHit = None
+        if not xs : continue
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
             xsLimit     = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
-            if (not fail(xs, xsLimit)) and (fail(xs, xsLimitPrev) or fail(xs, xsLimitNext)) :
-                lastHit = (x, y)
-                out.SetPoint(index, *lastHit)
-                index +=1
-                nHit +=1
+            transition = (fail(xs, xsLimitPrev) or fail(xs, xsLimitNext)) and not fail(xs, xsLimit)
+            if transition : d[x].append(y)
+        if len(d[x])==1 :
+            print "INFO: %s (factor %g) hit iBinX = %d (x = %g), y = %g repeated"%(h.GetName(), factor, iBinX, x, d[x][0])
+            d[x].append(d[x][0])
+            
+    l1 = []
+    l2 = []
+    for x in sorted(d.keys()) :
+        values = sorted(d[x])
+        values.reverse()
+        l1+= [(x,y) for y in values[:-1]]
+        l2+= [(x,y) for y in values[-1:]]
+    l2.reverse()
 
-        if nHit==1 : #if "top" and "bottom" bin are the same
-            out.SetPoint(index, *lastHit)
-            index += 1
-            print "INFO: %s (factor %g) hit iBinX = %d, nHit = %d, lastHit = %s repeated"%(out.GetName(), factor, iBinX, nHit, str(lastHit))
+    out = r.TGraph()
+    out.SetName("%s_graph"%h.GetName())
+    for i,t in enumerate(l1+l2) :
+        out.SetPoint(i,*t)
 
-    out = reordered(out, factor)
-    if pruneAndExtrapolate :
-        out = extrapolatedGraph(h, out, yValueToPrune)
+    #if pruneAndExtrapolate :
+    #    out = extrapolatedGraph(h, out, yValueToPrune)
     return out
 
 def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge") :
@@ -172,3 +179,38 @@ def drawGraphs(graphs) :
         if g.GetN() : g.Draw("lsame")
     legend.Draw("same")
     return legend,graphs
+
+def excludedGraphOld(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80) :
+    def fail(xs, xsLimit) :
+        return xs<=xsLimit or not xsLimit
+
+    refHisto = refXsHisto(model)
+
+    out = r.TGraph()
+    out.SetName("%s_graph"%h.GetName())
+    index = 0
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
+        xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
+        nHit = 0
+        lastHit = None
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
+            xsLimit     = h.GetBinContent(iBinX, iBinY)
+            xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
+            xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
+            if (not fail(xs, xsLimit)) and (fail(xs, xsLimitPrev) or fail(xs, xsLimitNext)) :
+                lastHit = (x, y)
+                out.SetPoint(index, *lastHit)
+                index +=1
+                nHit +=1
+
+        if nHit==1 : #if "top" and "bottom" bin are the same
+            out.SetPoint(index, *lastHit)
+            index += 1
+            print "INFO: %s (factor %g) hit iBinX = %d, nHit = %d, lastHit = %s repeated"%(out.GetName(), factor, iBinX, nHit, str(lastHit))
+
+    out = reordered(out, factor)
+    if pruneAndExtrapolate :
+        out = extrapolatedGraph(h, out, yValueToPrune)
+    return out
