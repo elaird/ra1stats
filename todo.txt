@@ -20,7 +20,7 @@ CMSSM
 6 lognormal vs. gaussian
 
 SMS
-remove hard-coded HT thresholds in smsHistoSpec() and smsXsHisto()
+remove hard-coded HT thresholds in smsHistoSpec(), smsXsHisto(), smsNeventsInHisto()
 
 check signal efficiency merging
 
