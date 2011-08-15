@@ -166,7 +166,7 @@ def smsEffHisto(model, box, scale, htLower, htUpper) :
     s = hs.smsHistoSpec(model = model, box = box, htLower = htLower, htUpper = htUpper)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    if switches["fillHolesInInput" ] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"])
+    if switches["fillHolesInInput"] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"])
     return out
 
 def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
@@ -225,7 +225,11 @@ def mergePickledFiles() :
             d = cPickle.load(inFile)
             inFile.close()
             for key,value in d.iteritems() :
-                content,zTitle = value
+                if type(value) is tuple :
+                    content,zTitle = value
+                else :
+                    content = value
+                    zTitle = ""
                 if key not in histos :
                     histos[key] = example.Clone(key)
                     histos[key].Reset()
@@ -376,7 +380,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    #if s["fillHolesInXsLimitPlot"] : h2 = fillHoles(h2, 1)
+    if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 2, cutFunc = s["smsCutFunc"])
 
     assert len(s["CL"])==1
     adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0]))
