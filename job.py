@@ -57,6 +57,13 @@ def printDict(signal) :
             out += "[%s]"%(", ".join(["%s"%str(item) for item in value]))
         print out+","
     print "}"
+
+def effSum(signal = None) :
+    total = 0.0
+    for key,value in signal.iteritems() :
+        if "eff" not in key : continue
+        total += sum(value)
+    return total
         
 def onePoint(switches = None, data = None, point = None) :
     binsInput = data.htBinLowerEdgesInput()
@@ -72,7 +79,11 @@ def onePoint(switches = None, data = None, point = None) :
 
     printDict(signal)
     out = stuffVars(switches, binsMerged, signal)
+    out["effSum"] = (effSum(signal), "effSum")
+    if out["effSum"] : results(switches = switches, data = data, signal = signal, out = out)
+    writeNumbers(conf.strings(*point)["pickledFileName"], out)
 
+def results(switches = None, data = None, signal = None, out = None) :
     for cl in switches["CL"] :
         cl2 = 100*cl
         f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
@@ -103,7 +114,7 @@ def onePoint(switches = None, data = None, point = None) :
                 out["%s%g"%(key, cl2)] = (value, description(key, cl2))
                 out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
             out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
-    writeNumbers(conf.strings(*point)["pickledFileName"], out)
+    return
 
 def compare(item, threshold) :
     return 2.0*(item<threshold)-1.0
