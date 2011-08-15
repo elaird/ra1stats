@@ -390,6 +390,13 @@ def makeEfficiencyPlots(item = "sig10") :
     printOnce(c, fileName)
     printHoles(h2)
 
+def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1.3) :
+    latex = r.TLatex()
+    latex.SetTextSize(factor*latex.GetTextSize())
+    latex.SetNDC()
+    latex.DrawLatex(x, y, text)
+    return latex
+
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False) :
     s = conf.switches()
     if not (s["signalModel"] in ["T1","T2"]) : return
@@ -428,11 +435,12 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
         c.Print(ps+"]")
         utils.ps2pdf(ps)
         return
-    
+
+    printName = fileName
     if not logZ :
         setRange("smsXsZRangeLin", ranges, h2, "Z")
         if drawGraphs : stuff = rxs.drawGraphs(graphs)
-        printOnce(c, fileName.replace(".eps", "_refXs.eps"))
+        printName = fileName.replace(".eps", "_refXs.eps")
     else :
         c.SetLogz()
         setRange("smsXsZRangeLog", ranges, h2, "Z")
@@ -444,8 +452,12 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
             funcs = rxs.mDeltaFuncs(**mDeltaFuncs)
             for func in funcs :
                 func.Draw("same")
-        printOnce(c, fileName.replace(".eps", "_logZ.eps"))
+        printName = fileName.replace(".eps", "_logZ.eps")
 
+    s2 = stamp(text = "#alpha_{T}",      x = 0.22, y = 0.55, factor = 1.3)
+    s3 = stamp(text = "PL, 1.1 fb^{-1}", x = 0.22, y = 0.62, factor = 0.7)
+    
+    printOnce(c, printName)
     printHoles(h2)
     
 def makeEfficiencyUncertaintyPlots() :
