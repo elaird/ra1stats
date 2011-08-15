@@ -33,6 +33,7 @@ def switches() :
 
     d["testStatistic"] = 3
     d["fillHolesInInput"] = True
+    d["fillHolesInOutput"] = True
     d["smsCutFunc"] = lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1)
     
     d["nlo"] = True
