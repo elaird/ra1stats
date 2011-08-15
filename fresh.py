@@ -581,13 +581,25 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     #r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
     #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
 
+    out = {}
+    for iPoint in range(nPoints) :
+        s = "" if not iPoint else "_%d"%iPoint
+        out["CLb%s"     %s] = result.CLb(iPoint)
+        out["CLs+b%s"   %s] = result.CLsplusb(iPoint)
+        out["CLs%s"     %s] = result.CLs(iPoint)
+        out["CLsError%s"%s] = result.CLsError(iPoint)
+        out["PoiValue%s"%s] = result.GetXValue(iPoint)
+
     if nPoints==1 and poiMin==poiMax :
         args = {}
         for item in ["testStatType", "plusMinus", "note", "makePlots"] :
             args[item] = eval(item)
         args["result"] = result
         args["poiPoint"] = poiMin
-        return clsOnePoint(args)
+        args["out"] = out
+        clsOnePoint(args)
+
+    return out
 
 def clsOnePoint(args) :
     result = args["result"]
@@ -596,20 +608,14 @@ def clsOnePoint(args) :
         print "WARNING: No index for POI value 1.0.  Will use 0."
         iPoint = 0
 
-    out = {}
-    out["CLb"] = result.CLb(iPoint)
-    out["CLs+b"] = result.CLsplusb(iPoint)
-    out["CLs"] = result.CLs(iPoint)
-    out["CLsError"] = result.CLsError(iPoint)
-
     values = result.GetExpectedPValueDist(iPoint).GetSamplingDistribution()
     q,hist = quantiles(values, args["plusMinus"], histoName = "expected_CLs_distribution",
                        histoTitle = "expected CLs distribution;CL_{s};toys / bin",
                        histoBins = (205, -1.0, 1.05), cutZero = False)
 
     for key,value in q.iteritems() :
-        assert not (key in out),"%s %s"%(key, str(out))
-        out[key] = value
+        assert not (key in args["out"]),"%s %s"%(key, str(args["out"]))
+        args["out"][key] = value
 
     if args["makePlots"] :
         ps = "cls_%s_TS%d.ps"%(args["note"], args["testStatType"])
@@ -637,7 +643,7 @@ def clsOnePoint(args) :
         
         canvas.Print(ps+"]")
         utils.ps2pdf(ps)
-    return out
+    return
 
 def profilePlots(dataset, modelconfig, note, smOnly, qcdSearch) :
     assert (not smOnly) or qcdSearch
