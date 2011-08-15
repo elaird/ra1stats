@@ -46,13 +46,18 @@ t1_600_100 = {"xs":1.0,
               "effMuon":[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
               "effHad":[0.0016, 0.0033, 0.0142, 0.0283, 0.0341, 0.0210, 0.0099, 0.0075]}
 
+t2_39_7 = {"xs":1.0,
+           "effMuon":[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+           "effHad":[0.0006, 0.0015, 0.0058, 0.0129, 0.0252, 0.0399, 0.0494, 0.2123]}
+
 f = fresh.foo(inputData = data2011(),
               REwk = ["", "Linear", "Constant"][2],
               RQcd = ["Zero", "FallingExp", "FallingExpA"][1],
               nFZinv = ["All", "One", "Two"][0],
               #qcdSearch = True,
-              #signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100][-1],
+              #signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7][-1],
               #signalExampleToStack = ("T1 m_{gluino} = 600 GeV, m_{LSP} = 100 GeV, xs = %g pb"%t1_600_100["xs"], t1_600_100),
+              #signalExampleToStack = ("T2 39 7, xs = %g pb"%t2_39_7["xs"], t2_39_7),
               signalExampleToStack = ("LM6 (LO)", lm6_2011),
               #signalExampleToStack = ("m0= 280 GeV, m12=240 GeV (NLO)", p_29_25),
               #signalExampleToStack = ("m0= 280 GeV, m12=540 GeV (NLO)", p_29_55),
