@@ -71,6 +71,7 @@ def onePoint(switches = None, data = None, point = None) :
     
     signal = {}
     signal["xs"] = hp.xsHisto().GetBinContent(*point)
+    
     if switches["nloToLoRatios"] :    
         signal["xs_NLO_over_LO"] = signal["xs"]/hp.loXsHisto().GetBinContent(*point) if hp.loXsHisto().GetBinContent(*point) else 0.0
 
@@ -80,7 +81,13 @@ def onePoint(switches = None, data = None, point = None) :
     printDict(signal)
     out = stuffVars(switches, binsMerged, signal)
     out["effHadSum"] = (effSum(signal, samples = ["Had"]), "effHadSum")
-    if out["effHadSum"] : results(switches = switches, data = data, signal = signal, out = out)
+    out["nEventsIn"] = (hp.nEventsInHisto().GetBinContent(*point), "N events in")
+    
+    eff = out["effHadSum"][0]
+    nEventsIn = out["nEventsIn"][0]
+    out["nEventsHad"] = (eff*nEventsIn, "N events after selection (all bins summed)")
+    if eff and switches["minEventsIn"]<=nEventsIn and nEventsIn<=switches["maxEventsIn"] :
+        results(switches = switches, data = data, signal = signal, out = out)
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
 
 def results(switches = None, data = None, signal = None, out = None) :
