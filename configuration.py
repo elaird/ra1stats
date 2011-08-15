@@ -35,7 +35,8 @@ def switches() :
 
     d["fillHolesInInput"] = False
     d["fillHolesInOutput"] = True
-    d["smsCutFunc"] = lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1)
+    d["smsCutFunc"] = {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
+                       "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)}
     
     d["nlo"] = True
     d["nloToLoRatios"] = False
@@ -48,6 +49,7 @@ def switches() :
     #d["listOfTestPoints"] = [(29, 25, 1)]
     #d["listOfTestPoints"] = [(181, 19, 1)]
     #d["listOfTestPoints"] = [(21, 1, 1)]
+    #d["listOfTestPoints"] = [(39, 7, 1)]
     #d["xWhiteList"] = [29, 181]
     d["listOfTestPoints"] = []
 
@@ -71,6 +73,7 @@ def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta10", "tanBeta40"]
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
 
+    d["rhoSignalMin"] = 0.0
     d["nIterationsMax"] = 1
     d["plSeedForCLs"] = False
     d["minEventsIn"] = None
@@ -78,6 +81,7 @@ def checkAndAdjust(d) :
     
     if len(d["signalModel"])==2 :
         d["nlo"] = False
+        d["rhoSignalMin"] = 0.1
         d["nIterationsMax"] = 10
         d["plSeedForCLs"] = True
         d["minEventsIn"] =  9900.
