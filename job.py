@@ -13,7 +13,7 @@ def writeNumbers(fileName = None, d = None) :
 
 def description(key, cl = None) :
     if key[:2]=="CL" : return key
-    if key[-5:]=="Limit" : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
+    if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
     else : return ""
 
 def signalEff(switches, data, binsInput, binsMerged, point) :
@@ -91,9 +91,11 @@ def results(switches = None, data = None, signal = None, out = None) :
                       muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
 
         if switches["method"]=="CLs" :
-            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"])
+            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"],
+                            plSeed = switches["plSeedForCLs"], plNIterationsMax = switches["nIterationsMax"])
             for key,value in results.iteritems() :
                 out[key] = (value, description(key))
+                if switches["plSeedForCLs"] : continue
                 if key=="CLs" or ("Median" in key) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
