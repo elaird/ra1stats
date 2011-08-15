@@ -34,7 +34,7 @@ def smsHistoSpec(model = "", box = None, htLower = None, htUpper = None) :
     assert model in ["T1", "T2"]
     assert box in ["had", "muon"]
     
-    scan = {"had":"v1", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
+    scan = {"had":"v2", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
     thresh = ""
     if htLower==275 : thresh = "0"
     if htLower==325 : thresh = "1"
