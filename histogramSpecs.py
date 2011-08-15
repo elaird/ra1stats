@@ -8,7 +8,7 @@ def smsRanges() :
     #d["smsXRange"] = (400.0, 999.9) #(min, max)
     #d["smsYRange"] = (100.0, 999.9)
     d["smsXsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
-    d["smsXsZRangeLog"] = (1.0e-2, 200.0, 20)
+    d["smsXsZRangeLog"] = (1.0e-2, 300.0, 20)
     d["smsEffZRange"]   = (0.0, 0.35, 35)
 
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
