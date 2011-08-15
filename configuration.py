@@ -32,6 +32,8 @@ def switches() :
     d["qcdSearch"] = False
 
     d["testStatistic"] = 3
+    d["plSeedForCLs"] = False
+
     d["fillHolesInInput"] = True
     d["fillHolesInOutput"] = True
     d["smsCutFunc"] = lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1)
