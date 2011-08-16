@@ -5,8 +5,8 @@ import configuration as conf
 def smsRanges() :
     d = {}
 
-    #d["smsXRange"] = (400.0, 999.9) #(min, max)
-    #d["smsYRange"] = (100.0, 999.9)
+    d["smsXRange"] = ( 50.0, 1224.9) #(min, max)
+    d["smsYRange"] = ( 50.0, 1224.9)
     d["smsXsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
     d["smsXsZRangeLog"] = (0.5e-2, 500.0, 20)
     d["smsEffZRange"]   = (0.0, 0.35, 35)
@@ -34,7 +34,7 @@ def smsHistoSpec(model = "", box = None, htLower = None, htUpper = None) :
     assert model in ["T1", "T2"]
     assert box in ["had", "muon"]
     
-    scan = {"had":"v2", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
+    scan = {"had":"v3", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
     thresh = ""
     if htLower==275 : thresh = "0"
     if htLower==325 : thresh = "1"
