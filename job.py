@@ -87,8 +87,8 @@ def onePoint(switches = None, data = None, point = None) :
     nEventsIn = out["nEventsIn"][0]
     out["nEventsHad"] = (eff*nEventsIn, "N events after selection (all bins summed)")
     limit = bool(eff)
-    limit &= switches["minEventsIn"]!=None and (switches["minEventsIn"]<=nEventsIn)
-    limit &= switches["maxEventsIn"]!=None and (nEventsIn<=switches["maxEventsIn"])
+    if switches["minEventsIn"]!=None : limit &= switches["minEventsIn"]<=nEventsIn
+    if switches["maxEventsIn"]!=None : limit &= nEventsIn<=switches["maxEventsIn"]
     if limit :
         results(switches = switches, data = data, signal = signal, out = out)
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
