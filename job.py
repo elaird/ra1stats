@@ -79,18 +79,18 @@ def onePoint(switches = None, data = None, point = None) :
         signal[key] = value
 
     printDict(signal)
-    out = stuffVars(switches, binsMerged, signal)
-    out["effHadSum"] = (effSum(signal, samples = ["Had"]), "effHadSum")
+    out = {}
     out["nEventsIn"] = (hp.nEventsInHisto().GetBinContent(*point), "N events in")
-    
-    eff = out["effHadSum"][0]
     nEventsIn = out["nEventsIn"][0]
-    out["nEventsHad"] = (eff*nEventsIn, "N events after selection (all bins summed)")
-    limit = bool(eff)
-    if switches["minEventsIn"]!=None : limit &= switches["minEventsIn"]<=nEventsIn
-    if switches["maxEventsIn"]!=None : limit &= nEventsIn<=switches["maxEventsIn"]
-    if limit :
-        results(switches = switches, data = data, signal = signal, out = out)
+    eventsInRange = True
+    if switches["minEventsIn"]!=None : eventsInRange &= switches["minEventsIn"]<=nEventsIn
+    if switches["maxEventsIn"]!=None : eventsInRange &= nEventsIn<=switches["maxEventsIn"]
+    if eventsInRange :
+        out.update(stuffVars(switches, binsMerged, signal))
+        out["effHadSum"] = (effSum(signal, samples = ["Had"]), "effHadSum")
+        eff = out["effHadSum"][0]
+        out["nEventsHad"] = (eff*nEventsIn, "N events after selection (all bins summed)")
+        if bool(eff) : results(switches = switches, data = data, signal = signal, out = out)
     writeNumbers(conf.strings(*point)["pickledFileName"], out)
 
 def results(switches = None, data = None, signal = None, out = None) :
