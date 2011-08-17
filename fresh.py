@@ -596,8 +596,10 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
             args[item] = eval(item)
         args["result"] = result
         args["poiPoint"] = poiMin
-        args["out"] = out
-        clsOnePoint(args)
+        q = clsOnePoint(args)
+        for key,value in q.iteritems() :
+            assert not (key in out),"%s %s"%(key, str(out))
+            out[key] = value
     else :
         out["UpperLimit"] = result.UpperLimit()
         out["UpperLimitError"] = result.UpperLimitEstimatedError()
@@ -617,10 +619,6 @@ def clsOnePoint(args) :
     q,hist = quantiles(values, args["plusMinus"], histoName = "expected_CLs_distribution",
                        histoTitle = "expected CLs distribution;CL_{s};toys / bin",
                        histoBins = (205, -1.0, 1.05), cutZero = False)
-
-    for key,value in q.iteritems() :
-        assert not (key in args["out"]),"%s %s"%(key, str(args["out"]))
-        args["out"][key] = value
 
     if args["makePlots"] :
         ps = "cls_%s_TS%d.ps"%(args["note"], args["testStatType"])
@@ -648,7 +646,7 @@ def clsOnePoint(args) :
         
         canvas.Print(ps+"]")
         utils.ps2pdf(ps)
-    return
+    return q
 
 def profilePlots(dataset, modelconfig, note, smOnly, qcdSearch) :
     assert (not smOnly) or qcdSearch
