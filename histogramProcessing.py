@@ -116,21 +116,27 @@ def pdfUncHisto(spec) :
 
 def xsHisto() :
     s = conf.switches()
-    if "tanBeta" in s["signalModel"] : return nloXsHisto() if conf.switches()["nlo"] else loXsHisto()
-    else : return smsXsHisto(s["signalModel"], cutFunc = s["smsCutFunc"][s["signalModel"]])
+    model = s["signalModel"]
+    if "tanBeta" in model : return cmssmNloXsHisto(model) if s["nlo"] else cmssmLoXsHisto(model)
+    else : return smsXsHisto(model, cutFunc = s["smsCutFunc"][s["signalModel"]])
 
 def nEventsInHisto() :
     s = conf.switches()
-    if "tanBeta" in s["signalModel"] : assert False,"Implement this."
-    else : return smsNEventsInHisto(s["signalModel"])
+    model = s["signalModel"]
+    return cmssmNEventsInHisto(model) if "tanBeta" in model else smsNEventsInHisto(model)
 
 def effHisto(**args) :
     s = conf.switches()
-    if "tanBeta" in s["signalModel"] : return nloEffHisto(**args) if conf.switches()["nlo"] else loEffHisto(**args)
-    else : return smsEffHisto(s["signalModel"], **args)
+    model = s["signalModel"]
+    if "tanBeta" in model : return cmssmNloEffHisto(model, **args) if s["nlo"] else cmssmLoEffHisto(model, **args)
+    else : return smsEffHisto(model, **args)
 
-def loXsHisto() :
-    s = hs.histoSpec(box = "had", scale = "1")
+def cmssmNEventsInHisto(model, box = "had", scale = "1") :
+    s = hs.cmssmHistoSpec(model = model, box = box, scale = scale)
+    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
+
+def cmssmLoXsHisto(model) :
+    s = hs.cmssmHistoSpec(model = model, box = "had", scale = "1")
     out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi_noweight")
     out.Scale(conf.switches()["icfDefaultNEventsIn"]/conf.switches()["icfDefaultLumi"])
     #mData = mEv.GetSusyCrossSection()*mDesiredLumi/10000;
@@ -138,13 +144,13 @@ def loXsHisto() :
     #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
     return out
 
-def loEffHisto(box, scale, htLower, htUpper) :
-    s = hs.histoSpec(box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+def cmssmLoEffHisto(model, box, scale, htLower, htUpper) :
+    s = hs.cmssmHistoSpec(model = model, box = box, scale = scale, htLower = htLower, htUpper = htUpper)
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     return out
 
-def nloXsHisto(scale = "1") :
-    s = hs.histoSpec(box = "had", scale = scale)
+def cmssmNloXsHisto(model, scale = "1") :
+    s = hs.cmssmHistoSpec(model = model, box = "had", scale = scale)
     out = None
     for process in conf.processes() :
         h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
@@ -154,15 +160,15 @@ def nloXsHisto(scale = "1") :
     #see links in loXsHisto
     return out
 
-def nloEffHisto(box, scale, htLower, htUpper) :
-    s = hs.histoSpec(box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+def cmssmNloEffHisto(model, box, scale, htLower, htUpper) :
+    s = hs.cmssmHistoSpec(model = model, box = box, scale = scale, htLower = htLower, htUpper = htUpper)
     out = None
     for process in conf.processes() :
         h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
         if out is None : out = h.Clone("nloEffHisto")
         else :           out.Add(h)
     out.SetDirectory(0)
-    out.Divide(nloXsHisto(scale)) #divide by total xs
+    out.Divide(cmssmNloXsHisto(model, scale)) #divide by total xs
     return out
 
 def smsXsHisto(model, cutFunc = None) :
@@ -624,9 +630,9 @@ def makeValidationPlots() :
         canvas.SetTicky()
 
         canvas.Print(fileName)
-        if "nEventsIn" in name :
-            h2.SetMinimum(switches["minEventsIn"])
-            h2.SetMaximum(switches["maxEventsIn"])
+        if "nEventsIn" in name and (switches["minEventsIn"] or switches["maxEventsIn"]):
+            if switches["minEventsIn"] : h2.SetMinimum(switches["minEventsIn"])
+            if switches["maxEventsIn"] : h2.SetMaximum(switches["maxEventsIn"])
             canvas.Print(fileName)
 
     #effMu/effHad
