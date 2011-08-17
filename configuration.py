@@ -40,10 +40,10 @@ def switches() :
     
     d["nlo"] = True
     d["nloToLoRatios"] = False
-    d["signalModel"] = ["tanBeta10", "tanBeta40", "T1", "T2"][2]
+    d["signalModel"] = ["tanBeta10", "tanBeta40", "T1", "T2"][1]
     d["drawBenchmarkPoints"] = True
     d["effRatioPlots"] = False
-    d["ignoreSignalContaminationInMuonSample"] = True
+    d["ignoreSignalContaminationInMuonSample"] = False
     #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
     #d["listOfTestPoints"] = [(29, 55, 1)]
     #d["listOfTestPoints"] = [(29, 25, 1)]
@@ -61,6 +61,7 @@ def switches() :
     
     d["subCmd"] = "qsub -q hep%s.q"%(["short", "medium", "long"][0])
     d["envScript"] = ["icJob.sh", "env.sh"][1]
+    d["nJobsMax"] = 2000
 
     checkAndAdjust(d)
     return d

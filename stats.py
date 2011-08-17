@@ -5,6 +5,7 @@ import os
 def opts() :
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N", help = "split into N jobs and submit to batch queue (N=0 means max splitting)")
+    parser.add_option("--offset",     dest = "offset",     default = 0,  metavar = "N", help = "offset by N*nJobsMax")
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
     parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "merge job output")
     parser.add_option("--efficiency", dest = "efficiency", default = False, action  = "store_true", help = "make efficiency plots")
@@ -16,7 +17,7 @@ def opts() :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
 ############################################
-def jobCmds(nSlices = None) :
+def jobCmds(nSlices = None, offset = 0) :
     def logFileName(iSlice) :
         return "%s_%d.log"%(conf.stringsNoArgs()["logStem"], iSlice)
 
@@ -27,7 +28,17 @@ def jobCmds(nSlices = None) :
 
     strings = conf.stringsNoArgs()
     switches = conf.switches()
-    for iSlice in range(nSlices) :
+
+    iStart = offset*switches["nJobsMax"]
+    iFinish = min(iStart+switches["nJobsMax"], nSlices)
+    if (iFinish!=nSlices) or offset :
+        warning = "Only jobs [%d - %d] / [%d - %d] jobs have been submitted."%(iStart, iFinish-1, 0, nSlices-1)
+    else :
+        warning = ""
+    if (iFinish!=nSlices) :
+        warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
+    assert iStart<iFinish,warning
+    for iSlice in range(iStart, iFinish) :
         args = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
         s  = "%s/job.sh"%pwd                             #0
         s += " %s"%pwd                                   #1
@@ -36,14 +47,16 @@ def jobCmds(nSlices = None) :
         s += " %s"%(" ".join(args))                      #4
         out.append(s)
 
-    return out
+    return out,warning
 ############################################
-def batch(nSlices) :
-    subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jobCmds(nSlices)]
+def batch(nSlices = None, offset = None) :
+    jcs = jobCmds(nSlices, offset)
+    subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs[0]]
     utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    print jcs[1]
 ############################################
 def local(nWorkers) :
-    utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jobCmds())
+    utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jobCmds()[0])
 ############################################
 def mkdirs() :
     s = conf.stringsNoArgs()
@@ -59,7 +72,7 @@ import histogramProcessing as hp
 hp.checkHistoBinning()
 mkdirs()
 
-if options.batch : batch(int(options.batch))
+if options.batch : batch(nSlices = int(options.batch), offset = int(options.offset))
 if options.local : local(int(options.local))
 if options.merge : hp.mergePickledFiles()
 
