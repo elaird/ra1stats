@@ -15,7 +15,8 @@ def smsRanges() :
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
-def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
+def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None) :
+    assert model in ["tanBeta10", "tanBeta40"]
     assert box in ["had", "muon"]
     assert scale in ["1", "05", "2"]
     
@@ -24,7 +25,7 @@ def histoSpec(box = None, scale = None, htLower = None, htUpper = None) :
             ][1]
     
     out = {}
-    out["file"] = "/".join([scan["dir"], box, scan[box], box+".root"])
+    out["file"] = "/".join([scan["dir"], model, box, scan[box], box+".root"])
     out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
     if htLower!=None :
         out["afterDir"] = "mSuGraScan_%d%s_scale%s"%(htLower, "_%d"%htUpper if htUpper else "",scale)
