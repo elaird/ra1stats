@@ -50,10 +50,10 @@ def jobCmds(nSlices = None, offset = 0) :
     return out,warning
 ############################################
 def batch(nSlices = None, offset = None) :
-    jcs = jobCmds(nSlices, offset)
-    subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs[0]]
+    jcs,warning = jobCmds(nSlices, offset)
+    subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
     utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
-    print jcs[1]
+    if warning : print warning
 ############################################
 def local(nWorkers) :
     utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jobCmds()[0])
