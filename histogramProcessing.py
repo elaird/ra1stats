@@ -554,86 +554,47 @@ def drawBenchmarks() :
         out.append(marker)
         out.append(text.DrawText(10+coords["m0"], 10+coords["m12"], label))
     return out
-        
-def makeValidationPlots() :
-    def categorized(histos = [], first = [], last = []) :
-    	start = []
-        end = []
-    	names = sorted([histo.GetName() for histo in histos])
-        for name in names :
-            for item in first :
-    	        if item==name[:len(item)] :
-    	            start.append(name)
-            for item in last :
-    	        if item==name[:len(item)] :
-    	            end.append(name)
-    	
-    	for item in list(set(start+end)) :
-    	    names.remove(item)
-        return start+names+end
 
-    switches = conf.switches()
+def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [], switches = {}, suppressed = []) :
     sms = "tanBeta" not in switches["signalModel"]
-    
-    inFile = mergedFile()
-    f = r.TFile(inFile)
-    fileName = inFile.replace(".root",".ps")
-    outFileName = fileName.replace(".ps",".pdf")
-    canvas = utils.numberedCanvas()
-    canvas.SetRightMargin(0.15)
-    
-    canvas.Print(fileName+"[")
 
-    text1 = printTimeStamp()
-    text2 = printLumis()
+    if "upper" in name :
+        printHoles(h2)
+        #printMaxes(h2)
+    h2.SetStats(False)
+    h2.SetTitle("%s%s"%(name, hs.histoTitle()))
+    h2.Draw("colz")
+    if not h2.Integral() :
+        suppressed.append(name)
+        return
+
+    canvas.SetLogz(name in logZ)
+    if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
+    if name=="nEventsHad" and name in logZ : h2.SetMinimum(0.9)
+    if "NLO_over_LO" in name :
+        h2.SetMinimum(0.5)
+        h2.SetMaximum(3.0)
+
+    stuff = drawBenchmarks()
+
+    if "excluded" in name and sms : return
+    
+    printSinglePage  = (not sms) and "excluded" in name
+    printSinglePage |= sms and "upperLimit" in name
+    
+    if printSinglePage :
+        title = h2.GetTitle()
+        h2.SetTitle("")
+        eps = fileName.replace(".ps","_%s.eps"%name)
+        super(utils.numberedCanvas, canvas).Print(eps)
+        utils.epsToPdf(eps)
+        h2.SetTitle(title)
+
     canvas.Print(fileName)
-    canvas.Clear()
-
-    logZ = ["xs", "nEventsHad"]
-    names = categorized(histos = f.GetListOfKeys(), first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
-
-    suppressed = []
-    for name in names :
-        h2 = threeToTwo(f.Get(name))
-        if "upper" in name :
-            printHoles(h2)
-            #printMaxes(h2)
-        h2.SetStats(False)
-        h2.SetTitle("%s%s"%(name, hs.histoTitle()))
-        h2.Draw("colz")
-        if not h2.Integral() :
-            suppressed.append(name)
-            continue
-        canvas.SetLogz(name in logZ)
-        if name=="xs" and name in logZ : h2.SetMinimum(1.0e-2)
-        if name=="nEventsHad" and name in logZ : h2.SetMinimum(0.9)
-        if "NLO_over_LO" in name :
-            h2.SetMinimum(0.5)
-            h2.SetMaximum(3.0)
-
-        stuff = drawBenchmarks()
-
-        if "excluded" in name and sms : continue
-        
-        printSinglePage  = (not sms) and "excluded" in name
-        printSinglePage |= sms and "upperLimit" in name
-        
-        if printSinglePage :
-            title = h2.GetTitle()
-            h2.SetTitle("")
-            eps = fileName.replace(".ps","_%s.eps"%name)
-            super(utils.numberedCanvas, canvas).Print(eps)
-            utils.epsToPdf(eps)
-            h2.SetTitle(title)
-
-        canvas.SetTickx()
-        canvas.SetTicky()
-
+    if "nEventsIn" in name and (switches["minEventsIn"] or switches["maxEventsIn"]):
+        if switches["minEventsIn"] : h2.SetMinimum(switches["minEventsIn"])
+        if switches["maxEventsIn"] : h2.SetMaximum(switches["maxEventsIn"])
         canvas.Print(fileName)
-        if "nEventsIn" in name and (switches["minEventsIn"] or switches["maxEventsIn"]):
-            if switches["minEventsIn"] : h2.SetMinimum(switches["minEventsIn"])
-            if switches["maxEventsIn"] : h2.SetMaximum(switches["maxEventsIn"])
-            canvas.Print(fileName)
 
     #effMu/effHad
     if switches["effRatioPlots"] :
@@ -651,6 +612,58 @@ def makeValidationPlots() :
             num.SetMaximum(0.5)
             stuff = drawBenchmarks()
             canvas.Print(fileName)
+
+def makeValidationPlots() :
+    def categorized(histos = [], first = [], last = []) :
+    	start = []
+        end = []
+    	names = sorted([histo.GetName() for histo in histos])
+        for name in names :
+            for item in first :
+    	        if item==name[:len(item)] :
+    	            start.append(name)
+            for item in last :
+    	        if item==name[:len(item)] :
+    	            end.append(name)
+    	
+    	for item in list(set(start+end)) :
+    	    names.remove(item)
+        return start+names+end
+
+    inFile = mergedFile()
+    f = r.TFile(inFile)
+    fileName = inFile.replace(".root",".ps")
+    outFileName = fileName.replace(".ps",".pdf")
+    canvas = utils.numberedCanvas()
+    canvas.SetRightMargin(0.15)
+    
+    canvas.Print(fileName+"[")
+    canvas.SetTickx()
+    canvas.SetTicky()
+
+    text1 = printTimeStamp()
+    text2 = printLumis()
+    canvas.Print(fileName)
+    canvas.Clear()
+
+    names = categorized(histos = f.GetListOfKeys(), first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
+
+    switches = conf.switches()
+    
+    effFile = r.TFile("RA1_%s_effHad.root"%switches["signalModel"], "UPDATE")
+    r.gROOT.cd()
+    
+    suppressed = []
+    for name in names :
+        h2 = threeToTwo(f.Get(name))
+        printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
+                      logZ = ["xs", "nEventsHad"], switches = switches, suppressed = suppressed)
+        if "effHad" in name :
+            effFile.cd()
+            h2.Write()
+            r.gROOT.cd()
+
+    effFile.Close()
 
     canvas.Clear()
     text3 = printSuppressed(suppressed)
