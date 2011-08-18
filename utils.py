@@ -42,8 +42,9 @@ class numberedCanvas(r.TCanvas) :
         self.page += 1
         super(numberedCanvas, self).Print(*args)
 #####################################
-def ps2pdf(psFileName, removePs = True) :
-    os.system("ps2pdf %s"%psFileName)
+def ps2pdf(psFileName, removePs = True, sameDir = False) :
+    cmd = ("ps2pdf %s"%psFileName) if not sameDir else ("ps2pdf %s %s"%(psFileName, psFileName.replace(".ps", ".pdf")))
+    os.system(cmd)
     if removePs : os.remove(psFileName)
 #####################################
 def epsToPdf(epsFileName, removeEps = True) :
