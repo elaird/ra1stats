@@ -393,9 +393,70 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], outputRootF
     utils.ps2pdf(fileName, sameDir = True)
     print "%s has been written."%fileName.replace(".ps", ".pdf")
 
+def clsValidation(tag = "clsValidation", masterKey = "effHadSum") :
+    def allHistos(fileName = "") :
+        f = r.TFile(fileName)
+        r.gROOT.cd()
+        out = {}
+        for key in f.GetListOfKeys() :
+            name = key.GetName()
+            out[name] = threeToTwo(f.Get(name))
+            out[name].SetDirectory(0)
+        f.Close()
+        return out
+
+    assert tag
+    histos = allHistos(fileName = mergedFile())
+    master = histos[masterKey]
+    graphs = {}
+    for iBinX in range(1, 1 + master.GetNbinsX()) :
+        if iBinX not in [16, 32] : continue
+        for iBinY in range(1, 1 + master.GetNbinsY()) :
+            if not master.GetBinContent(iBinX, iBinY) : continue
+            if not histos["CLb"].GetBinContent(iBinX, iBinY) : continue
+            
+            name = "CLs_%d_%d"%(iBinX, iBinY)
+            graph = graphs[name] = r.TGraphErrors()
+            graph.SetName(name)
+            graph.SetTitle("%s;#sigma (pb);CL_{s}"%name.replace("CLs_",""))
+            graph.SetMarkerStyle(20)
+            graph.SetMinimum(0.0)
+            graph.SetMaximum(1.0)
+            iPoint = 0
+            while True :
+                s = "" if not iPoint else "_%d"%iPoint
+                if "CLs%s"%s not in histos : break
+                graph.SetPoint(iPoint, histos["PoiValue%s"%s].GetBinContent(iBinX, iBinY), histos["CLs%s"%s].GetBinContent(iBinX, iBinY))
+                graph.SetPointError(iPoint, 0.0, histos["CLsError%s"%s].GetBinContent(iBinX, iBinY))
+                iPoint += 1
+    
+    fileName = mergedFile().replace(".root","_%s.ps"%tag)
+    
+    canvas = utils.numberedCanvas()
+    canvas.SetRightMargin(0.15)
+    
+    canvas.Print(fileName+"[")
+    canvas.SetTickx()
+    canvas.SetTicky()
+    
+    text1 = printTimeStamp()
+    text2 = printLumis()
+    canvas.Print(fileName)
+    canvas.Clear()
+
+    utils.cyclePlot(d = graphs, f = None, args = {}, optStat = 1110, canvas = canvas, psFileName = fileName, divide = (4,3), goptions = "alp")
+    
+    canvas.Print(fileName+"]")
+    utils.ps2pdf(fileName, sameDir = True)
+    print "%s has been written."%fileName.replace(".ps", ".pdf")
+    
 def makePlots() :
-    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], whiteListMatch = [])
-    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], outputRootFile = True)
+    #multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
+    #multiPlots(tag = "effHad", whiteListMatch = ["effHad"], outputRootFile = True)
+
+    s = conf.switches()
+    if len(s["signalModel"])==2 and s["method"]=="CLs" :
+        clsValidation()
     
     #pg.makeEfficiencyPlots()
     #pg.makeEfficiencyUncertaintyPlots()
