@@ -8,7 +8,6 @@ def opts() :
     parser.add_option("--offset",     dest = "offset",     default = 0,  metavar = "N", help = "offset by N*nJobsMax")
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N", help = "loop over events locally using N cores (N>0)")
     parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "merge job output")
-    parser.add_option("--efficiency", dest = "efficiency", default = False, action  = "store_true", help = "make efficiency plots")
     parser.add_option("--validation", dest = "validation", default = False, action  = "store_true", help = "make validation plots")
     parser.add_option("--output",     dest = "output",     default = False, action  = "store_true", help = "write stdout&stderr to disk rather than to /dev/null")
     options,args = parser.parse_args()
@@ -63,6 +62,7 @@ options = opts()
 import utils
 import configuration as conf
 import histogramProcessing as hp
+import plottingGrid as pg
 
 hp.checkHistoBinning()
 mkdirs()
@@ -72,11 +72,10 @@ if options.local : local(int(options.local))
 if options.merge : hp.mergePickledFiles()
 
 if options.merge or options.validation :
-    hp.makeValidationPlots()
-if options.efficiency :
-    hp.makeEfficiencyPlots()
-    hp.makeEfficiencyUncertaintyPlots()
-    hp.makeTopologyXsLimitPlots()
+    pg.makeValidationPlots()
+    #pg.makeEfficiencyPlots()
+    #pg.makeEfficiencyUncertaintyPlots()
+    #pg.makeTopologyXsLimitPlots()
 
-if not any([getattr(options,item) for item in ["batch", "local", "merge", "validation", "efficiency"]]) :
+if not any([getattr(options,item) for item in ["batch", "local", "merge", "validation"]]) :
     print "nPoints = %s"%len(hp.points())
