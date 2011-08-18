@@ -18,15 +18,12 @@ def opts() :
     return options
 ############################################
 def jobCmds(nSlices = None, offset = 0) :
-    def logFileName(iSlice) :
-        return "%s_%d.log"%(conf.stringsNoArgs()["logStem"], iSlice)
-
     pwd = os.environ["PWD"]
     points = hp.points()
     if not nSlices : nSlices = len(points)
     out = []
 
-    strings = conf.stringsNoArgs()
+    logStem = conf.stringsNoArgs()["logStem"]
     switches = conf.switches()
 
     iStart = offset*switches["nJobsMax"]
@@ -39,13 +36,11 @@ def jobCmds(nSlices = None, offset = 0) :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
     assert iStart<iFinish,warning
     for iSlice in range(iStart, iFinish) :
-        args = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
-        s  = "%s/job.sh"%pwd                             #0
-        s += " %s"%pwd                                   #1
-        s += " %s"%switches["envScript"]                 #2
-        s += " %s"%("/dev/null" if not options.output else "%s/%s"%(pwd, logFileName(iSlice))) #3
-        s += " %s"%(" ".join(args))                      #4
-        out.append(s)
+        argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
+                   3:"/dev/null" if options.output else "%s/%s_%d.log"%(pwd, logStem, iSlice)}
+        args = [argDict[key] for key in sorted(argDict.keys())]
+        slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
+        out.append(" ".join(args+slices))
 
     return out,warning
 ############################################
