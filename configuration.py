@@ -8,7 +8,7 @@ def switches() :
     d["CL"] = [0.95, 0.90][:1]
     d["nToys"] = 500
     
-    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0]
+    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][2]
     d["minSignalXsForConsideration"] = 1.0e-6
     d["maxSignalXsForConsideration"] = None
 
