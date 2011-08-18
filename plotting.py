@@ -42,44 +42,6 @@ def drawDecoratedHisto(quantiles = {}, hist = None, obs = None) :
     legend.Draw()
     return legend
 
-def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFileName = None) :
-    if optStat!=None :
-        oldOptStat = r.gStyle.GetOptStat()
-        r.gStyle.SetOptStat(optStat)
-
-    stuff = []
-    for i,key in enumerate(sorted(d.keys())) :
-        j = i%4
-        if not j :
-            canvas.cd(0)
-            canvas.Clear()
-            canvas.Divide(2, 2)
-            
-        canvas.cd(1+j)
-        d[key].Draw()
-        if f!=None : stuff.append( f(args = args, key = key, histo = d[key]) )
-        needPrint = True
-
-        #move stat box
-        r.gPad.Update()
-        tps = d[key].FindObject("stats")
-        if tps :
-            tps.SetX1NDC(0.78)
-            tps.SetX2NDC(0.98)
-            tps.SetY1NDC(0.90)
-            tps.SetY2NDC(1.00)
-
-        if j==3 :
-            canvas.cd(0)                
-            canvas.Print(psFileName)
-            needPrint = False
-
-    if needPrint :
-        canvas.cd(0)
-        canvas.Print(psFileName)
-    if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
-    return
-
 def histoLines(args = {}, key = None, histo = None) :
     hLine = r.TLine(); hLine.SetLineColor(args["quantileColor"])
     bestLine = r.TLine(); bestLine.SetLineColor(args["bestColor"])
@@ -622,12 +584,12 @@ class validationPlotter(object) :
                      funcBestFit = None, funcLinPropError = None,
                      parBestFit = None, parError = None) :
         
-        cyclePlot(d = parHistos1D, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
-                  args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
+        utils.cyclePlot(d = parHistos1D, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
+                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
         
-        cyclePlot(d = parHistos2D, canvas = self.canvas, psFileName = self.psFileName)
-        cyclePlot(d = funcHistos, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
-                  args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
+        utils.cyclePlot(d = parHistos2D, canvas = self.canvas, psFileName = self.psFileName)
+        utils.cyclePlot(d = funcHistos, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
+                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
                                
         return
         

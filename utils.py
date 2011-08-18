@@ -168,3 +168,42 @@ def shiftUnderAndOverflows(dimension, histos, dontShiftList = []) :
         combineBinContentAndError(histo, binToContainCombo = bins, binToBeKilled = bins+1)
         histo.SetEntries(entries)
 ##############################
+def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFileName = None, divide = (2,2), goptions = "") :
+    if optStat!=None :
+        oldOptStat = r.gStyle.GetOptStat()
+        r.gStyle.SetOptStat(optStat)
+
+    stuff = []
+    n = divide[0]*divide[1]
+    for i,key in enumerate(sorted(d.keys())) :
+        j = i%n
+        if not j :
+            canvas.cd(0)
+            canvas.Clear()
+            canvas.Divide(*divide)
+            
+        canvas.cd(1+j)
+        d[key].Draw(goptions)
+        if f!=None : stuff.append( f(args = args, key = key, histo = d[key]) )
+        needPrint = True
+
+        #move stat box
+        r.gPad.Update()
+        tps = d[key].FindObject("stats")
+        if tps :
+            tps.SetX1NDC(0.78)
+            tps.SetX2NDC(0.98)
+            tps.SetY1NDC(0.90)
+            tps.SetY2NDC(1.00)
+
+        if j==(n-1) :
+            canvas.cd(0)                
+            canvas.Print(psFileName)
+            needPrint = False
+
+    if needPrint :
+        canvas.cd(0)
+        canvas.Print(psFileName)
+    if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
+    return
+##############################
