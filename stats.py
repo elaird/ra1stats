@@ -37,7 +37,7 @@ def jobCmds(nSlices = None, offset = 0) :
     assert iStart<iFinish,warning
     for iSlice in range(iStart, iFinish) :
         argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
-                   3:"/dev/null" if options.output else "%s/%s_%d.log"%(pwd, logStem, iSlice)}
+                   3:"%s/%s_%d.log"%(pwd, logStem, iSlice) if options.output else "/dev/null"}
         args = [argDict[key] for key in sorted(argDict.keys())]
         slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
         out.append(" ".join(args+slices))
