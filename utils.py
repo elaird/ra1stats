@@ -183,13 +183,17 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
             canvas.Divide(*divide)
             
         canvas.cd(1+j)
-        d[key].Draw(goptions)
+
+        l = d[key] if (type(d[key]) is list) else [d[key]]
+        for iItem,item in enumerate(l) :
+            item.Draw("%s%s"%(goptions, "same" if iItem else ""))
+
         if f!=None : stuff.append( f(args = args, key = key, histo = d[key]) )
         needPrint = True
 
         #move stat box
         r.gPad.Update()
-        tps = d[key].FindObject("stats")
+        tps = d[key].FindObject("stats") if len(l)==1 else None
         if tps :
             tps.SetX1NDC(0.78)
             tps.SetX2NDC(0.98)
