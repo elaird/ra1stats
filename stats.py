@@ -72,10 +72,7 @@ if options.local : local(int(options.local))
 if options.merge : hp.mergePickledFiles()
 
 if options.merge or options.validation :
-    pg.makeValidationPlots()
-    #pg.makeEfficiencyPlots()
-    #pg.makeEfficiencyUncertaintyPlots()
-    #pg.makeTopologyXsLimitPlots()
+    pg.makePlots()
 
 if not any([getattr(options,item) for item in ["batch", "local", "merge", "validation"]]) :
     print "nPoints = %s"%len(hp.points())
