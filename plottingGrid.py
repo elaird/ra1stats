@@ -322,27 +322,32 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
             stuff = drawBenchmarks()
             canvas.Print(fileName)
 
-def makeValidationPlots() :
-    def categorized(histos = [], first = [], last = []) :
-    	start = []
-        end = []
-    	names = sorted([histo.GetName() for histo in histos])
-        for name in names :
-            for item in first :
-    	        if item==name[:len(item)] :
-    	            start.append(name)
-            for item in last :
-    	        if item==name[:len(item)] :
-    	            end.append(name)
-    	
-    	for item in list(set(start+end)) :
-    	    names.remove(item)
-        return start+names+end
+def sortedNames(histos = [], first = [], last = []) :
+    start = []
+    end = []
+    names = sorted([histo.GetName() for histo in histos])
+    for name in names :
+        for item in first :
+	        if item==name[:len(item)] :
+	            start.append(name)
+        for item in last :
+	        if item==name[:len(item)] :
+	            end.append(name)
 
+    for item in list(set(start+end)) :
+        names.remove(item)
+    return start+names+end
+
+def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], outputRootFile = False) :
+    assert tag
+    
     inFile = mergedFile()
     f = r.TFile(inFile)
-    fileName = inFile.replace(".root",".ps")
-    outFileName = fileName.replace(".ps",".pdf")
+    r.gROOT.cd()
+    
+    fileName = inFile.replace(".root","_%s.ps"%tag)
+    rootFileName = fileName.replace(".ps", ".root")
+    
     canvas = utils.numberedCanvas()
     canvas.SetRightMargin(0.15)
     
@@ -355,33 +360,46 @@ def makeValidationPlots() :
     canvas.Print(fileName)
     canvas.Clear()
 
-    names = categorized(histos = f.GetListOfKeys(), first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
+    names = sortedNames(histos = f.GetListOfKeys(), first = first, last = last)
 
     switches = conf.switches()
-    
-    effFile = r.TFile("RA1_%s_effHad.root"%switches["signalModel"], "UPDATE")
-    r.gROOT.cd()
+
+    if outputRootFile :
+        outFile = r.TFile(rootFileName, "RECREATE")
+        r.gROOT.cd()
     
     suppressed = []
     for name in names :
+        if whiteListMatch and not any([item in name for item in whiteListMatch]) : continue
+        
         h2 = threeToTwo(f.Get(name))
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
                       logZ = ["xs", "nEventsHad"], switches = switches, suppressed = suppressed)
-        if "effHad" in name :
-            effFile.cd()
+        if outputRootFile :
+            outFile.cd()
             h2.Write()
             r.gROOT.cd()
 
-    effFile.Close()
+    if outputRootFile :
+        print "%s has been written."%rootFileName
+        outFile.Close()
 
     canvas.Clear()
     text3 = printSuppressed(suppressed)
     canvas.Print(fileName)
     
     canvas.Print(fileName+"]")
-    os.system("ps2pdf %s %s"%(fileName, outFileName))
-    os.remove(fileName)
-    print "%s has been written."%outFileName
+
+    utils.ps2pdf(fileName, sameDir = True)
+    print "%s has been written."%fileName.replace(".ps", ".pdf")
+
+def makePlots() :
+    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], whiteListMatch = [])
+    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], outputRootFile = True)
+    
+    #pg.makeEfficiencyPlots()
+    #pg.makeEfficiencyUncertaintyPlots()
+    #pg.makeTopologyXsLimitPlots()
 
 def expectedLimit(obsFile, expFile) :
     def histo(file, name) :
