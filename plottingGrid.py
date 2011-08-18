@@ -393,7 +393,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], outputRootF
     utils.ps2pdf(fileName, sameDir = True)
     print "%s has been written."%fileName.replace(".ps", ".pdf")
 
-def clsValidation(tag = "clsValidation", masterKey = "effHadSum") :
+def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yMax = 1.0, cl = 0.95) :
     def allHistos(fileName = "") :
         f = r.TFile(fileName)
         r.gROOT.cd()
@@ -416,20 +416,33 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum") :
             if not histos["CLb"].GetBinContent(iBinX, iBinY) : continue
             
             name = "CLs_%d_%d"%(iBinX, iBinY)
-            graph = graphs[name] = r.TGraphErrors()
+            graph = r.TGraphErrors()
             graph.SetName(name)
             graph.SetTitle("%s;#sigma (pb);CL_{s}"%name.replace("CLs_",""))
             graph.SetMarkerStyle(20)
-            graph.SetMinimum(0.0)
-            graph.SetMaximum(1.0)
+            graph.SetMinimum(yMin)
+            graph.SetMaximum(yMax)
             iPoint = 0
             while True :
                 s = "" if not iPoint else "_%d"%iPoint
                 if "CLs%s"%s not in histos : break
-                graph.SetPoint(iPoint, histos["PoiValue%s"%s].GetBinContent(iBinX, iBinY), histos["CLs%s"%s].GetBinContent(iBinX, iBinY))
+                x = histos["PoiValue%s"%s].GetBinContent(iBinX, iBinY)
+                if not iPoint : xMin = x
+                xMax = x
+                graph.SetPoint(iPoint, x, histos["CLs%s"%s].GetBinContent(iBinX, iBinY))
                 graph.SetPointError(iPoint, 0.0, histos["CLsError%s"%s].GetBinContent(iBinX, iBinY))
                 iPoint += 1
-    
+
+            e = 0.1*(xMax-xMin)
+            y = 1.0 - cl
+            clLine = r.TLine(xMin-e, y, xMax+e, y)
+            clLine.SetLineColor(r.kRed)
+
+            xLim = histos["UpperLimit"].GetBinContent(iBinX, iBinY)
+            limLine = r.TLine(xLim, yMin, xLim, yMax)
+            limLine.SetLineColor(r.kBlue)
+
+            graphs[name] = [graph, clLine, limLine]
     fileName = mergedFile().replace(".root","_%s.ps"%tag)
     
     canvas = utils.numberedCanvas()
@@ -443,6 +456,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum") :
     text2 = printLumis()
     canvas.Print(fileName)
     canvas.Clear()
+
 
     utils.cyclePlot(d = graphs, f = None, args = {}, optStat = 1110, canvas = canvas, psFileName = fileName, divide = (4,3), goptions = "alp")
     
