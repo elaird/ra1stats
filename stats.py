@@ -12,7 +12,7 @@ def opts() :
     parser.add_option("--output",     dest = "output",     default = False, action  = "store_true", help = "write stdout&stderr to disk rather than to /dev/null")
     options,args = parser.parse_args()
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
-    for pair in [("local", "batch"), ("merge", "batch"), ("local", "efficiency"), ("batch", "efficiency")] :
+    for pair in [("local", "batch"), ("merge", "batch")] :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
 ############################################
