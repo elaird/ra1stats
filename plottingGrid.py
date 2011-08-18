@@ -410,7 +410,6 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     master = histos[masterKey]
     graphs = {}
     for iBinX in range(1, 1 + master.GetNbinsX()) :
-        if iBinX not in [16, 32] : continue
         for iBinY in range(1, 1 + master.GetNbinsY()) :
             if not master.GetBinContent(iBinX, iBinY) : continue
             if not histos["CLb"].GetBinContent(iBinX, iBinY) : continue
@@ -465,8 +464,8 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     print "%s has been written."%fileName.replace(".ps", ".pdf")
     
 def makePlots() :
-    #multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
-    #multiPlots(tag = "effHad", whiteListMatch = ["effHad"], outputRootFile = True)
+    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
+    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], outputRootFile = True)
 
     s = conf.switches()
     if len(s["signalModel"])==2 and s["method"]=="CLs" :
