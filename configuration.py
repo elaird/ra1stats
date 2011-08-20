@@ -1,17 +1,7 @@
 #!/usr/bin/env python
 
-def switches() :
+def likelihood() :
     d = {}
-
-    d["dataYear"] = [2010, 2011][1]
-    
-    d["CL"] = [0.95, 0.90][:1]
-    d["nToys"] = 500
-    
-    d["method"] = ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][2]
-    d["minSignalXsForConsideration"] = 1.0e-6
-    d["maxSignalXsForConsideration"] = None
-
     if False :
         d["simpleOneBin"] = [{}, {"b":3.0}][1]
         d["hadTerms"]  = False
@@ -30,41 +20,55 @@ def switches() :
     d["RQcd"] = ["Zero", "FallingExp"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
     d["qcdSearch"] = False
-
-    d["testStatistic"] = 3
-
-    d["fillHolesInInput"] = False
-    d["fillHolesInOutput"] = True
-    d["smsCutFunc"] = {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
-                       "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)}
-    
-    d["nlo"] = True
-    d["nloToLoRatios"] = False
-    d["signalModel"] = ["tanBeta10", "tanBeta40", "T1", "T2"][1]
-    d["drawBenchmarkPoints"] = True
-    d["effRatioPlots"] = False
-    d["ignoreSignalContaminationInMuonSample"] = False
-    #d["listOfTestPoints"] = [(6, 25, 1)]#LM1 (when tb=10)
-    #d["listOfTestPoints"] = [(29, 55, 1)]
-    #d["listOfTestPoints"] = [(29, 25, 1)]
-    #d["listOfTestPoints"] = [(181, 19, 1)]
-    #d["listOfTestPoints"] = [(21, 1, 1)]
-    #d["listOfTestPoints"] = [(39, 7, 1)]
-    #d["xWhiteList"] = [29, 181]
-    d["listOfTestPoints"] = []
-
-    d["computeExpectedLimit"] = False
-    d["expectedPlusMinus"] = {"OneSigma": 1.0}#, "TwoSigma": 2.0}
-
-    d["icfDefaultLumi"] = 100.0 #/pb
-    d["icfDefaultNEventsIn"] = 10000
-    
-    d["subCmd"] = "qsub -q hep%s.q"%(["short", "medium", "long"][0])
-    d["envScript"] = ["icJob.sh", "env.sh"][1]
-    d["nJobsMax"] = 2000
-
-    checkAndAdjust(d)
     return d
+
+def method() :
+    return {"CL": [0.95, 0.90][:1],
+            "nToys": 500,
+            "testStatistic": 3,
+            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][2],
+            "computeExpectedLimit": False,
+            "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
+            }
+
+def signal() :
+    return {"minSignalXsForConsideration": 1.0e-6,
+            "maxSignalXsForConsideration": None,
+            "fillHolesInInput": False,
+            "fillHolesInOutput": True,
+            "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
+                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
+            "nlo": True,
+            "nloToLoRatios": False,
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][3],
+            "drawBenchmarkPoints": True,
+            "effRatioPlots": False,
+            "ignoreSignalContaminationInMuonSample": True}
+
+def points() :
+    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)]][-1],
+            "listOfTestPoints": [],
+            #"xWhiteList": [ [29, 181], [16, 32]],
+            }
+
+def other() :
+    return {"icfDefaultLumi": 100.0, #/pb
+            "icfDefaultNEventsIn": 10000,
+            "subCmd": "qsub -q hep%s.q"%(["short", "medium", "long"][0]),
+            "envScript": ["icJob.sh", "env.sh"][1],
+            "nJobsMax": 2000}
+
+def dataYear() :
+    return {"dataYear": [2010, 2011][1]}
+
+def switches() :
+    out = {}
+    dicts = [dataYear(), likelihood(), method(), signal(), points(), other()]
+    keys = sum([d.keys() for d in dicts], [])
+    assert len(keys)==len(set(keys))
+    for d in dicts : out.update(d)
+    checkAndAdjust(out)
+    return out
 
 def data() :
     exec("from inputData import data%s as data"%str(switches()["dataYear"]))
