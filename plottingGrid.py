@@ -412,7 +412,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     for iBinX in range(1, 1 + master.GetNbinsX()) :
         for iBinY in range(1, 1 + master.GetNbinsY()) :
             if not master.GetBinContent(iBinX, iBinY) : continue
-            if not histos["CLb"].GetBinContent(iBinX, iBinY) : continue
+            if not histos["CLb_2"].GetBinContent(iBinX, iBinY) : continue
             
             name = "CLs_%d_%d"%(iBinX, iBinY)
             graph = r.TGraphErrors()
@@ -441,7 +441,11 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
             limLine = r.TLine(xLim, yMin, xLim, yMax)
             limLine.SetLineColor(r.kBlue)
 
-            graphs[name] = [graph, clLine, limLine]
+            xLimPl = histos["PlUpperLimit"].GetBinContent(iBinX, iBinY)
+            plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax)
+            plLimLine.SetLineColor(r.kGreen)
+            
+            graphs[name] = [graph, clLine, limLine, plLimLine]
     fileName = mergedFile().replace(".root","_%s.ps"%tag)
     
     canvas = utils.numberedCanvas()
