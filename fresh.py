@@ -1016,7 +1016,7 @@ class foo(object) :
         out = cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
                    cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
                    plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
-        out["plUpperLimit"] = plUpperLimit
+        out["PlUpperLimit"] = plUpperLimit
         return out
 
     def clsCustom(self, nToys = 200, testStatType = 3) :
