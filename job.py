@@ -40,10 +40,14 @@ def signalEff(switches, data, point) :
     return out
 
 def stuffVars(switches = None, binsMerged = None, signal = None) :
+    titles = {"xs":"#sigma (pb)",
+              "xs_NLO_over_LO": "#sigma (NLO) / #sigma (LO)",
+              }
     out = {}
-    out["xs"] = (signal["xs"], "#sigma (pb)")
-    if switches["nloToLoRatios"] :
-        out["xs_NLO_over_LO"] = (signal["xs_NLO_over_LO"], "#sigma (NLO) / #sigma (LO)")
+    for key,value in signal.iteritems() :
+        if type(value) is list : continue
+        out[key] = (value, titles[key] if key in titles else "")
+        
     for i,bin in enumerate(binsMerged) :
         for sel in ["effHad", "effMuon"] :
             out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
