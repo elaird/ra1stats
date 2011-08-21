@@ -303,8 +303,8 @@ def signalTerms(w, inputData, signalDict, rhoSignalMin) :
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
     for key,value in signalDict.iteritems() :
-        if key=="xs" : continue
-        if "NLO_over_LO" in key : continue
+        if "eff"!=key[:3] : continue
+        if type(value)!=list : continue
         for iBin,eff,corr in zip(range(len(value)), value, inputData.sigEffCorr()) :
             name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
             wimport(w, r.RooRealVar(name, name, eff*corr))
@@ -952,9 +952,7 @@ class foo(object) :
         bins = self.inputData.htBinLowerEdges()
         for d in [self.signal, self.signalExampleToStack[1]] :
             for key,value in d.iteritems() :
-                if "xs" in key : continue
-                assert ("effHad" in key) or ("effMuon" in key)
-                assert len(value)==len(bins)
+                if type(key) is list : assert len(value)==len(bins)
             
     def smOnly(self) :
         return not self.signal
@@ -987,10 +985,10 @@ class foo(object) :
             m = s.first().getMax()
             if d["upperLimit"]>upperItCut*m :
                 s.first().setMax(m*itFactor)
-                s.first().setMin(m/itFactor)
             elif d["upperLimit"]<lowerItCut*m :
                 s.first().setMax(m/itFactor)
-            else : return d
+            else :
+                break
         return d
     
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
@@ -1013,6 +1011,10 @@ class foo(object) :
             args["poiMin"] = plUpperLimit*0.5
             args["poiMax"] = plUpperLimit*2.0
 
+            s = self.wspace.set("poi"); assert s.getSize()==1
+            if s.first().getMin() : s.first().setMin(0.0)
+            if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
+            
         out = cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
                    cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
                    plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
