@@ -26,7 +26,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
-            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][2],
+            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -40,13 +40,16 @@ def signal() :
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
             "nlo": True,
             "nloToLoRatios": False,
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][3],
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
-            "ignoreSignalContaminationInMuonSample": True}
+
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][2],
+            "ignoreSignalContaminationInMuonSample": True,
+            "extraEffUncSources": ["effHadSumUncRelMcStats"],
+            }
 
 def points() :
-    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)]][-1],
+    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(14, 9, 1)]][-3],
             "listOfTestPoints": [],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
