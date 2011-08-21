@@ -10,9 +10,7 @@ CMSSM
 1 use scaled yields in lowest two bins
 2 sided-ness
 2 sys on R
-2 update muon file
-2 repair nlo
-3 CLs
+2 nlo scale variations
 3 trigger efficiency in had control sample
 3 trigger efficiency in mu-mu control sample
 4 upgrade dirac delta
@@ -23,6 +21,7 @@ SMS
 remove hard-coded HT thresholds in smsHistoSpec(), smsXsHisto(), smsNeventsInHisto()
 
 check signal efficiency merging
+separate eff unc. for hadrons and muons
 
 technical
 ---------
