@@ -40,9 +40,14 @@ def signalEff(switches, data, point) :
     return out
 
 def stuffVars(switches = None, binsMerged = None, signal = None) :
-    titles = {"xs":"#sigma (pb)",
+    titles = {"xs": "#sigma (pb)",
               "xs_NLO_over_LO": "#sigma (NLO) / #sigma (LO)",
+              "nEventsIn": "N events in",
+              "effHadSum": "eff. of hadronic selection (all bins summed)",
+              "nEventsHad": "N events after selection (all bins summed)",
+              "effHadSumUncRelMcStats": "rel. unc. on total had. eff. from MC stats",
               }
+    
     out = {}
     for key,value in signal.iteritems() :
         if type(value) is list : continue
@@ -83,7 +88,7 @@ def signalDict(switches, data, point) :
         out["eff%sSum"%sample] = effSum(out, samples = [sample])
         out["nEvents%s"%sample] = out["eff%sSum"%sample]*out["nEventsIn"]
         if out["nEvents%s"%sample] :
-            out["eff%sSumUncRel"%sample] = 1.0/math.sqrt(out["nEvents%s"%sample])
+            out["eff%sSumUncRelMcStats"%sample] = 1.0/math.sqrt(out["nEvents%s"%sample])
         
     if switches["nloToLoRatios"] :    
         signal["xs_NLO_over_LO"] = signal["xs"]/hp.loXsHisto().GetBinContent(*point) if hp.loXsHisto().GetBinContent(*point) else 0.0
