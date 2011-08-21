@@ -49,7 +49,7 @@ def signal() :
             }
 
 def points() :
-    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(14, 9, 1)]][-3],
+    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][-1],
             "listOfTestPoints": [],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
@@ -91,6 +91,7 @@ def checkAndAdjust(d) :
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
         d["nIterationsMax"] = 10
+        if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
         d["plSeedForCLs"] = True
         d["minEventsIn"] =  9900.
         d["maxEventsIn"] = 10100.
