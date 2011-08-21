@@ -412,8 +412,24 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
     calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
-    out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+
     out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
+    out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+
+    ##doesn't work
+    #status = r.std.vector('bool')()
+    #status.push_back(False)
+    #out["upperLimit"] = lInt.UpperLimit(wspace.var("f"), status.front())
+    #out["status"] = status.at(0)
+
+    ##doesn't work
+    #status = array.array('c', ["a"])
+    #out["upperLimit"] = lInt.UpperLimit(wspace.var("f"), status)
+    #out["status"] = ord(status[0])
+
+    ##perhaps works but offers no information
+    #out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+    #out["status"] = lInt.FindLimits(wspace.var("f"), r.Double(), r.Double())
 
     if makePlots :
         canvas = r.TCanvas()
@@ -987,6 +1003,7 @@ class foo(object) :
             m = s.first().getMax()
             if d["upperLimit"]>upperItCut*m :
                 s.first().setMax(m*itFactor)
+                s.first().setMin(m/itFactor)
             elif d["upperLimit"]<lowerItCut*m :
                 s.first().setMax(m/itFactor)
             else :
