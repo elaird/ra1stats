@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import sys,cPickle,fresh
+import sys,cPickle,math
+import fresh
 import configuration as conf
 import histogramProcessing as hp
 
@@ -16,7 +17,10 @@ def description(key, cl = None) :
     if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
     else : return ""
 
-def signalEff(switches, data, binsInput, binsMerged, point) :
+def signalEff(switches, data, point) :
+    binsInput = data.htBinLowerEdgesInput()
+    binsMerged =  data.htBinLowerEdges()
+    
     out = {}
     for item in ["effHad"]+([] if switches["ignoreSignalContaminationInMuonSample"] else ["effMuon"]) :
         box = item.replace("eff","").lower()
@@ -30,12 +34,12 @@ def signalEff(switches, data, binsInput, binsMerged, point) :
             out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_NLO_over_LO"])]
         
     if switches["ignoreSignalContaminationInMuonSample"] :
-        out["effMuon"] = tuple([0.0]*len(out["effHad"]))
+        out["effMuon"] = [0.0]*len(out["effHad"])
         if switches["nloToLoRatios"] :        
-            out["effMuon_NLO_over_LO"] = tuple([0.0]*len(out["effHad"]))
+            out["effMuon_NLO_over_LO"] = [0.0]*len(out["effHad"])
     return out
 
-def stuffVars(switches, binsMerged, signal) :
+def stuffVars(switches = None, binsMerged = None, signal = None) :
     out = {}
     out["xs"] = (signal["xs"], "#sigma (pb)")
     if switches["nloToLoRatios"] :
@@ -47,9 +51,9 @@ def stuffVars(switches, binsMerged, signal) :
                 out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")
     return out
 
-def printDict(signal) :
+def printDict(d) :
     print "{"
-    for key,value in signal.iteritems() :
+    for key,value in d.iteritems() :
         out = '"%s":'%key
         if type(value)!=tuple and type(value)!=list :
             out+=str(value)
@@ -64,36 +68,37 @@ def effSum(signal = None, samples = []) :
         if not any([key=="eff"+sample for sample in samples]) : continue
         total += sum(value)
     return total
+
+def signalDict(switches, data, point) :
+    out = {}
+    out.update(signalEff(switches, data, point))
+
+    out["xs"] = hp.xsHisto().GetBinContent(*point)
+    out["nEventsIn"] = hp.nEventsInHisto().GetBinContent(*point)
+    for sample in ["Had", "Muon"] :
+        out["eff%sSum"%sample] = effSum(out, samples = [sample])
+        out["nEvents%s"%sample] = out["eff%sSum"%sample]*out["nEventsIn"]
+        if out["nEvents%s"%sample] :
+            out["eff%sSumUncRel"%sample] = 1.0/math.sqrt(out["nEvents%s"%sample])
         
-def onePoint(switches = None, data = None, point = None) :
-    binsInput = data.htBinLowerEdgesInput()
-    binsMerged = data.htBinLowerEdges()
-    
-    signal = {}
-    signal["xs"] = hp.xsHisto().GetBinContent(*point)
-    
     if switches["nloToLoRatios"] :    
         signal["xs_NLO_over_LO"] = signal["xs"]/hp.loXsHisto().GetBinContent(*point) if hp.loXsHisto().GetBinContent(*point) else 0.0
+    return out
 
-    for key,value in signalEff(switches, data, binsInput, binsMerged, point).iteritems() :
-        signal[key] = value
-
+def onePoint(switches = None, data = None, point = None) :
+    signal = signalDict(switches, data, point)
     printDict(signal)
     out = {}
-    out["nEventsIn"] = (hp.nEventsInHisto().GetBinContent(*point), "N events in")
-    nEventsIn = out["nEventsIn"][0]
     eventsInRange = True
-    if switches["minEventsIn"]!=None : eventsInRange &= switches["minEventsIn"]<=nEventsIn
-    if switches["maxEventsIn"]!=None : eventsInRange &= nEventsIn<=switches["maxEventsIn"]
+    if switches["minEventsIn"]!=None : eventsInRange &= switches["minEventsIn"]<=signal["nEventsIn"]
+    if switches["maxEventsIn"]!=None : eventsInRange &= signal["nEventsIn"]<=switches["maxEventsIn"]
     if eventsInRange :
-        out.update(stuffVars(switches, binsMerged, signal))
-        out["effHadSum"] = (effSum(signal, samples = ["Had"]), "effHadSum")
-        eff = out["effHadSum"][0]
-        out["nEventsHad"] = (eff*nEventsIn, "N events after selection (all bins summed)")
-        if bool(eff) : results(switches = switches, data = data, signal = signal, out = out)
-    writeNumbers(conf.strings(*point)["pickledFileName"], out)
+        out.update(stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
+        if bool(signal["effHadSum"]) : out.update(results(switches = switches, data = data, signal = signal))
+    return out
 
-def results(switches = None, data = None, signal = None, out = None) :
+def results(switches = None, data = None, signal = None) :
+    out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
         f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"], signal = signal,
@@ -127,7 +132,7 @@ def results(switches = None, data = None, signal = None, out = None) :
                 out["%s%g"%(key, cl2)] = (value, description(key, cl2))
                 out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
             out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
-    return
+    return out
 
 def compare(item, threshold) :
     return 2.0*(item<threshold)-1.0
@@ -136,7 +141,7 @@ def go() :
     s = conf.switches()
     data = conf.data()
     for point in points() :
-        onePoint(switches = s, data = data, point = point)
+        writeNumbers(conf.strings(*point)["pickledFileName"], onePoint(switches = s, data = data, point = point))
 
 if False :
     import cProfile
