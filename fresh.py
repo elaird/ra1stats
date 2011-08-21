@@ -289,7 +289,7 @@ def muonTerms(w, inputData, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def signalTerms(w, inputData, signalDict, rhoSignalMin) :
+def signalTerms(w = None, inputData = None, signalDict = {}, extraSigEffUnc = [], rhoSignalMin = None) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", signalDict["xs"]))
@@ -299,7 +299,8 @@ def signalTerms(w, inputData, signalDict, rhoSignalMin) :
     #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, rhoSignalMin, 2.0))
     #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.8, 1.2))
-    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", inputData.fixedParameters()["sigmaLumiLike"]))
+    deltaSignal = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalDict[item] for item in extraSigEffUnc])
+    wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", deltaSignal))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
 
     for key,value in signalDict.iteritems() :
@@ -323,7 +324,7 @@ def multi(w, variables, inputData) :
     return out
 
 def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, nFZinv = None,
-                    qcdSearch = None, signal = {}, smOnly = None, simpleOneBin = {}, rhoSignalMin = 0.0,
+                    qcdSearch = None, extraSigEffUnc = [], signal = {}, smOnly = None, simpleOneBin = {}, rhoSignalMin = 0.0,
                     includeHadTerms = None, hadControlSamples = [],
                     includeMuonTerms = None, includePhotTerms = None, includeMumuTerms = None) :
     terms = []
@@ -333,9 +334,8 @@ def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, n
     multiBinNuis = []
 
     w = wspace
-
     if not smOnly :
-        signalTerms(w, inputData, signal, rhoSignalMin)
+        signalTerms(w = w, inputData = inputData, signalDict = signal, extraSigEffUnc = extraSigEffUnc, rhoSignalMin = rhoSignalMin)
         terms.append("signalTerms")
         obs.append("oneRhoSignal")
         nuis.append("rhoSignal")
@@ -911,9 +911,10 @@ def note(REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, ignoreSignal
     return out
 
 class foo(object) :
-    def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, qcdSearch = False, signal = {}, signalExampleToStack = ("", {}), trace = False,
-                 simpleOneBin = {}, hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False, rhoSignalMin = 0.0) :
-        for item in ["inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "signalExampleToStack",
+    def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, qcdSearch = False, extraSigEffUnc = [],
+                 signal = {}, signalExampleToStack = ("", {}), trace = False, rhoSignalMin = 0.0,
+                 simpleOneBin = {}, hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False) :
+        for item in ["inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "extraSigEffUnc", "signal", "signalExampleToStack",
                      "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms", "rhoSignalMin"] :
             setattr(self, item, eval(item))
 
@@ -924,7 +925,8 @@ class foo(object) :
         self.wspace = r.RooWorkspace("Workspace")
 
         args = {}
-        for item in ["wspace", "inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "signal", "simpleOneBin", "hadControlSamples", "rhoSignalMin"] :
+        for item in ["wspace", "inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "extraSigEffUnc", "signal",
+                     "simpleOneBin", "hadControlSamples", "rhoSignalMin"] :
             args[item] = getattr(self, item)
         for item in ["had", "muon", "phot", "mumu"] :
             args["include%s%sTerms"%(item[0].capitalize(),item[1:])] = getattr(self,"%sTerms"%item)
