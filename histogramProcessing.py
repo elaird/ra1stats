@@ -60,7 +60,7 @@ def checkHistoBinning() :
                 print h,properties([h])
             assert False
 
-def fillHoles(h, nZeroNeighborsAllowed = 0, cutFunc = None) :
+def fillHoles(h, nZeroNeighborsAllowed = 0, cutFunc = None, mask = None) :
     def avg(items) :
         out = sum(items)
         n = len(items) - items.count(0.0)
@@ -75,6 +75,8 @@ def fillHoles(h, nZeroNeighborsAllowed = 0, cutFunc = None) :
                 z = h.GetZaxis().GetBinLowEdge(iBinZ)
                 if h.GetBinContent(iBinX, iBinY, iBinZ) : continue
                 if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
+                if mask!=None and (iBinX, iBinY, iBinZ) not in mask : continue
+                
                 items = []
                 if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
                 if iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
