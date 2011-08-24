@@ -88,6 +88,16 @@ def fillHoles(h, nZeroNeighborsAllowed = 0, cutFunc = None) :
                           (h.GetName(), iBinX, iBinY, iBinZ, value, items.count(0.0))
     return h
         
+def killPoints(h, cutFunc = None) :
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        x = h.GetXaxis().GetBinLowEdge(iBinX)
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            y = h.GetYaxis().GetBinLowEdge(iBinY)
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :
+                z = h.GetZaxis().GetBinLowEdge(iBinZ)
+                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
+    return h
+        
 def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
