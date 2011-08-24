@@ -40,7 +40,7 @@ def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None
     if not noOneThird :
         out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
     for d in out :
-        d["graph"] = excludedGraph(h, d["factor"], model, interBin, pruneAndExtrapolate, yValueToPrune)
+        d["graph"] = excludedGraph(h, d["factor"], model, interBin)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
         d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin)
     return out
@@ -56,30 +56,10 @@ def allMatch(value, y, threshold, iStart, N) :
             count +=1
     return count==(N-iStart)
 
-def extrapolatedGraph(h, gr, yValueToPrune) :
-    grOut = r.TGraph()
-    grOut.SetName("%s_extrapolated"%gr.GetName())
-    X = gr.GetX()
-    Y = gr.GetY()
-    N = gr.GetN()
-    if N :
-        grOut.SetPoint(0, X[0] - binWidth(h, "X")/2.0, Y[0] - binWidth(h, "Y")/2.0)
-        index = 1
-        more = True
-        for i in range(N) :
-            if not more : continue
-            if allMatch(value = yValueToPrune, y = Y, threshold = 0.1, iStart = i, N = N) :
-                more = False #prune points if "y=100.0 from here to end"
-            grOut.SetPoint(index, X[index-1], Y[index-1])
-            index +=1
-        grOut.SetPoint(index, X[index-2], yValueToPrune - binWidth(h, "Y")/2.0)
-    return grOut
-    
-def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80) :
+def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", prune = False) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
-    assert not pruneAndExtrapolate,"Implement this."
     refHisto = refXsHisto(model)
 
     d = collections.defaultdict(list)
@@ -103,6 +83,8 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
     for x in sorted(d.keys()) :
         values = sorted(d[x])
         values.reverse()
+        if prune : values = [values[0], values[-1]]
+        
         l1+= [(x,y) for y in values[:-1]]
         l2+= [(x,y) for y in values[-1:]]
     l2.reverse()
@@ -112,8 +94,6 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
     for i,t in enumerate(l1+l2) :
         out.SetPoint(i,*t)
 
-    #if pruneAndExtrapolate :
-    #    out = extrapolatedGraph(h, out, yValueToPrune)
     return out
 
 def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge") :
@@ -180,6 +160,25 @@ def drawGraphs(graphs) :
     legend.Draw("same")
     return legend,graphs
 
+def extrapolatedGraph(h, gr, yValueToPrune) :
+    grOut = r.TGraph()
+    grOut.SetName("%s_extrapolated"%gr.GetName())
+    X = gr.GetX()
+    Y = gr.GetY()
+    N = gr.GetN()
+    if N :
+        grOut.SetPoint(0, X[0] - binWidth(h, "X")/2.0, Y[0] - binWidth(h, "Y")/2.0)
+        index = 1
+        more = True
+        for i in range(N) :
+            if not more : continue
+            if allMatch(value = yValueToPrune, y = Y, threshold = 0.1, iStart = i, N = N) :
+                more = False #prune points if "y=100.0 from here to end"
+            grOut.SetPoint(index, X[index-1], Y[index-1])
+            index +=1
+        grOut.SetPoint(index, X[index-2], yValueToPrune - binWidth(h, "Y")/2.0)
+    return grOut
+    
 def excludedGraphOld(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
