@@ -26,7 +26,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
-            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0],
+            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][2],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -36,8 +36,14 @@ def signal() :
             "maxSignalXsForConsideration": None,
             "fillHolesInInput": False,
             "fillHolesInOutput": True,
-            "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
-                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
+            "killPointsInOutput": True,
+            #"smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
+            #               "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
+            "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9)},
+            "smsMask":{"T1":[( 22,   4,   1), ( 26,   5,   1), ( 34,  16,   1), ( 40,  10,   1)],
+                       "T2":[]},
+                        
             "nlo": True,
             "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
