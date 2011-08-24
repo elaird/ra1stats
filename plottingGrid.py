@@ -3,7 +3,7 @@ import os,math,utils
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
-from histogramProcessing import mergedFile,fillHoles,printHoles
+from histogramProcessing import mergedFile,fillHoles,printHoles,killPoints
 import ROOT as r
 
 def setupRoot() :
@@ -122,7 +122,8 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
     if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 2, cutFunc = s["smsCutFunc"][s["signalModel"]])
-
+    if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = s["smsCutFunc"][s["signalModel"]])
+    
     assert len(s["CL"])==1
     adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0]))
 
@@ -338,7 +339,7 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], outputRootFile = False) :
+def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False) :
     assert tag
     
     inFile = mergedFile()
@@ -362,7 +363,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], outputRootF
 
     names = sortedNames(histos = f.GetListOfKeys(), first = first, last = last)
 
-    switches = conf.switches()
+    s = conf.switches()
 
     if outputRootFile :
         outFile = r.TFile(rootFileName, "RECREATE")
@@ -371,12 +372,17 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], outputRootF
     suppressed = []
     for name in names :
         if whiteListMatch and not any([item in name for item in whiteListMatch]) : continue
+        if any([item in name for item in blackListMatch]) : continue
         
         h2 = threeToTwo(f.Get(name))
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
-                      logZ = ["xs", "nEventsHad"], switches = switches, suppressed = suppressed)
+                      logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
         if outputRootFile :
             outFile.cd()
+            cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None
+            mask = s["smsMask"][s["signalModel"]] if s["signalModel"] in s["smsMask"] else []
+            if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 0, cutFunc = cutFunc, mask = mask)
+            if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = cutFunc)
             h2.Write()
             r.gROOT.cd()
 
@@ -469,7 +475,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     
 def makePlots() :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
-    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], outputRootFile = True)
+    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True)
 
     s = conf.switches()
     if len(s["signalModel"])==2 and s["method"]=="CLs" :
