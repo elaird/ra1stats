@@ -1021,8 +1021,11 @@ class foo(object) :
     def cls(self, cl = 0.95, nToys = 300, calculatorType = 0, testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1,
             plSeed = False, plNIterationsMax = None) :
         args = {}
+        out = {}
         if plSeed :
             plUpperLimit = self.interval(cl = cl, nIterationsMax = plNIterationsMax)["upperLimit"]
+            out["PlUpperLimit"] = plUpperLimit
+
             #args["nPoints"] = 3
             #args["poiMin"] = plUpperLimit*0.5
             #args["poiMax"] = plUpperLimit*1.5
@@ -1034,10 +1037,10 @@ class foo(object) :
             if s.first().getMin() : s.first().setMin(0.0)
             if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
             
-        out = cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
+        out2 = cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
                    cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
                    plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
-        out["PlUpperLimit"] = plUpperLimit
+        out.update(out2)
         return out
 
     def clsCustom(self, nToys = 200, testStatType = 3) :
