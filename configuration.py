@@ -41,7 +41,7 @@ def signal() :
             #               "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9)},
-            "smsMask":{"T1":[( 22,   4,   1), ( 26,   5,   1), ( 34,  16,   1), ( 40,  10,   1)],
+            "smsMask":{"T1":[(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
                        "T2":[]},
                         
             "nlo": True,
@@ -49,14 +49,14 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][2],
-            "ignoreSignalContaminationInMuonSample": True,
-            "extraEffUncSources": ["effHadSumUncRelMcStats"],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][0],
+            "ignoreSignalContaminationInMuonSample": False,
             }
 
 def points() :
     return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][-1],
             "listOfTestPoints": [],
+            #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
 
@@ -92,6 +92,7 @@ def checkAndAdjust(d) :
     d["plSeedForCLs"] = False
     d["minEventsIn"] = None
     d["maxEventsIn"] = None
+    d["extraEffUncSources"] = []
     
     if len(d["signalModel"])==2 :
         d["nlo"] = False
@@ -101,7 +102,7 @@ def checkAndAdjust(d) :
         d["plSeedForCLs"] = True
         d["minEventsIn"] =  9900.
         d["maxEventsIn"] = 10100.
-        
+        d["extraEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
     else :
