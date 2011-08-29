@@ -82,7 +82,10 @@ def signalDict(switches, data, point) :
     out = {}
     out.update(signalEff(switches, data, point))
 
-    out["xs"] = hp.xsHisto().GetBinContent(*point)
+    xsHisto = hp.xsHisto()
+    out["xs"] = xsHisto.GetBinContent(*point)
+    out["x"] = xsHisto.GetXaxis().GetBinLowEdge(point[0])
+    out["y"] = xsHisto.GetYaxis().GetBinLowEdge(point[1])
     out["nEventsIn"] = hp.nEventsInHisto().GetBinContent(*point)
     for sample in ["Had", "Muon"] :
         out["eff%sSum"%sample] = effSum(out, samples = [sample])
