@@ -368,9 +368,10 @@ class validationPlotter(object) :
         self.ratioPlot(note = "Zinv scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, specs = [
             {"num":"zInv",  "numType":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv", "color":r.kRed}], goptions = "hist")
         
-        self.validationPlot(note = "fraction of EWK background which is Zinv (result of fit)",
-                            legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", minimum = 0.0, maximum = 1.0,
-                            otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z->inv / fit EWK", "stack":None}], yLabel = "")
+        self.validationPlot(note = "fraction of EWK background which is Zinv (result of fit)" if not self.printPages else "",
+                            fileName = "fZinv_fit", legend0 = (0.2, 0.8), legend1 = (0.55, 0.85),
+                            obsKey = "", obsLabel = "", minimum = 0.0, maximum = 1.0,
+                            otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z#rightarrow#nu#bar{#nu} / fit EWK", "stack":None}], yLabel = "")
         
     def mcFactorPlots(self) :
         self.validationPlot(note = "muon translation factor (from MC)",
@@ -465,11 +466,17 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName)
         return
 
-    def correlationHist(self) :
+    def correlationHist(self, fileName = "correlation_matrix") :
         h = self.results.correlationHist()
         h.SetStats(False)
         h.Draw("colz")
-        self.canvas.Print(self.psFileName)
+
+	if self.printPages and fileName :
+	    h.SetTitle("")
+	    printOnePage(self.canvas, fileName)
+	    #printOnePage(self.canvas, fileName, ext = ".C")
+	self.canvas.Print(self.psFileName)
+        
         
     def randomizedPars(self, nValues) :
         return [copy.copy(self.results.randomizePars()) for i in range(nValues)]
