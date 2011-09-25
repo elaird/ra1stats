@@ -3,23 +3,17 @@
 def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     d = {}
 
-    d["alphaT"] = {0.52: {"controlSamples": False, "htBinMask": [1]*nHtBins},
-                   0.53: {"controlSamples": False, "htBinMask": [1]*nHtBins},
-                   0.55: {"controlSamples": True,  "htBinMask": [1]*nHtBins},
+    d["alphaT"] = {#0.52: {"htBinMask": [1]*nHtBins, "samples": ["had"]},
+                   #0.53: {"htBinMask": [1]*nHtBins, "samples": ["had"]},
+                   0.55: {"htBinMask": [1]*nHtBins, "samples": ["had", "muon", "phot", "mumu"][:-1]},
                    }
 
     if simpleOneBin :
         d["simpleOneBin"] = {"b":3.0}
         key = max(d["alphaT"].keys())
-        d["alphaT"] = {key: {"controlSamples": False, "htBinMask": [0]*(nHtBins-1)+[1]} }
+        d["alphaT"] = {key: {"samples": ["had"], "htBinMask": [0]*(nHtBins-1)+[1]} }
     else :
         d["simpleOneBin"] = {}
-        d["hadTerms"]  = True
-        d["muonTerms"] = True
-        d["mumuTerms"] = False
-        d["photTerms"] = True
-
-    d["hadControlSamples"] = []
     
     d["REwk"] = ["", "Linear", "Constant"][2]
     d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
