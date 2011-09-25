@@ -31,6 +31,10 @@ def method() :
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
 
+def data() :
+    import inputData
+    return inputData.data2011()
+
 def signal() :
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
@@ -67,21 +71,14 @@ def other() :
             "envScript": ["icJob.sh", "env.sh"][1],
             "nJobsMax": 2000}
 
-def dataYear() :
-    return {"dataYear": [2010, 2011][1]}
-
 def switches() :
     out = {}
-    dicts = [dataYear(), likelihood(), method(), signal(), points(), other()]
+    dicts = [likelihood(), method(), signal(), points(), other()]
     keys = sum([d.keys() for d in dicts], [])
     assert len(keys)==len(set(keys))
     for d in dicts : out.update(d)
     checkAndAdjust(out)
     return out
-
-def data() :
-    exec("from inputData import data%s as data"%str(switches()["dataYear"]))
-    return data()
 
 def checkAndAdjust(d) :
     assert d["signalModel"] in ["T1", "T2", "tanBeta10", "tanBeta40"]
@@ -117,7 +114,6 @@ def mergedFileStem(outputDir, switches) :
                      ])
     for item in ["computeExpectedLimit"] :
         if switches[item] : out += "_%s"%item
-    if switches["dataYear"]==2010 : out +="_2010"
     if "CLs" in switches["method"] : out +="_TS%d"%switches["testStatistic"]
     return out
 
