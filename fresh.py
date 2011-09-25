@@ -826,7 +826,7 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
     return out
 
-def ensemble(wspace, data, nToys = None, note = "", plots = True) :
+def ensemble(wspace, data, nToys = None, note = "", plots = True, plotsDir = "plots") :
     def parHistos(pars = None, shift = True) :
         histos = {}
         factor = 2.0
@@ -884,7 +884,7 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True) :
     pHistos2 = parHistos2D(pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
     canvas = utils.numberedCanvas()
-    psFileName = "ensemble_%s.ps"%note
+    psFileName = "%s/ensemble_%s.ps"%(plotsDir, note)
     canvas.Print(psFileName+"[")
 
     utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
@@ -895,7 +895,7 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True) :
     utils.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
         
     canvas.Print(psFileName+"]")        
-    utils.ps2pdf(psFileName)
+    utils.ps2pdf(psFileName, sameDir = True)
     
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
