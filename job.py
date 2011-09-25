@@ -2,6 +2,7 @@
 import sys,cPickle,math
 import fresh
 import configuration as conf
+import likelihoodSpec as ls
 import histogramProcessing as hp
 
 def points() :
@@ -97,7 +98,7 @@ def signalDict(switches, data, point) :
         signal["xs_NLO_over_LO"] = signal["xs"]/hp.loXsHisto().GetBinContent(*point) if hp.loXsHisto().GetBinContent(*point) else 0.0
     return out
 
-def onePoint(switches = None, data = None, point = None) :
+def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) :
     signal = signalDict(switches, data, point)
     printDict(signal)
     out = {}
@@ -106,19 +107,15 @@ def onePoint(switches = None, data = None, point = None) :
     if switches["maxEventsIn"]!=None : eventsInRange &= signal["nEventsIn"]<=switches["maxEventsIn"]
     if eventsInRange :
         out.update(stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
-        if bool(signal["effHadSum"]) : out.update(results(switches = switches, data = data, signal = signal))
+        if bool(signal["effHadSum"]) : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
     return out
 
-def results(switches = None, data = None, signal = None) :
+def results(switches = None, data = None, likelihoodSpec = None, signal = None) :
     out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
-        args = {}
-        for item in ["REwk", "RQcd", "nFZinv", "extraSigEffUncSources", "rhoSignalMin", "simpleOneBin",
-                     "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
-            args[item] = switches[item]
-                     
-        f = fresh.foo(inputData = data, signal = signal, **args)
+        f = fresh.foo(inputData = data, signal = signal, likelihoodSpec = likelihoodSpec,
+                      extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
 
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"],
@@ -154,8 +151,9 @@ def compare(item, threshold) :
 def go() :
     s = conf.switches()
     data = conf.data()
+    likelihoodSpec = ls.spec()
     for point in points() :
-        writeNumbers(conf.strings(*point)["pickledFileName"], onePoint(switches = s, data = data, point = point))
+        writeNumbers(conf.strings(*point)["pickledFileName"], onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
 
 if False :
     import cProfile

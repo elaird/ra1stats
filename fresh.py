@@ -1016,7 +1016,7 @@ class foo(object) :
         return d
     
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
-        if self.qcdSearch :
+        if self.likelihoodSpec["qcdSearch"] :
             return plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
         elif method=="profileLikelihood" :
             return plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
