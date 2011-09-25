@@ -3,9 +3,9 @@
 def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     d = {}
 
-    d["alphaT"] = {#0.52: {"htBinMask": [1]*nHtBins, "samples": ["had"]},
-                   #0.53: {"htBinMask": [1]*nHtBins, "samples": ["had"]},
-                   0.55: {"htBinMask": [1]*nHtBins, "samples": ["had", "muon", "phot", "mumu"][:-1]},
+    d["alphaT"] = {#"52": {"htBinMask": [1]*nHtBins, "samples": ["had"]},
+                   #"53": {"htBinMask": [1]*nHtBins, "samples": ["had"]},
+                   "55": {"htBinMask": [1]*nHtBins, "samples": ["had", "muon", "phot", "mumu"][:-1]},
                    }
 
     if simpleOneBin :
