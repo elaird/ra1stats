@@ -47,8 +47,9 @@ def ps2pdf(psFileName, removePs = True, sameDir = False) :
     os.system(cmd)
     if removePs : os.remove(psFileName)
 #####################################
-def epsToPdf(epsFileName, removeEps = True) :
-    os.system("epstopdf %s"%epsFileName)
+def epsToPdf(epsFileName, removeEps = True, sameDir = False) :
+    cmd = ("epstopdf %s"%epsFileName) if not sameDir else ("epstopdf %s --outfile=%s"%(epsFileName, epsFileName.replace(".eps", ".pdf")))
+    os.system(cmd)
     if removeEps : os.remove(epsFileName)
 #####################################
 def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
