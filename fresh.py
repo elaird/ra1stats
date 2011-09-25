@@ -886,12 +886,13 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True) :
     canvas = utils.numberedCanvas()
     psFileName = "ensemble_%s.ps"%note
     canvas.Print(psFileName+"[")
-    plotting.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
+
+    utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
-    plotting.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
+    utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
-    plotting.cyclePlot(d = oHistos, canvas = canvas, psFileName = psFileName)
-    plotting.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
+    utils.cyclePlot(d = oHistos, canvas = canvas, psFileName = psFileName)
+    utils.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
         
     canvas.Print(psFileName+"]")        
     utils.ps2pdf(psFileName)
@@ -1055,13 +1056,18 @@ class foo(object) :
         pValue(self.wspace, self.data, nToys = nToys, note = self.note())
 
     def ensemble(self, nToys = 200) :
-        results,i = ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
-        if results :
+        out = ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
+        if out :
+            results,i = out
             args = {"wspace": self.wspace, "results": results, "lumi": self.inputData.lumi(),
                     "htBinLowerEdges": self.inputData.htBinLowerEdges(), "htMaxForPlot": self.inputData.htMaxForPlot(),
-                    "REwk": self.REwk, "RQcd": self.RQcd, "hadControlLabels": self.hadControlSamples, "mumuTerms": self.mumuTerms,
                     "smOnly": self.smOnly(), "note": self.note()+"_toy%d"%i, "signalExampleToStack": self.signalExampleToStack,
                     "printPages": False, "toyNumber":i}
+
+            for item in ["REwk", "RQcd"] : args[item] = self.likelihoodSpec[item]
+            args["mumuTerms"] = False #temporary
+            args["hadControlLabels"] = [] #temporary
+                    
             plotter = plotting.validationPlotter(args)
             plotter.inputData = self.inputData
             plotter.go()
