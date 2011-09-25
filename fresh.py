@@ -907,7 +907,7 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
-def noteArgs() : return ["REwk", "RQcd", "nFZinv", "qcdSearch", "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"]
+def noteArgs() : return ["REwk", "RQcd", "nFZinv", "qcdSearch", "simpleOneBin"]
 
 def note(REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, ignoreSignalContaminationInMuonSample = None,
          simpleOneBin = None, hadTerms = None, hadControlSamples = [], muonTerms = None, photTerms = None, mumuTerms = None) :
@@ -927,11 +927,10 @@ def note(REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, ignoreSignal
     return out
 
 class foo(object) :
-    def __init__(self, inputData = None, REwk = None, RQcd = None, nFZinv = None, qcdSearch = False, extraSigEffUncSources = [],
-                 signal = {}, signalExampleToStack = ("", {}), trace = False, rhoSignalMin = 0.0,
-                 simpleOneBin = {}, hadTerms = True, hadControlSamples = [], muonTerms = True, photTerms = True, mumuTerms = False) :
-        for item in ["inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "extraSigEffUncSources", "signal", "signalExampleToStack",
-                     "simpleOneBin", "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms", "rhoSignalMin"] :
+    def __init__(self, inputData = None, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0,
+                 signal = {}, signalExampleToStack = ("", {}), trace = False) :
+                 
+        for item in ["inputData", "likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -941,16 +940,21 @@ class foo(object) :
         self.wspace = r.RooWorkspace("Workspace")
 
         args = {}
-        for item in ["wspace", "inputData", "REwk", "RQcd", "nFZinv", "qcdSearch", "extraSigEffUncSources", "signal",
-                     "simpleOneBin", "hadControlSamples", "rhoSignalMin"] :
+        args.update(self.likelihoodSpec)
+        del args["alphaT"]#temporary
+        for item in ["wspace", "inputData", "extraSigEffUncSources", "signal", "rhoSignalMin"] :
             args[item] = getattr(self, item)
-        for item in ["had", "muon", "phot", "mumu"] :
-            args["include%s%sTerms"%(item[0].capitalize(),item[1:])] = getattr(self,"%sTerms"%item)
-        args["smOnly"] = self.smOnly()
-        setupLikelihood(**args)
+
+        #loop over alphaT slices
+        assert len(self.likelihoodSpec["alphaT"])==1, "Multiple slices not yet supported."
+        for key,valueDict in self.likelihoodSpec["alphaT"].iteritems() :
+            for item in ["had", "muon", "phot", "mumu"] :
+                args["include%s%sTerms"%(item[0].capitalize(),item[1:])] = (item in valueDict["samples"])
+            args["smOnly"] = self.smOnly()
+            setupLikelihood(**args)
         
         self.data = dataset(obs(self.wspace))
-        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), self.qcdSearch)
+        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), self.likelihoodSpec["qcdSearch"])
 
         if trace :
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
@@ -958,15 +962,16 @@ class foo(object) :
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
 
     def checkInputs(self) :
-        assert self.REwk in ["", "Exp", "Linear", "Constant"]
-        assert self.RQcd in ["FallingExp", "FallingExpA", "Zero"]
-        assert self.nFZinv in ["One", "Two", "All"]
-        if self.simpleOneBin : 
-            for item in ["hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
-                assert not getattr(self,item),item
-        if self.qcdSearch :
+        l = self.likelihoodSpec
+        assert l["REwk"] in ["", "Exp", "Linear", "Constant"]
+        assert l["RQcd"] in ["FallingExp", "FallingExpA", "Zero"]
+        assert l["nFZinv"] in ["One", "Two", "All"]
+        if l["simpleOneBin"] : 
+            for item in ["hadTerms", "muonTerms", "photTerms", "mumuTerms"] :
+                assert not l[item]
+        if l["qcdSearch"] :
             assert self.smOnly()
-            assert "FallingExp" in self.RQcd
+            assert "FallingExp" in l["RQcd"]
         bins = self.inputData.htBinLowerEdges()
         for d in [self.signal, self.signalExampleToStack[1]] :
             for key,value in d.iteritems() :
@@ -978,7 +983,7 @@ class foo(object) :
     def note(self) :
         d = {}
         for item in noteArgs() :
-            d[item] = getattr(self, item)
+            d[item] = self.likelihoodSpec[item]
         return note(**d)
     
     def debug(self) :
@@ -1068,9 +1073,15 @@ class foo(object) :
     def bestFit(self, printPages = False) :
         args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
                 "lumi": self.inputData.lumi(), "htBinLowerEdges": self.inputData.htBinLowerEdges(),
-                "htMaxForPlot": self.inputData.htMaxForPlot(), "REwk": self.REwk, "RQcd": self.RQcd,
-                "hadControlLabels": self.hadControlSamples, "mumuTerms": self.mumuTerms, "smOnly": self.smOnly(), "note": self.note(),
+                "htMaxForPlot": self.inputData.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
                 "signalExampleToStack": self.signalExampleToStack, "printPages": printPages}
+
+        for item in ["REwk", "RQcd"] :
+            args[item] = self.likelihoodSpec[item]
+
+        args["mumuTerms"] = False #temporary
+        args["hadControlLabels"] = [] #temporary
+        
         plotter = plotting.validationPlotter(args)
         plotter.inputData = self.inputData
         plotter.go()

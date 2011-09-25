@@ -69,6 +69,7 @@ broken = {
 }
 
 f = fresh.foo(inputData = data2011(),
+              likelihoodSpec = likelihoodSpec.spec(),
 
               #trace = True
 
@@ -85,11 +86,9 @@ f = fresh.foo(inputData = data2011(),
               #signalExampleToStack = ("m0=540 GeV, m12=440 GeV", filips_point1),
               #signalExampleToStack = ("m_{0} = 500 GeV;  m_{1/2} = 440 GeV", filips_point2),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
-
-              **likelihoodSpec.spec()
               )
 
-cl = 0.95 if not f.qcdSearch else 0.68
+cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = 0.95, calculatorType = 0, testStatType = 3, nToys = 2000,
 #            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
