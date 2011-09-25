@@ -1,32 +1,38 @@
 #!/usr/bin/env python
 
-def likelihood() :
+def likelihood(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     d = {}
-    if False :
-        d["simpleOneBin"] = [{}, {"b":3.0}][1]
-        d["hadTerms"]  = False
-        d["muonTerms"] = False
-        d["photTerms"] = False
+
+    d["alphaT"] = {0.52: {"controlSamples": False, "htBinMask": [1]*nHtBins},
+                   0.53: {"controlSamples": False, "htBinMask": [1]*nHtBins},
+                   0.55: {"controlSamples": True,  "htBinMask": [1]*nHtBins},
+                   }
+
+    if simpleOneBin :
+        d["simpleOneBin"] = {"b":3.0}
+        key = max(d["alphaT"].keys())
+        d["alphaT"] = {key: {"controlSamples": False, "htBinMask": [0]*(nHtBins-1)+[1]} }
     else :
-        d["simpleOneBin"] = [{}, {"b":3.0}][0]
+        d["simpleOneBin"] = {}
         d["hadTerms"]  = True
         d["muonTerms"] = True
+        d["mumuTerms"] = False
         d["photTerms"] = True
 
-    d["mumuTerms"] = False
     d["hadControlSamples"] = []
     
     d["REwk"] = ["", "Linear", "Constant"][2]
     d["RQcd"] = ["Zero", "FallingExp"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
-    d["qcdSearch"] = False
+    d["qcdSearch"] = qcdSearch
+
     return d
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
-            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][2],
+            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -58,8 +64,8 @@ def signal() :
             }
 
 def points() :
-    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][-1],
-            "listOfTestPoints": [],
+    return {"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
+            #"listOfTestPoints": [],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
@@ -89,7 +95,10 @@ def checkAndAdjust(d) :
     d["plSeedForCLs"] = False
     d["minEventsIn"] = None
     d["maxEventsIn"] = None
-    d["extraEffUncSources"] = []
+    d["extraSigEffUncSources"] = []
+
+    for key,valueDict in d["alphaT"].iteritems() :
+        assert any(valueDict["htBinMask"]), "alphaT %s has all bins masked"%str(key)
     
     if len(d["signalModel"])==2 :
         d["nlo"] = False
@@ -99,7 +108,7 @@ def checkAndAdjust(d) :
         d["plSeedForCLs"] = True
         d["minEventsIn"] =  9900.
         d["maxEventsIn"] = 10100.
-        d["extraEffUncSources"] = ["effHadSumUncRelMcStats"]
+        d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
     else :
