@@ -84,7 +84,7 @@ f = fresh.foo(inputData = data2011(),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
               #trace = True
 
-              #extraSigEffUnc = ["effHadSumUncRelMcStats"],
+              #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
               
               #simpleOneBin = {"b": 3.0},
               #hadTerms = False,

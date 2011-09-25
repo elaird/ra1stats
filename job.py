@@ -113,10 +113,12 @@ def results(switches = None, data = None, signal = None) :
     out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
-        f = fresh.foo(inputData = data, REwk = switches["REwk"], RQcd = switches["RQcd"], nFZinv = switches["nFZinv"],
-                      extraSigEffUnc = switches["extraEffUncSources"], signal = signal, rhoSignalMin = switches["rhoSignalMin"],
-                      simpleOneBin = switches["simpleOneBin"], hadTerms = switches["hadTerms"], hadControlSamples = switches["hadControlSamples"],
-                      muonTerms = switches["muonTerms"], photTerms = switches["photTerms"], mumuTerms = switches["mumuTerms"])
+        args = {}
+        for item in ["REwk", "RQcd", "nFZinv", "extraSigEffUncSources", "rhoSignalMin", "simpleOneBin",
+                     "hadTerms", "hadControlSamples", "muonTerms", "photTerms", "mumuTerms"] :
+            args[item] = switches[item]
+                     
+        f = fresh.foo(inputData = data, signal = signal, **args)
 
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"],
