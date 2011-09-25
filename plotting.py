@@ -64,8 +64,8 @@ def histoLines(args = {}, key = None, histo = None) :
     if "print" in args and args["print"] : print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
     return out
         
-def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") :
-    ps = "limits_%s.ps"%note
+def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", plotsDir = "plots") :
+    ps = "%s/limits_%s.ps"%(plotsDir, note)
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
     canvas.SetTicky()
@@ -75,12 +75,12 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "") 
 
     canvas.Print(ps)
     canvas.Print(ps+"]")
-    utils.ps2pdf(ps)
+    utils.ps2pdf(ps, sameDir = True)
 
-def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note = "") :
+def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note = "", plotsDir = "plots") :
     print "pValue =",pValue
 
-    ps = "pValue_%s.ps"%note
+    ps = "%s/pValue_%s.ps"%(plotsDir, note)
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
     canvas.SetTicky()
@@ -113,10 +113,10 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     
     canvas.Print(ps)
     canvas.Print(ps+"]")
-    utils.ps2pdf(ps)
+    utils.ps2pdf(ps, sameDir = True)
 
-def clsCustomPlots(obs = None, valuesDict = {}, note = "") :
-    ps = "clsCustom_%s.ps"%note
+def clsCustomPlots(obs = None, valuesDict = {}, note = "", plotsDir = "plots") :
+    ps = "%s/clsCustom_%s.ps"%(plotsDir, note)
 
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
@@ -163,7 +163,7 @@ def clsCustomPlots(obs = None, valuesDict = {}, note = "") :
     
     canvas.Print(ps)
     canvas.Print(ps+"]")
-    utils.ps2pdf(ps)
+    utils.ps2pdf(ps, sameDir = True)
 
 def pretty(l) :
     out = "("
@@ -190,10 +190,10 @@ def drawOne(hist, goptions, errorBand, bandFillStyle = 1001) :
     noerrors.Draw("h"+goptions)
     return [errors, noerrors]
 
-def printOnePage(canvas, fileName, ext = ".eps") :
-    fileName = fileName + ext
+def printOnePage(canvas, fileName, ext = ".eps", plotsDir = "plots", sameDir = True) :
+    fileName = "%s/%s%s"%(plotsDir, fileName, ext)
     super(utils.numberedCanvas, canvas).Print(fileName)
-    if ext==".eps" : utils.epsToPdf(fileName)
+    if ext==".eps" : utils.epsToPdf(fileName, sameDir = sameDir)
 
 def legSpec(goptions) :
     out = ""
@@ -226,6 +226,9 @@ class validationPlotter(object) :
         self.ewkType = "function" if self.REwk else "var"
         self.label = "CMS Preliminary 2011       1.1 fb^{-1}          #sqrt{s} = 7 TeV"
         self.obsLabel = "Data" if not hasattr(self, "toyNumber") else "Toy %d"%self.toyNumber
+
+        self.plotsDir = "plots"
+        utils.getCommandOutput("mkdir %s"%self.plotsDir)
         
         if not self.smOnly :
             self.signalDesc = "signal"
@@ -241,7 +244,7 @@ class validationPlotter(object) :
         
     def go(self) :
         self.canvas = utils.numberedCanvas()
-        self.psFileName = "bestFit_%s%s.ps"%(self.note, "_smOnly" if self.smOnly else "")
+        self.psFileName = "%s/bestFit_%s%s.ps"%(self.plotsDir, self.note, "_smOnly" if self.smOnly else "")
         self.canvas.Print(self.psFileName+"[")        
 
         self.hadPlots()
@@ -263,7 +266,7 @@ class validationPlotter(object) :
             #self.hadronicSummaryTable()
 
         self.canvas.Print(self.psFileName+"]")
-        utils.ps2pdf(self.psFileName)
+        utils.ps2pdf(self.psFileName, sameDir = True)
         
     def hadPlots(self) :
         vars = [
