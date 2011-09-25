@@ -323,10 +323,12 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, nFZinv = None,
-                    qcdSearch = None, extraSigEffUncSources = [], signal = {}, smOnly = None, simpleOneBin = {}, rhoSignalMin = 0.0,
-                    includeHadTerms = None, hadControlSamples = [],
-                    includeMuonTerms = None, includePhotTerms = None, includeMumuTerms = None) :
+def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
+                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, signal = {}, simpleOneBin = {},
+                    htBinMask = [], samples = [], sliceTag = "") :
+
+    hadControlSamples = [] #temporary
+
     terms = []
     obs = []
     nuis = []
@@ -352,15 +354,18 @@ def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, n
             nuis += ["A_ewk"]
             if REwk!="Constant" :
                 nuis += ["k_ewk"]
-        if includeMuonTerms or includePhotTerms or includeMumuTerms :
-            multiBinNuis += ["fZinv"]
 
+        for item in ["muon", "phot", "mumu"] :
+            if item in samples :
+                multiBinNuis += ["fZinv"]
+                break
+        
         hadTerms(w, inputData, REwk, RQcd, nFZinv, smOnly, qcdSearch, hadControlSamples)
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
         mumuTerms(w, inputData)
         
-    if includeHadTerms :
+    if "had" in samples :
         terms.append("hadTerms")
         multiBinObs.append("nHad")
 
@@ -369,19 +374,19 @@ def setupLikelihood(wspace = None, inputData = None, REwk = None, RQcd = None, n
         terms.append("hadControlTerms_%s"%item)
         multiBinObs.append("nHadControl_%s"%item)
 
-    if includePhotTerms :
+    if "phot" in samples :
         terms.append("photTerms")
         obs.append("onePhot")
         multiBinObs.append("nPhot")
         nuis.append("rhoPhotZ")
         
-    if includeMuonTerms :
+    if "muon" in samples :
         terms.append("muonTerms")
         obs.append("oneMuon")
         multiBinObs.append("nMuon")
         nuis.append("rhoMuonW")
         
-    if includeMumuTerms :
+    if "mumu" in samples :
         terms.append("mumuTerms")
         obs.append("oneMumu")
         multiBinObs.append("nMumu")
@@ -941,17 +946,21 @@ class foo(object) :
         self.wspace = r.RooWorkspace("Workspace")
 
         args = {}
+        args["smOnly"] = self.smOnly()
         args.update(self.likelihoodSpec)
-        del args["alphaT"]#temporary
+        del args["alphaT"]#pass only local slice info
+
         for item in ["wspace", "inputData", "extraSigEffUncSources", "signal", "rhoSignalMin"] :
             args[item] = getattr(self, item)
 
-        #loop over alphaT slices
         assert len(self.likelihoodSpec["alphaT"])==1, "Multiple slices not yet supported."
-        for key,valueDict in self.likelihoodSpec["alphaT"].iteritems() :
-            for item in ["had", "muon", "phot", "mumu"] :
-                args["include%s%sTerms"%(item[0].capitalize(),item[1:])] = (item in valueDict["samples"])
-            args["smOnly"] = self.smOnly()
+
+        #loop over alphaT slices
+        keys = self.likelihoodSpec["alphaT"].keys()
+        keys.sort()
+        for iKey,key in enumerate(keys) :
+            args["sliceTag"] = "_%s_%s"%(keys[iKey-1], key) if iKey!=len(keys)-1 else "%s"%key
+            args.update(self.likelihoodSpec["alphaT"][key])
             setupLikelihood(**args)
         
         self.data = dataset(obs(self.wspace))
