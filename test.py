@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import fresh
+import likelihoodSpec
 from inputData import data2010,data2011
 
 def scaled(t, factor) : return tuple([factor*item for item in t])
@@ -68,10 +69,12 @@ broken = {
 }
 
 f = fresh.foo(inputData = data2011(),
-              REwk = ["", "Linear", "Constant"][2],
-              RQcd = ["Zero", "FallingExp", "FallingExpA"][1],
-              nFZinv = ["All", "One", "Two"][0],
-              #qcdSearch = True,
+
+              #trace = True
+
+              #rhoSignalMin = 0.1,
+              #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
+
               #signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][-1],
               #signalExampleToStack = ("T1 m_{gluino} = 600 GeV, m_{LSP} = 100 GeV, xs = %g pb"%t1_600_100["xs"], t1_600_100),
               #signalExampleToStack = ("T2 39 7, xs = %g pb"%t2_39_7["xs"], t2_39_7),
@@ -82,19 +85,8 @@ f = fresh.foo(inputData = data2011(),
               #signalExampleToStack = ("m0=540 GeV, m12=440 GeV", filips_point1),
               #signalExampleToStack = ("m_{0} = 500 GeV;  m_{1/2} = 440 GeV", filips_point2),
               #signalExampleToStack = ("m0=100 GeV, m12=100 GeV", sue_anns_point),
-              #trace = True
 
-              #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
-              
-              #simpleOneBin = {"b": 3.0},
-              #hadTerms = False,
-              #photTerms = False,
-              #muonTerms = False,
-              
-              #mumuTerms = True,
-              #hadControlSamples = ["52_53"],
-              #hadControlSamples = ["53_55"],
-              #hadControlSamples = ["52_53", "53_55"],
+              **likelihoodSpec.spec()
               )
 
 cl = 0.95 if not f.qcdSearch else 0.68
