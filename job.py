@@ -2,7 +2,6 @@
 import sys,cPickle,math
 import fresh
 import configuration as conf
-import likelihoodSpec as ls
 import histogramProcessing as hp
 
 def points() :
@@ -151,7 +150,7 @@ def compare(item, threshold) :
 def go() :
     s = conf.switches()
     data = conf.data()
-    likelihoodSpec = ls.spec()
+    likelihoodSpec = conf.likelihood()
     for point in points() :
         writeNumbers(conf.strings(*point)["pickledFileName"], onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
 
