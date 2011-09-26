@@ -2,6 +2,7 @@
 import collections,cPickle,os,math
 import configuration as conf
 import histogramSpecs as hs
+import likelihoodSpec as ls
 import fresh
 import ROOT as r
 
@@ -213,11 +214,9 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     return out
 
 def mergedFile() :
-    s = conf.switches()
-    d = {}
-    for item in fresh.noteArgs()+["ignoreSignalContaminationInMuonSample"] :
-        d[item] = s[item]
-    return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], fresh.note(**d), ".root")
+    note = fresh.note(likelihoodSpec = ls.spec(),
+                      ignoreSignalContaminationInMuonSample = conf.switches()["ignoreSignalContaminationInMuonSample"])
+    return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
 
 def mergePickledFiles() :
     example = xsHisto()

@@ -910,22 +910,26 @@ def pdf(w) :
 def obs(w) :
     return w.set("obs")
 
-def noteArgs() : return ["REwk", "RQcd", "nFZinv", "qcdSearch", "simpleOneBin"]
-
-def note(REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, ignoreSignalContaminationInMuonSample = None,
-         simpleOneBin = None, hadTerms = None, muonTerms = None, photTerms = None, mumuTerms = None) :
+def sampleCode(samples) :
+    d = {"had":"h", "phot":"p", "muon":"1", "mumu":"2"}
     out = ""
-    if simpleOneBin : return "simpleOneBin"
+    for item in samples :
+        out+=d[item]
+    return out
+
+def note(likelihoodSpec = {}, ignoreSignalContaminationInMuonSample = None) :
+    l = likelihoodSpec
+    out = ""
+    if l["simpleOneBin"] : return "simpleOneBin"
     
-    if REwk : out += "REwk%s_"%REwk
-    out += "RQcd%s"%RQcd
-    out += "_fZinv%s"%nFZinv
-    if qcdSearch :        out += "_qcdSearch"
-    if hadTerms :        out += "_had"
+    if l["REwk"] : out += "REwk%s_"%l["REwk"]
+    out += "RQcd%s"%l["RQcd"]
+    out += "_fZinv%s"%l["nFZinv"]
+    if l["qcdSearch"] :  out += "_qcdSearch"
     if ignoreSignalContaminationInMuonSample :  out += "_ignoreMuContam"
-    if muonTerms :       out += "_muon"
-    if photTerms :       out += "_phot"
-    if mumuTerms :       out += "_mumu"
+
+    for key,valueDict in l["alphaT"].iteritems() :
+        out += "_%s%s"%(key, sampleCode(valueDict["samples"]))
     return out
 
 class foo(object) :
@@ -987,10 +991,7 @@ class foo(object) :
         return not self.signal
 
     def note(self) :
-        d = {}
-        for item in noteArgs() :
-            d[item] = self.likelihoodSpec[item]
-        return note(**d)
+        return note(likelihoodSpec = self.likelihoodSpec)
     
     def debug(self) :
         self.wspace.Print("v")
