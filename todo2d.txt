@@ -1,0 +1,16 @@
+to change back:
+- list of test points
+- PL -> CLs
+
+to fix:
+- grep for temporary (e.g., mumuTerms in fresh.bestfit())
+- trigger efficiency per slice
+- variable map k_qcd --> k_qcd
+- fix "not i" dependence in importEwk, importFZinv, ...
+- use ni() throughout (e.g. photTerms, muonTerms, mumuTerms, signalTerms)
+- per-slice signal efficiency
+
+to consider:
+- nBulk per slice
+- trigger efficiency where needed
+
