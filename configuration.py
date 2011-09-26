@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+def likelihood() :
+    import likelihoodSpec
+    return likelihoodSpec.spec()
+
+def data() :
+    import inputData
+    return inputData.data2011()
+
 def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
@@ -8,14 +16,6 @@ def method() :
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
-
-def likelihood() :
-    import likelihoodSpec
-    return likelihoodSpec.spec()
-
-def data() :
-    import inputData
-    return inputData.data2011()
 
 def signal() :
     return {"minSignalXsForConsideration": 1.0e-6,
@@ -55,7 +55,7 @@ def other() :
 
 def switches() :
     out = {}
-    dicts = [likelihood(), method(), signal(), points(), other()]
+    dicts = [method(), signal(), points(), other()]
     keys = sum([d.keys() for d in dicts], [])
     assert len(keys)==len(set(keys))
     for d in dicts : out.update(d)
@@ -73,9 +73,6 @@ def checkAndAdjust(d) :
     d["maxEventsIn"] = None
     d["extraSigEffUncSources"] = []
 
-    for key,valueDict in d["alphaT"].iteritems() :
-        assert any(valueDict["htBinMask"]), "alphaT %s has all bins masked"%str(key)
-    
     if len(d["signalModel"])==2 :
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
