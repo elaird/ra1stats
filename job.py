@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys,cPickle,math,copy
+import sys,cPickle,math
 import fresh
 import configuration as conf
 import histogramProcessing as hp

@@ -1003,7 +1003,7 @@ class foo(object) :
         #loop over alphaT slices
         keys = sorted(self.likelihoodSpec["alphaT"].keys())
         for iKey,key in enumerate(keys) :
-            args["sliceTag"] = "_%s_%s"%(keys[iKey-1], key) if iKey!=len(keys)-1 else "%s"%key
+            args["sliceTag"] = "_%s_%s"%(key, keys[iKey+1]) if iKey!=len(keys)-1 else "%s"%key
             args.update(self.likelihoodSpec["alphaT"][key])
             setupLikelihood(**args)
         
