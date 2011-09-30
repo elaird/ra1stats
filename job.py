@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import sys,cPickle,math
 import fresh
 import configuration as conf
@@ -106,7 +105,7 @@ def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) 
     if switches["maxEventsIn"]!=None : eventsInRange &= signal["nEventsIn"]<=switches["maxEventsIn"]
     if eventsInRange :
         out.update(stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
-        if bool(signal["effHadSum"]) : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
+        if bool(signal["effHadSum"]) and switches["method"] : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
     return out
 
 def results(switches = None, data = None, likelihoodSpec = None, signal = None) :
