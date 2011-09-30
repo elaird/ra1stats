@@ -47,8 +47,9 @@ def checkHistoBinning() :
     def histos() :
         binsInput = conf.data().htBinLowerEdgesInput()
         out = [xsHisto()]
-        for item in ["had"]+([] if conf.switches()["ignoreSignalContaminationInMuonSample"] else ["muon"]) :
-            out += [effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper) for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
+        print "Fix this."
+        #for item in ["had"]+([] if conf.switches()["ignoreSignalContaminationInMuonSample"] else ["muon"]) :
+        #    out += [effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper) for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
         return out
     
     for axis,values in properties(histos()).iteritems() :
@@ -113,7 +114,7 @@ def nEventsInHisto() :
 def effHisto(**args) :
     s = conf.switches()
     model = s["signalModel"]
-    if "tanBeta" in model : return cmssmNloEffHisto(model, **args) if s["nlo"] else cmssmLoEffHisto(model, **args)
+    if "tanBeta" in model : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
     else : return smsEffHisto(model, **args)
 
 def cmssmNEventsInHisto(model, box = "had", scale = "1") :
@@ -129,8 +130,8 @@ def cmssmLoXsHisto(model) :
     #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
     return out
 
-def cmssmLoEffHisto(model, box, scale, htLower, htUpper) :
-    s = hs.cmssmHistoSpec(model = model, box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+def cmssmLoEffHisto(**args) :
+    s = hs.cmssmHistoSpec(**args)
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     return out
 
@@ -145,15 +146,15 @@ def cmssmNloXsHisto(model, scale = "1") :
     #see links in loXsHisto
     return out
 
-def cmssmNloEffHisto(model, box, scale, htLower, htUpper) :
-    s = hs.cmssmHistoSpec(model = model, box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+def cmssmNloEffHisto(**args) :
+    s = hs.cmssmHistoSpec(**args)
     out = None
     for process in conf.processes() :
         h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
         if out is None : out = h.Clone("nloEffHisto")
         else :           out.Add(h)
     out.SetDirectory(0)
-    out.Divide(cmssmNloXsHisto(model, scale)) #divide by total xs
+    out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
     return out
 
 def smsXsHisto(model, cutFunc = None) :
@@ -212,8 +213,7 @@ def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
     return out
 
 def mergedFile() :
-    note = fresh.note(likelihoodSpec = conf.likelihood(),
-                      ignoreSignalContaminationInMuonSample = conf.switches()["ignoreSignalContaminationInMuonSample"])
+    note = fresh.note(likelihoodSpec = conf.likelihood())
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
 
 def mergePickledFiles() :

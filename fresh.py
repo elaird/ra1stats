@@ -946,13 +946,22 @@ def obs(w) :
     return w.set("obs")
 
 def sampleCode(samples) :
+    yes = []
+    no = []
+    for box,considerSignal in samples :
+        if considerSignal : yes.append(box)
+        else : no.append(box)
+
     d = {"had":"h", "phot":"p", "muon":"1", "mumu":"2"}
     out = ""
-    for item in samples :
+    for item in yes :
         out+=d[item]
+    if no :
+        out += "x"
+        for item in no : out+=d[item]
     return out
 
-def note(likelihoodSpec = {}, ignoreSignalContaminationInMuonSample = None) :
+def note(likelihoodSpec = {}) :
     l = likelihoodSpec
     out = ""
     if l["simpleOneBin"] : return "simpleOneBin"
@@ -961,7 +970,6 @@ def note(likelihoodSpec = {}, ignoreSignalContaminationInMuonSample = None) :
     out += "RQcd%s"%l["RQcd"]
     out += "_fZinv%s"%l["nFZinv"]
     if l["qcdSearch"] :  out += "_qcdSearch"
-    if ignoreSignalContaminationInMuonSample :  out += "_ignoreMuContam"
 
     for key,valueDict in l["alphaT"].iteritems() :
         out += "_%s%s"%(key, sampleCode(valueDict["samples"]))

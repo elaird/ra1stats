@@ -34,12 +34,11 @@ def signal() :
             "effRatioPlots": False,
 
             "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][0],
-            "ignoreSignalContaminationInMuonSample": False,
             }
 
 def points() :
-    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
-            "listOfTestPoints": [],
+    return {"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
+            #"listOfTestPoints": [],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }

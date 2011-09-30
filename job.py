@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys,cPickle,math
+import sys,cPickle,math,copy
 import fresh
 import configuration as conf
 import histogramProcessing as hp
@@ -19,24 +19,44 @@ def description(key, cl = None) :
 
 def signalEff(switches, data, point) :
     binsInput = data.htBinLowerEdgesInput()
+    htThresholdsInput = zip(binsInput, list(binsInput[1:])+[None])
     binsMerged =  data.htBinLowerEdges()
-    
+
+    d = conf.likelihood()["alphaT"]
+    keys = sorted(d.keys())
     out = {}
-    for item in ["effHad"]+([] if switches["ignoreSignalContaminationInMuonSample"] else ["effMuon"]) :
-        box = item.replace("eff","").lower()
-        out[item] = [hp.effHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
-                     for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
-        out[item] = data.mergeEfficiency(out[item])
-        if switches["nloToLoRatios"] :
-            out[item+"_NLO_over_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
-                                    for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
-            out[item+"_NLO_over_LO"] = data.mergeEfficiency(out[item+"_NLO_over_LO"])
-            out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_NLO_over_LO"])]
+
+    for iKey,key in enumerate(keys) :
+        nextKey = ""
+        if iKey!=len(keys)-1 :
+            nextKey = keys[iKey]
+        elif key :
+            nextKey = "inf"
         
-    if switches["ignoreSignalContaminationInMuonSample"] :
-        out["effMuon"] = [0.0]*len(out["effHad"])
-        if switches["nloToLoRatios"] :        
-            out["effMuon_NLO_over_LO"] = [0.0]*len(out["effHad"])
+        nHtBins = len(d[key]["htBinMask"])
+        for box,considerSignal in d[key]["samples"] :
+            item = "eff%s%s"%(box.capitalize(), key)
+            if not considerSignal :
+                out[item] = [0.0]*nHtBins
+                if switches["nloToLoRatios"] : out["_NLO_over_LO"%item] = out[item]
+                continue
+
+    	    out[item] = [hp.effHisto(box = box, scale = "1",
+                                     htLower = htLower, htUpper = htUpper,
+                                     alphaTLower = key, alphaTUpper = nextKey,
+                                     ).GetBinContent(*point)\
+                         for htLower, htUpper in htThresholdsInput]
+    	                 
+    	    out[item] = data.mergeEfficiency(out[item])
+    	    if switches["nloToLoRatios"] :
+    	        out[item+"_NLO_over_LO"] = [hp.loEffHisto(box = box, scale = "1",
+                                                          htLower = htLower, htUpper = htUpper,
+                                                          alphaTLower = key, alphaTUpper = nextKey,
+                                                          ).GetBinContent(*point)\
+                                            for htLower, htUpper in htThresholdsInput]
+    	        out[item+"_NLO_over_LO"] = data.mergeEfficiency(out[item+"_NLO_over_LO"])
+    	        out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_NLO_over_LO"])]
+        
     return out
 
 def stuffVars(switches = None, binsMerged = None, signal = None) :
