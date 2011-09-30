@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#####################################
 from multiprocessing import Process,JoinableQueue
 import os,subprocess,math,traceback,sys,array
 import ROOT as r

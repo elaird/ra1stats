@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import collections,cPickle,os,math
 import configuration as conf
 import histogramSpecs as hs

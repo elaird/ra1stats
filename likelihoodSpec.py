@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     d = {}
 

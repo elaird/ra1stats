@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os,math,utils
 import configuration as conf
 import histogramSpecs as hs
