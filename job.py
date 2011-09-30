@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys,cPickle,math
 import fresh
 import configuration as conf
