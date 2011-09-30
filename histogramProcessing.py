@@ -52,10 +52,10 @@ def checkHistoBinning() :
         return out
     
     for axis,values in properties(histos()).iteritems() :
-        #print "Here are the %s binnings: %s"%(axis, str(values))        
+        #print "Here are the %s binnings: %s"%(axis, str(values))
         if len(set(values))!=1 :
             print "The %s binnings do not match: %s"%(axis, str(values))
-            for h in handles() :
+            for h in histos() :
                 print h,properties([h])
             assert False
 
