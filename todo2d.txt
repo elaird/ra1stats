@@ -10,6 +10,10 @@ to fix:
 - use ni() throughout (e.g. photTerms, muonTerms, mumuTerms, signalTerms)
 - per-slice signal efficiency
 
+- histogramProcessing.checkHistoBinning
+- job.stuffVars
+- job.signalDict
+
 to consider:
 - nBulk per slice
 - trigger efficiency where needed
