@@ -365,6 +365,8 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
     multiBinNuis = []
 
     w = wspace
+    samples = [s[0] for s in samples]
+    
     if not smOnly :
         signalTerms(w = w, inputData = inputData, signalDict = signal, extraSigEffUncSources = extraSigEffUncSources, rhoSignalMin = rhoSignalMin)
         terms.append("signalTerms")
@@ -999,11 +1001,9 @@ class foo(object) :
         assert len(self.likelihoodSpec["alphaT"])==1, "Multiple slices not yet supported."
 
         #loop over alphaT slices
-        keys = self.likelihoodSpec["alphaT"].keys()
-        keys.sort()
+        keys = sorted(self.likelihoodSpec["alphaT"].keys())
         for iKey,key in enumerate(keys) :
-            #args["sliceTag"] = "_%s_%s"%(keys[iKey-1], key) if iKey!=len(keys)-1 else "%s"%key
-            args["sliceTag"] = ""
+            args["sliceTag"] = "_%s_%s"%(keys[iKey-1], key) if iKey!=len(keys)-1 else "%s"%key
             args.update(self.likelihoodSpec["alphaT"][key])
             setupLikelihood(**args)
         
