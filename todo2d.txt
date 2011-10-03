@@ -9,12 +9,9 @@ to fix:
 - fix "not i" dependence in importEwk, importFZinv, ...
 - use ni() throughout (e.g. photTerms, muonTerms, mumuTerms, signalTerms)
 - per-slice signal efficiency
-
-- histogramProcessing.checkHistoBinning
 - job.stuffVars
-- job.signalDict
 
 to consider:
 - nBulk per slice
 - trigger efficiency where needed
-
+- bin masking

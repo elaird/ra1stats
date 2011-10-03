@@ -1,4 +1,4 @@
-import collections,cPickle,os,math
+import collections
 import configuration as conf
 import histogramSpecs as hs
 import ROOT as r
@@ -27,7 +27,7 @@ def oneHisto(file, dir, name) :
     f.Close()
     return h
 
-def checkHistoBinning() :
+def checkHistoBinning(histoList = []) :
     def axisStuff(axis) :
         return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
 
@@ -44,19 +44,11 @@ def checkHistoBinning() :
                 raise ae
         return out
 
-    def histos() :
-        binsInput = conf.data().htBinLowerEdgesInput()
-        out = [xsHisto()]
-        print "Fix this."
-        #for item in ["had"]+([] if conf.switches()["ignoreSignalContaminationInMuonSample"] else ["muon"]) :
-        #    out += [effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper) for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
-        return out
-    
-    for axis,values in properties(histos()).iteritems() :
+    for axis,values in properties(histoList).iteritems() :
         #print "Here are the %s binnings: %s"%(axis, str(values))
         if len(set(values))!=1 :
             print "The %s binnings do not match: %s"%(axis, str(values))
-            for h in histos() :
+            for h in histoList :
                 print h,properties([h])
             assert False
 

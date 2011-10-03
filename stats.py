@@ -19,7 +19,7 @@ def opts() :
 def jobCmds(nSlices = None, offset = 0) :
     pwd = os.environ["PWD"]
     points = histogramProcessing.points()
-    if not offset : pickling.writeSignalFiles()
+    if not offset : pickling.writeSignalFiles(points)
     if not nSlices : nSlices = len(points)
     out = []
 

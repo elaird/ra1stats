@@ -3,61 +3,15 @@ import sys,cPickle,math
 import fresh
 import configuration as conf
 import histogramProcessing as hp
+import pickling
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
-
-def writeNumbers(fileName = None, d = None) :
-    outFile = open(fileName, "w")
-    cPickle.dump(d, outFile)
-    outFile.close()
 
 def description(key, cl = None) :
     if key[:2]=="CL" : return key
     if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
     else : return ""
-
-def signalEff(switches, data, point) :
-    binsInput = data.htBinLowerEdgesInput()
-    htThresholdsInput = zip(binsInput, list(binsInput[1:])+[None])
-    binsMerged =  data.htBinLowerEdges()
-
-    d = conf.likelihood()["alphaT"]
-    keys = sorted(d.keys())
-    out = {}
-
-    for iKey,key in enumerate(keys) :
-        nextKey = ""
-        if iKey!=len(keys)-1 :
-            nextKey = keys[iKey]
-        elif key :
-            nextKey = "inf"
-        
-        nHtBins = len(d[key]["htBinMask"])
-        for box,considerSignal in d[key]["samples"] :
-            item = "eff%s%s"%(box.capitalize(), key)
-            if not considerSignal :
-                out[item] = [0.0]*nHtBins
-                if switches["nloToLoRatios"] : out["_NLO_over_LO"%item] = out[item]
-                continue
-
-    	    out[item] = [hp.effHisto(box = box, scale = "1",
-                                     htLower = htLower, htUpper = htUpper,
-                                     alphaTLower = key, alphaTUpper = nextKey,
-                                     ).GetBinContent(*point)\
-                         for htLower, htUpper in htThresholdsInput]
-    	                 
-    	    out[item] = data.mergeEfficiency(out[item])
-    	    if switches["nloToLoRatios"] :
-    	        out[item+"_NLO_over_LO"] = [hp.loEffHisto(box = box, scale = "1",
-                                                          htLower = htLower, htUpper = htUpper,
-                                                          alphaTLower = key, alphaTUpper = nextKey,
-                                                          ).GetBinContent(*point)\
-                                            for htLower, htUpper in htThresholdsInput]
-    	        out[item+"_NLO_over_LO"] = data.mergeEfficiency(out[item+"_NLO_over_LO"])
-    	        out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_NLO_over_LO"])]
-        
-    return out
 
 def stuffVars(switches = None, binsMerged = None, signal = None) :
     titles = {"xs": "#sigma (pb)",
@@ -91,34 +45,8 @@ def printDict(d) :
         print out+","
     print "}"
 
-def effSum(signal = None, samples = []) :
-    total = 0.0
-    for key,value in signal.iteritems() :
-        if not any([key=="eff"+sample for sample in samples]) : continue
-        total += sum(value)
-    return total
-
-def signalDict(switches, data, point) :
-    out = {}
-    out.update(signalEff(switches, data, point))
-
-    xsHisto = hp.xsHisto()
-    out["xs"] = xsHisto.GetBinContent(*point)
-    out["x"] = xsHisto.GetXaxis().GetBinLowEdge(point[0])
-    out["y"] = xsHisto.GetYaxis().GetBinLowEdge(point[1])
-    out["nEventsIn"] = hp.nEventsInHisto().GetBinContent(*point)
-    for sample in ["Had", "Muon"] :
-        out["eff%sSum"%sample] = effSum(out, samples = [sample])
-        out["nEvents%s"%sample] = out["eff%sSum"%sample]*out["nEventsIn"]
-        if out["nEvents%s"%sample] :
-            out["eff%sSumUncRelMcStats"%sample] = 1.0/math.sqrt(out["nEvents%s"%sample])
-        
-    if switches["nloToLoRatios"] :    
-        signal["xs_NLO_over_LO"] = signal["xs"]/hp.loXsHisto().GetBinContent(*point) if hp.loXsHisto().GetBinContent(*point) else 0.0
-    return out
-
 def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) :
-    signal = signalDict(switches, data, point)
+    signal = pickling.readNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in")
     printDict(signal)
     out = {}
     eventsInRange = True
@@ -172,7 +100,7 @@ def go() :
     data = conf.data()
     likelihoodSpec = conf.likelihood()
     for point in points() :
-        writeNumbers(conf.strings(*point)["pickledFileName"], onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
+        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
 
 if False :
     import cProfile
