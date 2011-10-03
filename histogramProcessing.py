@@ -1,9 +1,9 @@
 import collections,cPickle,os,math
 import configuration as conf
 import histogramSpecs as hs
-import fresh
 import ROOT as r
 
+##helper functions
 def ratio(file, numDir, numHisto, denDir, denHisto) :
     f = r.TFile(file)
     assert not f.IsZombie(), file
@@ -99,7 +99,8 @@ def killPoints(h, cutFunc = None) :
                 z = h.GetZaxis().GetBinLowEdge(iBinZ)
                 if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
     return h
-        
+
+##signal-related histograms
 def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
@@ -181,79 +182,7 @@ def smsEffHisto(model, box, scale, htLower, htUpper) :
     if switches["fillHolesInInput"] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"][switches["signalModel"]])
     return out
 
-def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
-    def counts(dirs) :
-        out = None
-        for dir in dirs :
-            name = "%s/m0_m12_mChi_noweight_0"%dir
-            if out is None :
-                out = f.Get(name)
-            else :
-                out.Add(f.Get(name))
-        return out
-
-    f = r.TFile(spec["file"])
-    if f.IsZombie() : return None
-
-    before = counts(beforeDirs)
-    after  = counts(afterDirs)
-    out = before.Clone("%s_%s"%(spec["file"], beforeDirs[0]))
-    out.SetDirectory(0)
-    out.Reset()
-
-    for iBinX in range(1, 1+out.GetNbinsX()) :
-        for iBinY in range(1, 1+out.GetNbinsY()) :
-            for iBinZ in range(1, 1+out.GetNbinsZ()) :
-                n = float(before.GetBinContent(iBinX, iBinY, iBinZ))
-                m = float(after.GetBinContent(iBinX, iBinY, iBinZ))
-                content = 1.0 if not m else 1.0/math.sqrt(m)
-                out.SetBinContent(iBinX, iBinY, iBinZ, content)
-
-    f.Close()
-    return out
-
-def mergedFile() :
-    note = fresh.note(likelihoodSpec = conf.likelihood())
-    return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
-
-def mergePickledFiles() :
-    example = xsHisto()
-    #print "Here are the example binnings:"
-    #print "x:",example.GetNbinsX(), example.GetXaxis().GetXmin(), example.GetXaxis().GetXmax()
-    #print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
-    #print "z:",example.GetNbinsZ(), example.GetZaxis().GetXmin(), example.GetZaxis().GetXmax()
-    histos = {}
-    zTitles = {}
-    
-    for point in points() :
-        fileName = conf.strings(*point)["pickledFileName"]
-        if not os.path.exists(fileName) :
-            print "skipping file",fileName            
-        else :
-            inFile = open(fileName)
-            d = cPickle.load(inFile)
-            inFile.close()
-            for key,value in d.iteritems() :
-                if type(value) is tuple :
-                    content,zTitle = value
-                else :
-                    content = value
-                    zTitle = ""
-                if key not in histos :
-                    histos[key] = example.Clone(key)
-                    histos[key].Reset()
-                    zTitles[key] = zTitle
-                histos[key].SetBinContent(point[0], point[1], point[2], content)
-            os.remove(fileName)
-
-    for key,histo in histos.iteritems() :
-        histo.GetZaxis().SetTitle(zTitles[key])
-
-    f = r.TFile(mergedFile(), "RECREATE")
-    for histo in histos.values() :
-        histo.Write()
-    f.Close()
-
+##signal point selection
 def fullPoints() :
     out = []
     s = conf.switches()
@@ -276,6 +205,7 @@ def points() :
     if p : return p
     return fullPoints()
 
+##warnings
 def printHoles(h) :
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :

@@ -2,7 +2,8 @@ import os,math,utils
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
-from histogramProcessing import mergedFile,fillHoles,printHoles,killPoints
+from histogramProcessing import fillHoles,printHoles,killPoints
+from pickling import mergedFile
 import ROOT as r
 
 def setupRoot() :

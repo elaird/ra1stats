@@ -18,7 +18,8 @@ def opts() :
 ############################################
 def jobCmds(nSlices = None, offset = 0) :
     pwd = os.environ["PWD"]
-    points = hp.points()
+    points = histogramProcessing.points()
+    if not offset : pickling.writeSignalFiles()
     if not nSlices : nSlices = len(points)
     out = []
 
@@ -59,20 +60,17 @@ def mkdirs() :
 ############################################
 options = opts()
 
-import utils
 import configuration as conf
-import histogramProcessing as hp
-import plottingGrid as pg
+import plottingGrid,pickling,histogramProcessing,utils
 
-hp.checkHistoBinning()
 mkdirs()
 
 if options.batch : batch(nSlices = int(options.batch), offset = int(options.offset))
 if options.local : local(int(options.local))
-if options.merge : hp.mergePickledFiles()
+if options.merge : pickling.mergePickledFiles()
 
 if options.merge or options.validation :
-    pg.makePlots()
+    plottingGrid.makePlots()
 
 if not any([getattr(options,item) for item in ["batch", "local", "merge", "validation"]]) :
-    print "nPoints = %s"%len(hp.points())
+    print "nPoints = %s"%len(histogramProcessing.points())
