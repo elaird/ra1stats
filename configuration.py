@@ -66,8 +66,10 @@ def checkAndAdjust(d) :
     d["rhoSignalMin"] = 0.0
     d["nIterationsMax"] = 1
     d["plSeedForCLs"] = False
-    d["minEventsIn"] = None
-    d["maxEventsIn"] = None
+    #d["minEventsIn"] = None
+    #d["maxEventsIn"] = None
+    d["minEventsIn"] =  9900.
+    d["maxEventsIn"] = 10100.
     d["extraSigEffUncSources"] = []
 
     if len(d["signalModel"])==2 :
