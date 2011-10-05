@@ -11,6 +11,7 @@ to fix:
 - per-slice signal efficiency
 - picking.stuffVars
 - more histos in check
+- effHadSum in job.onePoint
 
 to consider:
 - nBulk per slice
