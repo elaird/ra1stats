@@ -30,7 +30,7 @@ def effHistos(nloToLoRatios = False) :
     for iKey,key in enumerate(keys) :
         nextKey = ""
         if iKey!=len(keys)-1 :
-            nextKey = keys[iKey]
+            nextKey = keys[iKey+1]
         elif key :
             nextKey = "inf"
         
@@ -121,9 +121,12 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
     for key,value in signal.iteritems() :
         if type(value) is list : continue
         out[key] = (value, titles[key] if key in titles else "")
-        
+
     for i,bin in enumerate(binsMerged) :
-        for sel in ["effHad", "effMuon"] :
+        sels = []
+        for item in conf.likelihood()["alphaT"].keys() : sels += ["effHad%s"%item, "effMuon%s"%item]
+            
+        for sel in sels :
             out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
             if switches["nloToLoRatios"] :
                 out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")

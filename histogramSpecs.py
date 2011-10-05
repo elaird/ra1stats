@@ -30,7 +30,7 @@ def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper
     out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
     
     out["afterDir"] = "mSuGraScan"
-    if alphaTLower : out["afterDir"] += "AlphaT%s"%alphaTLower
+    if alphaTLower : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper : out["afterDir"] += "_%s"%alphaTUpper
     if htLower     : out["afterDir"] += "_%d"%htLower
     if htUpper     : out["afterDir"] += "_%d"%htUpper
