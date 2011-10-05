@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-import sys,cPickle,math
-import fresh
+import sys
 import configuration as conf
-import histogramProcessing as hp
-import pickling
+import pickling,fresh
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
@@ -12,27 +10,6 @@ def description(key, cl = None) :
     if key[:2]=="CL" : return key
     if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
     else : return ""
-
-def stuffVars(switches = None, binsMerged = None, signal = None) :
-    titles = {"xs": "#sigma (pb)",
-              "xs_NLO_over_LO": "#sigma (NLO) / #sigma (LO)",
-              "nEventsIn": "N events in",
-              "effHadSum": "eff. of hadronic selection (all bins summed)",
-              "nEventsHad": "N events after selection (all bins summed)",
-              "effHadSumUncRelMcStats": "rel. unc. on total had. eff. from MC stats",
-              }
-    
-    out = {}
-    for key,value in signal.iteritems() :
-        if type(value) is list : continue
-        out[key] = (value, titles[key] if key in titles else "")
-        
-    for i,bin in enumerate(binsMerged) :
-        for sel in ["effHad", "effMuon"] :
-            out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
-            if switches["nloToLoRatios"] :
-                out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")
-    return out
 
 def printDict(d) :
     print "{"
@@ -53,7 +30,7 @@ def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) 
     if switches["minEventsIn"]!=None : eventsInRange &= switches["minEventsIn"]<=signal["nEventsIn"]
     if switches["maxEventsIn"]!=None : eventsInRange &= signal["nEventsIn"]<=switches["maxEventsIn"]
     if eventsInRange :
-        out.update(stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
+        out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
         if bool(signal["effHadSum"]) and switches["method"] : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
     return out
 

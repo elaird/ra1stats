@@ -108,11 +108,33 @@ def signalDict(point = None, eff = None, xs = None, xsLo = None, nEventsIn = Non
     out.update(effSums(out))
     return out
 
-def writeSignalFiles(points = []) :
-    nloToLoRatios = conf.switches()["nloToLoRatios"]
+def stuffVars(switches = None, binsMerged = None, signal = None) :
+    titles = {"xs": "#sigma (pb)",
+              "xs_NLO_over_LO": "#sigma (NLO) / #sigma (LO)",
+              "nEventsIn": "N events in",
+              "effHadSum": "eff. of hadronic selection (all bins summed)",
+              "nEventsHad": "N events after selection (all bins summed)",
+              "effHadSumUncRelMcStats": "rel. unc. on total had. eff. from MC stats",
+              }
+    
+    out = {}
+    for key,value in signal.iteritems() :
+        if type(value) is list : continue
+        out[key] = (value, titles[key] if key in titles else "")
+        
+    for i,bin in enumerate(binsMerged) :
+        for sel in ["effHad", "effMuon"] :
+            out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
+            if switches["nloToLoRatios"] :
+                out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")
+    return out
+
+def writeSignalFiles(points = [], outFilesAlso = False) :
+    switches = conf.switches()
+
     args = {"data": conf.data(),
-            "nloToLoRatios": nloToLoRatios,
-            "eff": effHistos(nloToLoRatios = nloToLoRatios),
+            "nloToLoRatios": switches["nloToLoRatios"],
+            "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"]),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
             }
@@ -120,8 +142,11 @@ def writeSignalFiles(points = []) :
     hp.checkHistoBinning([args["xs"]]+histoList(args["eff"]))
 
     def one(point) :
-        writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in",
-                     d = signalDict(point = point, **args))
+        signal = signalDict(point = point, **args)
+        writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in", d = signal)
+        if not outFilesAlso : return
+        outSignal = stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal)
+        writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = outSignal)
 
     map(one, points)
         
@@ -157,9 +182,10 @@ def mergePickledFiles(printExample = False) :
                     histos[key] = example.Clone(key)
                     histos[key].Reset()
                     zTitles[key] = zTitle
+
                 histos[key].SetBinContent(point[0], point[1], point[2], content)
             os.remove(fileName)
-            os.remove(fileName.replace(".out",".in"))
+            os.remove(fileName.replace(".out", ".in"))
 
     for key,histo in histos.iteritems() :
         histo.GetZaxis().SetTitle(zTitles[key])

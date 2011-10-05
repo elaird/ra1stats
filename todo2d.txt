@@ -9,7 +9,8 @@ to fix:
 - fix "not i" dependence in importEwk, importFZinv, ...
 - use ni() throughout (e.g. photTerms, muonTerms, mumuTerms, signalTerms)
 - per-slice signal efficiency
-- job.stuffVars
+- picking.stuffVars
+- more histos in check
 
 to consider:
 - nBulk per slice
