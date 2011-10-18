@@ -3,22 +3,46 @@
 -----------
 GPLv3 (http://www.gnu.org/licenses/gpl.html)
 
-----------------
-| Instructions |
-----------------
-0) Log in to lxplus:
-ssh lxplus.cern.ch
+---------------
+| Quick Start |
+---------------
+1) Clone the repository:
+git clone git://github.com/elaird/ra1stats.git
+or, if you have forked it:
+git clone git://github.com/your_username/ra1stats.git
 
-1) Check out the code:
-[if needed: export CVSROOT=username@cmscvs.cern.ch:/cvs_server/repositories/CMSSW;export CVS_RSH=ssh]
-cvs co -d ra1stats UserCode/elaird/ra1stats
 cd ra1stats
 
-2) Set up the environment:
+2) If at IC, set up the environment:
 source env.sh
 
 3) Run it:
 ./stats.py --help
+
+---------------------
+| Brief Description |
+---------------------
+- The likelihood function is specified in fresh.py.  To fit a set of
+data or test a signal model, one uses an instance of the class
+fresh.foo.
+
+- test.py shows how to use an instance of fresh.foo, and will produce
+a pdf file in the subdirectory plots.  The plotting is done in
+plotting.py.  The observations, MC yields, etc. are stored in
+inputData.py.  The switches selecting options for the likelihood are
+in likelihoodSpec.py.
+
+- stats.py and configuration.py allow one to run on many signal models
+  in parallel, using either one computer (--local) or a farm
+  (--batch).  The results are merged into a root file using --merge.
+
+---------
+| Notes |
+---------
+(A) ROOT (>=5.30.02) and python (>=2.6) are required.  These are
+useful pages for setting up and learning pyROOT:
+http://root.cern.ch/drupal/content/how-use-use-python-pyroot-interpreter
+http://wlav.web.cern.ch/wlav/pyroot/
 
 --------
 | Bugs |
