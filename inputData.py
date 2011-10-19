@@ -1,8 +1,119 @@
 import utils
 from data import data,scaled,excl,trig
 
+class data2011_5(data) :
+    """preliminary"""
+    
+    def _fill(self) :
+        isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
+
+        self._htBinLowerEdges =          (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
+        self._htMaxForPlot = 975.0
+        
+        self._mergeBins = None
+        self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
+        
+        #self._mergeBins =                (    0,     1,     2,     2,     2,     2,     2,     2)
+        #self._constantMcRatioAfterHere = (    0,     0,     0)
+
+        #self._mergeBins =                (    0,     1,     2,     3,     3,     3,     3,     3)
+        #self._constantMcRatioAfterHere = (    0,     0,     0,     0)
+
+        #self._mergeBins =                (    0,     1,     2,     3,     4,     4,     4,     4)
+        #self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0)
+
+        #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
+        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
+
+        #self._mergeBins =                (    0,     1,     2,     3,     4,     4,     4,     4)
+        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
+
+        self._lumi = {
+            "had":     2700.,
+            "hadBulk": 1080.,
+
+            "muon":    1080.,
+            "mcMuon":  1080.,
+            "mcTtw":   1080.,
+
+            "phot":    1057.,
+            "mcGjets": 1057.,
+            "mcZinv":  1057.,
+
+            "mumu":    697.,
+            "mcZmumu": 697.,
+            }
+
+        self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02)
+        self._sigEffCorr =    (  9.88e-01,  9.84e-01,  9.96e-01,  9.71e-01,  9.60e-01,  9.58e-01,  9.52e-01,  9.35e-01)
+        self._observations = {
+            "nHadBulk":scaled(( 5.733e+07, 2.358e+07, 1.619e+07, 5.116e+06, 1.777e+06, 6.888e+05, 2.900e+05, 2.599e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
+            #"nHad":          ( 7.820e+02, 3.210e+02, 1.960e+02, 6.200e+01, 2.100e+01, 6.000e+00, 3.000e+00, 1.000e+00),
+            "nHad":           (  2.15e+03,  8.53e+02,  5.44e+02,  1.80e+02,  6.50e+01,  1.70e+01,  6.00e+00,  4.00e+00),
+            "nPhot":     excl((       849,       307,       321,       111,        44,        20,         8,         4), isExcl),
+            "nPhot2Jet": excl((       336,       127,       136,        40,        13,         4,         2,         0), isExcl),
+            "nMuon":          (       389,       156,       113,        39,        17,         5,         0,         0),
+            "nMuon2Jet":      (       128,        37,        36,        12,         2,         0,         0,         0),
+            "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
+            }
+                
+        self._triggerEfficiencies = {
+            "hadBulk":       (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+           #"had":           (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "had":           (     0.991,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "mumu":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            }
+        for item in  ["hadControl_51_52", "hadControl_52_53", "hadControl_53_55"] :
+            self._triggerEfficiencies[item] = self._triggerEfficiencies["had"]
+
+        self._mcExpectations = {
+            "mcMuon":     trig(     scaled((411.20,  179.11,  131.59,  48.68,  13.32,   7.95,   3.20, 0.90), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+                                    self._triggerEfficiencies["had"]),
+            "mcMuon2Jet":           scaled((121.83,   54.43,   45.06,  14.89,   3.69,   0.72,   0.72, 0.00), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcMuon2JetSpring11":   scaled((139.39,   53.17,   40.62,   2.84,   6.71,   4.63,   0.15, 0.00), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcMuon2JetSpring11Re": scaled((113.86,   48.99,   39.57,   3.75,   3.13,   6.61,  0.166, 0.0 ), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcTtw":      trig(     scaled((467.25,  171.16,  116.33,  43.68,  17.50,   5.08,   1.09, 1.81), self.lumi()["had" ]/self.lumi()["mcTtw"] ),
+                                    self._triggerEfficiencies["had"]),
+            "mcGjets":         excl(scaled((   600,     260,     250,     85,     31,      8,      5,    2), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcPhot2Jet":      excl(scaled((   290,     124,      98,     26,     10,    0.5,    0.5,  0.5), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcZinv":     trig(excl(scaled((   210,      90,     110,     50,      8,      3,      3,    0), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
+                               self._triggerEfficiencies["had"]),
+            "mcZmumu":         excl(scaled((    15,       9,      11,      7,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]), isExcl),
+            }
+
+        self._mcStatError = {
+            "mcMuonErr":                   ( 14.51,    9.57,    8.78,   5.54,   2.92,   2.29,   1.44,  0.73),
+            "mcMuon2JetErr":               (  9.01,    6.07,    5.54,   3.22,   1.61,   0.72,   0.72,  0.00),
+            "mcMuon2JetSpring11Err":       ( 17.06,   10.50,    9.25,   2.26,   3.88,   3.17,   0.15,  0.00),
+            "mcMuon2JetSpring11ReErr":     ( 14.54,   10.34,    9.42,   3.93,   2.45,   3.51,  0.166,  0.00),
+            "mcTtwErr":                    ( 16.00,    9.47,    8.26,   5.06,   3.17,   1.80,   0.73,  1.03),
+            "mcGjetsErr":           scaled((    20,      10,      10,      8,      5,      2,      2,     1), self.lumi()["phot"]/self.lumi()["mcGjets"]),
+            "mcPhot2JetErr":        scaled((    40,      10,       8,      4,      3,    0.5,    0.5,   0.5), self.lumi()["phot"]/self.lumi()["mcGjets"]),
+            "mcZinvErr":            scaled((    20,      20,      20,     10,      5,      3,      3,     3), self.lumi()["had"] /self.lumi()["mcZinv"]),
+            "mcZmumuErr":           scaled((     4,       3,       3,      3,      2,      1,      1,     1), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
+            }
+        self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
+
+        self._purities = {
+            "phot":                  (  0.92,    0.97,    0.99,   0.99,   0.99,   0.99,   0.99, 0.99),
+            "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),
+            }
+
+        self._mcExtra = {}
+        self._mcExtra["mcHad"]  = tuple([ttw+zinv for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
+        self._mcExtra["mcPhot"] = tuple([gJet/purity for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
+        
+        self._fixedParameters = {
+            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
+            #"sigmaLumiLike": 0.0001,
+            "sigmaPhotZ": 0.40,
+            "sigmaMuonW": 0.30,
+            "sigmaMumuZ": 0.20,
+            }
+
 class data2011_4(data) :
-    """default data"""
+    """EPS"""
     
     def _fill(self) :
         isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
@@ -112,7 +223,6 @@ class data2011_4(data) :
             }
 
 class data2011_3(data) :
-    """default data"""
     
     def _fill(self) :
         isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
@@ -235,7 +345,7 @@ def addLists(l1, l2) :
         out.append(a+b)
     return out
         
-class data2011(data2011_4) :
+class data2011(data2011_5) :
     pass
 
 class data2010(data) :
