@@ -216,6 +216,9 @@ def akDesc(wspace, var1 = "", var2 = "", errors = True) :
 def lumi(lumiInInvPb) :
     return "[%4.2f/fb]"%(lumiInInvPb/1000.)
 
+def obsString(label = "", other = "", lumi = 0.0) :
+    return "%s (%s, %3.1f/fb)"%(label, other, lumi/1.0e3)
+
 class validationPlotter(object) :
     def __init__(self, args) :
         for key,value in args.iteritems() :
@@ -224,7 +227,8 @@ class validationPlotter(object) :
 
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
-        self.label = "CMS Preliminary 2011       1.1 fb^{-1}          #sqrt{s} = 7 TeV"
+        #self.label = "CMS Preliminary 2011       1.1 fb^{-1}          #sqrt{s} = 7 TeV"
+        self.label = ""
         self.obsLabel = "Data" if not hasattr(self, "toyNumber") else "Toy %d"%self.toyNumber
 
         self.plotsDir = "plots"
@@ -267,7 +271,7 @@ class validationPlotter(object) :
 
         self.canvas.Print(self.psFileName+"]")
         utils.ps2pdf(self.psFileName, sameDir = True)
-        
+
     def hadPlots(self) :
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)",
@@ -295,7 +299,7 @@ class validationPlotter(object) :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
             self.validationPlot(note = self.label, fileName = fileName, legend0 = (0.48, 0.65), legend1 = (0.88, 0.85),
-                                obsKey = "nHad", obsLabel = "%s (hadronic sample)"%self.obsLabel, otherVars = vars, logY = logY)
+                                obsKey = "nHad", obsLabel = obsString(self.obsLabel, "hadronic sample", self.lumi["had"]), otherVars = vars, logY = logY)
             
     def hadDataMcPlots(self) :
         for logY in [False, True] :
@@ -342,14 +346,14 @@ class validationPlotter(object) :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "muon_control_fit%s"%("_logy" if logY else "")
             self.validationPlot(note = self.label, fileName = fileName, legend0 = (0.48, 0.70), 
-                                obsKey = "nMuon", obsLabel = "%s (muon sample)"%self.obsLabel, otherVars = vars, logY = logY)
+                                obsKey = "nMuon", obsLabel = obsString(self.obsLabel, "muon sample", self.lumi["muon"]), otherVars = vars, logY = logY)
 
     def photPlots(self) :
         for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "photon_control_fit%s"%("_logy" if logY else "")            
             self.validationPlot(note = self.label, fileName = fileName, legend0 = (0.48, 0.73), reverseLegend = True, logY = logY,
-                                obsKey = "nPhot", obsLabel = "%s (photon sample)"%self.obsLabel, otherVars = [
+                                obsKey = "nPhot", obsLabel = obsString(self.obsLabel, "photon sample", self.lumi["phot"]), otherVars = [
                 {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray}  if not self.printPages else {},
                 {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2, "desc":"SM", "stack":None},
@@ -797,7 +801,8 @@ class validationPlotter(object) :
             s = 0.023
             text.SetTextSize(0.5*text.GetTextSize())
             #text.DrawLatex(x, y +   s, "ML fit values")
-            text.DrawLatex(x, y      , "A_{EWK} = %4.2e #pm %4.2e"   %(self.wspace.var("A_ewk").getVal(),    self.wspace.var("A_ewk").getError()))
+            if self.wspace.var("A_ewk") :
+                text.DrawLatex(x, y  , "A_{EWK} = %4.2e #pm %4.2e"   %(self.wspace.var("A_ewk").getVal(),    self.wspace.var("A_ewk").getError()))
             text.DrawLatex(x, y -   s, "A_{QCD } = %4.2e #pm %4.2e"   %(self.wspace.var("A_qcd").getVal(),    self.wspace.var("A_qcd").getError()))
             text.DrawLatex(x, y - 2*s, "k_{QCD  } = %4.2e #pm %4.2e"   %(self.wspace.var("k_qcd").getVal(),    self.wspace.var("k_qcd").getError()))
             text.DrawLatex(x, y - 3*s, "#rho_{ph} = %4.2f #pm %4.2f" %(self.wspace.var("rhoPhotZ").getVal(), self.wspace.var("rhoPhotZ").getError()))
