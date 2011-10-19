@@ -2,7 +2,7 @@
 
 import fresh
 import likelihoodSpec
-from inputData import data2010,data2011
+from inputData import data2011
 
 def scaled(t, factor) : return tuple([factor*item for item in t])
 
