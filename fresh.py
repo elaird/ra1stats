@@ -60,7 +60,7 @@ def parametrizedExpA(w = None, sample = "", i = None) :
     
 def parametrizedLinearEwk(w = None, ewk = "", i = None, iLast = None) :
     return r.RooFormulaVar("%s%d"%(ewk, i), "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
-                           r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%ewk), w.var("d_%s"%ewk),
+                           r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_%s"%ewk), w.var("k_%s"%ewk),
                                         w.var("htMean%d"%i), w.var("htMean0"), w.var("htMean%d"%iLast)))
 
 def importEwk(w = None, REwk = None, name = "", i = None, iLast = None, nHadValue = None, A_ini = None) :
