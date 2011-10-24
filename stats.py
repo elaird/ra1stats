@@ -5,7 +5,7 @@ import os
 def opts() :
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N",          help = "split into N jobs and submit to batch queue (N=0 means max splitting)")
-    parser.add_option("--offset",     dest = "offset",     default = 0,  metavar = "N",             help = "offset by N*nJobsMax")
+    parser.add_option("--offset",     dest = "offset",     default = 0,     metavar = "N",          help = "offset by N*nJobsMax")
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N",          help = "loop over events locally using N cores (N>0)")
     parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "merge job output")
     parser.add_option("--skip",       dest = "skip",       default = False, action  = "store_true", help = "skip jobs; merge input rather than output files")
