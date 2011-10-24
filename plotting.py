@@ -178,7 +178,7 @@ def inDict(d, key, default) :
 def drawOne(hist, goptions, errorBand, bandFillStyle = 1001) :
     if not errorBand :
         hist.Draw(goptions)
-        return
+        return []
 
     goptions = "he2"+goptions
     errors   = hist.Clone(hist.GetName()+"_errors")
@@ -768,24 +768,46 @@ class validationPlotter(object) :
 
     def stacks(self, specs, extraName = "", goptions = "", lumiString = "", scale = 1.0) :
 	stacks = {}
-        stuff = []
+        histoList = []
 
 	legEntries = []
+
+    	#for spec in specs :
+    	#    num.SetMarkerStyle(inDict(spec, "markerStyle", 20))
+    	#    num.SetStats(False)
+    	#    num.SetLineColor(spec["color"])
+        #    num.SetLineWidth(inDict(spec, "width", 1))
+    	#    num.SetMarkerColor(spec["color"])
+    	#    num.SetFillStyle(inDict(spec, "fillStyle", 0))
+    	#    num.SetFillColor(inDict(spec, "fillColor", spec["color"]))
+        #    if inDict(spec, "legend", True) :
+        #        legEntries.append( (num, spec["desc"], inDict(spec, "legSpec", legSpec(goptions))) )
+    	#    histos.append( (num, inDict(spec, "errorBand", ""), inDict(spec, "bandStyle", 3004)) )
+
+
+        #    h,errorBand,bandStyle = t
+        #        stuff += [drawOne(h, goptions, errorBand, bandFillStyle = bandStyle)]
+        
+
 	for d in specs :
+            extraName = "%s%s"%(extraName, "_".join(d["dens"]) if "dens" in d else "")
+            
 	    if "example" not in d :
                 if "var" not in d : continue
 	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"],
-                                       purityKey = inDict(d, "purityKey", None), color = d["color"], lineStyle = d["style"],
+                                       purityKey = inDict(d, "purityKey", None), color = d["color"], lineStyle = inDict(d, "style", 1),
                                        lineWidth = inDict(d, "width", 1), lumiString = lumiString, errorsFrom = inDict(d, "errorsFrom", ""))
 	        hist = histos["value"]
-                stuff.append(histos)
 	    else :
                 d2 = copy.deepcopy(d)
                 d2["extraName"] = extraName
 	        hist = self.signalExampleHisto(d2)
-                stuff.append(hist)
 	    if not hist.GetEntries() : continue
 
+            if "dens" in d :
+                for den,denType in zip(d["dens"], d["denTypes"]) :
+                    hist.Divide( self.varHisto(den, wspaceMemberFunc = denType)["value"] )
+    	
 	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), "l") )
 	    if d["stack"] :
 	        if d["stack"] not in stacks :
@@ -793,14 +815,18 @@ class validationPlotter(object) :
 	        stacks[d["stack"]].Add(hist, inDict(d, "stackOptions", ""))
 	    else :
 	        hist.Scale(scale)
-	        stuff.append( drawOne(hist, goptions, inDict(d, "errorBand", False)) )
+                histoList.append(hist)
+	        histoList += drawOne(hist, goptions, inDict(d, "errorBand", False))
 	        for item in ["min", "max"] :
 	            if item not in histos : continue
-	            histos[item].Draw(goptions)
-        return stacks,legEntries,stuff
+                    h = histos[item]
+	            h.Draw(goptions)
+                    histoList.append(h)
+        return stacks,legEntries,histoList
 
-    def validationPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False, minimum = 0.0, maximum = None,
-                       logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
+    def validationPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
+                       minimum = 0.0, maximum = None, customMaxFactor = (1.1, 2.0), logY = False,
+                       obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
 
         leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
         leg.SetBorderSize(0)
@@ -831,8 +857,13 @@ class validationPlotter(object) :
         for item in ["extraName", "goptions", "lumiString", "scale"] :
             args[item] = eval(item)
 
-        stackDict,legEntries,stuff2 = self.stacks(otherVars, **args)
-        stuff += [stackDict, stuff2]
+        stackDict,legEntries,histoList = self.stacks(otherVars, **args)
+
+        maxes = [histoMax(h, customMaxFactor[logY]) for h in histoList]
+        if maxes :
+            for h in histoList : h.SetMaximum(max(maxes))
+            
+        stuff += [stackDict, histoList]
 
 	for stack in stackDict.values() :
 	    stack.Draw(goptions, reverse = True)
@@ -856,7 +887,30 @@ class validationPlotter(object) :
 
 	return stuff
 
+
     def ratioPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
+                  customMaxFactor = 1.1, maximum = None, goptions = "p", reverseLegend = False) :
+
+        #ignored args: goptions = "p")
+        
+        #adjust spec key names
+        rep = {"num": "var", "numErrorsFrom":"errorsFrom", "numType":"type"}#, "desc":"extraName"}
+        otherVars = []
+        for s in specs :
+            for old,new in rep.iteritems() :
+                if old in s :
+                    s[new] = s[old]
+                    del s[old]
+                if "stack" not in s : s["stack"] = None
+            otherVars.append(s)
+
+        args = {}
+        for item in ["note", "fileName", "legend0", "legend1", "reverseLegend", "yLabel", "maximum", "otherVars"] :
+            args[item] = eval(item)
+
+        self.validationPlot(obsKey = "", obsLabel = "", scale = 1.0, customMaxFactor = [customMaxFactor]*2, **args)
+
+    def ratioPlotOld(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
                   customMaxFactor = None, maximum = None, goptions = "p", reverseLegend = False) :
     	stuff = []
     	leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
