@@ -1,9 +1,9 @@
-#!/usr/bin/env python
 import os,math,utils
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
-from histogramProcessing import mergedFile,fillHoles,printHoles,killPoints
+from histogramProcessing import fillHoles,printHoles,killPoints
+from pickling import mergedFile
 import ROOT as r
 
 def setupRoot() :
@@ -210,12 +210,12 @@ def makeEfficiencyUncertaintyPlots() :
     go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelMcStatsZRange")
 
 def printTimeStamp() :
-    s = conf.switches()
+    l = conf.likelihood()
     text = r.TText()
     text.SetNDC()
     text.DrawText(0.1, 0.1, "file created at %s"%r.TDatime().AsString())
-    text.DrawText(0.1, 0.30, "RQcd = %s"%(s["RQcd"] if s["RQcd"] else "[no form assumed]"))
-    text.DrawText(0.1, 0.35, "REwk = %s"%(s["REwk"] if s["REwk"] else "[no form assumed]"))
+    text.DrawText(0.1, 0.30, "RQcd = %s"%(l["RQcd"] if l["RQcd"] else "[no form assumed]"))
+    text.DrawText(0.1, 0.35, "REwk = %s"%(l["REwk"] if l["REwk"] else "[no form assumed]"))
     return text
 
 def printSuppressed(l) :

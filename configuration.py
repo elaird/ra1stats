@@ -1,14 +1,3 @@
-#!/usr/bin/env python
-
-def method() :
-    return {"CL": [0.95, 0.90][:1],
-            "nToys": 500,
-            "testStatistic": 3,
-            "method": ["profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0],
-            "computeExpectedLimit": False,
-            "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
-            }
-
 def likelihood() :
     import likelihoodSpec
     return likelihoodSpec.spec()
@@ -16,6 +5,15 @@ def likelihood() :
 def data() :
     import inputData
     return inputData.data2011()
+
+def method() :
+    return {"CL": [0.95, 0.90][:1],
+            "nToys": 500,
+            "testStatistic": 3,
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0],
+            "computeExpectedLimit": False,
+            "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
+            }
 
 def signal() :
     return {"minSignalXsForConsideration": 1.0e-6,
@@ -36,7 +34,6 @@ def signal() :
             "effRatioPlots": False,
 
             "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][0],
-            "ignoreSignalContaminationInMuonSample": False,
             }
 
 def points() :
@@ -55,7 +52,7 @@ def other() :
 
 def switches() :
     out = {}
-    dicts = [likelihood(), method(), signal(), points(), other()]
+    dicts = [method(), signal(), points(), other()]
     keys = sum([d.keys() for d in dicts], [])
     assert len(keys)==len(set(keys))
     for d in dicts : out.update(d)
@@ -69,13 +66,12 @@ def checkAndAdjust(d) :
     d["rhoSignalMin"] = 0.0
     d["nIterationsMax"] = 1
     d["plSeedForCLs"] = False
-    d["minEventsIn"] = None
-    d["maxEventsIn"] = None
+    #d["minEventsIn"] = None
+    #d["maxEventsIn"] = None
+    d["minEventsIn"] =  9900.
+    d["maxEventsIn"] = 10100.
     d["extraSigEffUncSources"] = []
 
-    for key,valueDict in d["alphaT"].iteritems() :
-        assert any(valueDict["htBinMask"]), "alphaT %s has all bins masked"%str(key)
-    
     if len(d["signalModel"])==2 :
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import configuration as conf
 
 def smsRanges() :
@@ -15,20 +13,28 @@ def smsRanges() :
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
-def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None) :
+def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
     assert model in ["tanBeta10", "tanBeta40"]
     assert box in ["had", "muon"]
     assert scale in ["1", "05", "2"]
     
     scan = [{"cmssw": "38", "had":"v2", "muon":"v5", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/38_scan/"},
-            {"cmssw": "42", "had":"v2", "muon":"v2", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/42_scan/"},
+            {"cmssw": "42", "had":"v3", "muon":"v2", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/42_scan/"},
             ][1]
-    
+
+    if scan["had"] in ["v3"]:
+        print "WARNING: using %s had spec; v2 is the stable one."%scan["had"]
+
     out = {}
     out["file"] = "/".join([scan["dir"], model, box, scan[box], box+".root"])
     out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
-    if htLower!=None :
-        out["afterDir"] = "mSuGraScan_%d%s_scale%s"%(htLower, "_%d"%htUpper if htUpper else "",scale)
+    
+    out["afterDir"] = "mSuGraScan"
+    if alphaTLower : out["afterDir"] += "_AlphaT%s"%alphaTLower
+    if alphaTUpper : out["afterDir"] += "_%s"%alphaTUpper
+    if htLower     : out["afterDir"] += "_%d"%htLower
+    if htUpper     : out["afterDir"] += "_%d"%htUpper
+    out["afterDir"] += "_scale%s"%scale
     return out
 
 def smsHistoSpec(model = "", box = None, htLower = None, htUpper = None) :

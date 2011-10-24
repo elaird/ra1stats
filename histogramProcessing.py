@@ -1,10 +1,9 @@
-#!/usr/bin/env python
-import collections,cPickle,os,math
+import collections
 import configuration as conf
 import histogramSpecs as hs
-import fresh
 import ROOT as r
 
+##helper functions
 def ratio(file, numDir, numHisto, denDir, denHisto) :
     f = r.TFile(file)
     assert not f.IsZombie(), file
@@ -28,7 +27,7 @@ def oneHisto(file, dir, name) :
     f.Close()
     return h
 
-def checkHistoBinning() :
+def checkHistoBinning(histoList = []) :
     def axisStuff(axis) :
         return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
 
@@ -45,18 +44,11 @@ def checkHistoBinning() :
                 raise ae
         return out
 
-    def histos() :
-        binsInput = conf.data().htBinLowerEdgesInput()
-        out = [xsHisto()]
-        for item in ["had"]+([] if conf.switches()["ignoreSignalContaminationInMuonSample"] else ["muon"]) :
-            out += [effHisto(box = item, scale = "1", htLower = htLower, htUpper = htUpper) for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
-        return out
-    
-    for axis,values in properties(histos()).iteritems() :
-        #print "Here are the %s binnings: %s"%(axis, str(values))        
+    for axis,values in properties(histoList).iteritems() :
+        #print "Here are the %s binnings: %s"%(axis, str(values))
         if len(set(values))!=1 :
             print "The %s binnings do not match: %s"%(axis, str(values))
-            for h in handles() :
+            for h in histoList :
                 print h,properties([h])
             assert False
 
@@ -99,7 +91,8 @@ def killPoints(h, cutFunc = None) :
                 z = h.GetZaxis().GetBinLowEdge(iBinZ)
                 if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
     return h
-        
+
+##signal-related histograms
 def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
@@ -114,7 +107,7 @@ def nEventsInHisto() :
 def effHisto(**args) :
     s = conf.switches()
     model = s["signalModel"]
-    if "tanBeta" in model : return cmssmNloEffHisto(model, **args) if s["nlo"] else cmssmLoEffHisto(model, **args)
+    if "tanBeta" in model : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
     else : return smsEffHisto(model, **args)
 
 def cmssmNEventsInHisto(model, box = "had", scale = "1") :
@@ -130,8 +123,8 @@ def cmssmLoXsHisto(model) :
     #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
     return out
 
-def cmssmLoEffHisto(model, box, scale, htLower, htUpper) :
-    s = hs.cmssmHistoSpec(model = model, box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+def cmssmLoEffHisto(**args) :
+    s = hs.cmssmHistoSpec(**args)
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     return out
 
@@ -146,15 +139,15 @@ def cmssmNloXsHisto(model, scale = "1") :
     #see links in loXsHisto
     return out
 
-def cmssmNloEffHisto(model, box, scale, htLower, htUpper) :
-    s = hs.cmssmHistoSpec(model = model, box = box, scale = scale, htLower = htLower, htUpper = htUpper)
+def cmssmNloEffHisto(**args) :
+    s = hs.cmssmHistoSpec(**args)
     out = None
     for process in conf.processes() :
         h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
         if out is None : out = h.Clone("nloEffHisto")
         else :           out.Add(h)
     out.SetDirectory(0)
-    out.Divide(cmssmNloXsHisto(model, scale)) #divide by total xs
+    out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
     return out
 
 def smsXsHisto(model, cutFunc = None) :
@@ -181,82 +174,7 @@ def smsEffHisto(model, box, scale, htLower, htUpper) :
     if switches["fillHolesInInput"] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"][switches["signalModel"]])
     return out
 
-def effUncRelMcStatHisto(spec, beforeDirs = None, afterDirs = None) :
-    def counts(dirs) :
-        out = None
-        for dir in dirs :
-            name = "%s/m0_m12_mChi_noweight_0"%dir
-            if out is None :
-                out = f.Get(name)
-            else :
-                out.Add(f.Get(name))
-        return out
-
-    f = r.TFile(spec["file"])
-    if f.IsZombie() : return None
-
-    before = counts(beforeDirs)
-    after  = counts(afterDirs)
-    out = before.Clone("%s_%s"%(spec["file"], beforeDirs[0]))
-    out.SetDirectory(0)
-    out.Reset()
-
-    for iBinX in range(1, 1+out.GetNbinsX()) :
-        for iBinY in range(1, 1+out.GetNbinsY()) :
-            for iBinZ in range(1, 1+out.GetNbinsZ()) :
-                n = float(before.GetBinContent(iBinX, iBinY, iBinZ))
-                m = float(after.GetBinContent(iBinX, iBinY, iBinZ))
-                content = 1.0 if not m else 1.0/math.sqrt(m)
-                out.SetBinContent(iBinX, iBinY, iBinZ, content)
-
-    f.Close()
-    return out
-
-def mergedFile() :
-    s = conf.switches()
-    d = {}
-    for item in fresh.noteArgs()+["ignoreSignalContaminationInMuonSample"] :
-        d[item] = s[item]
-    return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], fresh.note(**d), ".root")
-
-def mergePickledFiles() :
-    example = xsHisto()
-    #print "Here are the example binnings:"
-    #print "x:",example.GetNbinsX(), example.GetXaxis().GetXmin(), example.GetXaxis().GetXmax()
-    #print "y:",example.GetNbinsY(), example.GetYaxis().GetXmin(), example.GetYaxis().GetXmax()
-    #print "z:",example.GetNbinsZ(), example.GetZaxis().GetXmin(), example.GetZaxis().GetXmax()
-    histos = {}
-    zTitles = {}
-    
-    for point in points() :
-        fileName = conf.strings(*point)["pickledFileName"]
-        if not os.path.exists(fileName) :
-            print "skipping file",fileName            
-        else :
-            inFile = open(fileName)
-            d = cPickle.load(inFile)
-            inFile.close()
-            for key,value in d.iteritems() :
-                if type(value) is tuple :
-                    content,zTitle = value
-                else :
-                    content = value
-                    zTitle = ""
-                if key not in histos :
-                    histos[key] = example.Clone(key)
-                    histos[key].Reset()
-                    zTitles[key] = zTitle
-                histos[key].SetBinContent(point[0], point[1], point[2], content)
-            os.remove(fileName)
-
-    for key,histo in histos.iteritems() :
-        histo.GetZaxis().SetTitle(zTitles[key])
-
-    f = r.TFile(mergedFile(), "RECREATE")
-    for histo in histos.values() :
-        histo.Write()
-    f.Close()
-
+##signal point selection
 def fullPoints() :
     out = []
     s = conf.switches()
@@ -279,6 +197,7 @@ def points() :
     if p : return p
     return fullPoints()
 
+##warnings
 def printHoles(h) :
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :

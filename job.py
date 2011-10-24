@@ -1,65 +1,15 @@
 #!/usr/bin/env python
-import sys,cPickle,math
-import fresh
+import sys
 import configuration as conf
-import likelihoodSpec as ls
-import histogramProcessing as hp
+import pickling,fresh
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
-
-def writeNumbers(fileName = None, d = None) :
-    outFile = open(fileName, "w")
-    cPickle.dump(d, outFile)
-    outFile.close()
 
 def description(key, cl = None) :
     if key[:2]=="CL" : return key
     if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
     else : return ""
-
-def signalEff(switches, data, point) :
-    binsInput = data.htBinLowerEdgesInput()
-    binsMerged =  data.htBinLowerEdges()
-    
-    out = {}
-    for item in ["effHad"]+([] if switches["ignoreSignalContaminationInMuonSample"] else ["effMuon"]) :
-        box = item.replace("eff","").lower()
-        out[item] = [hp.effHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
-                     for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
-        out[item] = data.mergeEfficiency(out[item])
-        if switches["nloToLoRatios"] :
-            out[item+"_NLO_over_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = htLower, htUpper = htUpper).GetBinContent(*point)\
-                                    for htLower, htUpper in zip(binsInput, list(binsInput[1:])+[None])]
-            out[item+"_NLO_over_LO"] = data.mergeEfficiency(out[item+"_NLO_over_LO"])
-            out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_NLO_over_LO"])]
-        
-    if switches["ignoreSignalContaminationInMuonSample"] :
-        out["effMuon"] = [0.0]*len(out["effHad"])
-        if switches["nloToLoRatios"] :        
-            out["effMuon_NLO_over_LO"] = [0.0]*len(out["effHad"])
-    return out
-
-def stuffVars(switches = None, binsMerged = None, signal = None) :
-    titles = {"xs": "#sigma (pb)",
-              "xs_NLO_over_LO": "#sigma (NLO) / #sigma (LO)",
-              "nEventsIn": "N events in",
-              "effHadSum": "eff. of hadronic selection (all bins summed)",
-              "nEventsHad": "N events after selection (all bins summed)",
-              "effHadSumUncRelMcStats": "rel. unc. on total had. eff. from MC stats",
-              }
-    
-    out = {}
-    for key,value in signal.iteritems() :
-        if type(value) is list : continue
-        out[key] = (value, titles[key] if key in titles else "")
-        
-    for i,bin in enumerate(binsMerged) :
-        for sel in ["effHad", "effMuon"] :
-            out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
-            if switches["nloToLoRatios"] :
-                out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")
-    return out
 
 def printDict(d) :
     print "{"
@@ -72,42 +22,16 @@ def printDict(d) :
         print out+","
     print "}"
 
-def effSum(signal = None, samples = []) :
-    total = 0.0
-    for key,value in signal.iteritems() :
-        if not any([key=="eff"+sample for sample in samples]) : continue
-        total += sum(value)
-    return total
-
-def signalDict(switches, data, point) :
-    out = {}
-    out.update(signalEff(switches, data, point))
-
-    xsHisto = hp.xsHisto()
-    out["xs"] = xsHisto.GetBinContent(*point)
-    out["x"] = xsHisto.GetXaxis().GetBinLowEdge(point[0])
-    out["y"] = xsHisto.GetYaxis().GetBinLowEdge(point[1])
-    out["nEventsIn"] = hp.nEventsInHisto().GetBinContent(*point)
-    for sample in ["Had", "Muon"] :
-        out["eff%sSum"%sample] = effSum(out, samples = [sample])
-        out["nEvents%s"%sample] = out["eff%sSum"%sample]*out["nEventsIn"]
-        if out["nEvents%s"%sample] :
-            out["eff%sSumUncRelMcStats"%sample] = 1.0/math.sqrt(out["nEvents%s"%sample])
-        
-    if switches["nloToLoRatios"] :    
-        signal["xs_NLO_over_LO"] = signal["xs"]/hp.loXsHisto().GetBinContent(*point) if hp.loXsHisto().GetBinContent(*point) else 0.0
-    return out
-
 def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) :
-    signal = signalDict(switches, data, point)
+    signal = pickling.readNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in")
     printDict(signal)
     out = {}
     eventsInRange = True
     if switches["minEventsIn"]!=None : eventsInRange &= switches["minEventsIn"]<=signal["nEventsIn"]
     if switches["maxEventsIn"]!=None : eventsInRange &= signal["nEventsIn"]<=switches["maxEventsIn"]
     if eventsInRange :
-        out.update(stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
-        if bool(signal["effHadSum"]) : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
+        out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
+        if switches["method"] and bool(signal["effHadSum"])  : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
     return out
 
 def results(switches = None, data = None, likelihoodSpec = None, signal = None) :
@@ -151,9 +75,9 @@ def compare(item, threshold) :
 def go() :
     s = conf.switches()
     data = conf.data()
-    likelihoodSpec = ls.spec()
+    likelihoodSpec = conf.likelihood()
     for point in points() :
-        writeNumbers(conf.strings(*point)["pickledFileName"], onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
+        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
 
 if False :
     import cProfile

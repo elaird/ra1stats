@@ -280,7 +280,9 @@ class data2011_4(data) :
             "nMuon2Jet":      (       128,        37,        36,        12,         2,         0,         0,         0),
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
-                
+
+        self._observations["nHad_55"] = self._observations["nHad"]
+
         self._triggerEfficiencies = {
             "hadBulk":       (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
            #"had":           (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
