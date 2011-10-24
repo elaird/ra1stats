@@ -16,7 +16,7 @@ def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     else :
         d["simpleOneBin"] = {}
     
-    d["REwk"] = ["", "Linear", "Constant"][2]
+    d["REwk"] = ["", "Linear", "FallingExp", "Constant"][2]
     d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
     d["qcdSearch"] = qcdSearch

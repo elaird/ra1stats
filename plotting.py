@@ -801,13 +801,18 @@ class validationPlotter(object) :
             y = 0.85
             s = 0.023
             text.SetTextSize(0.5*text.GetTextSize())
-            #text.DrawLatex(x, y +   s, "ML fit values")
-            if self.wspace.var("A_ewk") :
-                text.DrawLatex(x, y  , "A_{EWK} = %4.2e #pm %4.2e"   %(self.wspace.var("A_ewk").getVal(),    self.wspace.var("A_ewk").getError()))
-            text.DrawLatex(x, y -   s, "A_{QCD } = %4.2e #pm %4.2e"   %(self.wspace.var("A_qcd").getVal(),    self.wspace.var("A_qcd").getError()))
-            text.DrawLatex(x, y - 2*s, "k_{QCD  } = %4.2e #pm %4.2e"   %(self.wspace.var("k_qcd").getVal(),    self.wspace.var("k_qcd").getError()))
-            text.DrawLatex(x, y - 3*s, "#rho_{ph} = %4.2f #pm %4.2f" %(self.wspace.var("rhoPhotZ").getVal(), self.wspace.var("rhoPhotZ").getError()))
-            text.DrawLatex(x, y - 4*s, "#rho_{#mu     } = %4.2f #pm %4.2f"%(self.wspace.var("rhoMuonW").getVal(), self.wspace.var("rhoMuonW").getError()))
+            #text.DrawLatex(x, y + s, "ML fit values")
+            for i,t in enumerate([("A_ewk", "A_{EWK} = %4.2e #pm %4.2e"),
+                                  ("k_ewk", "k_{EWK} = %4.2e #pm %4.2e"),
+                                  ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e"),
+                                  ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e"),
+                                  ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
+                                  ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
+                                  #("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
+                                  ]) :
+                var,label = t
+                if self.wspace.var(var) :
+                    text.DrawLatex(x, y-i*s, label%(self.wspace.var(var).getVal(), self.wspace.var(var).getError()))
 
 	if self.printPages and fileName :
 	    #obs.SetTitle("")
