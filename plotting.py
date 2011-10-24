@@ -253,7 +253,7 @@ class validationPlotter(object) :
 
         self.hadPlots()
         #self.hadDataMcPlots()
-        self.hadControlPlots()
+        #self.hadControlPlots()
         self.muonPlots()
         self.photPlots()
         #self.mumuPlots()
@@ -743,48 +743,49 @@ class validationPlotter(object) :
         self.toPrint.append( (varName.rjust(10), lumiString.rjust(10), pretty(toPrint)) )
 	return d
 
-    def validationPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False, minimum = 0.0, maximum = None,
-                       logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
-        stuff = []
-        leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
-        leg.SetBorderSize(0)
-        leg.SetFillStyle(0)
+    def stampMlParameters(self, obsKey) :
+        if obsKey!="nHad" or self.printPages : return
 
-        extraName = str(logY)+"_".join([inDict(o, "var", "") for o in otherVars])
-        lumiString = obsLabel[obsLabel.find("["):]
-        obs = self.varHisto(varName = obsKey, extraName = extraName, wspaceMemberFunc = "var",
-                            yLabel = yLabel, note = note, lumiString = lumiString)["value"]
-                            
-        obs.SetMarkerStyle(20)
-        obs.SetStats(False)
-        obs.Draw("p")
-        if obsLabel : leg.AddEntry(obs, obsLabel, "lpe")
-        if minimum!=None : obs.SetMinimum(minimum)
-        if maximum!=None : obs.SetMaximum(maximum)
-	
-        if logY :
-            obs.SetMinimum(0.1)
-            r.gPad.SetLogy()
-        else :
-            r.gPad.SetLogy(False)
-	    
-	goptions = "same"
+        text = r.TLatex()
+        text.SetNDC()
+        x = 0.25
+        y = 0.85
+        s = 0.023
+        text.SetTextSize(0.5*text.GetTextSize())
+        #text.DrawLatex(x, y + s, "ML fit values")
+        for i,t in enumerate([("A_ewk", "A_{EWK} = %4.2e #pm %4.2e"),
+                              ("k_ewk", "k_{EWK} = %4.2e #pm %4.2e"),
+                              ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e"),
+                              ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e"),
+                              ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
+                              ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
+                              #("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
+                              ]) :
+            var,label = t
+            if self.wspace.var(var) :
+                text.DrawLatex(x, y-i*s, label%(self.wspace.var(var).getVal(), self.wspace.var(var).getError()))
+        return
+
+    def stacks(self, specs, extraName = "", goptions = "", lumiString = "", scale = 1.0) :
 	stacks = {}
-	stuff += [leg,obs,stacks]
+        stuff = []
+
 	legEntries = []
-	for d in otherVars :
+	for d in specs :
 	    if "example" not in d :
                 if "var" not in d : continue
 	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"],
                                        purityKey = inDict(d, "purityKey", None), color = d["color"], lineStyle = d["style"],
                                        lineWidth = inDict(d, "width", 1), lumiString = lumiString, errorsFrom = inDict(d, "errorsFrom", ""))
 	        hist = histos["value"]
+                stuff.append(histos)
 	    else :
                 d2 = copy.deepcopy(d)
                 d2["extraName"] = extraName
 	        hist = self.signalExampleHisto(d2)
+                stuff.append(hist)
 	    if not hist.GetEntries() : continue
-	    stuff.append(hist)
+
 	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), "l") )
 	    if d["stack"] :
 	        if d["stack"] not in stacks :
@@ -796,12 +797,47 @@ class validationPlotter(object) :
 	        for item in ["min", "max"] :
 	            if item not in histos : continue
 	            histos[item].Draw(goptions)
+        return stacks,legEntries,stuff
 
-        stuff.append(stacks)
-	for stack in stacks.values() :
+    def validationPlot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False, minimum = 0.0, maximum = None,
+                       logY = False, obsKey = None, obsLabel = None, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
+
+        leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+
+        stuff = [leg]
+        extraName = str(logY)+"_".join([inDict(o, "var", "") for o in otherVars])
+        lumiString = obsLabel[obsLabel.find("["):]
+
+
+        obs = self.varHisto(varName = obsKey, extraName = extraName, wspaceMemberFunc = "var",
+                            yLabel = yLabel, note = note, lumiString = lumiString)["value"]
+                        
+        obs.SetMarkerStyle(20)
+        obs.SetStats(False)
+        obs.Draw("p")
+
+        if minimum!=None : obs.SetMinimum(minimum)
+        if maximum!=None : obs.SetMaximum(maximum)
+        if logY : obs.SetMinimum(0.1)
+        if obsLabel : leg.AddEntry(obs, obsLabel, "lpe")
+        stuff += [obs]
+
+        r.gPad.SetLogy(logY)
+	goptions = "same"
+
+        args = {}
+        for item in ["extraName", "goptions", "lumiString", "scale"] :
+            args[item] = eval(item)
+
+        stackDict,legEntries,stuff2 = self.stacks(otherVars, **args)
+        stuff += [stackDict, stuff2]
+
+	for stack in stackDict.values() :
 	    stack.Draw(goptions, reverse = True)
-            
-	obs.Draw("psame")#redraw data
+
+        obs.Draw("psame") #redraw data
 
 	for item in reversed(legEntries) if reverseLegend else legEntries :
 	    leg.AddEntry(*item)
@@ -810,26 +846,8 @@ class validationPlotter(object) :
 	r.gPad.SetTicky()
 	r.gPad.Update()
 
-        if obsKey=="nHad" and not self.printPages :
-            text = r.TLatex()
-            text.SetNDC()
-            x = 0.25
-            y = 0.85
-            s = 0.023
-            text.SetTextSize(0.5*text.GetTextSize())
-            #text.DrawLatex(x, y + s, "ML fit values")
-            for i,t in enumerate([("A_ewk", "A_{EWK} = %4.2e #pm %4.2e"),
-                                  ("k_ewk", "k_{EWK} = %4.2e #pm %4.2e"),
-                                  ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e"),
-                                  ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e"),
-                                  ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
-                                  ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
-                                  #("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
-                                  ]) :
-                var,label = t
-                if self.wspace.var(var) :
-                    text.DrawLatex(x, y-i*s, label%(self.wspace.var(var).getVal(), self.wspace.var(var).getError()))
-
+        stuff += [self.stampMlParameters(obsKey)]
+        
 	if self.printPages and fileName :
 	    #obs.SetTitle("")
 	    printOnePage(self.canvas, fileName)
