@@ -47,4 +47,4 @@ http://wlav.web.cern.ch/wlav/pyroot/
 --------
 | Bugs |
 --------
-Please send bug reports to edward.laird@cern.ch.
+Please report any problems at https://github.com/elaird/ra1stats/issues
