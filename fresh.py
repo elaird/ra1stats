@@ -85,7 +85,7 @@ def importEwk(w = None, REwk = None, name = "", i = None, iLast = None, nHadValu
         w.var(k).setConstant()
     
     if REwk=="Linear" : wimport(w, parametrizedLinearEwk(w = w, ewk = name, i = i, iLast = iLast))
-    elif (REwk=="Exp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, sample = name, i = i))
+    elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, sample = name, i = i))
     else : wimport(w, r.RooRealVar(ni(name = name, i = i), ni(name = name, i = i), 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, i)
 
@@ -1017,7 +1017,7 @@ class foo(object) :
 
     def checkInputs(self) :
         l = self.likelihoodSpec
-        assert l["REwk"] in ["", "Exp", "Linear", "Constant"]
+        assert l["REwk"] in ["", "FallingExp", "Linear", "Constant"]
         assert l["RQcd"] in ["FallingExp", "FallingExpA", "Zero"]
         assert l["nFZinv"] in ["One", "Two", "All"]
         if l["simpleOneBin"] : 
