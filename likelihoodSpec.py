@@ -1,12 +1,12 @@
 def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     d = {}
 
-    d["alphaT"] = {"53": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-                   "55": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-                   "70": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-                   }
+    #d["alphaT"] = {"53": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
+    #               "55": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
+    #               "70": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
+    #               }
 
-    #d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", True),  ("phot", False), ("mumu", False)][:-1]} }
+    d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", True),  ("phot", False), ("mumu", False)][:-1]} }
     #d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]} }
 
     if simpleOneBin :
