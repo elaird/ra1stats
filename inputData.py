@@ -142,7 +142,7 @@ class data2011_27r(data) :
 
         self._lumi = {
             "had":     2700.,
-            "hadBulk": 1080.,
+            "hadBulk": 2700.,
 
             "muon":    1080.,
             "mcMuon":  1080.,
@@ -159,8 +159,10 @@ class data2011_27r(data) :
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02)
         self._sigEffCorr =    (  9.88e-01,  9.84e-01,  9.96e-01,  9.71e-01,  9.60e-01,  9.58e-01,  9.52e-01,  9.35e-01)
         self._observations = {
-            "nHadBulk":scaled(( 5.733e+07, 2.358e+07, 1.619e+07, 5.116e+06, 1.777e+06, 6.888e+05, 2.900e+05, 2.599e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
-            #"nHad":          ( 7.820e+02, 3.210e+02, 1.960e+02, 6.200e+01, 2.100e+01, 6.000e+00, 3.000e+00, 1.000e+00),
+
+            #"nHadBulk":scaled((5.733e+07, 2.358e+07, 1.619e+07, 5.116e+06, 1.777e+06, 6.888e+05, 2.900e+05, 2.599e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),#1.1/fb
+            "nHadBulk":scaled((  1.58e+08,  6.82e+07,  4.73e+07,  1.48e+07,  5.07e+06,  2.05e+06,  8.60e+05,  7.66e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
+            #"nHad":          ( 7.820e+02, 3.210e+02, 1.960e+02, 6.200e+01, 2.100e+01, 6.000e+00, 3.000e+00, 1.000e+00),#1.1/fb
             "nHad":           (  2.15e+03,  8.53e+02,  5.44e+02,  1.80e+02,  6.50e+01,  1.70e+01,  6.00e+00,  4.00e+00),
             "nPhot":     excl((       849,       307,       321,       111,        44,        20,         8,         4), isExcl),
             "nPhot2Jet": excl((       336,       127,       136,        40,        13,         4,         2,         0), isExcl),
@@ -457,7 +459,7 @@ def addLists(l1, l2) :
         out.append(a+b)
     return out
         
-class data2011(data2011_4) :
+class data2011(data2011_27r) :
     pass
 
 class data2010(data) :
