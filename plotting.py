@@ -395,27 +395,35 @@ class validationPlotter(object) :
         #               yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
-        ewk = {"num":"ewk",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK",  "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lpe",
-               #"numErrorsFrom":"A_ewk"}
-               "errorBand":self.ewk}
+        ewk = {"num":"ewk", "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK",
+               "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lpe", "errorBand":self.ewk} #"numErrorsFrom":"A_ewk"}
                
         if self.ewkType=="var" :
-          ewk =  {  "num":"ewk", "numType":"var",   "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk",  "color":self.ewk, "width":self.width1, "legSpec":"l"},
+          ewk =  {"num":"ewk", "numType":"var", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk",
+                  "color":self.ewk, "width":self.width1, "legSpec":"l"}
 
-        qcd = {"num":"qcd",   "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"QCD",  "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lpe",
-               #"numErrorsFrom":"A_qcd"}
-               "errorBand":self.qcd, "bandStyle":3005}
+        qcd = {"num":"qcd", "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"QCD",
+               "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lpe", "errorBand":self.qcd, "bandStyle":3005} #"numErrorsFrom":"A_qcd"}
         
         qcd2 = copy.deepcopy(qcd)
         qcd2["legend"] = False
-        self.ratioPlot(note = self.label, fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88), specs = [
-            qcd,
-            ewk,
-            qcd2,
-            {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"SM (QCD + EWK)", "color":self.sm, "width":self.width2,
-             "errorBand":self.sm, "markerStyle":1, "legSpec":"l"},
-            {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel, "color":r.kBlack, "legSpec":"lpe"},
-            ], yLabel = "R_{#alpha_{T}}", customMaxFactor = 1.5, reverseLegend = True)
+
+        specs = [qcd, ewk, qcd2,
+                 {"num":"hadB",  "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"SM (QCD + EWK)",
+                  "color":self.sm, "width":self.width2, "errorBand":self.sm, "markerStyle":1, "legSpec":"l"},
+                 {"num":"nHad",  "numType":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel,
+                  "color":r.kBlack, "legSpec":"lpe"},
+                 ]
+
+        if not self.smOnly :
+            specs += [{"num":"hadS", "numType":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalDesc+" "+self.signalDesc2,
+                       "color":self.sig, "style":1, "width":self.width1}]
+        elif any(self.signalExampleToStack) :
+            specs += [{"example":self.signalExampleToStack[1], "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalExampleToStack[0],
+                       "color":self.sig, "style":1, "width":self.width1}]
+
+        self.ratioPlot(note = self.label, fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
+                       specs = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = 1.5, reverseLegend = True)
 
         for labelRaw in self.hadControlLabels :
             label = "_"+labelRaw+"_"
@@ -429,16 +437,24 @@ class validationPlotter(object) :
                 ], yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6, reverseLegend = True)
 
         self.ratioPlot(note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
-            {"num":"nMuon", "numType":"data",     "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack},
-            {"num":"ttw",   "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML ttW / nHadBulk",             "color":r.kGreen},        
+            {"num":"nMuon", "numType":"data", "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"],
+             "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack},
+            {"num":"ttw",   "numType":"function", "dens":["nHadBulk"], "denTypes":["data"],
+             "desc":"ML ttW / nHadBulk", "color":r.kGreen},
             ], yLabel = "R_{#alpha_{T}}")
+
         self.ratioPlot(note = "photon to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
-            {"num":"nPhot", "numType":"data",     "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk", "color":r.kBlack},
-            {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",          "color":r.kRed},
+            {"num":"nPhot", "numType":"data", "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"],
+             "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk", "color":r.kBlack},
+            {"num":"zInv",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"],
+             "desc":"ML Zinv / nHadBulk", "color":r.kRed},
             ], yLabel = "R_{#alpha_{T}}")
+        
         #self.ratioPlot(note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), specs = [
-        #    {"num":"nMumu", "numType":"data",     "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk", "color":r.kBlack},
-        #    {"num":"zInv",  "numType":"function", "dens":["nHadBulk"],          "denTypes":["data"],        "desc":"ML Zinv / nHadBulk",            "color":r.kRed},
+        #    {"num":"nMumu", "numType":"data", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"],
+        #     "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk", "color":r.kBlack},
+        #    {"num":"zInv",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"],
+        #     "desc":"ML Zinv / nHadBulk", "color":r.kRed},
         #    ], yLabel = "R_{#alpha_{T}}")
 
     def printPars(self) :
@@ -832,8 +848,13 @@ class validationPlotter(object) :
     	legEntries = []
     	histos = []
     	for spec in specs :
-            num = self.varHisto(spec["num"], extraName = spec["num"]+"_".join(spec["dens"]), errorsFrom = inDict(spec, "numErrorsFrom", ""),
-                                wspaceMemberFunc = spec["numType"], yLabel = yLabel, note = note)["value"]
+            if "example" not in spec :
+                num = self.varHisto(spec["num"], extraName = spec["num"]+"_".join(spec["dens"]), errorsFrom = inDict(spec, "numErrorsFrom", ""),
+                                    wspaceMemberFunc = spec["numType"], yLabel = yLabel, note = note)["value"]
+            else :
+                spec2 = copy.deepcopy(spec)
+                spec2["extraName"] = spec["desc"]+"_".join(spec["dens"])
+	        num = self.signalExampleHisto(spec2)
     	
     	    for den,denType in zip(spec["dens"], spec["denTypes"]) :
                 num.Divide( self.varHisto(den, wspaceMemberFunc = denType)["value"] )
