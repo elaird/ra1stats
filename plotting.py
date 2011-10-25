@@ -423,7 +423,7 @@ class validationPlotter(object) :
 
         self.plot(note = self.label, fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
                   obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},
-                  otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2, reverseLegend = True, maximum = 40e-6)
+                  otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2, reverseLegend = True)
         
         #for labelRaw in self.hadControlLabels :
         #    label = "_"+labelRaw+"_"
@@ -435,11 +435,11 @@ class validationPlotter(object) :
         #        {"var":"hadControlB%s"%label,  "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
         #        ], yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6, reverseLegend = True)
 
-        self.plot(note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6,
+        self.plot(note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2,
                   obs = {"var":"nMuon", "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk"},
                   otherVars = [{"var":"ttw",   "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML ttW / nHadBulk", "color":r.kGreen}])
 
-        self.plot(note = "photon to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6,
+        self.plot(note = "photon to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2,
                   obs = {"var":"nPhot", "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk"},
                   otherVars = [{"var":"zInv",  "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
         
@@ -771,16 +771,8 @@ class validationPlotter(object) :
     def stacks(self, specs, extraName = "", lumiString = "", scale = 1.0) :
 	stacks = {}
         histoList = []
-
 	legEntries = []
 
-    	#for i,t in enumerate(histos) :
-        #    h,errorBand,bandStyle = t
-    	#    if not i :
-    	#        h.SetMinimum(0.0)
-    	#        if customMaxFactor : h.SetMaximum(max([histoMax(t[0], customMaxFactor) for t in histos]))
-    	#        if maximum : h.SetMaximum(maximum)
-        
 	for d in specs :
             extraName = "%s%s"%(extraName, "_".join(d["dens"]) if "dens" in d else "")
             
@@ -836,9 +828,9 @@ class validationPlotter(object) :
             for den,denType in zip(obs["dens"], obs["denTypes"]) :
                 obsHisto.Divide(self.varHisto(spec = {"var":den, "type": denType})["value"])
     	
-        obsHisto.SetMarkerStyle(20)
+        obsHisto.SetMarkerStyle(inDict(obs, "markerStyle", 20))
         obsHisto.SetStats(False)
-        obsHisto.Draw("p")
+        obsHisto.Draw(inDict(obs, "goptions", "p"))
 
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
@@ -854,9 +846,9 @@ class validationPlotter(object) :
 
         stackDict,legEntries,histoList = self.stacks(otherVars, **args)
 
-        maxes = [histoMax(h, customMaxFactor[logY]) for h in histoList]
-        if maxes :
-            for h in histoList : h.SetMaximum(max(maxes))
+        maxes = [histoMax(h, customMaxFactor[logY]) for h in histoList+[obsHisto]]
+        if maxes and not maximum :
+            obsHisto.SetMaximum(max(maxes))
             
         stuff += [stackDict, histoList]
 
