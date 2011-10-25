@@ -683,30 +683,36 @@ class validationPlotter(object) :
     def varHisto(self, spec = {}, extraName = "", yLabel = "", note = "", lumiString = "") :
         varName = spec["var"]
         wspaceMemberFunc = spec["type"]
-        purityKey = inDict(spec, "purityKey", None)
-        color = inDict(spec, "color", r.kBlack)
-        lineStyle = inDict(spec, "style", 1)
-        lineWidth = inDict(spec, "width", 1)
+        purityKey   = inDict(spec, "purityKey",   None)
+        color       = inDict(spec, "color",       r.kBlack)
+        lineStyle   = inDict(spec, "style",       1)
+        lineWidth   = inDict(spec, "width",       1)
         markerStyle = inDict(spec, "markerStyle", 1)
-        errorsFrom = inDict(spec, "errorsFrom", "")
-        
+        fillStyle   = inDict(spec, "fillStyle",   0)
+        fillColor   = inDict(spec, "fillColor",   color)
+        errorsFrom  = inDict(spec, "errorsFrom",  "")
+
 	d = {}
 	d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
 	d["value"].Reset()
-	
-	d["value"].SetLineColor(color)
-	d["value"].SetLineStyle(lineStyle)
-	d["value"].SetLineWidth(lineWidth)
-	
+
 	if wspaceMemberFunc=="var" :
 	    for item in ["min", "max"] :
 	        d[item] = d["value"].Clone(d["value"].GetName()+item)
-	        d[item].SetLineColor(color)
-	        d[item].SetLineStyle(lineStyle+1)
-	        d[item].SetLineWidth(lineWidth)
+
+        #style
+        for key,histo in d.iteritems() :
+            histo.SetLineColor(color)
+            histo.SetLineWidth(lineWidth)
+            histo.SetFillStyle(fillStyle)
+            histo.SetFillColor(fillColor)
+            if key=="value" :
+                histo.SetMarkerColor(color)
+                histo.SetMarkerStyle(markerStyle)
+                histo.SetLineStyle(lineStyle)
+            else :
+                histo.SetLineStyle(lineStyle+1)
 	          
-	d["value"].SetMarkerColor(color)
-	d["value"].SetMarkerStyle(markerStyle)
 
 	toPrint = []
 	for i in range(len(self.htBinLowerEdges)) :
@@ -767,10 +773,6 @@ class validationPlotter(object) :
         histoList = []
 
 	legEntries = []
-
-    	#for spec in specs :
-    	#    num.SetFillStyle(inDict(spec, "fillStyle", 0))
-    	#    num.SetFillColor(inDict(spec, "fillColor", spec["color"]))
 
     	#for i,t in enumerate(histos) :
         #    h,errorBand,bandStyle = t
