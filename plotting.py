@@ -299,14 +299,15 @@ class validationPlotter(object) :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
             self.plot(note = self.label, fileName = fileName, legend0 = (0.48, 0.65), legend1 = (0.88, 0.85),
-                      obsKey = "nHad", obsLabel = obsString(self.obsLabel, "hadronic sample", self.lumi["had"]), otherVars = vars, logY = logY)
+                      obs = {"var":"nHad", "desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
+                      otherVars = vars, logY = logY, stampParams = True)
             
     def hadDataMcPlots(self) :
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_data_mc%s"%("_logy" if logY else "")
             self.plot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
-                      obsKey = "nHad", obsLabel = "hadronic data %s"%lumi(self.lumi["had"]), otherVars = [
+                      obs = {"var":"nHad", "desc": "hadronic data %s"%lumi(self.lumi["had"])}, otherVars = [
                 {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
                 {"var":"ewk",  "type":self.ewkType, "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewk", "k_ewk", errors = True) if self.REwk else "[floating]",
                  "color":r.kCyan, "style":2, "width":2, "stack":"background"},
@@ -322,7 +323,7 @@ class validationPlotter(object) :
                 thisNote = "Hadronic Control Sample %s %s"%(labelRaw, " (logY)" if logY else "")
                 fileName = "hadronic_control_fit_%s%s"%(labelRaw, "_logy" if logY else "")
                 self.plot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72),
-                          obsKey = "nHadControl%s"%label, obsLabel = "hadronic control data (%s) %s"%(labelRaw, lumi(self.lumi["had"])),
+                          obs = {"var":"nHadControl%s"%label, "desc": "hadronic control data (%s) %s"%(labelRaw, lumi(self.lumi["had"]))},
                           logY = logY, otherVars = [
                     {"var":"hadControlB%s"%label, "type":"function", "color":r.kBlue, "style":1, "width":self.width, "desc":"expected SM yield", "stack":None},
                     {"var":"ewkControl%s"%label,  "type":"function", "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewkControl%s"%label1, "d_ewkControl%s"%label1, errors = True),
@@ -346,14 +347,15 @@ class validationPlotter(object) :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "muon_control_fit%s"%("_logy" if logY else "")
             self.plot(note = self.label, fileName = fileName, legend0 = (0.48, 0.70), 
-                      obsKey = "nMuon", obsLabel = obsString(self.obsLabel, "muon sample", self.lumi["muon"]), otherVars = vars, logY = logY)
+                      obs = {"var":"nMuon", "desc": obsString(self.obsLabel, "muon sample", self.lumi["muon"])},
+                      otherVars = vars, logY = logY)
 
     def photPlots(self) :
         for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "photon_control_fit%s"%("_logy" if logY else "")            
             self.plot(note = self.label, fileName = fileName, legend0 = (0.48, 0.73), reverseLegend = True, logY = logY,
-                      obsKey = "nPhot", obsLabel = obsString(self.obsLabel, "photon sample", self.lumi["phot"]), otherVars = [
+                      obs = {"var":"nPhot", "desc": obsString(self.obsLabel, "photon sample", self.lumi["phot"])},otherVars = [
                 {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray}  if not self.printPages else {},
                 {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2, "desc":"SM", "stack":None},
@@ -364,7 +366,7 @@ class validationPlotter(object) :
             thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
             fileName = "mumu_control_fit%s"%("_logy" if logY else "")
             self.plot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True,
-                      obsKey = "nMumu", obsLabel = "mumu data %s"%lumi(self.lumi["mumu"]), logY = logY, otherVars = [
+                      obs = {"var":"nMumu", "desc": "mumu data %s"%lumi(self.lumi["mumu"])}, logY = logY, otherVars = [
                 {"var":"mcZmumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
                 {"var":"mumuExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
                 ])
@@ -383,16 +385,13 @@ class validationPlotter(object) :
                   otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z#rightarrow#nu#bar{#nu} / fit EWK", "stack":None}])
         
     def mcFactorPlots(self) :
-        self.plot(note = "muon translation factor (from MC)",
-                  legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 2.0,
+        self.plot(note = "muon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 2.0,
                   otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}],
                   yLabel = "", scale = self.lumi["had"]/self.lumi["muon"])
-        self.plot(note = "photon translation factor (from MC)",
-                  legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 4.0,
+        self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 4.0,
                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC #gamma / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                   yLabel = "", scale = self.lumi["had"]/self.lumi["phot"])
-        #self.plot(note = "muon-muon translation factor (from MC)",
-        #          legend0 = (0.5, 0.8), obsKey = "", obsLabel = "", maximum = 1.0,
+        #self.plot(note = "muon-muon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 1.0,
         #          otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
         #          yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
@@ -412,51 +411,41 @@ class validationPlotter(object) :
 
         specs = [qcd, ewk, #qcd2,
                  {"var":"hadB",  "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"SM (QCD + EWK)",
-                  "color":self.sm, "width":self.width2, "errorBand":self.sm, "markerStyle":1, "legSpec":"l"},
-                 {"var":"nHad",  "type":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel,
-                  "color":r.kBlack, "legSpec":"lpe", "markerStyle":20},
+                  "color":self.sm, "width":self.width2, "errorBand":self.sm, "markerStyle":1, "legSpec":"l", "stack":"total"},
                  ]
 
         if not self.smOnly :
             specs += [{"var":"hadS", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalDesc+" "+self.signalDesc2,
-                       "color":self.sig, "style":1, "width":self.width1}]
+                       "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif any(self.signalExampleToStack) :
             specs += [{"example":self.signalExampleToStack[1], "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalExampleToStack[0],
-                       "color":self.sig, "style":1, "width":self.width1}]
+                       "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         self.plot(note = self.label, fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
-                  otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2, reverseLegend = True, maximum = 22.1e-6)
+                  obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},
+                  otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2, reverseLegend = True, maximum = 40e-6)
         
         #for labelRaw in self.hadControlLabels :
         #    label = "_"+labelRaw+"_"
         #    label1 = label[:-1]
-        #    self.plot(note = "hadronic control %s"%labelRaw, legend0 = (0.12, 0.7), legend1 = (0.52, 0.88), otherVars = [
+        #    self.plot(note = "hadronic control %s"%labelRaw, legend0 = (0.12, 0.7), legend1 = (0.52, 0.88),
+        #              obs = {"var":"nHadControl%s"%label1, "dens":["nHadBulk"], "denTypes":["var"], "desc":"nHadControl / nHadBulk",}, otherVars = [
         #        {"var":"qcdControl%s"%label,   "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
         #        {"var":"ewkControl%s"%label,   "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
         #        {"var":"hadControlB%s"%label,  "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
-        #        {"var":"nHadControl%s"%label1, "type":"data",     "dens":["nHadBulk"], "denTypes":["var"], "desc":"nHadControl / nHadBulk",    "color":r.kBlack},
         #        ], yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6, reverseLegend = True)
 
-        self.plot(note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), otherVars = [
-            {"var":"nMuon", "type":"data", "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"],
-             "desc":"nMuon * (MC ttW / MC mu) / nHadBulk", "color":r.kBlack, "markerStyle":20, "legSpec":"lpe"},
-            {"var":"ttw",   "type":"function", "dens":["nHadBulk"], "denTypes":["data"],
-             "desc":"ML ttW / nHadBulk", "color":r.kGreen},
-            ], yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6)
+        self.plot(note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6,
+                  obs = {"var":"nMuon", "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk"},
+                  otherVars = [{"var":"ttw",   "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML ttW / nHadBulk", "color":r.kGreen}])
 
-        self.plot(note = "photon to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), otherVars = [
-            {"var":"nPhot", "type":"data", "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"],
-             "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk", "color":r.kBlack, "markerStyle":20, "legSpec":"lpe"},
-            {"var":"zInv",  "type":"function", "dens":["nHadBulk"], "denTypes":["data"],
-             "desc":"ML Zinv / nHadBulk", "color":r.kRed},
-            ], yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6)
+        self.plot(note = "photon to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6,
+                  obs = {"var":"nPhot", "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk"},
+                  otherVars = [{"var":"zInv",  "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
         
-        #self.plot(note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), otherVars = [
-        #    {"num":"nMumu", "numType":"data", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"],
-        #     "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk", "color":r.kBlack},
-        #    {"num":"zInv",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"],
-        #     "desc":"ML Zinv / nHadBulk", "color":r.kRed},
-        #    ], yLabel = "R_{#alpha_{T}}")
+        #self.plot(note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6,
+        #          obs = {"num":"nMumu", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk"},
+        #          otherVars = [{"num":"zInv",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
 
     def printPars(self) :
         def printText(x, y, s, color = r.kBlack) :
@@ -744,9 +733,7 @@ class validationPlotter(object) :
         self.toPrint.append( (varName.rjust(10), lumiString.rjust(10), pretty(toPrint)) )
 	return d
 
-    def stampMlParameters(self, obsKey) :
-        if obsKey!="nHad" or self.printPages : return
-
+    def stampMlParameters(self) :
         text = r.TLatex()
         text.SetNDC()
         x = 0.25
@@ -827,8 +814,8 @@ class validationPlotter(object) :
         return stacks,legEntries,histoList
 
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
-             minimum = 0.0, maximum = None, customMaxFactor = (1.1, 2.0), logY = False,
-             obsKey = "", obsLabel = "", otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
+             minimum = 0.0, maximum = None, customMaxFactor = (1.1, 2.0), logY = False, stampParams = False,
+             obs = {"var":"", "desc":""}, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
         
         leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
         leg.SetBorderSize(0)
@@ -836,20 +823,24 @@ class validationPlotter(object) :
 
         stuff = [leg]
         extraName = str(logY)+"_".join([inDict(o, "var", "") for o in otherVars])
-        lumiString = obsLabel[obsLabel.find("["):]
+        lumiString = obs["desc"][obs["desc"].find("["):]
 
 
-        obs = self.varHisto(varName = obsKey, extraName = extraName, wspaceMemberFunc = "var",
-                            yLabel = yLabel, note = note, lumiString = lumiString)["value"]
+        obsHisto = self.varHisto(varName = obs["var"], extraName = extraName, wspaceMemberFunc = "var",
+                                 yLabel = yLabel, note = note, lumiString = lumiString)["value"]
                         
-        obs.SetMarkerStyle(20)
-        obs.SetStats(False)
-        obs.Draw("p")
+        if "dens" in obs :
+            for den,denType in zip(obs["dens"], obs["denTypes"]) :
+                obsHisto.Divide( self.varHisto(den, wspaceMemberFunc = denType)["value"] )
+    	
+        obsHisto.SetMarkerStyle(20)
+        obsHisto.SetStats(False)
+        obsHisto.Draw("p")
 
-        if minimum!=None : obs.SetMinimum(minimum)
-        if maximum!=None : obs.SetMaximum(maximum)
-        if logY : obs.SetMinimum(0.1)
-        if obsLabel : leg.AddEntry(obs, obsLabel, "lpe")
+        if minimum!=None : obsHisto.SetMinimum(minimum)
+        if maximum!=None : obsHisto.SetMaximum(maximum)
+        if logY : obsHisto.SetMinimum(0.5)
+        if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], inDict(obs, "legSpec", "lpe"))
         stuff += [obs]
 
         r.gPad.SetLogy(logY)
@@ -867,9 +858,9 @@ class validationPlotter(object) :
         stuff += [stackDict, histoList]
 
 	for stack in stackDict.values() :
-	    stack.Draw(goptions = "same", reverse = True)
+	    stack.Draw(goptions = "histsame", reverse = True)
 
-        obs.Draw("psame") #redraw data
+        obsHisto.Draw("psame") #redraw data
 
 	for item in reversed(legEntries) if reverseLegend else legEntries :
 	    leg.AddEntry(*item)
@@ -878,10 +869,10 @@ class validationPlotter(object) :
 	r.gPad.SetTicky()
 	r.gPad.Update()
 
-        stuff += [self.stampMlParameters(obsKey)]
+        if stampParams and not self.printPages : stuff += [self.stampMlParameters()]
         
 	if self.printPages and fileName :
-	    #obs.SetTitle("")
+	    #obsHisto.SetTitle("")
 	    printOnePage(self.canvas, fileName)
 	    #printOnePage(self.canvas, fileName, ext = ".C")
 	self.canvas.Print(self.psFileName)
