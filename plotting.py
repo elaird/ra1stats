@@ -447,6 +447,18 @@ class validationPlotter(object) :
         #          obs = {"num":"nMumu", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk"},
         #          otherVars = [{"num":"zInv",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
 
+        self.plot(note = "``naive prediction''", legend0 = (0.12, 0.7), legend1 = (0.82, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6,#customMaxFactor = [1.5]*2,
+                  otherVars = [
+            {"var":"nMuon", "type":"var",      "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "stack":"pred", "stackOptions":"pe",
+             "desc":"nMuon * (MC ttW / MC mu) / nHadBulk",                       "markerStyle":20, "color":r.kGreen+3, "legSpec":"lpe"},
+            {"var":"nPhot", "type":"var",      "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "stack":"pred", "stackOptions":"pe",
+             "desc":" + nPhot * P * (MC Zinv / MC #gamma) / nHadBulk (stacked)", "markerStyle":20, "color":r.kBlue+3,   "legSpec":"lpe"},
+            {"var":"ttw",   "type":"function", "dens":["nHadBulk"],          "denTypes":["data"], "stack":"ml",
+             "desc":"ML ttW / nHadBulk", "color":r.kGreen},
+            {"var":"zInv",  "type":"function", "dens":["nHadBulk"],          "denTypes":["data"], "stack":"ml",
+             "desc":"ML EWK (ttw+zInv) / nHadBulk", "color":self.ewk},
+            ])
+
     def printPars(self) :
         def printText(x, y, s, color = r.kBlack) :
             #print s
@@ -801,7 +813,7 @@ class validationPlotter(object) :
 	        histoList += drawOne(hist = hist,
                                      goptions = "%ssame"%inDict(d, "goptions", ""),
                                      errorBand = inDict(d, "errorBand", False),
-                                     bandFillStyle = inDict(d, "bandStyle", 3004))
+                                     bandFillStyle = inDict(d, "bandStyle", [1001,3004][0]))
 	        for item in ["min", "max"] :
 	            if item not in histos : continue
                     h = histos[item]
