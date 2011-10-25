@@ -175,7 +175,7 @@ def pretty(l) :
 def inDict(d, key, default) :
     return d[key] if key in d else default
 
-def drawOne(hist, goptions, errorBand, bandFillStyle = 1001) :
+def drawOne(hist = None, goptions = "", errorBand = False, bandFillStyle = 1001) :
     if not errorBand :
         hist.Draw(goptions)
         return []
@@ -680,8 +680,16 @@ class validationPlotter(object) :
             out.SetBinContent(i+1, l*xs*eff)
         return out
     
-    def varHisto(self, varName = None, extraName = "", wspaceMemberFunc = None, purityKey = None, yLabel = "", note = "",
-                 color = r.kBlack, lineStyle = 1, lineWidth = 1, markerStyle = 1, lumiString = "", errorsFrom = "") :
+    def varHisto(self, spec = {}, extraName = "", yLabel = "", note = "", lumiString = "") :
+        varName = spec["var"]
+        wspaceMemberFunc = spec["type"]
+        purityKey = inDict(spec, "purityKey", None)
+        color = inDict(spec, "color", r.kBlack)
+        lineStyle = inDict(spec, "style", 1)
+        lineWidth = inDict(spec, "width", 1)
+        markerStyle = inDict(spec, "markerStyle", 1)
+        errorsFrom = inDict(spec, "errorsFrom", "")
+        
 	d = {}
 	d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
 	d["value"].Reset()
@@ -761,31 +769,22 @@ class validationPlotter(object) :
 	legEntries = []
 
     	#for spec in specs :
-    	#    num.SetMarkerStyle(inDict(spec, "markerStyle", 20))
-    	#    num.SetStats(False)
-    	#    num.SetLineColor(spec["color"])
-        #    num.SetLineWidth(inDict(spec, "width", 1))
-    	#    num.SetMarkerColor(spec["color"])
     	#    num.SetFillStyle(inDict(spec, "fillStyle", 0))
     	#    num.SetFillColor(inDict(spec, "fillColor", spec["color"]))
-        #    if inDict(spec, "legend", True) :
-        #        legEntries.append( (num, spec["desc"], inDict(spec, "legSpec", legSpec(goptions))) )
-    	#    histos.append( (num, inDict(spec, "errorBand", ""), inDict(spec, "bandStyle", 3004)) )
 
-
+    	#for i,t in enumerate(histos) :
         #    h,errorBand,bandStyle = t
-        #        stuff += [drawOne(h, goptions, errorBand, bandFillStyle = bandStyle)]
+    	#    if not i :
+    	#        h.SetMinimum(0.0)
+    	#        if customMaxFactor : h.SetMaximum(max([histoMax(t[0], customMaxFactor) for t in histos]))
+    	#        if maximum : h.SetMaximum(maximum)
         
-
 	for d in specs :
             extraName = "%s%s"%(extraName, "_".join(d["dens"]) if "dens" in d else "")
             
 	    if "example" not in d :
                 if "var" not in d : continue
-	        histos = self.varHisto(varName = d["var"], extraName = extraName, wspaceMemberFunc = d["type"],
-                                       purityKey = inDict(d, "purityKey", None), color = d["color"], lineStyle = inDict(d, "style", 1),
-                                       lineWidth = inDict(d, "width", 1), markerStyle = inDict(d, "markerStyle", 1),
-                                       lumiString = lumiString, errorsFrom = inDict(d, "errorsFrom", ""))
+	        histos = self.varHisto(extraName = extraName, lumiString = lumiString, spec = d)
 	        hist = histos["value"]
 	    else :
                 d2 = copy.deepcopy(d)
@@ -795,7 +794,7 @@ class validationPlotter(object) :
 
             if "dens" in d :
                 for den,denType in zip(d["dens"], d["denTypes"]) :
-                    hist.Divide( self.varHisto(den, wspaceMemberFunc = denType)["value"] )
+                    hist.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
     	
 	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
 	    if inDict(d, "stack", False) :
@@ -805,7 +804,10 @@ class validationPlotter(object) :
 	    else :
 	        hist.Scale(scale)
                 histoList.append(hist)
-	        histoList += drawOne(hist, "%ssame"%inDict(d, "goptions", ""), inDict(d, "errorBand", False))
+	        histoList += drawOne(hist = hist,
+                                     goptions = "%ssame"%inDict(d, "goptions", ""),
+                                     errorBand = inDict(d, "errorBand", False),
+                                     bandFillStyle = inDict(d, "bandStyle", 3004))
 	        for item in ["min", "max"] :
 	            if item not in histos : continue
                     h = histos[item]
@@ -825,13 +827,12 @@ class validationPlotter(object) :
         extraName = str(logY)+"_".join([inDict(o, "var", "") for o in otherVars])
         lumiString = obs["desc"][obs["desc"].find("["):]
 
-
-        obsHisto = self.varHisto(varName = obs["var"], extraName = extraName, wspaceMemberFunc = "var",
-                                 yLabel = yLabel, note = note, lumiString = lumiString)["value"]
+        obsHisto = self.varHisto(extraName = extraName, yLabel = yLabel, note = note, lumiString = lumiString,
+                                 spec = {"var":obs["var"], "type":"var"})["value"]
                         
         if "dens" in obs :
             for den,denType in zip(obs["dens"], obs["denTypes"]) :
-                obsHisto.Divide( self.varHisto(den, wspaceMemberFunc = denType)["value"] )
+                obsHisto.Divide(self.varHisto(spec = {"var":den, "type": denType})["value"])
     	
         obsHisto.SetMarkerStyle(20)
         obsHisto.SetStats(False)
@@ -878,66 +879,5 @@ class validationPlotter(object) :
 	self.canvas.Print(self.psFileName)
 
 	return stuff
-
-    def ratioPlotOld(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.88), specs = [], yLabel = "",
-                  customMaxFactor = None, maximum = None, goptions = "p", reverseLegend = False) :
-    	stuff = []
-    	leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
-    	leg.SetBorderSize(0)
-    	leg.SetFillStyle(0)
-    	
-    	legEntries = []
-    	histos = []
-    	for spec in specs :
-            if "example" not in spec :
-                num = self.varHisto(spec["num"], extraName = spec["num"]+"_".join(spec["dens"]), errorsFrom = inDict(spec, "numErrorsFrom", ""),
-                                    wspaceMemberFunc = spec["numType"], yLabel = yLabel, note = note)["value"]
-            else :
-                spec2 = copy.deepcopy(spec)
-                spec2["extraName"] = spec["desc"]+"_".join(spec["dens"])
-	        num = self.signalExampleHisto(spec2)
-    	
-    	    for den,denType in zip(spec["dens"], spec["denTypes"]) :
-                num.Divide( self.varHisto(den, wspaceMemberFunc = denType)["value"] )
-    	
-    	    num.SetMarkerStyle(inDict(spec, "markerStyle", 20))
-    	    num.SetStats(False)
-    	    num.SetLineColor(spec["color"])
-            num.SetLineWidth(inDict(spec, "width", 1))
-    	    num.SetMarkerColor(spec["color"])
-    	    num.SetFillStyle(inDict(spec, "fillStyle", 0))
-    	    num.SetFillColor(inDict(spec, "fillColor", spec["color"]))
-            if inDict(spec, "legend", True) :
-                legEntries.append( (num, spec["desc"], inDict(spec, "legSpec", legSpec(goptions))) )
-    	    histos.append( (num, inDict(spec, "errorBand", ""), inDict(spec, "bandStyle", 3004)) )
-
-        stuff = []
-    	for i,t in enumerate(histos) :
-            h,errorBand,bandStyle = t
-    	    if not i :
-    	        h.SetMinimum(0.0)
-    	        if customMaxFactor : h.SetMaximum(max([histoMax(t[0], customMaxFactor) for t in histos]))
-    	        if maximum : h.SetMaximum(maximum)
-                stuff += [drawOne(h, goptions, errorBand, bandFillStyle = bandStyle)]
-    	        r.gPad.SetLogy(False)
-    	    else :
-                stuff += [drawOne(h, "%ssame"%goptions, errorBand, bandFillStyle = bandStyle)]
-    	
-    	for item in reversed(legEntries) if reverseLegend else legEntries :
-    	    leg.AddEntry(*item)
-    	
-    	leg.Draw()
-    	stuff.append(leg)
-    	stuff.append(histos)
-    	r.gPad.SetTickx()
-    	r.gPad.SetTicky()
-    	r.gPad.Update()
-    	
-    	if self.printPages and fileName :
-    	    #histos[0][0].SetTitle("")
-    	    printOnePage(self.canvas, fileName)
-	    #printOnePage(self.canvas, fileName, ext = ".C")
-            
-    	self.canvas.Print(self.psFileName)
 
 rootSetup()
