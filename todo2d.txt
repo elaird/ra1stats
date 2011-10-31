@@ -12,6 +12,7 @@ to fix:
 - pickling.stuffVars
 - more histos in check
 - effHadSum in job.onePoint
+- all sms function in histogramSpecs and histogramProcessing
 
 to consider:
 - nBulk per slice
