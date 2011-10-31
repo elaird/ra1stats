@@ -2,13 +2,16 @@ import collections
 import ROOT as r
 
 def histoSpec(model) :
-    assert (model in ["T1", "T2"]),"%s"%model
+    assert (model in ["T1", "T2", "T2tt"]),"%s"%model
     if model=="T1" :
         histo = "gluino"
         factor = 1.0        
     if model=="T2" :
         histo = "squark"
         factor = 0.8
+    if model=="T2tt" :
+        histo = "squark"
+        factor = 0.2        
     return {"file": "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root", "histo": histo, "factor": factor}
 
 def refXsHisto(model) :

@@ -28,8 +28,8 @@ def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper
         out["afterDir"] = "mSuGraScan"
         assert scale in ["1", "05", "2"]
         cmssm = True
-    elif model in ["T1", "T2"] :
-        scan = {"had":"v3", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
+    elif model in ["T1", "T2", "T2tt"] :
+        scan = {"had":"v1" if model == "T2tt" else "v3", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
         thresh = ""
         if htLower==275 : thresh = "0"
         if htLower==325 : thresh = "1"
@@ -57,6 +57,8 @@ def histoTitle() :
         return ";m_{gluino} (GeV);m_{LSP} (GeV)"
     if conf.switches()["signalModel"]=="T2" :
         return ";m_{squark} (GeV);m_{LSP} (GeV)"
+    if conf.switches()["signalModel"]=="T2tt" :
+        return ";m_{stop} (GeV);m_{LSP} (GeV)"
     else :
         return ";m_{0} (GeV);m_{1/2} (GeV)"
 
