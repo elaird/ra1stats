@@ -10,7 +10,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
-            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][2],
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
