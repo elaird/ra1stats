@@ -113,7 +113,7 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
 
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False) :
     s = conf.switches()
-    if not (s["signalModel"] in ["T1","T2"]) : return
+    if not (s["signalModel"] in ["T1","T2","T2tt"]) : return
     
     inFile = mergedFile()
     f = r.TFile(inFile)
@@ -178,7 +178,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     
 def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
-    if not (s["signalModel"] in ["T1","T2"]) : return
+    if not (s["signalModel"] in ["T1","T2","T2tt"]) : return
 
     inFile = mergedFile()
     f = r.TFile(inFile)

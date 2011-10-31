@@ -10,7 +10,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
-            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][0],
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -24,21 +24,24 @@ def signal() :
             #"smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
             #               "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9)},
+                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+                           "T2tt":lambda iX,x,iY,y,iZ,z:True},
             "smsMask":{"T1":[(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
-                       "T2":[]},
+                       "T2":[],
+                       "T2tt":[]},
                         
             "nlo": True,
             "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2"][0],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt"][-1],
             }
 
 def points() :
-    return {"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
-            #"listOfTestPoints": [],
+    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
+            "listOfTestPoints": [],
+            #"listOfTestPoints": [(32, 8, 1)],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
@@ -60,7 +63,7 @@ def switches() :
     return out
 
 def checkAndAdjust(d) :
-    assert d["signalModel"] in ["T1", "T2", "tanBeta10", "tanBeta40"]
+    assert d["signalModel"] in ["T1", "T2", "T2tt", "tanBeta10", "tanBeta40"]
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
 
     d["rhoSignalMin"] = 0.0
