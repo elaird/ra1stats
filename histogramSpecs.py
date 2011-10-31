@@ -26,6 +26,7 @@ def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper
         out["file"] = "/".join([scan["dir"], model, box, scan[box], box+".root"])
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
         out["afterDir"] = "mSuGraScan"
+        assert scale in ["1", "05", "2"]
         cmssm = True
     elif model in ["T1", "T2"] :
         scan = {"had":"v3", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
@@ -40,7 +41,6 @@ def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper
         assert False, "model %s not in list"%model
     
     assert box in ["had", "muon"]
-    assert scale in ["1", "05", "2"]
     
     if alphaTLower : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper : out["afterDir"] += "_%s"%alphaTUpper
