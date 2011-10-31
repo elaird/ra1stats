@@ -6,7 +6,7 @@ def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     #               "70": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
     #               }
 
-    d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", True),  ("phot", False), ("mumu", False)][:-1]} }
+    d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False),  ("phot", False), ("mumu", False)][:-1]} }
     #d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]} }
 
     if simpleOneBin :
@@ -16,7 +16,7 @@ def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     else :
         d["simpleOneBin"] = {}
     
-    d["REwk"] = ["", "Linear", "FallingExp", "Constant"][2]
+    d["REwk"] = ["", "Linear", "FallingExp", "Constant"][3]
     d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
     d["nFZinv"] = ["All", "One", "Two"][0]
     d["qcdSearch"] = qcdSearch
