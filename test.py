@@ -76,7 +76,7 @@ f = fresh.foo(inputData = data2011(),
               #rhoSignalMin = 0.1,
               #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
 
-              #signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][-1],
+              #signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][3],
               #signalExampleToStack = ("T1 m_{gluino} = 600 GeV, m_{LSP} = 100 GeV, xs = %g pb"%t1_600_100["xs"], t1_600_100),
               #signalExampleToStack = ("T2 39 7, xs = %g pb"%t2_39_7["xs"], t2_39_7),
               signalExampleToStack = ("LM6 (LO)", lm6_2011),
