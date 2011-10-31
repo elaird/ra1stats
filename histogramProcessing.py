@@ -108,7 +108,7 @@ def effHisto(**args) :
     s = conf.switches()
     model = s["signalModel"]
     if "tanBeta" in model : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
-    else : return smsEffHisto(model, **args)
+    else : return smsEffHisto(model = model, **args)
 
 def cmssmNEventsInHisto(model, box = "had", scale = "1") :
     s = hs.cmssmHistoSpec(model = model, box = box, scale = scale)
@@ -166,9 +166,9 @@ def smsNEventsInHisto(model) :
     s = hs.smsHistoSpec(model = model, box = "had", htLower = 875, htUpper = None)
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
-def smsEffHisto(model, box, scale, htLower, htUpper) :
+def smsEffHisto(**args) :
     switches = conf.switches()
-    s = hs.smsHistoSpec(model = model, box = box, htLower = htLower, htUpper = htUpper)
+    s = hs.smsHistoSpec(**args)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
     if switches["fillHolesInInput"] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"][switches["signalModel"]])
