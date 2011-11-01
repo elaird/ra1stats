@@ -82,8 +82,8 @@ def checkAndAdjust(d) :
         d["nIterationsMax"] = 10
         if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
         d["plSeedForCLs"] = True
-        d["minEventsIn"] =  9900.
-        d["maxEventsIn"] = 10100.
+        d["minEventsIn"] =  9900. if d["signalModel"]!="T2tt" else None
+        d["maxEventsIn"] = 10100. if d["signalModel"]!="T2tt" else None
         d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
