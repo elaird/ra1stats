@@ -32,6 +32,8 @@ def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) 
     if eventsInRange :
         out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
         if switches["method"] and bool(signal["effHadSum"])  : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
+    else :
+        print "WARNING nEventsIn = %d not in allowed range[ %d, %d ] " % ( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
     return out
 
 def results(switches = None, data = None, likelihoodSpec = None, signal = None) :
