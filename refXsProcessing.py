@@ -3,6 +3,7 @@ import ROOT as r
 
 def histoSpec(model) :
     assert (model in ["T1", "T2", "T2tt"]),"%s"%model
+    file = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root"
     if model=="T1" :
         histo = "gluino"
         factor = 1.0        
@@ -10,9 +11,10 @@ def histoSpec(model) :
         histo = "squark"
         factor = 0.8
     if model=="T2tt" :
-        histo = "squark"
-        factor = 0.2        
-    return {"file": "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root", "histo": histo, "factor": factor}
+        histo = "stop"
+        factor = 1.0
+        file = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec_stop.root"
+    return {"file": file, "histo": histo, "factor": factor}
 
 def refXsHisto(model) :
     hs = histoSpec(model)
