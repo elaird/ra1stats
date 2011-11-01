@@ -96,18 +96,18 @@ def killPoints(h, cutFunc = None) :
 def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
-    if "tanBeta" in model : return cmssmNloXsHisto(model) if s["nlo"] else cmssmLoXsHisto(model)
+    if not s["isSms"] : return cmssmNloXsHisto(model) if s["nlo"] else cmssmLoXsHisto(model)
     else : return smsXsHisto(model, cutFunc = s["smsCutFunc"][s["signalModel"]])
 
 def nEventsInHisto() :
     s = conf.switches()
     model = s["signalModel"]
-    return cmssmNEventsInHisto(model) if "tanBeta" in model else smsNEventsInHisto(model)
+    return cmssmNEventsInHisto(model) if not s["isSms"] else smsNEventsInHisto(model)
 
 def effHisto(**args) :
     s = conf.switches()
     model = s["signalModel"]
-    if "tanBeta" in model : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
+    if not s["isSms"] : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
     else : return smsEffHisto(model = model, **args)
 
 def cmssmNEventsInHisto(model, box = "had", scale = "1") :
