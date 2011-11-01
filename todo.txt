@@ -19,6 +19,7 @@ CMSSM
 
 SMS
 remove hard-coded HT thresholds in smsHistoSpec(), smsXsHisto(), smsNeventsInHisto()
+consider hard-coded CLb_2 in plottingGrid.clsValidation()
 
 check signal efficiency merging
 separate eff unc. for hadrons and muons
