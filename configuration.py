@@ -75,7 +75,8 @@ def checkAndAdjust(d) :
     d["maxEventsIn"] = 10100.
     d["extraSigEffUncSources"] = []
 
-    if len(d["signalModel"])==2 :
+    d["isSms"] = "tanBeta" not in d["signalModel"]
+    if d["isSms"] :
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
         d["nIterationsMax"] = 10
