@@ -172,6 +172,7 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
         oldOptStat = r.gStyle.GetOptStat()
         r.gStyle.SetOptStat(optStat)
 
+    needPrint = False
     stuff = []
     n = divide[0]*divide[1]
     for i,key in enumerate(sorted(d.keys())) :

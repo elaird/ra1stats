@@ -94,9 +94,8 @@ def makeEfficiencyPlots(item = "sig10") :
 
     #output a pdf
     adjustHisto(h2, zTitle = "analysis efficiency")
-    model = s["signalModel"]
     ranges = conf.smsRanges()
-    if len(model)==2 :
+    if s["isSms"] :
         setRange("smsXRange", ranges, h2, "X")
         setRange("smsYRange", ranges, h2, "Y")
         setRange("smsEffZRange", ranges, h2, "Z")
@@ -266,8 +265,6 @@ def drawBenchmarks() :
     return out
 
 def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [], switches = {}, suppressed = []) :
-    sms = "tanBeta" not in switches["signalModel"]
-
     if "upper" in name :
         printHoles(h2)
         #printMaxes(h2)
@@ -287,10 +284,10 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
 
     stuff = drawBenchmarks()
 
-    if "excluded" in name and sms : return
+    if "excluded" in name and switches["isSms"] : return
     
-    printSinglePage  = (not sms) and "excluded" in name
-    printSinglePage |= sms and "upperLimit" in name
+    printSinglePage  = (not switches["isSms"]) and "excluded" in name
+    printSinglePage |= switches["isSms"] and "upperLimit" in name
     
     if printSinglePage :
         title = h2.GetTitle()
@@ -418,6 +415,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     for iBinX in range(1, 1 + master.GetNbinsX()) :
         for iBinY in range(1, 1 + master.GetNbinsY()) :
             if not master.GetBinContent(iBinX, iBinY) : continue
+            if "CLb_2" not in histos or not histos["CLb_2"] : continue
             if not histos["CLb_2"].GetBinContent(iBinX, iBinY) : continue
             
             name = "CLs_%d_%d"%(iBinX, iBinY)
@@ -478,7 +476,7 @@ def makePlots() :
     multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True)
 
     s = conf.switches()
-    if len(s["signalModel"])==2 and s["method"]=="CLs" :
+    if s["isSms"] and s["method"]=="CLs" :
         clsValidation()
     
     #pg.makeEfficiencyPlots()
