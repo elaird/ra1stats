@@ -415,6 +415,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     for iBinX in range(1, 1 + master.GetNbinsX()) :
         for iBinY in range(1, 1 + master.GetNbinsY()) :
             if not master.GetBinContent(iBinX, iBinY) : continue
+            if "CLb_2" not in histos or not histos["CLb_2"] : continue
             if not histos["CLb_2"].GetBinContent(iBinX, iBinY) : continue
             
             name = "CLs_%d_%d"%(iBinX, iBinY)
