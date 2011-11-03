@@ -1,5 +1,3 @@
-import configuration as conf
-
 def smsRanges() :
     d = {}
 
@@ -49,12 +47,10 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     if cmssm       : out["afterDir"] += "_scale%s"%scale
     return out
 
-def histoTitle() :
-    if conf.switches()["signalModel"]=="T1" :
-        return ";m_{gluino} (GeV);m_{LSP} (GeV)"
-    if conf.switches()["signalModel"]=="T2" :
-        return ";m_{squark} (GeV);m_{LSP} (GeV)"
-    if conf.switches()["signalModel"]=="T2tt" :
-        return ";m_{stop} (GeV);m_{LSP} (GeV)"
-    else :
-        return ";m_{0} (GeV);m_{1/2} (GeV)"
+def histoTitle(model = "other") :
+    d = {"T1"   : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T2"   : ";m_{squark} (GeV);m_{LSP} (GeV)",
+         "T2tt" : ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "other": ";m_{0} (GeV);m_{1/2} (GeV)",
+         }
+    return d[model] if model in d else d["other"]
