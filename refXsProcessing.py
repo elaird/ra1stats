@@ -3,9 +3,13 @@ import ROOT as r
 
 def histoSpec(model) :
     base = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria"
-    d = {"T1":   {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
-         "T2":   {"histo": "squark", "factor": 0.8, "file": "%s/reference_xSec.root"%base},
-         "T2tt": {"histo": "stop",   "factor": 1.0, "file": "%s/reference_xSec_stop.root"%base},
+    d = {"T1":        {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
+         "T2":        {"histo": "squark", "factor": 0.8, "file": "%s/reference_xSec.root"%base},
+         "T2tt":      {"histo": "stop",   "factor": 1.0, "file": "%s/reference_xSec_stop.root"%base},
+         "TGQ_0p0":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
+         "TGQ_0p2":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
+         "TGQ_0p4":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
+         "TGQ_0p8":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
          }
     assert model in d,model
     return d[model]

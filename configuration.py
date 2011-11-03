@@ -25,17 +25,30 @@ def signal() :
             #               "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:True},
+                           "T2tt":lambda iX,x,iY,y,iZ,z:True,
+                           "TGQ_0p0":lambda iX,x,iY,y,iZ,z:True,
+                           "TGQ_0p2":lambda iX,x,iY,y,iZ,z:True,
+                           "TGQ_0p4":lambda iX,x,iY,y,iZ,z:True,
+                           "TGQ_0p8":lambda iX,x,iY,y,iZ,z:True,},
             "smsMask":{"T1":[(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
                        "T2":[],
-                       "T2tt":[]},
-                        
+                       "T2tt":[],
+                       "TGQ_0p0":[],
+                       "TGQ_0p2":[],
+                       "TGQ_0p4":[],
+                       "TGQ_0p8":[]},
+            "nEventsIn":{""       :(9900., 10100.),
+                         "T2tt"   :(1, None),
+                         "TGQ_0p0":(1, None),
+                         "TGQ_0p2":(1, None),
+                         "TGQ_0p4":(1, None),
+                         "TGQ_0p8":(1, None)},
             "nlo": True,
             "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt"][-1],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][-4],
             }
 
 def points() :
@@ -63,16 +76,12 @@ def switches() :
     return out
 
 def checkAndAdjust(d) :
-    assert d["signalModel"] in ["T1", "T2", "T2tt", "tanBeta10", "tanBeta40"]
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
 
     d["rhoSignalMin"] = 0.0
     d["nIterationsMax"] = 1
     d["plSeedForCLs"] = False
-    #d["minEventsIn"] = None
-    #d["maxEventsIn"] = None
-    d["minEventsIn"] =  9900.
-    d["maxEventsIn"] = 10100.
+    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     d["extraSigEffUncSources"] = []
 
     d["isSms"] = "tanBeta" not in d["signalModel"]
@@ -82,8 +91,6 @@ def checkAndAdjust(d) :
         d["nIterationsMax"] = 10
         if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
         d["plSeedForCLs"] = True
-        d["minEventsIn"] =  9900. if d["signalModel"]!="T2tt" else None
-        d["maxEventsIn"] = 10100. if d["signalModel"]!="T2tt" else None
         d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
