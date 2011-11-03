@@ -50,9 +50,9 @@ def epsToPdf(fileName, tight = True) :
         os.system("rm       "+fileName)
     print "%s has been written."%fileName.replace(".eps",".pdf")
 
-def adjustHisto(h, zTitle = "") :
+def adjustHisto(h, title = "") :
     h.SetStats(False)
-    h.SetTitle("%s;%s"%(hs.histoTitle(), zTitle))
+    h.SetTitle(title)
     h.GetYaxis().SetTitleOffset(1.5)
     h.GetZaxis().SetTitleOffset(1.5)
 
@@ -75,34 +75,6 @@ def setRange(var, ranges, histo, axisString) :
         if maxContent>nums[1] :
             print "ERROR: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s"%(maxContent, nums[1], histo.GetName())
 
-def makeEfficiencyPlots(item = "sig10") :
-    s = conf.switches()
-    fileName = "%s/%s_eff.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"])
-    c = squareCanvas()
-    spec = hs.histoSpecs()[item]
-    num = loYieldHisto(spec, spec["350Dirs"]+spec["450Dirs"], lumi = 1.0)
-    den = loYieldHisto(spec, [spec["beforeDir"]], lumi = 1.0)
-    num.Divide(den)
-    h2 = threeToTwo(num)
-
-    if s["fillHolesInInput"] : h2 = fillHoles(h2, 0)
-
-    #output a root file
-    f = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
-    h2.Write("m0_m12_0")
-    f.Close()
-
-    #output a pdf
-    adjustHisto(h2, zTitle = "analysis efficiency")
-    ranges = conf.smsRanges()
-    if s["isSms"] :
-        setRange("smsXRange", ranges, h2, "X")
-        setRange("smsYRange", ranges, h2, "Y")
-        setRange("smsEffZRange", ranges, h2, "Z")
-    h2.Draw("colz")
-    printOnce(c, fileName)
-    printHoles(h2)
-
 def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1.3) :
     latex = r.TLatex()
     latex.SetTextSize(factor*latex.GetTextSize())
@@ -112,7 +84,7 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
 
 def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False) :
     s = conf.switches()
-    if not (s["signalModel"] in ["T1","T2","T2tt"]) : return
+    if not s["isSms"] : return
     
     inFile = mergedFile()
     f = r.TFile(inFile)
@@ -124,7 +96,9 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = s["smsCutFunc"][s["signalModel"]])
     
     assert len(s["CL"])==1
-    adjustHisto(h2, zTitle = "%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0]))
+    title = hs.histoTitle(model = s["signalModel"])
+    title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0])
+    adjustHisto(h2, title = title)
 
     #output a root file
     g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
@@ -177,7 +151,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     
 def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
-    if not (s["signalModel"] in ["T1","T2","T2tt"]) : return
+    if not s["isSms"] : return
 
     inFile = mergedFile()
     f = r.TFile(inFile)
@@ -188,7 +162,8 @@ def makeEfficiencyUncertaintyPlots() :
         c = squareCanvas()
         h2 = threeToTwo(f.Get(name))
         #if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
-        adjustHisto(h2, zTitle = zTitle)
+        xyTitle = hs.histoTitle(model = s["signalModel"])
+        adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
         setRange("smsXRange", ranges, h2, "X")
         setRange("smsYRange", ranges, h2, "Y")
         h2.Draw("colz")
@@ -269,7 +244,7 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
         printHoles(h2)
         #printMaxes(h2)
     h2.SetStats(False)
-    h2.SetTitle("%s%s"%(name, hs.histoTitle()))
+    h2.SetTitle("%s%s"%(name, hs.histoTitle(model = switches["signalModel"])))
     h2.Draw("colz")
     if not h2.Integral() :
         suppressed.append(name)
@@ -312,7 +287,7 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
             den = threeToTwo(f.Get(denName))
             num.Divide(den)
             num.SetStats(False)
-            num.SetTitle("%s/%s%s;"%(name, denName, hs.histoTitle()))
+            num.SetTitle("%s/%s%s;"%(name, denName, hs.histoTitle(model = switches["signalModel"])))
             num.Draw("colz")
             if not num.Integral() : continue
             num.SetMinimum(0.0)

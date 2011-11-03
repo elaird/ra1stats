@@ -1,5 +1,3 @@
-import configuration as conf
-
 def smsRanges() :
     d = {}
 
@@ -13,52 +11,50 @@ def smsRanges() :
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
-def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
+def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
+    base = "/vols/cms02/elaird1/20_yieldHistograms/2011/"
+
+    cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v3", "muon":"v2"},
+             "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
+             #"tanBeta10": {"cmssw":"38", "had":"v2", "muon":"v5"},
+             }
+
+    sms = {"T1":   {"had": "v3"},
+           "T2":   {"had": "v3"},
+           "T2tt": {"had": "v1"},
+           }
+
     out = {}
-
-    if model in ["tanBeta10", "tanBeta40"] :
-        beforeDir = "mSuGraScan"
-        scan = [{"cmssw": "38", "had":"v2", "muon":"v5", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/38_scan/"},
-                {"cmssw": "42", "had":"v3", "muon":"v2", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/42_scan/"},
-                ][1]
-        if scan["had"] in ["v3"]: print "WARNING: using %s had spec; v2 is the stable one."%scan["had"]
-
-        out["file"] = "/".join([scan["dir"], model, box, scan[box], box+".root"])
+    if model in cmssm :
+        assert box in ["had", "muon"]
+        assert scale in ["1", "05", "2"]
+        d = cmssm[model]
+        if d["had"] in ["v3"]: print "WARNING: using %s had spec; v2 is the stable one."%d["had"]
+        out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+".root"])
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
         out["afterDir"] = "mSuGraScan"
-        assert scale in ["1", "05", "2"]
-        cmssm = True
-    elif model in ["T1", "T2", "T2tt"] :
-        scan = {"had":"v1" if model == "T2tt" else "v3", "muon":"v1", "dir":"/vols/cms02/elaird1/20_yieldHistograms/2011/sms/%s/"%model}
+    elif model in sms :
+        assert box in ["had"]
         thresh = ""
         if htLower==275 : thresh = "0"
         if htLower==325 : thresh = "1"
-        out["file"] = "/".join([scan["dir"], box, scan[box], box+"%s.root"%thresh])
+        out["file"] = "/".join([base, "sms", model, box, sms[model][box], box+"%s.root"%thresh])
         out["beforeDir"] = "smsScan_before"
         out["afterDir"] = "smsScan"
-        cmssm = False
     else :
         assert False, "model %s not in list"%model
     
-    assert box in ["had", "muon"]
-    
-    if alphaTLower : out["afterDir"] += "_AlphaT%s"%alphaTLower
-    if alphaTUpper : out["afterDir"] += "_%s"%alphaTUpper
-    if htLower     : out["afterDir"] += "_%d"%htLower
-    if htUpper     : out["afterDir"] += "_%d"%htUpper
-    if cmssm       : out["afterDir"] += "_scale%s"%scale
+    if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
+    if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
+    if htLower        : out["afterDir"] += "_%d"%htLower
+    if htUpper        : out["afterDir"] += "_%d"%htUpper
+    if model in cmssm : out["afterDir"] += "_scale%s"%scale
     return out
 
-def smsHistoSpec(**args) :
-    return cmssmHistoSpec(**args)
-
-def histoTitle() :
-    if conf.switches()["signalModel"]=="T1" :
-        return ";m_{gluino} (GeV);m_{LSP} (GeV)"
-    if conf.switches()["signalModel"]=="T2" :
-        return ";m_{squark} (GeV);m_{LSP} (GeV)"
-    if conf.switches()["signalModel"]=="T2tt" :
-        return ";m_{stop} (GeV);m_{LSP} (GeV)"
-    else :
-        return ";m_{0} (GeV);m_{1/2} (GeV)"
-
+def histoTitle(model = "") :
+    d = {"T1"   : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T2"   : ";m_{squark} (GeV);m_{LSP} (GeV)",
+         "T2tt" : ";m_{stop} (GeV);m_{LSP} (GeV)",
+         ""     : ";m_{0} (GeV);m_{1/2} (GeV)",
+         }
+    return d[model] if model in d else d[""]
