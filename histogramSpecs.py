@@ -51,10 +51,10 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     if model in cmssm : out["afterDir"] += "_scale%s"%scale
     return out
 
-def histoTitle(model = "other") :
+def histoTitle(model = "") :
     d = {"T1"   : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T2"   : ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt" : ";m_{stop} (GeV);m_{LSP} (GeV)",
-         "other": ";m_{0} (GeV);m_{1/2} (GeV)",
+         ""     : ";m_{0} (GeV);m_{1/2} (GeV)",
          }
-    return d[model] if model in d else d["other"]
+    return d[model] if model in d else d[""]
