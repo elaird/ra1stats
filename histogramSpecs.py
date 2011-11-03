@@ -19,9 +19,13 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
              #"tanBeta10": {"cmssw":"38", "had":"v2", "muon":"v5"},
              }
 
-    sms = {"T1":   {"had": "v3"},
-           "T2":   {"had": "v3"},
-           "T2tt": {"had": "v1"},
+    sms = {"T1":      {"had": "v3"},
+           "T2":      {"had": "v3"},
+           "T2tt":    {"had": "v1"},
+           "TGQ_0p0": {"had": "v1"},
+           "TGQ_0p2": {"had": "v1"},
+           "TGQ_0p4": {"had": "v1"},
+           "TGQ_0p8": {"had": "v1"},
            }
 
     out = {}
@@ -52,9 +56,13 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     return out
 
 def histoTitle(model = "") :
-    d = {"T1"   : ";m_{gluino} (GeV);m_{LSP} (GeV)",
-         "T2"   : ";m_{squark} (GeV);m_{LSP} (GeV)",
-         "T2tt" : ";m_{stop} (GeV);m_{LSP} (GeV)",
-         ""     : ";m_{0} (GeV);m_{1/2} (GeV)",
+    d = {"T1"      : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T2"      : ";m_{squark} (GeV);m_{LSP} (GeV)",
+         "T2tt"    : ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "TGQ_0p0" : ";m_{X} (GeV);m_{Y} (GeV)",
+         "TGQ_0p2" : ";m_{X} (GeV);m_{Y} (GeV)",
+         "TGQ_0p4" : ";m_{X} (GeV);m_{Y} (GeV)",
+         "TGQ_0p8" : ";m_{X} (GeV);m_{Y} (GeV)",
+         ""        : ";m_{0} (GeV);m_{1/2} (GeV)",
          }
     return d[model] if model in d else d[""]
