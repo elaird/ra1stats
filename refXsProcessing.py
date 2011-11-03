@@ -2,19 +2,13 @@ import collections
 import ROOT as r
 
 def histoSpec(model) :
-    assert (model in ["T1", "T2", "T2tt"]),"%s"%model
-    file = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec.root"
-    if model=="T1" :
-        histo = "gluino"
-        factor = 1.0        
-    if model=="T2" :
-        histo = "squark"
-        factor = 0.8
-    if model=="T2tt" :
-        histo = "stop"
-        factor = 1.0
-        file = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria/reference_xSec_stop.root"
-    return {"file": file, "histo": histo, "factor": factor}
+    base = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria"
+    d = {"T1":   {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
+         "T2":   {"histo": "squark", "factor": 0.8, "file": "%s/reference_xSec.root"%base},
+         "T2tt": {"histo": "stop",   "factor": 1.0, "file": "%s/reference_xSec_stop.root"%base},
+         }
+    assert model in d,model
+    return d[model]
 
 def refXsHisto(model) :
     hs = histoSpec(model)
