@@ -13,7 +13,7 @@ def smsRanges() :
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
-def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
+def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
     out = {}
 
     if model in ["tanBeta10", "tanBeta40"] :
@@ -49,9 +49,6 @@ def cmssmHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper
     if cmssm       : out["afterDir"] += "_scale%s"%scale
     return out
 
-def smsHistoSpec(**args) :
-    return cmssmHistoSpec(**args)
-
 def histoTitle() :
     if conf.switches()["signalModel"]=="T1" :
         return ";m_{gluino} (GeV);m_{LSP} (GeV)"
@@ -61,4 +58,3 @@ def histoTitle() :
         return ";m_{stop} (GeV);m_{LSP} (GeV)"
     else :
         return ";m_{0} (GeV);m_{1/2} (GeV)"
-
