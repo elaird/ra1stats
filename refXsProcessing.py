@@ -3,13 +3,16 @@ import ROOT as r
 
 def histoSpec(model) :
     base = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria"
+    tgqFile = "%s/TGQ_xSec.root"%base
+    tgqHisto = "clone"
+    tgqFactor = 1.0
     d = {"T1":        {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
          "T2":        {"histo": "squark", "factor": 0.8, "file": "%s/reference_xSec.root"%base},
          "T2tt":      {"histo": "stop",   "factor": 1.0, "file": "%s/reference_xSec_stop.root"%base},
-         "TGQ_0p0":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
-         "TGQ_0p2":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
-         "TGQ_0p4":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
-         "TGQ_0p8":   {"histo": "squark", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
+         "TGQ_0p0":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+         "TGQ_0p2":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+         "TGQ_0p4":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+         "TGQ_0p8":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          }
     assert model in d,model
     return d[model]
@@ -64,14 +67,17 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
         return xs<=xsLimit or not xsLimit
 
     refHisto = refXsHisto(model)
-
+    twoD = refHisto.ClassName()[:3]=="TH2"
+    
     d = collections.defaultdict(list)
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
-        xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
-        if not xs : continue
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
+            coords = (x,) if not twoD else (x,y)
+            xs = factor*refHisto.GetBinContent(refHisto.FindBin(*coords))
+            if not xs : continue
+            
             xsLimit     = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)

@@ -19,7 +19,7 @@ def signal() :
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
             "fillHolesInInput": False,
-            "fillHolesInOutput": True,
+            "fillHolesInOutput": False,
             "killPointsInOutput": True,
             #"smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
             #               "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
