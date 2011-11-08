@@ -1,7 +1,7 @@
 def smsRanges() :
     d = {}
 
-    d["smsXRange"] = ( 50.0, 1224.9) #(min, max)
+    d["smsXRange"] = ( 50.0, 1499.9) #(min, max)
     d["smsYRange"] = ( 50.0, 1224.9)
     d["smsXsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
     d["smsXsZRangeLog"] = (0.5e-2, 500.0, 20)
@@ -59,10 +59,10 @@ def histoTitle(model = "") :
     d = {"T1"      : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T2"      : ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt"    : ";m_{stop} (GeV);m_{LSP} (GeV)",
-         "TGQ_0p0" : ";m_{X} (GeV);m_{Y} (GeV)",
-         "TGQ_0p2" : ";m_{X} (GeV);m_{Y} (GeV)",
-         "TGQ_0p4" : ";m_{X} (GeV);m_{Y} (GeV)",
-         "TGQ_0p8" : ";m_{X} (GeV);m_{Y} (GeV)",
+         "TGQ_0p0" : ";m_{gluino} (GeV);m_{squark} (GeV)",
+         "TGQ_0p2" : ";m_{gluino} (GeV);m_{squark} (GeV)",
+         "TGQ_0p4" : ";m_{gluino} (GeV);m_{squark} (GeV)",
+         "TGQ_0p8" : ";m_{gluino} (GeV);m_{squark} (GeV)",
          ""        : ";m_{0} (GeV);m_{1/2} (GeV)",
          }
     return d[model] if model in d else d[""]
