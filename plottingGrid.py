@@ -354,7 +354,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
         if outputRootFile :
             outFile.cd()
             cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None
-            mask = s["smsMask"][s["signalModel"]] if s["signalModel"] in s["smsMask"] else []
+            mask = s["pointMask"][s["signalModel"]] if s["signalModel"] in s["pointMask"] else []
             if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 0, cutFunc = cutFunc, mask = mask)
             if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = cutFunc)
             h2.Write()

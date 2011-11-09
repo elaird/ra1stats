@@ -26,12 +26,12 @@ def signal() :
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2tt":lambda iX,x,iY,y,iZ,z:True,
+                           "T5zz":lambda iX,x,iY,y,iZ,z:True,
                            "TGQ_0p0":lambda iX,x,iY,y,iZ,z:True,
                            "TGQ_0p2":lambda iX,x,iY,y,iZ,z:True,
                            "TGQ_0p4":lambda iX,x,iY,y,iZ,z:True,
                            "TGQ_0p8":lambda iX,x,iY,y,iZ,z:True,},
-            "smsMask":{"T1":[(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
-                       "T2":[],
+            "pointMask":{"T1":[(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
                        "T2tt":[],
                        "TGQ_0p0":[],
                        "TGQ_0p2":[],
@@ -39,6 +39,7 @@ def signal() :
                        "TGQ_0p8":[]},
             "nEventsIn":{""       :(9900., 10100.),
                          "T2tt"   :(1, None),
+                         "T5zz"   :(1, None),
                          "TGQ_0p0":(1, None),
                          "TGQ_0p2":(1, None),
                          "TGQ_0p4":(1, None),
@@ -48,7 +49,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][-4],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][5],
             }
 
 def points() :
