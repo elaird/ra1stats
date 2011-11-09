@@ -62,20 +62,25 @@ def allMatch(value, y, threshold, iStart, N) :
             count +=1
     return count==(N-iStart)
 
+def content(h, *coords) :
+    assert h.ClassName()[:2]=="TH"
+    dim = int(h.ClassName()[2])
+    args = tuple(coords[:dim])
+    return h.GetBinContent(h.FindBin(*args))
+    
+
 def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", prune = False) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
     refHisto = refXsHisto(model)
-    twoD = refHisto.ClassName()[:3]=="TH2"
     
     d = collections.defaultdict(list)
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
-            coords = (x,) if not twoD else (x,y)
-            xs = factor*refHisto.GetBinContent(refHisto.FindBin(*coords))
+            xs = factor*content(refHisto, x, y)
             if not xs : continue
             
             xsLimit     = h.GetBinContent(iBinX, iBinY)
@@ -112,10 +117,11 @@ def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowE
     out.GetZaxis().SetTitle("bin excluded or not")
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
-        xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
         for iBinY in range(1, 1+h.GetNbinsY()) :
+            y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             if not xsLimit : continue
+            xs = factor*content(refHisto, x, y)
             out.SetBinContent(iBinX, iBinY, 2*(xsLimit<xs)-1)
     return out
 
