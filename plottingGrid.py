@@ -117,11 +117,13 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
         c.Print(ps+"[")
         for d in graphs :
             d["histo"].Draw("colz")
+            d["histo"].SetMaximum(1.0)
+            d["histo"].SetMinimum(-1.0)
             d["histo"].SetTitle(d["label"])
             d["graph"].Draw("psame")
             c.Print(ps)
         c.Print(ps+"]")
-        utils.ps2pdf(ps)
+        utils.ps2pdf(ps, sameDir = True)
         return
 
     printName = fileName
