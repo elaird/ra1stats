@@ -52,35 +52,28 @@ def checkHistoBinning(histoList = []) :
                 print h,properties([h])
             assert False
 
-def fillHoles(h, nZeroNeighborsAllowed = 0, cutFunc = None, mask = None) :
+def fillPoints(h, points = []) :
     def avg(items) :
         out = sum(items)
         n = len(items) - items.count(0.0)
         if n : return out/n
         return None
 
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetXaxis().GetBinLowEdge(iBinX)
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            y = h.GetYaxis().GetBinLowEdge(iBinY)
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                z = h.GetZaxis().GetBinLowEdge(iBinZ)
-                if h.GetBinContent(iBinX, iBinY, iBinZ) : continue
-                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
-                if mask and (iBinX, iBinY, iBinZ) not in mask : continue
-                
-                items = []
-                if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
-                if iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
-                if iBinY!=h.GetNbinsY() : items.append(h.GetBinContent(iBinX  , iBinY+1, iBinZ))
-                if iBinY!=1             : items.append(h.GetBinContent(iBinX  , iBinY-1, iBinZ))
-                if items.count(0.0)>nZeroNeighborsAllowed : continue
-                value = avg(items)
-                if value!=None :
-                    h.SetBinContent(iBinX, iBinY, iBinZ, value)
-                    print "WARNING: hole in histo %s at bin (%3d, %3d, %3d) has been filled with %g.  (%2d zero neighbors)"%\
-                          (h.GetName(), iBinX, iBinY, iBinZ, value, items.count(0.0))
-    return h
+    for point in points :
+        iBinX,iBinY,iBinZ = point
+        valueOld = h.GetBinContent(iBinX, iBinY, iBinZ)
+        
+        items = []
+        if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
+        if iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
+        if iBinY!=h.GetNbinsY() : items.append(h.GetBinContent(iBinX  , iBinY+1, iBinZ))
+        if iBinY!=1             : items.append(h.GetBinContent(iBinX  , iBinY-1, iBinZ))
+
+        value = avg(items)
+        if value!=None :
+            h.SetBinContent(iBinX, iBinY, iBinZ, value)
+            print "WARNING: histo %s bin (%3d, %3d, %3d) [%d zero neighbors]: %g has been overwritten with %g"%\
+                  (h.GetName(), iBinX, iBinY, iBinZ, items.count(0.0), valueOld, value)
         
 def killPoints(h, cutFunc = None) :
     for iBinX in range(1, 1+h.GetNbinsX()) :
@@ -171,7 +164,7 @@ def smsEffHisto(**args) :
     s = hs.histoSpec(**args)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    if switches["fillHolesInInput"] : out = fillHoles(out, nZeroNeighborsAllowed = 2, cutFunc = switches["smsCutFunc"][switches["signalModel"]])
+    fillPoints(out, points = switches["overwriteInput"][switches["signalModel"]])
     return out
 
 ##signal point selection
@@ -201,14 +194,22 @@ def points() :
 def printHoles(h) :
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
-            hole = h.GetBinContent(iBinX, iBinY)==0.0 and h.GetBinContent(iBinX, iBinY+1)!=0.0 and h.GetBinContent(iBinX, iBinY-1)!=0.0
-            if hole : print "found hole: (%d, %d) = (%g, %g)"%(iBinX, iBinY, h.GetXaxis().GetBinCenter(iBinX), h.GetYaxis().GetBinCenter(iBinY))
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :
+                if h.GetBinContent(iBinX, iBinY, iBinZ)==0.0 and h.GetBinContent(iBinX, iBinY+1, iBinZ)!=0.0 and h.GetBinContent(iBinX, iBinY-1, iBinZ)!=0.0 :
+                    print "found hole: (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ,
+                                                                     h.GetXaxis().GetBinCenter(iBinX),
+                                                                     h.GetYaxis().GetBinCenter(iBinY),
+                                                                     h.GetZaxis().GetBinCenter(iBinZ))
     return
     
 def printMaxes(h) :
     s = conf.switches()
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
-            max = abs(h.GetBinContent(iBinX, iBinY)-s["masterSignalMax"])<2.0
-            if max : print "found max: (%d, %d) = (%g, %g)"%(iBinX, iBinY, h.GetXaxis().GetBinCenter(iBinX), h.GetYaxis().GetBinCenter(iBinY))
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :
+                if abs(h.GetBinContent(iBinX, iBinY, iBinZ)-s["masterSignalMax"])<2.0 :
+                    print "found max: (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ,
+                                                                    h.GetXaxis().GetBinCenter(iBinX),
+                                                                    h.GetYaxis().GetBinCenter(iBinY),
+                                                                    h.GetZaxis().GetBinCenter(iBinZ))
     return
