@@ -1,3 +1,5 @@
+import collections
+
 def likelihood() :
     import likelihoodSpec
     return likelihoodSpec.spec()
@@ -16,24 +18,20 @@ def method() :
             }
 
 def signal() :
+    overwriteInput = collections.defaultdict(list)
+    overwriteOutput = collections.defaultdict(list)
+    overwriteOutput.update({"T1": [(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
+                            "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
+                            })
+    
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
-            "fillHolesInInput": False,
-            "fillHolesInOutput": True,
-            "killPointsInOutput": True,
-            #"smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
-            #               "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
+            "overwriteInput": overwriteInput,
+            "overwriteOutput": overwriteOutput,
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:True,
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
-                           "TGQ_0p0":lambda iX,x,iY,y,iZ,z:True,
-                           "TGQ_0p2":lambda iX,x,iY,y,iZ,z:True,
-                           "TGQ_0p4":lambda iX,x,iY,y,iZ,z:True,
-                           "TGQ_0p8":lambda iX,x,iY,y,iZ,z:True,},
-            "pointMask":{"T1":[(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
-                         "T5zz":[(20, 9), (21, 4), (28, 6), (35, 25), (42, 22)],
-                         },
+                           },
             "nEventsIn":{""       :(9900., 10100.),
                          "T2tt"   :(1, None),
                          "T5zz"   :(5.0e3, None),
