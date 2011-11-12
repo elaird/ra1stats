@@ -2,7 +2,7 @@ import os,math,utils
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
-from histogramProcessing import fillHoles,printHoles,killPoints
+from histogramProcessing import printHoles,fillPoints,killPoints
 from pickling import mergedFile
 import ROOT as r
 
@@ -29,6 +29,10 @@ def threeToTwo(h3) :
             h2.SetBinContent(iX, iY, content)
     h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
     return h2
+
+def modifyHisto(h, s) :
+    fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
+    killPoints(h, cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None)
 
 def squareCanvas(margin = 0.18, ticks = True) :
     canvas = r.TCanvas("canvas","canvas",2)
@@ -92,8 +96,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 2, cutFunc = s["smsCutFunc"][s["signalModel"]])
-    if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = s["smsCutFunc"][s["signalModel"]])
+    modifyHisto(h2, s)
     
     assert len(s["CL"])==1
     title = hs.histoTitle(model = s["signalModel"])
@@ -163,7 +166,6 @@ def makeEfficiencyUncertaintyPlots() :
         fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
         c = squareCanvas()
         h2 = threeToTwo(f.Get(name))
-        #if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
         xyTitle = hs.histoTitle(model = s["signalModel"])
         adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
         setRange("smsXRange", ranges, h2, "X")
@@ -353,10 +355,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
                       logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
         if outputRootFile :
             outFile.cd()
-            cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None
-            mask = s["pointMask"][s["signalModel"]] if s["signalModel"] in s["pointMask"] else []
-            if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 2, cutFunc = cutFunc, mask = mask)
-            if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = cutFunc)
+            modifyHisto(h2, s)
             h2.Write()
             r.gROOT.cd()
 
