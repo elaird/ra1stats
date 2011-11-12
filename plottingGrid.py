@@ -108,7 +108,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     h2.Write()
     g.Close()
     
-    ranges = hs.smsRanges()
+    ranges = hs.smsRanges(s["signalModel"])
     setRange("smsXRange", ranges, h2, "X")
     setRange("smsYRange", ranges, h2, "Y")
     
@@ -160,7 +160,7 @@ def makeEfficiencyUncertaintyPlots() :
 
     inFile = mergedFile()
     f = r.TFile(inFile)
-    ranges = conf.smsRanges()
+    ranges = hs.smsRanges(s["signalModel"])
 
     def go(name, suffix, zTitle, zRangeKey) :
         fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)

@@ -1,8 +1,15 @@
-def smsRanges() :
+def smsRanges(model) :
+    x = {"":     ( 50.0, 1499.9), #(min, max)
+         "T5zz": (400.0, 1224.9),
+         }
+    y = {"":     ( 50.0, 1224.9), #(min, max)
+         "T5zz": ( 50.0,  999.9),
+         }
+    
     d = {}
 
-    d["smsXRange"] = ( 50.0, 1499.9) #(min, max)
-    d["smsYRange"] = ( 50.0, 1224.9)
+    d["smsXRange"] = x[model if model in x else ""]
+    d["smsYRange"] = y[model if model in y else ""]
     d["smsXsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
     d["smsXsZRangeLog"] = (0.5e-2, 500.0, 20)
     d["smsEffZRange"]   = (0.0, 0.35, 35)
