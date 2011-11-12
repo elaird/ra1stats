@@ -67,7 +67,7 @@ def fillHoles(h, nZeroNeighborsAllowed = 0, cutFunc = None, mask = None) :
                 z = h.GetZaxis().GetBinLowEdge(iBinZ)
                 if h.GetBinContent(iBinX, iBinY, iBinZ) : continue
                 if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
-                if mask!=None and (iBinX, iBinY, iBinZ) not in mask : continue
+                if mask and (iBinX, iBinY, iBinZ) not in mask : continue
                 
                 items = []
                 if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
