@@ -315,7 +315,7 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False) :
+def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False) :
     assert tag
     
     inFile = mergedFile()
@@ -351,11 +351,11 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
         if any([item in name for item in blackListMatch]) : continue
         
         h2 = threeToTwo(f.Get(name))
+        if modify : modifyHisto(h2, s)
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
                       logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
         if outputRootFile :
             outFile.cd()
-            modifyHisto(h2, s)
             h2.Write()
             r.gROOT.cd()
 
@@ -449,7 +449,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     
 def makePlots() :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
-    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True)
+    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
 
     s = conf.switches()
     if s["isSms"] and s["method"]=="CLs" :
