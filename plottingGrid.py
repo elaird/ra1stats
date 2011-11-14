@@ -2,7 +2,7 @@ import os,math,utils
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
-from histogramProcessing import fillHoles,printHoles,killPoints
+from histogramProcessing import printHoles,fillPoints,killPoints
 from pickling import mergedFile
 import ROOT as r
 
@@ -29,6 +29,10 @@ def threeToTwo(h3) :
             h2.SetBinContent(iX, iY, content)
     h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
     return h2
+
+def modifyHisto(h, s) :
+    fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
+    killPoints(h, cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None)
 
 def squareCanvas(margin = 0.18, ticks = True) :
     canvas = r.TCanvas("canvas","canvas",2)
@@ -92,8 +96,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
 
     c = squareCanvas()
     h2 = threeToTwo(f.Get(name))
-    if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 2, cutFunc = s["smsCutFunc"][s["signalModel"]])
-    if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = s["smsCutFunc"][s["signalModel"]])
+    modifyHisto(h2, s)
     
     assert len(s["CL"])==1
     title = hs.histoTitle(model = s["signalModel"])
@@ -105,7 +108,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     h2.Write()
     g.Close()
     
-    ranges = hs.smsRanges()
+    ranges = hs.smsRanges(s["signalModel"])
     setRange("smsXRange", ranges, h2, "X")
     setRange("smsYRange", ranges, h2, "Y")
     
@@ -157,13 +160,12 @@ def makeEfficiencyUncertaintyPlots() :
 
     inFile = mergedFile()
     f = r.TFile(inFile)
-    ranges = conf.smsRanges()
+    ranges = hs.smsRanges(s["signalModel"])
 
     def go(name, suffix, zTitle, zRangeKey) :
         fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
         c = squareCanvas()
         h2 = threeToTwo(f.Get(name))
-        #if s["fillHolesInEfficiencyPlots"] : h2 = fillHoles(h2, 0)
         xyTitle = hs.histoTitle(model = s["signalModel"])
         adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
         setRange("smsXRange", ranges, h2, "X")
@@ -313,7 +315,7 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False) :
+def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False) :
     assert tag
     
     inFile = mergedFile()
@@ -349,14 +351,11 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
         if any([item in name for item in blackListMatch]) : continue
         
         h2 = threeToTwo(f.Get(name))
+        if modify : modifyHisto(h2, s)
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
                       logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
         if outputRootFile :
             outFile.cd()
-            cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None
-            mask = s["smsMask"][s["signalModel"]] if s["signalModel"] in s["smsMask"] else []
-            if s["fillHolesInOutput"] : h2 = fillHoles(h2, nZeroNeighborsAllowed = 0, cutFunc = cutFunc, mask = mask)
-            if s["killPointsInOutput"] : h2 = killPoints(h2, cutFunc = cutFunc)
             h2.Write()
             r.gROOT.cd()
 
@@ -450,7 +449,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
     
 def makePlots() :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
-    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True)
+    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
 
     s = conf.switches()
     if s["isSms"] and s["method"]=="CLs" :

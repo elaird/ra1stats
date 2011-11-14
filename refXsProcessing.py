@@ -9,6 +9,7 @@ def histoSpec(model) :
     d = {"T1":        {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
          "T2":        {"histo": "squark", "factor": 0.8, "file": "%s/reference_xSec.root"%base},
          "T2tt":      {"histo": "stop",   "factor": 1.0, "file": "%s/reference_xSec_stop.root"%base},
+         "T5zz":      {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
          "TGQ_0p0":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          "TGQ_0p2":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          "TGQ_0p4":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},

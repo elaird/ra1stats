@@ -1,8 +1,15 @@
-def smsRanges() :
+def smsRanges(model) :
+    x = {"":     ( 50.0, 1499.9), #(min, max)
+         "T5zz": (400.0, 1224.9),
+         }
+    y = {"":     ( 50.0, 1224.9), #(min, max)
+         "T5zz": ( 50.0,  999.9),
+         }
+    
     d = {}
 
-    d["smsXRange"] = ( 50.0, 1499.9) #(min, max)
-    d["smsYRange"] = ( 50.0, 1224.9)
+    d["smsXRange"] = x[model if model in x else ""]
+    d["smsYRange"] = y[model if model in y else ""]
     d["smsXsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
     d["smsXsZRangeLog"] = (0.5e-2, 500.0, 20)
     d["smsEffZRange"]   = (0.0, 0.35, 35)
@@ -22,6 +29,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     sms = {"T1":      {"had": "v3"},
            "T2":      {"had": "v3"},
            "T2tt":    {"had": "v1"},
+           "T5zz":    {"had": "v1", "muon": "v1"},
            "TGQ_0p0": {"had": "v1"},
            "TGQ_0p2": {"had": "v1"},
            "TGQ_0p4": {"had": "v1"},
@@ -38,7 +46,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
         out["afterDir"] = "mSuGraScan"
     elif model in sms :
-        assert box in ["had"]
+        assert box in ["had","muon"]
         thresh = ""
         if htLower==275 : thresh = "0"
         if htLower==325 : thresh = "1"
@@ -59,6 +67,7 @@ def histoTitle(model = "") :
     d = {"T1"      : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T2"      : ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt"    : ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "T5zz"    : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "TGQ_0p0" : ";m_{gluino} (GeV);m_{squark} (GeV)",
          "TGQ_0p2" : ";m_{gluino} (GeV);m_{squark} (GeV)",
          "TGQ_0p4" : ";m_{gluino} (GeV);m_{squark} (GeV)",

@@ -1,3 +1,5 @@
+import collections
+
 def likelihood() :
     import likelihoodSpec
     return likelihoodSpec.spec()
@@ -16,29 +18,23 @@ def method() :
             }
 
 def signal() :
+    overwriteInput = collections.defaultdict(list)
+    overwriteOutput = collections.defaultdict(list)
+    overwriteOutput.update({"T1": [(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
+                            "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
+                            })
+    
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
-            "fillHolesInInput": False,
-            "fillHolesInOutput": False,
-            "killPointsInOutput": True,
-            #"smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-49.9) and iZ==1),
-            #               "T2":lambda iX,x,iY,y,iZ,z:(y<(x-24.9) and iZ==1)},
+            "overwriteInput": overwriteInput,
+            "overwriteOutput": overwriteOutput,
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:True,
-                           "TGQ_0p0":lambda iX,x,iY,y,iZ,z:True,
-                           "TGQ_0p2":lambda iX,x,iY,y,iZ,z:True,
-                           "TGQ_0p4":lambda iX,x,iY,y,iZ,z:True,
-                           "TGQ_0p8":lambda iX,x,iY,y,iZ,z:True,},
-            "smsMask":{"T1":[(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
-                       "T2":[],
-                       "T2tt":[],
-                       "TGQ_0p0":[],
-                       "TGQ_0p2":[],
-                       "TGQ_0p4":[],
-                       "TGQ_0p8":[]},
+                           "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
+                           },
             "nEventsIn":{""       :(9900., 10100.),
                          "T2tt"   :(1, None),
+                         "T5zz"   :(5.0e3, None),
                          "TGQ_0p0":(1, None),
                          "TGQ_0p2":(1, None),
                          "TGQ_0p4":(1, None),
@@ -48,7 +44,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][-4],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][5],
             }
 
 def points() :
