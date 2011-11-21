@@ -76,10 +76,10 @@ f = fresh.foo(inputData = data2011(),
               #rhoSignalMin = 0.1,
               #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
 
-              #signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][3],
+              signal = [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][4],
               #signalExampleToStack = ("T1 m_{gluino} = 600 GeV, m_{LSP} = 100 GeV, xs = %g pb"%t1_600_100["xs"], t1_600_100),
               #signalExampleToStack = ("T2 39 7, xs = %g pb"%t2_39_7["xs"], t2_39_7),
-              signalExampleToStack = ("LM6 (LO)", lm6_2011),
+              #signalExampleToStack = ("LM6 (LO)", lm6_2011),
               #signalExampleToStack = ("m0= 280 GeV, m12=240 GeV (NLO)", p_29_25),
               #signalExampleToStack = ("m0= 280 GeV, m12=540 GeV (NLO)", p_29_55),
               #signalExampleToStack = ("m_{0}=1800 GeV, m_{1/2}=180 GeV (NLO)", p_181_19),
@@ -90,10 +90,10 @@ f = fresh.foo(inputData = data2011(),
 
 cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = 0.95, calculatorType = 0, testStatType = 3, nToys = 2000,
-#            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
+out = f.cls(cl = cl, calculatorType = 0, testStatType = 3, nToys = 200,
+            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
-f.bestFit()
+#f.bestFit()
 #f.bestFit(printPages = True)
 #f.qcdPlot()
 #f.pValue(nToys = 300)
