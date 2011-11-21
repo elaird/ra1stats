@@ -637,6 +637,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
 
     out = {}
+    args = {}
     for iPoint in range(nPoints) :
         s = "" if not iPoint else "_%d"%iPoint
         out["CLb%s"     %s] = result.CLb(iPoint)
@@ -644,9 +645,9 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         out["CLs%s"     %s] = result.CLs(iPoint)
         out["CLsError%s"%s] = result.CLsError(iPoint)
         out["PoiValue%s"%s] = result.GetXValue(iPoint)
-
+        args["CLs%s"%s] = out["CLs%s"%s]
+    
     if nPoints==1 and poiMin==poiMax :
-        args = {}
         for item in ["testStatType", "plusMinus", "note", "makePlots", "nPoints"] :
             args[item] = eval(item)
         args["result"] = result
@@ -687,11 +688,19 @@ def clsOnePoint(args) :
         text = r.TText()
         text.SetNDC()
 
+        plotMode = 0
         for i in range(args["nPoints"]) :
-            tsPlot = resultPlot.MakeTestStatPlot(i)
-            #tsPlot.SetLogYaxis(True)
-            tsPlot.Draw()
-        
+            if plotMode==1 :
+                tsPlot = resultPlot.MakeTestStatPlot(i)
+                #tsPlot.SetLogYaxis(True)
+                tsPlot.Draw()
+            elif plotMode==2 :
+                sbDist = resultPlot.MakeTestStatPlot(i, 1, 100)
+                sbDist.Draw()
+                sbDist.DumpToFile(ps.replace(".ps", "_sbDist.root"))
+                #bDist  = resultPlot.MakeTestStatPlot(i, 2, 100)
+                #bDist.DumpToFile(ps.replace(".ps", "_bDist.root"))
+                
             text.DrawText(0.1, 0.95, "Point %d"%i)
             canvas.Print(ps)
 
