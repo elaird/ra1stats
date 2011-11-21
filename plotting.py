@@ -27,7 +27,7 @@ def drawDecoratedHisto(quantiles = {}, hist = None, obs = None) :
     hist.SetStats(False)
 
     q = copy.deepcopy(quantiles)
-    q["Observed"] = obs
+    if obs!=None : q["Observed"] = obs
 
     legend = r.TLegend(0.1, 0.7, 0.5, 0.9)
     legend.SetFillStyle(0)
