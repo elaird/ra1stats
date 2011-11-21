@@ -335,7 +335,7 @@ def signalTerms(w = None, inputData = None, signalDict = {}, extraSigEffUncSourc
 
     for key,value in signalDict.iteritems() :
         if "eff"!=key[:3] : continue
-        if type(value)!=list : continue
+        if type(value) not in [list,tuple] : continue
         for iBin,eff,corr in zip(range(len(value)), value, inputData.sigEffCorr()) :
             name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
             wimport(w, r.RooRealVar(name, name, eff*corr))
@@ -647,7 +647,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
 
     if nPoints==1 and poiMin==poiMax :
         args = {}
-        for item in ["testStatType", "plusMinus", "note", "makePlots"] :
+        for item in ["testStatType", "plusMinus", "note", "makePlots", "nPoints"] :
             args[item] = eval(item)
         args["result"] = result
         args["poiPoint"] = poiMin
@@ -687,7 +687,7 @@ def clsOnePoint(args) :
         text = r.TText()
         text.SetNDC()
 
-        for i in range(npoints) :
+        for i in range(args["nPoints"]) :
             tsPlot = resultPlot.MakeTestStatPlot(i)
             #tsPlot.SetLogYaxis(True)
             tsPlot.Draw()
@@ -695,7 +695,7 @@ def clsOnePoint(args) :
             text.DrawText(0.1, 0.95, "Point %d"%i)
             canvas.Print(ps)
 
-        leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = out["CLs"])
+        leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = args["CLs"])
         text.DrawText(0.1, 0.95, "Point %d"%iPoint)
         canvas.Print(ps)
         
