@@ -5,8 +5,8 @@ TAG=x86_64-slc5-gcc43-opt
 
 if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
     BASEDIR=/vols/cms02/elaird1/18_root_from_afs/lcg/
-    #ROOTVER="svn"
     ROOTVER="5.30.00-patches"
+    #ROOTVER="5.30.04"
 else
     BASEDIR=/afs/cern.ch/sw/lcg/
     ROOTVER="5.30.00/${TAG}"
