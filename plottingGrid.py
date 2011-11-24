@@ -450,6 +450,7 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
 def makePlots() :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
     multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
+    multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
     multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True)
 
     s = conf.switches()
