@@ -6,8 +6,12 @@ def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     #               "70": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
     #               }
 
-    d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False),  ("phot", False), ("mumu", False)][:-1]} }
-    #d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]} }
+    d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True),
+                                                              ("muon", True),
+                                                              ("phot", False),
+                                                              #("mumu", False)
+                                                              ]}
+                   }
 
     if simpleOneBin :
         d["simpleOneBin"] = {"b":3.0}
