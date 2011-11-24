@@ -22,6 +22,13 @@ def onePlot(d) :
     can = r.TCanvas()
 
     if "func" in d : d["func"](h, can)
+    for l in ["x", "y", "z"] :
+        key = "%sTitle"%l
+        if key not in d : continue
+        axis = getattr(h, "Get%saxis"%(l.capitalize()))().SetTitle(d[key])
+    if "pTitle" in d :
+        h.GetListOfFunctions().FindObject("palette").GetAxis().SetTitle(d["pTitle"])
+
     h.Draw("colz")
     eps = d["histoName"]+".eps"
     can.Print(eps)
@@ -37,8 +44,11 @@ def xs(h,c) :
     
     h.SetMinimum(1.0e-3)
     h.SetMaximum(2.0e+2)
+
     c.SetLogz()
     c.SetRightMargin(0.15)
+    c.SetTickx()
+    c.SetTicky()
 
 def effHadSum(h, c) :
     xs(h, c)
@@ -52,6 +62,7 @@ setup()
 onePlot({"fileName": "output/CLs_tanBeta10_lo_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_effHad.root",
          "histoName": "effHadSum_2D",
          "func": effHadSum,
+         "pTitle": "efficiency of hadronic selection (all bins summed)",
          }
         )
 
