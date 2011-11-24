@@ -85,10 +85,25 @@ def effSums(d = {}) :
                 out[key+"UncRelMcStats"] = 1.0/math.sqrt(out[key2])
     return out
 
-def signalDict(point = None, eff = None, xs = None, xsLo = None, nEventsIn = None, data = None, nloToLoRatios = None) :
-    out = numberDict(histos = eff, data = data, point = point)
+def eventsInRange(switches = None, nEventsIn = None) :
+    out = True
+    if switches["minEventsIn"]!=None : out &= switches["minEventsIn"]<=nEventsIn
+    if switches["maxEventsIn"]!=None : out &= nEventsIn<=switches["maxEventsIn"]
+    return out
 
-    if nloToLoRatios :
+def signalDict(point = None, eff = None, xs = None, xsLo = None, nEventsIn = None, data = None, switches = None) :
+    out = {}
+    out["x"] = xs.GetXaxis().GetBinLowEdge(point[0])
+    out["y"] = xs.GetYaxis().GetBinLowEdge(point[1])
+    out["nEventsIn"] = nEventsIn.GetBinContent(*point)
+    out["eventsInRange"] = eventsInRange(switches, out["nEventsIn"])
+    if not out["eventsInRange"] : return out
+    
+    out["xs"] = xs.GetBinContent(*point)
+    out.update(numberDict(histos = eff, data = data, point = point))
+    out.update(effSums(out))
+
+    if switches["nloToLoRatios"] :
         remove = []
         for key,value in out.iteritems() :
             if key+"_LO" in out :
@@ -96,16 +111,8 @@ def signalDict(point = None, eff = None, xs = None, xsLo = None, nEventsIn = Non
                 remove.append(key+"_LO")
         for item in remove : del out[item]
             
-    out["xs"] = xs.GetBinContent(*point)
-    if nloToLoRatios :
-        if xsLo : lo = xsLo.GetBinContent(*point)
-        signal["xs_NLO_over_LO"] = signal["xs"]/lo if lo else 0.0
-
-    out["x"] = xs.GetXaxis().GetBinLowEdge(point[0])
-    out["y"] = xs.GetYaxis().GetBinLowEdge(point[1])
-    out["nEventsIn"] = nEventsIn.GetBinContent(*point)
-
-    out.update(effSums(out))
+        #if xsLo : lo = xsLo.GetBinContent(*point)
+        #signal["xs_NLO_over_LO"] = signal["xs"]/lo if lo else 0.0
     return out
 
 def stuffVars(switches = None, binsMerged = None, signal = None) :
@@ -127,6 +134,7 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
         for item in conf.likelihood()["alphaT"].keys() : sels += ["effHad%s"%item, "effMuon%s"%item]
             
         for sel in sels :
+            if sel not in signal : continue
             out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
             if switches["nloToLoRatios"] :
                 out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")
@@ -136,7 +144,7 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
 
     args = {"data": conf.data(),
-            "nloToLoRatios": switches["nloToLoRatios"],
+            "switches": switches,
             "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"]),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
@@ -146,10 +154,10 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
 
     def one(point) :
         signal = signalDict(point = point, **args)
-        writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in", d = signal)
+        stem = conf.strings(*point)["pickledFileName"]
+        writeNumbers(fileName = stem + ".in", d = signal)
         if not outFilesAlso : return
-        outSignal = stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal)
-        writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = outSignal)
+        writeNumbers(fileName = stem + ".out", d = stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
 
     map(one, points)
         
