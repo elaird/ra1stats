@@ -734,7 +734,12 @@ def clsOnePoint(args) :
                 bHist.Write()
                 sbHist = tsHisto("sbDist%d"%i, lo, hi, sb, nBadSb)
                 sbHist.Write()
-              
+
+                htr = result.GetResult(i)
+                h = r.TH1D("tsObs%d"%i, "observed TS", 1, 0, 1)
+                h.SetBinContent(1, htr.GetTestStatisticData())
+                h.Write()
+                
             text.DrawText(0.1, 0.95, "Point %d"%i)
             canvas.Print(ps)
 
