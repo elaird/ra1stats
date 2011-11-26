@@ -26,10 +26,7 @@ def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) 
     signal = pickling.readNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in")
     printDict(signal)
     out = {}
-    eventsInRange = True
-    if switches["minEventsIn"]!=None : eventsInRange &= switches["minEventsIn"]<=signal["nEventsIn"]
-    if switches["maxEventsIn"]!=None : eventsInRange &= signal["nEventsIn"]<=switches["maxEventsIn"]
-    if eventsInRange :
+    if signal["eventsInRange"] :
         out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
         if switches["method"] and bool(signal["effHadSum"])  : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
     else :
