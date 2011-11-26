@@ -335,7 +335,7 @@ def signalTerms(w = None, inputData = None, signalDict = {}, extraSigEffUncSourc
 
     for key,value in signalDict.iteritems() :
         if "eff"!=key[:3] : continue
-        if type(value)!=list : continue
+        if type(value) not in [list,tuple] : continue
         for iBin,eff,corr in zip(range(len(value)), value, inputData.sigEffCorr()) :
             name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
             wimport(w, r.RooRealVar(name, name, eff*corr))
@@ -637,6 +637,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
 
     out = {}
+    args = {}
     for iPoint in range(nPoints) :
         s = "" if not iPoint else "_%d"%iPoint
         out["CLb%s"     %s] = result.CLb(iPoint)
@@ -644,13 +645,14 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         out["CLs%s"     %s] = result.CLs(iPoint)
         out["CLsError%s"%s] = result.CLsError(iPoint)
         out["PoiValue%s"%s] = result.GetXValue(iPoint)
-
+        args["CLs%s"%s] = out["CLs%s"%s]
+    
     if nPoints==1 and poiMin==poiMax :
-        args = {}
-        for item in ["testStatType", "plusMinus", "note", "makePlots"] :
+        for item in ["testStatType", "plusMinus", "note", "makePlots", "nPoints"] :
             args[item] = eval(item)
         args["result"] = result
         args["poiPoint"] = poiMin
+        args["testStatisticType"] = testStatType
         q = clsOnePoint(args)
         for key,value in q.iteritems() :
             assert not (key in out),"%s %s"%(key, str(out))
@@ -663,11 +665,36 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         
     return out
 
+def prunedValues(values, weights) :
+    assert values.size()==weights.size(),"%d!=%d"%(values.size(), weights.size())
+    blackList = [float("inf"), float("-inf"), float("nan")]
+    good = []
+    bad = []
+    for value,weight in zip(values, weights) :
+        if value in blackList :
+            bad.append( (value, weight) )
+        else :
+            good.append( (value, weight) )
+    return sorted(good),len(bad)
+
+def tsHisto(name = "", lo = None, hi = None, valuesWeights = [], nBad = 0) :
+    xMin = 0.0
+    #xMin = lo - (hi-lo)/10.
+    xMax = hi + (hi-lo)/10.
+    out = r.TH1D(name, ";TS;toys / bin", 100, xMin, xMax)
+    out.Sumw2()
+    for value,weight in valuesWeights :
+        out.Fill(value, weight)
+    for i in range(nBad) :
+        out.Fill(xMax)
+    return out
+
 def clsOnePoint(args) :
     result = args["result"]
     iPoint = result.FindIndex(args["poiPoint"])
+
     if iPoint<0 :
-        print "WARNING: No index for POI value 1.0.  Will use 0."
+        print "WARNING: No index for POI value %g.  Will use 0."%args["poiPoint"]
         iPoint = 0
 
     values = result.GetExpectedPValueDist(iPoint).GetSamplingDistribution()
@@ -687,15 +714,49 @@ def clsOnePoint(args) :
         text = r.TText()
         text.SetNDC()
 
-        for i in range(npoints) :
-            tsPlot = resultPlot.MakeTestStatPlot(i)
-            #tsPlot.SetLogYaxis(True)
-            tsPlot.Draw()
+        rootFile = r.TFile(ps.replace(".ps", ".root"), "RECREATE")
         
+        for i in range(args["nPoints"]) :
+            if False :
+                tsPlot = resultPlot.MakeTestStatPlot(i)
+                tsPlot.Print("v")
+                #tsPlot.SetLogYaxis(True)
+                tsPlot.Draw()
+            else :
+                #following this code:
+                #http://root.cern.ch/root/html/RooStats__SamplingDistPlot.html#RooStats__SamplingDistPlot:AddSamplingDistribution
+                bDist = result.GetBackgroundTestStatDist(i)
+                sbDist = result.GetSignalAndBackgroundTestStatDist(i)
+                b,nBadB   = prunedValues(bDist.GetSamplingDistribution(),   bDist.GetSampleWeights())
+                sb,nBadSb = prunedValues(sbDist.GetSamplingDistribution(), sbDist.GetSampleWeights())
+                lo = min(b[ 0][0], sb[ 0][0])
+                hi = max(b[-1][0], sb[-1][0])
+
+                bHist = tsHisto("bDist%d"%i,  lo, hi,  b, nBadB)
+                bHist.Write()
+                sbHist = tsHisto("sbDist%d"%i, lo, hi, sb, nBadSb)
+                sbHist.Write()
+
+                h = r.TH1D("testStatisticType%d"%i, "testStatisticType", 1, 0, 1)
+                h.SetBinContent(1, args["testStatisticType"])
+                h.Write()
+                
+                htr = result.GetResult(i)
+                h = r.TH1D("tsObs%d"%i, "observed TS", 1, 0, 1)
+                h.SetBinContent(1, htr.GetTestStatisticData())
+                h.Write()
+                for base in ["CLb", "CLs", "CLsplusb"] :
+                    for error in ["", "Error"] :
+                        item = base + error
+                        h = r.TH1D("%s%d"%(item, i), item, 1, 0, 1)
+                        h.SetBinContent(1, getattr(htr, item)())
+                        h.Write()
+                
             text.DrawText(0.1, 0.95, "Point %d"%i)
             canvas.Print(ps)
 
-        leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = out["CLs"])
+        rootFile.Close()
+        leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = args["CLs"])
         text.DrawText(0.1, 0.95, "Point %d"%iPoint)
         canvas.Print(ps)
         

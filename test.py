@@ -90,7 +90,7 @@ f = fresh.foo(inputData = data2011(),
 
 cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = 0.95, calculatorType = 0, testStatType = 3, nToys = 2000,
+#out = f.cls(cl = cl, calculatorType = 0, testStatType = 3, nToys = 2000,
 #            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
 f.bestFit()
