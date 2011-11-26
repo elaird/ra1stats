@@ -652,6 +652,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
             args[item] = eval(item)
         args["result"] = result
         args["poiPoint"] = poiMin
+        args["testStatisticType"] = testStatType
         q = clsOnePoint(args)
         for key,value in q.iteritems() :
             assert not (key in out),"%s %s"%(key, str(out))
@@ -677,7 +678,8 @@ def prunedValues(values, weights) :
     return sorted(good),len(bad)
 
 def tsHisto(name = "", lo = None, hi = None, valuesWeights = [], nBad = 0) :
-    xMin = lo - (hi-lo)/10.
+    xMin = 0.0
+    #xMin = lo - (hi-lo)/10.
     xMax = hi + (hi-lo)/10.
     out = r.TH1D(name, ";TS;toys / bin", 100, xMin, xMax)
     out.Sumw2()
@@ -735,10 +737,20 @@ def clsOnePoint(args) :
                 sbHist = tsHisto("sbDist%d"%i, lo, hi, sb, nBadSb)
                 sbHist.Write()
 
+                h = r.TH1D("testStatisticType%d"%i, "testStatisticType", 1, 0, 1)
+                h.SetBinContent(1, args["testStatisticType"])
+                h.Write()
+                
                 htr = result.GetResult(i)
                 h = r.TH1D("tsObs%d"%i, "observed TS", 1, 0, 1)
                 h.SetBinContent(1, htr.GetTestStatisticData())
                 h.Write()
+                for base in ["CLb", "CLs", "CLsplusb"] :
+                    for error in ["", "Error"] :
+                        item = base + error
+                        h = r.TH1D("%s%d"%(item, i), item, 1, 0, 1)
+                        h.SetBinContent(1, getattr(htr, item)())
+                        h.Write()
                 
             text.DrawText(0.1, 0.95, "Point %d"%i)
             canvas.Print(ps)
