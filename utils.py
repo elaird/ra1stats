@@ -167,7 +167,7 @@ def shiftUnderAndOverflows(dimension, histos, dontShiftList = []) :
         combineBinContentAndError(histo, binToContainCombo = bins, binToBeKilled = bins+1)
         histo.SetEntries(entries)
 ##############################
-def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFileName = None, divide = (2,2), goptions = "") :
+def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFileName = None, divide = (2,2), goptions = "", ticks = True) :
     if optStat!=None :
         oldOptStat = r.gStyle.GetOptStat()
         r.gStyle.SetOptStat(optStat)
@@ -183,6 +183,9 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
             canvas.Divide(*divide)
             
         canvas.cd(1+j)
+        if ticks :
+            r.gPad.SetTickx()
+            r.gPad.SetTicky()
 
         l = d[key] if (type(d[key]) is list) else [d[key]]
         for iItem,item in enumerate(l) :

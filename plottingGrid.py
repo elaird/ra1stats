@@ -372,7 +372,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     utils.ps2pdf(fileName, sameDir = True)
     print "%s has been written."%fileName.replace(".ps", ".pdf")
 
-def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yMax = 1.0, cl = 0.95) :
+def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, lineHeight = 0.5, divide = (4,3), whiteList = [], stampTitle = True) :
     def allHistos(fileName = "") :
         f = r.TFile(fileName)
         r.gROOT.cd()
@@ -385,19 +385,25 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
         return out
 
     assert tag
+    assert masterKey
+    assert cl
+    if whiteList :
+        assert len(whiteList)==divide[0]*divide[1], "%d != %d"%(len(whiteList), divide[0]*divide[1])
+
     histos = allHistos(fileName = mergedFile())
     master = histos[masterKey]
     graphs = {}
     for iBinX in range(1, 1 + master.GetNbinsX()) :
         for iBinY in range(1, 1 + master.GetNbinsY()) :
+            if whiteList and (iBinX, iBinY) not in whiteList : continue
             if not master.GetBinContent(iBinX, iBinY) : continue
             if "CLb_2" not in histos or not histos["CLb_2"] : continue
             if not histos["CLb_2"].GetBinContent(iBinX, iBinY) : continue
-            
+
             name = "CLs_%d_%d"%(iBinX, iBinY)
             graph = r.TGraphErrors()
             graph.SetName(name)
-            graph.SetTitle("%s;#sigma (pb);CL_{s}"%name.replace("CLs_",""))
+            graph.SetTitle("%s;#sigma (pb);CL_{s}"%(name.replace("CLs_","") if stampTitle else ""))
             graph.SetMarkerStyle(20)
             graph.SetMinimum(yMin)
             graph.SetMaximum(yMax)
@@ -418,34 +424,38 @@ def clsValidation(tag = "clsValidation", masterKey = "effHadSum", yMin = 0.0, yM
             clLine.SetLineColor(r.kRed)
 
             xLim = histos["UpperLimit"].GetBinContent(iBinX, iBinY)
-            limLine = r.TLine(xLim, yMin, xLim, yMax)
+            limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
             limLine.SetLineColor(r.kBlue)
-
-            xLimPl = histos["PlUpperLimit"].GetBinContent(iBinX, iBinY)
-            plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax)
-            plLimLine.SetLineColor(r.kGreen)
+            graphs[name] = [graph, clLine, limLine]
             
-            graphs[name] = [graph, clLine, limLine, plLimLine]
-    fileName = mergedFile().replace(".root","_%s.ps"%tag)
-    
-    canvas = utils.numberedCanvas()
+            if not whiteList :
+                xLimPl = histos["PlUpperLimit"].GetBinContent(iBinX, iBinY)
+                plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
+                plLimLine.SetLineColor(r.kGreen)
+                graphs[name].append(plLimLine)
+
+    fileName = mergedFile().replace(".root","_%s_%s.ps"%(tag, str(cl).replace("0.","")))
+    if whiteList :
+        fileName = fileName.replace(".ps", ".eps")
+        canvas = r.TCanvas("canvas", "", 500*divide[0], 500*divide[1])
+    else :
+        canvas = utils.numberedCanvas()
+        canvas.Print(fileName+"[")
+        text1 = printTimeStamp()
+        text2 = printLumis()
+        canvas.Print(fileName)
+        canvas.Clear()
+
     canvas.SetRightMargin(0.15)
-    
-    canvas.Print(fileName+"[")
-    canvas.SetTickx()
-    canvas.SetTicky()
-    
-    text1 = printTimeStamp()
-    text2 = printLumis()
-    canvas.Print(fileName)
-    canvas.Clear()
+    utils.cyclePlot(d = graphs, f = None, args = {}, optStat = 1110, canvas = canvas, psFileName = fileName, divide = divide, goptions = "alp")
 
-
-    utils.cyclePlot(d = graphs, f = None, args = {}, optStat = 1110, canvas = canvas, psFileName = fileName, divide = (4,3), goptions = "alp")
-    
-    canvas.Print(fileName+"]")
-    utils.ps2pdf(fileName, sameDir = True)
-    print "%s has been written."%fileName.replace(".ps", ".pdf")
+    if whiteList :
+        utils.epsToPdf(fileName, sameDir = True)
+        print "%s has been written."%fileName.replace(".eps", ".pdf")
+    else :
+        canvas.Print(fileName+"]")
+        utils.ps2pdf(fileName, sameDir = True)
+        print "%s has been written."%fileName.replace(".ps", ".pdf")
     
 def makePlots() :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
@@ -455,7 +465,11 @@ def makePlots() :
 
     s = conf.switches()
     if s["isSms"] and s["method"]=="CLs" :
-        clsValidation()
+        for cl in s["CL"] :
+            clsValidation(tag = "clsValidation", masterKey = "effHadSum", cl = cl)
+            #clsValidation(tag = "clsValidation2", masterKey = "effHadSum", cl = cl,
+            #              whiteList = [(35,17), (36,23)], divide = (2, 1), stampTitle = False,
+            #              )
     
     #pg.makeEfficiencyUncertaintyPlots()
     #pg.makeTopologyXsLimitPlots()
