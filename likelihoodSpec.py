@@ -7,7 +7,7 @@ def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
     #               }
 
     d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True),
-                                                              ("muon", True),
+                                                              ("muon", False),
                                                               ("phot", False),
                                                               #("mumu", False)
                                                               ]}
