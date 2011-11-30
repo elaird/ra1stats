@@ -55,19 +55,13 @@ class data2011_5(data) :
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
 
-        self._observations["nHad_55"] = self._observations["nHad"]
-
         self._triggerEfficiencies = {
             "hadBulk":       (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            "had":           (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            #"had":           (     0.991,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            #"had":           (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "had":           (  0.921536,  0.977216,  0.995232,  0.987821,  1.000000,  1.000000,  1.000000,  1.000000),
             "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
             "mumu":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
             }
-        print "put in had trigger eff"
-        print "put in 2Jet numbers"
-        for item in  ["hadControl_51_52", "hadControl_52_53", "hadControl_53_55"] :
-            self._triggerEfficiencies[item] = self._triggerEfficiencies["had"]
 
         self._mcExpectations = {
             "mcMuon":     trig(     scaled((1672.52, 737.68,  522.85, 180.61,  66.33,  22.22,   7.67, 5.21), self.lumi()["muon"]/self.lumi()["mcMuon"]),
@@ -91,6 +85,8 @@ class data2011_5(data) :
             "mcZmumuErr":           scaled((     4,       3,       3,      3,      2,      1,      1,     1), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
+        print "put in photon numbers"
+        print "put in 2Jet numbers"
         print "put in mcTtw stat err"
         self._purities = {
             "phot":                  (  0.92,    0.97,    0.99,   0.99,   0.99,   0.99,   0.99, 0.99),
