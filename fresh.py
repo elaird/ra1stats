@@ -246,7 +246,7 @@ def mumuTerms(w, inputData) :
                                                                      inputData.mcExpectations()["mcZinv"],
                                                                      inputData.constantMcRatioAfterHere(),
                                                                      ) :
-        if nMumuValue<0 : continue
+        if nMumuValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcZmumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nMumu%d"%i, "nMumu%d"%i, nMumuValue))
         wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, (mcZmumuValue/mcZinvValue if not rFinal else rFinal)/purity))
@@ -274,7 +274,7 @@ def photTerms(w, inputData) :
                                                                     inputData.mcExpectations()["mcZinv"],
                                                                     inputData.constantMcRatioAfterHere(),
                                                                     ) :
-        if nPhotValue<0 : continue
+        if nPhotValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcGjets"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
         wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
@@ -301,7 +301,7 @@ def muonTerms(w, inputData, smOnly) :
                                                             inputData.mcExpectations()["mcTtw"],
                                                             inputData.constantMcRatioAfterHere(),
                                                             ) :
-        if nMuonValue<0 : continue
+        if nMuonValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/sum(inputData.mcExpectations()["mcTtw"][i:])
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
         wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue if not rFinal else rFinal))
