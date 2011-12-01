@@ -356,7 +356,7 @@ def multi(w, variables, inputData) :
 
 def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
                     REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, signal = {}, simpleOneBin = {},
-                    htBinMask = [], samples = [], sliceTag = "") :
+                    samples = [], sliceTag = "") :
 
     terms = []
     obs = []
@@ -1040,7 +1040,7 @@ def note(likelihoodSpec = {}) :
 
 class foo(object) :
     def __init__(self, inputData = None, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                 signal = {}, signalExampleToStack = ("", {}), trace = False) :
+                 signal = {}, signalExampleToStack = {}, trace = False) :
                  
         for item in ["inputData", "likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
             setattr(self, item, eval(item))
@@ -1088,7 +1088,7 @@ class foo(object) :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
         bins = self.inputData.htBinLowerEdges()
-        for d in [self.signal, self.signalExampleToStack[1]] :
+        for d in [self.signal, self.signalExampleToStack] :
             for key,value in d.iteritems() :
                 if type(key) is list : assert len(value)==len(bins)
             
