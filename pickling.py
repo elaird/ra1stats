@@ -17,7 +17,7 @@ def readNumbers(fileName) :
     return d
 
 ##number collection
-def effHistos(nloToLoRatios = False) :
+def effHistos(nloToLoRatios = False, nHtBins = None) :
     data = conf.data()
     binsInput = data.htBinLowerEdgesInput()
     htThresholdsInput = zip(binsInput, list(binsInput[1:])+[None])
@@ -34,7 +34,6 @@ def effHistos(nloToLoRatios = False) :
         elif key :
             nextKey = "inf"
         
-        nHtBins = len(d[key]["htBinMask"])
         for box,considerSignal in d[key]["samples"] :
             item = "eff%s%s"%(box.capitalize(), key)
             if not considerSignal :
@@ -142,10 +141,10 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
 
 def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
-
+    
     args = {"data": conf.data(),
             "switches": switches,
-            "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"]),
+            "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"], nHtBins = len(conf.data().htBinLowerEdges())),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
             }
