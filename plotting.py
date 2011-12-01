@@ -223,7 +223,7 @@ class validationPlotter(object) :
     def __init__(self, args) :
         for key,value in args.iteritems() :
             setattr(self,key,value)
-        if any(self.signalExampleToStack) : assert self.smOnly
+        if self.signalExampleToStack : assert self.smOnly
 
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
@@ -292,8 +292,9 @@ class validationPlotter(object) :
             ]
         if not self.smOnly :
             vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
-        elif any(self.signalExampleToStack) :
-            vars += [{"example":self.signalExampleToStack[1], "box":"had", "desc":self.signalExampleToStack[0], "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+        elif self.signalExampleToStack :
+            vars += [{"example":self.signalExampleToStack, "box":"had", "desc":inDict(self.signalExampleToStack, "label", ""),
+                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
@@ -340,8 +341,9 @@ class validationPlotter(object) :
             ]
         if not self.smOnly :
             vars += [{"var":"muonS",   "type":"function", "color":self.sig, "style":1, "width":self.width1, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
-        elif any(self.signalExampleToStack) :
-            vars += [{"example":self.signalExampleToStack[1], "box":"muon", "desc":self.signalExampleToStack[0], "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+        elif self.signalExampleToStack :
+            vars += [{"example":self.signalExampleToStack, "box":"muon", "desc":inDict(self.signalExampleToStack, "label", ""),
+                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
@@ -417,8 +419,8 @@ class validationPlotter(object) :
         if not self.smOnly :
             specs += [{"var":"hadS", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalDesc+" "+self.signalDesc2,
                        "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
-        elif any(self.signalExampleToStack) :
-            specs += [{"example":self.signalExampleToStack[1], "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalExampleToStack[0],
+        elif self.signalExampleToStack :
+            specs += [{"example":self.signalExampleToStack, "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":inDict(self.signalExampleToStack, "label", ""),
                        "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         self.plot(note = self.label, fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
