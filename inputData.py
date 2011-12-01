@@ -10,6 +10,9 @@ class data2011_5(data) :
         self._htBinLowerEdges =          (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
         self._htMaxForPlot = 975.0
         
+        #self._mergeBins = None
+        #self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
+        
         self._mergeBins = None
         self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
         
@@ -49,8 +52,7 @@ class data2011_5(data) :
         self._observations = {
             "nHadBulk":scaled(( 5.733e+07, 2.358e+07, 1.619e+07, 5.116e+06, 1.777e+06, 6.888e+05, 2.900e+05, 2.599e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad":           (      3755,      1394,       997,       317,       113,        32,        13,         6),
-            "nPhot":     excl((       849,       307,       321,       111,        44,        20,         8,         4), isExcl),
-            "nPhot2Jet": excl((       336,       127,       136,        40,        13,         4,         2,         0), isExcl),
+            "nPhot":     excl((      None,      None,       321,       111,        44,        20,         8,         4), isExcl),
             "nMuon":          (      1456,       660,       514,       187,        52,        17,         8,         1),
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
