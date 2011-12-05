@@ -168,7 +168,7 @@ def clsCustomPlots(obs = None, valuesDict = {}, note = "", plotsDir = "plots") :
 def pretty(l) :
     out = "("
     for i,item in enumerate(l) :
-        out += "%6.2f"%item
+        out += ("%6.2f"%item) if item else "%6s"%""
         if i!=len(l)-1 : out += ", "
     return out+")"
 
@@ -753,10 +753,13 @@ class validationPlotter(object) :
 	    else :
 	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
 	        purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
-	        d["value"].SetBinContent(i+1, value/purity)
+                if value!=None and purity :
+                    d["value"].SetBinContent(i+1, value/purity)
 	        key = varName+"Err"
 	        if key in self.inputData.mcStatError() :
-	            d["value"].SetBinError(i+1, self.inputData.mcStatError()[key][i]/purity)
+                    error = self.inputData.mcStatError()[key][i]
+                    if error!=None and purity :
+                        d["value"].SetBinError(i+1, error/purity)
 	    toPrint.append(value)
         self.toPrint.append( (varName.rjust(10), lumiString.rjust(10), pretty(toPrint)) )
 	return d
