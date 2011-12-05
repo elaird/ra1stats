@@ -86,7 +86,7 @@ def importEwk(w = None, REwk = None, name = "", i = None, iLast = None, nHadValu
     
     if REwk=="Linear" : wimport(w, parametrizedLinearEwk(w = w, ewk = name, i = i, iLast = iLast))
     elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, sample = name, i = i))
-    else : wimport(w, r.RooRealVar(ni(name = name, i = i), ni(name = name, i = i), 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
+    else : wimport(w, r.RooRealVar(ni(name = name, i = i), ni(name = name, i = i), max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, i)
 
 def importFZinv(w = None, nFZinv = "", name = "", i = None, iLast = None) :
@@ -123,7 +123,6 @@ def hadTerms(w = None, inputData = None, REwk = None, RQcd = None, nFZinv = None
     terms = []
 
     assert not qcdSearch
-    assert REwk
     assert RQcd!="FallingExpA"
 
     #QCD variables
