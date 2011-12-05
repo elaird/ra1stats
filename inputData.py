@@ -10,27 +10,9 @@ class data2011_5(data) :
         self._htBinLowerEdges =          (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
         self._htMaxForPlot = 975.0
         
-        #self._mergeBins = None
-        #self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
-        
         self._mergeBins = None
-        self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0,     0,     0,     0)
+        self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
         
-        #self._mergeBins =                (    0,     1,     2,     2,     2,     2,     2,     2)
-        #self._constantMcRatioAfterHere = (    0,     0,     0)
-
-        #self._mergeBins =                (    0,     1,     2,     3,     3,     3,     3,     3)
-        #self._constantMcRatioAfterHere = (    0,     0,     0,     0)
-
-        #self._mergeBins =                (    0,     1,     2,     3,     4,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0)
-
-        #self._mergeBins =                (    0,     1,     2,     3,     3,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
-
-        #self._mergeBins =                (    0,     1,     2,     3,     4,     4,     4,     4)
-        #self._constantMcRatioAfterHere = (    0,     0,     1,     0,     0)
-
         self._lumi = {
             "had":     4650.,
             "hadBulk": 1080.,
@@ -39,9 +21,9 @@ class data2011_5(data) :
             "mcMuon":  4650.,
             "mcTtw":   4650.,
 
-            "phot":    1057.,
-            "mcGjets": 1057.,
-            "mcZinv":  1057.,
+            "phot":    4529.,
+            "mcGjets": 4529.,
+            "mcZinv":  4529.,
 
             "mumu":    697.,
             "mcZmumu": 697.,
@@ -52,7 +34,7 @@ class data2011_5(data) :
         self._observations = {
             "nHadBulk":scaled(( 5.733e+07, 2.358e+07, 1.619e+07, 5.116e+06, 1.777e+06, 6.888e+05, 2.900e+05, 2.599e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad":           (      3755,      1394,       997,       317,       113,        32,        13,         6),
-            "nPhot":     excl((      None,      None,       321,       111,        44,        20,         8,         4), isExcl),
+            "nPhot":     excl((      None,      None,      1506,       535,       195,        79,        26,        12), isExcl),
             "nMuon":          (      1456,       660,       514,       187,        52,        17,         8,         1),
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
             }
@@ -70,24 +52,24 @@ class data2011_5(data) :
                                     self._triggerEfficiencies["had"]),
             "mcTtw":      trig(     scaled((2008.69, 733.84,  502.97, 173.22,  57.86,  23.08,   6.77, 5.48), self.lumi()["muon"]/self.lumi()["mcTtw"]),
                                     self._triggerEfficiencies["had"]),
-            "mcGjets":         excl(scaled((   600,     260,     250,     85,     31,      8,      5,    2), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-            "mcPhot2Jet":      excl(scaled((   290,     124,      98,     26,     10,    0.5,    0.5,  0.5), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-            "mcZinv":     trig(excl(scaled((   210,      90,     110,     50,      8,      3,      3,    0), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
+            "mcGjets":         excl(scaled((  None,    None, 1.65e+3, 5.8e+2, 2.2e+2,     76,     28,   12), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcZinv":     trig(excl(scaled((  None,    None,  7.1e+2,    245,     89,     32,     14,    5), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
                                self._triggerEfficiencies["had"]),
             "mcZmumu":         excl(scaled((    15,       9,      11,      7,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]), isExcl),
             }
+
+
 
         self._mcStatError = {
             "mcMuonErr":                    (  60.4,    40.2,     7.0,    4.2,    2.5,    1.4,    0.8,   0.6),
             #"mcMuon2JetErr":               (  9.01,    6.07,    5.54,   3.22,   1.61,   0.72,   0.72,  0.00),
             #"mcTtwErr":                    ( 16.00,    9.47,    8.26,   5.06,   3.17,   1.80,   0.73,  1.03),
-            "mcGjetsErr":           scaled((    20,      10,      10,      8,      5,      2,      2,     1), self.lumi()["phot"]/self.lumi()["mcGjets"]),
-            "mcPhot2JetErr":        scaled((    40,      10,       8,      4,      3,    0.5,    0.5,   0.5), self.lumi()["phot"]/self.lumi()["mcGjets"]),
-            "mcZinvErr":            scaled((    20,      20,      20,     10,      5,      3,      3,     3), self.lumi()["had"] /self.lumi()["mcZinv"]),
+            "mcGjetsErr":           scaled((  None,    None, 0.03e+3, 0.2e+2, 0.1e+2,      7,      4,     3), self.lumi()["phot"]/self.lumi()["mcGjets"]),
+            "mcZinvErr":            scaled((  None,    None,      10,      8,      5,      3,      2,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),
             "mcZmumuErr":           scaled((     4,       3,       3,      3,      2,      1,      1,     1), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
-        print "put in photon numbers"
+        print "update photon numbers"
         print "put in 2Jet numbers"
         print "put in mcTtw stat err"
         self._purities = {
@@ -96,8 +78,8 @@ class data2011_5(data) :
             }
 
         self._mcExtra = {}
-        self._mcExtra["mcHad"]  = tuple([ttw+zinv for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-        self._mcExtra["mcPhot"] = tuple([gJet/purity for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
+        self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else 0.0) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
+        self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else 0.0) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
         self._fixedParameters = {
             "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
