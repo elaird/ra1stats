@@ -4,7 +4,7 @@ def scaled(t, factor) :
     return tuple([factor*a if a!=None else None for a in t])
 
 def trig(t, eff) :
-    return tuple([a*b for a,b in zip(t,eff)])
+    return tuple([a*b if a!=None else None for a,b in zip(t,eff)])
 
 def excl(counts, isExclusive) :
     out = []
