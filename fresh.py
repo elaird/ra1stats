@@ -397,7 +397,8 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         hadTerms(label = sliceTag, **args)
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
-        mumuTerms(w, inputData)
+        #mumuTerms(w, inputData)
+        print "include mumuTerms"
         
     if "had" in samples :
         terms.append(ni(name = "hadTerms", label = sliceTag))
