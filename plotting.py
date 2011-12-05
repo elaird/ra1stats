@@ -398,15 +398,11 @@ class validationPlotter(object) :
         #          yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
-        ewk = {"var":"ewk", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK",
-               "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lpe", "errorBand":self.ewk} #"errorsFrom":"A_ewk"}
+        ewk = {"var":"ewk", "type":self.ewkType, "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK", "suppress":["min","max"],
+               "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lp"+("" if self.ewkType=="function" else "f"), "errorBand":self.ewk-6} #"errorsFrom":"A_ewk"}
                
-        if self.ewkType=="var" :
-          ewk =  {"var":"ewk", "type":"var", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk",
-                  "color":self.ewk, "width":self.width1, "legSpec":"l"}
-
         qcd = {"var":"qcd", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"QCD",
-               "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lpe", "errorBand":self.qcd, "bandStyle":3005} #"errorsFrom":"A_qcd"}
+               "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lp", "errorBand":self.qcd, "bandStyle":3005} #"errorsFrom":"A_qcd"}
         
         qcd2 = copy.deepcopy(qcd)
         qcd2["legend"] = False
@@ -796,17 +792,19 @@ class validationPlotter(object) :
 	    if "example" not in d :
                 if "var" not in d : continue
 	        histos = self.varHisto(extraName = extraName, lumiString = lumiString, spec = d)
-	        hist = histos["value"]
 	    else :
                 d2 = copy.deepcopy(d)
                 d2["extraName"] = extraName
-	        hist = self.signalExampleHisto(d2)
-	    if not hist.GetEntries() : continue
+	        histos = {"value":self.signalExampleHisto(d2)}
+	    if not histos["value"].GetEntries() : continue
 
             if "dens" in d :
-                for den,denType in zip(d["dens"], d["denTypes"]) :
-                    hist.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
-    	
+                for item in ["value", "min", "max"] :
+                    if item not in histos : continue
+                    for den,denType in zip(d["dens"], d["denTypes"]) :
+                        histos[item].Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
+            
+            hist = histos["value"]
 	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
 	    if inDict(d, "stack", False) :
 	        if d["stack"] not in stacks :
@@ -821,6 +819,7 @@ class validationPlotter(object) :
                                      bandFillStyle = inDict(d, "bandStyle", [1001,3004][0]))
 	        for item in ["min", "max"] :
 	            if item not in histos : continue
+                    if item in inDict(d, "suppress", []) : continue
                     h = histos[item]
 	            h.Draw("same")
                     histoList.append(h)
