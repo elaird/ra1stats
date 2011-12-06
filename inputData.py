@@ -53,7 +53,7 @@ class data2011_5(data) :
             "mcTtw":      trig(     scaled((2008.69, 733.84,  502.97, 173.22,  57.86,  23.08,   6.77, 5.48), self.lumi()["muon"]/self.lumi()["mcTtw"]),
                                     self._triggerEfficiencies["had"]),
             "mcGjets":         excl(scaled((  None,    None, 1.86e+3, 6.4e+2, 2.4e+2,     82,     30,   13), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-            "mcZinv":     trig(excl(scaled((  None,    None,  7.1e+2,    245,     89,     32,     14,    5), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
+            "mcZinv":     trig(excl(scaled((  None,    None,  8.3e+2,    302,    111,     39,     14,    5), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
                                self._triggerEfficiencies["had"]),
             "mcZmumu":         excl(scaled((    15,       9,      11,      7,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]), isExcl),
             }
@@ -63,7 +63,7 @@ class data2011_5(data) :
             #"mcMuon2JetErr":               (  9.01,    6.07,    5.54,   3.22,   1.61,   0.72,   0.72,  0.00),
             #"mcTtwErr":                    ( 16.00,    9.47,    8.26,   5.06,   3.17,   1.80,   0.73,  1.03),
             "mcGjetsErr":           scaled((  None,    None, 0.03e+3, 0.2e+2, 0.1e+2,      7,      4,     3), self.lumi()["phot"]/self.lumi()["mcGjets"]),
-            "mcZinvErr":            scaled((  None,    None,      10,      8,      5,      3,      2,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),
+            "mcZinvErr":            scaled((  None,    None,  0.2e+2,     10,      6,      4,      2,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),
             "mcZmumuErr":           scaled((     4,       3,       3,      3,      2,      1,      1,     1), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
