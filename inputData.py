@@ -52,13 +52,11 @@ class data2011_5(data) :
                                     self._triggerEfficiencies["had"]),
             "mcTtw":      trig(     scaled((2008.69, 733.84,  502.97, 173.22,  57.86,  23.08,   6.77, 5.48), self.lumi()["muon"]/self.lumi()["mcTtw"]),
                                     self._triggerEfficiencies["had"]),
-            "mcGjets":         excl(scaled((  None,    None, 1.65e+3, 5.8e+2, 2.2e+2,     76,     28,   12), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcGjets":         excl(scaled((  None,    None, 1.86e+3, 6.4e+2, 2.4e+2,     82,     30,   13), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             "mcZinv":     trig(excl(scaled((  None,    None,  7.1e+2,    245,     89,     32,     14,    5), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
                                self._triggerEfficiencies["had"]),
             "mcZmumu":         excl(scaled((    15,       9,      11,      7,      3,    0.9,      0,    0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]), isExcl),
             }
-
-
 
         self._mcStatError = {
             "mcMuonErr":                    (  60.4,    40.2,     7.0,    4.2,    2.5,    1.4,    0.8,   0.6),
@@ -73,7 +71,7 @@ class data2011_5(data) :
         print "put in 2Jet numbers"
         print "put in mcTtw stat err"
         self._purities = {
-            "phot":                  (  0.92,    0.97,    0.99,   0.99,   0.99,   0.99,   0.99, 0.99),
+            "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
             "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),
             }
 
