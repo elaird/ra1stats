@@ -15,7 +15,7 @@ class data2011_5(data) :
         
         self._lumi = {
             "had":     4650.,
-            "hadBulk": 1080.,
+            "hadBulk": 4650.,
 
             "muon":    4650.,
             "mcMuon":  4650.,
@@ -32,8 +32,8 @@ class data2011_5(data) :
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02)
         self._sigEffCorr =    (  9.88e-01,  9.84e-01,  9.96e-01,  9.71e-01,  9.60e-01,  9.58e-01,  9.52e-01,  9.35e-01)
         self._observations = {
-            "nHadBulk":scaled(( 5.733e+07, 2.358e+07, 1.619e+07, 5.116e+06, 1.777e+06, 6.888e+05, 2.900e+05, 2.599e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
-            "nHad":           (      3755,      1394,       997,       317,       113,        32,        13,         6),
+            "nHadBulk":scaled(( 2.724e+08, 1.174e+08, 8.163e+07, 2.526e+07, 8.642e+06, 3.536e+06, 1.480e+06, 1.314e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
+            "nHad":           ( 3.534e+03, 1.426e+03, 9.440e+02, 3.090e+02, 1.080e+02, 3.200e+01, 1.300e+01, 6.000e+00),
             "nPhot":     excl((      None,      None,      1506,       535,       195,        79,        26,        12), isExcl),
             "nMuon":          (      1456,       660,       514,       187,        52,        17,         8,         1),
             "nMumu":     excl((        22,         5,        11,         6,         3,         0,         0,         0), isExcl),
@@ -67,7 +67,6 @@ class data2011_5(data) :
             "mcZmumuErr":           scaled((     4,       3,       3,      3,      2,      1,      1,     1), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
-        print "update photon numbers"
         print "put in 2Jet numbers"
         print "put in mcTtw stat err"
         self._purities = {
