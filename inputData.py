@@ -60,15 +60,13 @@ class data2011_5(data) :
 
         self._mcStatError = {
             "mcMuonErr":                    (  60.4,    40.2,     7.0,    4.2,    2.5,    1.4,    0.8,   0.6),
-            #"mcMuon2JetErr":               (  9.01,    6.07,    5.54,   3.22,   1.61,   0.72,   0.72,  0.00),
-            #"mcTtwErr":                    ( 16.00,    9.47,    8.26,   5.06,   3.17,   1.80,   0.73,  1.03),
+            "mcTtwErr":                     (  68.8,    40.7,     6.9,    4.1,    2.4,    1.6,    0.7,   0.7),
             "mcGjetsErr":           scaled((  None,    None, 0.03e+3, 0.2e+2, 0.1e+2,      7,      4,     3), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcZinvErr":            scaled((  None,    None,  0.2e+2,     10,      6,      4,      2,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),
             "mcZmumuErr":           scaled((     4,       3,       3,      3,      2,      1,      1,     1), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
         print "put in 2Jet numbers"
-        print "put in mcTtw stat err"
         self._purities = {
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
             "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),
