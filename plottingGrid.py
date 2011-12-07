@@ -192,8 +192,9 @@ def printTimeStamp() :
     text = r.TText()
     text.SetNDC()
     text.DrawText(0.1, 0.1, "file created at %s"%r.TDatime().AsString())
-    text.DrawText(0.1, 0.30, "RQcd = %s"%(l["RQcd"] if l["RQcd"] else "[no form assumed]"))
     text.DrawText(0.1, 0.35, "REwk = %s"%(l["REwk"] if l["REwk"] else "[no form assumed]"))
+    text.DrawText(0.1, 0.30, "RQcd = %s"%(l["RQcd"] if l["RQcd"] else "[no form assumed]"))
+    text.DrawText(0.1, 0.25, "nFZinv = %s"%(l["nFZinv"].replace("fZinv","")))
     return text
 
 def printSuppressed(l) :
