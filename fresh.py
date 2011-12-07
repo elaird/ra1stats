@@ -86,7 +86,7 @@ def importEwk(w = None, REwk = None, name = "", i = None, iLast = None, nHadValu
     
     if REwk=="Linear" : wimport(w, parametrizedLinearEwk(w = w, ewk = name, i = i, iLast = iLast))
     elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, sample = name, i = i))
-    else : wimport(w, r.RooRealVar(ni(name = name, i = i), ni(name = name, i = i), 0.5*max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
+    else : wimport(w, r.RooRealVar(ni(name = name, i = i), ni(name = name, i = i), max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, i)
 
 def importFZinv(w = None, nFZinv = "", name = "", i = None, iLast = None) :
@@ -123,7 +123,6 @@ def hadTerms(w = None, inputData = None, REwk = None, RQcd = None, nFZinv = None
     terms = []
 
     assert not qcdSearch
-    assert REwk
     assert RQcd!="FallingExpA"
 
     #QCD variables
@@ -246,7 +245,7 @@ def mumuTerms(w, inputData) :
                                                                      inputData.mcExpectations()["mcZinv"],
                                                                      inputData.constantMcRatioAfterHere(),
                                                                      ) :
-        if nMumuValue<0 : continue
+        if nMumuValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcZmumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nMumu%d"%i, "nMumu%d"%i, nMumuValue))
         wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, (mcZmumuValue/mcZinvValue if not rFinal else rFinal)/purity))
@@ -274,7 +273,7 @@ def photTerms(w, inputData) :
                                                                     inputData.mcExpectations()["mcZinv"],
                                                                     inputData.constantMcRatioAfterHere(),
                                                                     ) :
-        if nPhotValue<0 : continue
+        if nPhotValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcGjets"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
         wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
@@ -301,7 +300,7 @@ def muonTerms(w, inputData, smOnly) :
                                                             inputData.mcExpectations()["mcTtw"],
                                                             inputData.constantMcRatioAfterHere(),
                                                             ) :
-        if nMuonValue<0 : continue
+        if nMuonValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/sum(inputData.mcExpectations()["mcTtw"][i:])
         wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
         wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue if not rFinal else rFinal))
@@ -356,7 +355,7 @@ def multi(w, variables, inputData) :
 
 def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
                     REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, signal = {}, simpleOneBin = {},
-                    htBinMask = [], samples = [], sliceTag = "") :
+                    samples = [], sliceTag = "") :
 
     terms = []
     obs = []
@@ -397,7 +396,8 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         hadTerms(label = sliceTag, **args)
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
-        mumuTerms(w, inputData)
+        #mumuTerms(w, inputData)
+        print "include mumuTerms"
         
     if "had" in samples :
         terms.append(ni(name = "hadTerms", label = sliceTag))
@@ -1040,7 +1040,7 @@ def note(likelihoodSpec = {}) :
 
 class foo(object) :
     def __init__(self, inputData = None, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                 signal = {}, signalExampleToStack = ("", {}), trace = False) :
+                 signal = {}, signalExampleToStack = {}, trace = False) :
                  
         for item in ["inputData", "likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
             setattr(self, item, eval(item))
@@ -1088,7 +1088,7 @@ class foo(object) :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
         bins = self.inputData.htBinLowerEdges()
-        for d in [self.signal, self.signalExampleToStack[1]] :
+        for d in [self.signal, self.signalExampleToStack] :
             for key,value in d.iteritems() :
                 if type(key) is list : assert len(value)==len(bins)
             

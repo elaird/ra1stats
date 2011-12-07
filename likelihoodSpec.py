@@ -1,22 +1,22 @@
-def spec(simpleOneBin = False, qcdSearch = False, nHtBins = 8) :
+def spec(simpleOneBin = False, qcdSearch = False) :
     d = {}
 
-    #d["alphaT"] = {"53": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-    #               "55": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-    #               "70": {"htBinMask": [1]*nHtBins, "samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
+    #d["alphaT"] = {"53": {"samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
+    #               "55": {"samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
+    #               "70": {"samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
     #               }
 
-    d["alphaT"] = {"": {"htBinMask": [1]*nHtBins, "samples": [("had", True),
-                                                              ("muon", False),
-                                                              ("phot", False),
-                                                              #("mumu", False)
-                                                              ]}
+    d["alphaT"] = {"": {"samples": [("had", True),
+                                    ("muon", False),
+                                    ("phot", False),
+                                    #("mumu", False)
+                                    ]}
                    }
 
     if simpleOneBin :
         d["simpleOneBin"] = {"b":3.0}
         key = max(d["alphaT"].keys())
-        d["alphaT"] = {key: {"samples": [("had", True)], "htBinMask": [0]*(nHtBins-1)+[1]} }
+        d["alphaT"] = {key: {"samples": [("had", True)]} }
     else :
         d["simpleOneBin"] = {}
     

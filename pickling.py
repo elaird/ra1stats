@@ -34,11 +34,10 @@ def effHistos(nloToLoRatios = False) :
         elif key :
             nextKey = "inf"
         
-        nHtBins = len(d[key]["htBinMask"])
         for box,considerSignal in d[key]["samples"] :
             item = "eff%s%s"%(box.capitalize(), key)
             if not considerSignal :
-                out[item] = [0.0]*nHtBins
+                out[item] = [0.0]*len(binsMerged)
                 if nloToLoRatios : out["_LO"%item] = out[item]
                 continue
 
@@ -142,7 +141,7 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
 
 def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
-
+    
     args = {"data": conf.data(),
             "switches": switches,
             "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"]),

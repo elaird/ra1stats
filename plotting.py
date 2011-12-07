@@ -168,7 +168,7 @@ def clsCustomPlots(obs = None, valuesDict = {}, note = "", plotsDir = "plots") :
 def pretty(l) :
     out = "("
     for i,item in enumerate(l) :
-        out += "%6.2f"%item
+        out += ("%6.2f"%item) if item else "%6s"%""
         if i!=len(l)-1 : out += ", "
     return out+")"
 
@@ -223,7 +223,7 @@ class validationPlotter(object) :
     def __init__(self, args) :
         for key,value in args.iteritems() :
             setattr(self,key,value)
-        if any(self.signalExampleToStack) : assert self.smOnly
+        if self.signalExampleToStack : assert self.smOnly
 
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
@@ -292,8 +292,9 @@ class validationPlotter(object) :
             ]
         if not self.smOnly :
             vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
-        elif any(self.signalExampleToStack) :
-            vars += [{"example":self.signalExampleToStack[1], "box":"had", "desc":self.signalExampleToStack[0], "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+        elif self.signalExampleToStack :
+            vars += [{"example":self.signalExampleToStack, "box":"had", "desc":inDict(self.signalExampleToStack, "label", ""),
+                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
@@ -340,8 +341,9 @@ class validationPlotter(object) :
             ]
         if not self.smOnly :
             vars += [{"var":"muonS",   "type":"function", "color":self.sig, "style":1, "width":self.width1, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
-        elif any(self.signalExampleToStack) :
-            vars += [{"example":self.signalExampleToStack[1], "box":"muon", "desc":self.signalExampleToStack[0], "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+        elif self.signalExampleToStack :
+            vars += [{"example":self.signalExampleToStack, "box":"muon", "desc":inDict(self.signalExampleToStack, "label", ""),
+                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
@@ -396,15 +398,11 @@ class validationPlotter(object) :
         #          yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
-        ewk = {"var":"ewk", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK",
-               "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lpe", "errorBand":self.ewk} #"errorsFrom":"A_ewk"}
+        ewk = {"var":"ewk", "type":self.ewkType, "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK", "suppress":["min","max"],
+               "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lp"+("" if self.ewkType=="function" else "f"), "errorBand":self.ewk-6} #"errorsFrom":"A_ewk"}
                
-        if self.ewkType=="var" :
-          ewk =  {"var":"ewk", "type":"var", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk",
-                  "color":self.ewk, "width":self.width1, "legSpec":"l"}
-
         qcd = {"var":"qcd", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"QCD",
-               "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lpe", "errorBand":self.qcd, "bandStyle":3005} #"errorsFrom":"A_qcd"}
+               "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lp", "errorBand":self.qcd, "bandStyle":3005} #"errorsFrom":"A_qcd"}
         
         qcd2 = copy.deepcopy(qcd)
         qcd2["legend"] = False
@@ -417,8 +415,8 @@ class validationPlotter(object) :
         if not self.smOnly :
             specs += [{"var":"hadS", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalDesc+" "+self.signalDesc2,
                        "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
-        elif any(self.signalExampleToStack) :
-            specs += [{"example":self.signalExampleToStack[1], "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalExampleToStack[0],
+        elif self.signalExampleToStack :
+            specs += [{"example":self.signalExampleToStack, "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":inDict(self.signalExampleToStack, "label", ""),
                        "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
 
         self.plot(note = self.label, fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
@@ -751,10 +749,13 @@ class validationPlotter(object) :
 	    else :
 	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
 	        purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
-	        d["value"].SetBinContent(i+1, value/purity)
+                if value!=None and purity :
+                    d["value"].SetBinContent(i+1, value/purity)
 	        key = varName+"Err"
 	        if key in self.inputData.mcStatError() :
-	            d["value"].SetBinError(i+1, self.inputData.mcStatError()[key][i]/purity)
+                    error = self.inputData.mcStatError()[key][i]
+                    if error!=None and purity :
+                        d["value"].SetBinError(i+1, error/purity)
 	    toPrint.append(value)
         self.toPrint.append( (varName.rjust(10), lumiString.rjust(10), pretty(toPrint)) )
 	return d
@@ -791,17 +792,18 @@ class validationPlotter(object) :
 	    if "example" not in d :
                 if "var" not in d : continue
 	        histos = self.varHisto(extraName = extraName, lumiString = lumiString, spec = d)
-	        hist = histos["value"]
 	    else :
                 d2 = copy.deepcopy(d)
                 d2["extraName"] = extraName
-	        hist = self.signalExampleHisto(d2)
-	    if not hist.GetEntries() : continue
+	        histos = {"value":self.signalExampleHisto(d2)}
+	    if not histos["value"].GetEntries() : continue
 
             if "dens" in d :
-                for den,denType in zip(d["dens"], d["denTypes"]) :
-                    hist.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
-    	
+                for h in histos.values() :
+                    for den,denType in zip(d["dens"], d["denTypes"]) :
+                        h.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
+            
+            hist = histos["value"]
 	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
 	    if inDict(d, "stack", False) :
 	        if d["stack"] not in stacks :
@@ -814,9 +816,8 @@ class validationPlotter(object) :
                                      goptions = "%ssame"%inDict(d, "goptions", ""),
                                      errorBand = inDict(d, "errorBand", False),
                                      bandFillStyle = inDict(d, "bandStyle", [1001,3004][0]))
-	        for item in ["min", "max"] :
-	            if item not in histos : continue
-                    h = histos[item]
+                for key,h in histos.iteritems() :
+                    if key in ["value"]+inDict(d, "suppress", []) : continue
 	            h.Draw("same")
                     histoList.append(h)
         return stacks,legEntries,histoList
