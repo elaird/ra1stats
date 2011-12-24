@@ -135,18 +135,32 @@ def effMuonHadRatio(h, c) :
 
 setup()
 
-nloOverLo = onePlot({"fileName":     "output/CLs_tanBeta10_nlo_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root",
-                     "histoName":    "xs_2D",
-                     "fileNameDen":  "output/CLs_tanBeta10_lo_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root",
-                     "histoNameDen": "xs_2D",
-                     "outName": "xsRatio_2D",
-                     "func": xsRatioNoRebin,
-                     "pTitle": "NLO xs / LO xs",
-                     }
-                    )
+#determine mask
+nloOverLoFull = onePlot({"fileName":     "output/CLs_tanBeta10_nlo_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root",
+                         "histoName":    "xs_2D",
+                         "fileNameDen":  "output/CLs_tanBeta10_lo_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root",
+                         "histoNameDen": "xs_2D",
+                         "outName": "xsRatioFull_2D",
+                         "func": xsRatioNoRebin,
+                         "pTitle": "NLO xs / LO xs",
+                         }
+                        )
 
-mask = histoMask(nloOverLo, lambda x:x>0.5)
+mask = histoMask(nloOverLoFull, lambda x:x>0.5)
 
+#XS ratio
+onePlot({"fileName":     "output/CLs_tanBeta10_nlo_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root",
+         "histoName":    "xs_2D",
+         "fileNameDen":  "output/CLs_tanBeta10_lo_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root",
+         "histoNameDen": "xs_2D",
+         "outName": "xsRatio_2D",
+         "func": xsRatio,
+         "mask": mask,
+         "pTitle": "NLO xs / LO xs",
+         }
+        )
+
+#others
 order = "nlo"
 onePlot({"fileName": "output/CLs_tanBeta10_%s_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root"%order,
          "histoName": "xs_2D",
