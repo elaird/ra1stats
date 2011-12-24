@@ -24,13 +24,17 @@ def onePlot(d) :
     h = histo(fileName = d["fileName"],
               histoName = d["histoName"],
               mask = None if "mask" not in d else d["mask"])
-    
-    if "fileNameDen" in d and "histoNameDen" in d :
-        den = histo(fileName = d["fileNameDen"],
-                    histoName = d["histoNameDen"],
-                    mask = None if "mask" not in d else d["mask"])
-        h.Divide(den)
-    
+
+    for s,function in {"Den":"Divide", "Num":"Multiply"}.iteritems() :
+        if "fileName%s"%s in d and "histoName%s"%s in d :
+            h2 = histo(fileName = d["fileName%s"%s],
+                       histoName = d["histoName%s"%s],
+                       mask = None if "mask" not in d else d["mask"])
+            getattr(h, function)(h2)
+
+    if "factor" in d :
+        h.Scale(d["factor"])
+        
     #h.UseCurrentStyle()
     h.SetStats(False)
     h.SetTitle("")
@@ -114,6 +118,12 @@ def effHadSum(h, c) :
     setRange(h, 0.0, 0.20)
     h.GetZaxis().SetNdivisions(5, False)
     
+def yieldHadSum(h, c) :
+    common(h, c)
+    setRange(h, 1.0, 1.0e3)
+    c.SetLogz()
+    #h.GetZaxis().SetNdivisions(5, False)
+    
 def effMuonSum(h, c) :
     common(h, c)
     setRange(h, 0.00, 0.03)
@@ -152,6 +162,20 @@ onePlot({"fileName": "output/CLs_tanBeta10_%s_TS3_REwkConstant_RQcdFallingExp_fZ
          "func": effHadSum,
          "mask": mask,
          "pTitle": "efficiency of hadronic selection (all bins summed)",
+         }
+        )
+
+lumi = 1.1e3 #lumi in 1/pb
+onePlot({"fileName": "output/CLs_tanBeta10_%s_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_xs.root"%order,
+         "histoName": "xs_2D",
+         "fileNameNum": "output/CLs_tanBeta10_%s_TS3_REwkConstant_RQcdFallingExp_fZinvAll_h1xp_effHad.root"%order,
+         "histoNameNum": "effHadSum_2D",
+         
+         "outName": "yieldHadSum_%s_2D"%order,
+         "func": yieldHadSum,
+         "mask": mask,
+         "factor": lumi,
+         "pTitle": "yield of hadronic selection (all bins summed) for %3.1f/fb"%(lumi/1.0e3),
          }
         )
 
