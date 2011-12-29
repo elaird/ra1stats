@@ -3,11 +3,12 @@
 import math,os
 from inputData import data2011
 
-def beginDocument() :
+def beginDocument(comment = r"\currenttime\ \today") :
     return r'''
 \documentclass[8pt]{article}
-\usepackage{geometry}
+\usepackage[landscape]{geometry}
 \usepackage{xspace}
+\usepackage{datetime}
 \newcommand{\alt}{\ensuremath{\alpha_{\rm{T}}}\xspace}
 \newcommand{\RaT}{\ensuremath{R_{\alt}}\xspace}
 \def\scalht{\mbox{$H_{\rm{T}}$}\xspace}
@@ -15,7 +16,7 @@ def beginDocument() :
 \newcommand{\znunu}{\ensuremath{{\rm Z} \ra \nu\bar{\nu}}}
 \newcommand{\ttNew}{\ensuremath{\rm{t}\bar{\rm{t}}}\xspace}
 \begin{document}
-'''
+'''+comment
 
 def endDocument() :
     return r'''\end{document}'''
@@ -29,7 +30,7 @@ def beginTable(data, caption = "", label = "") :
     s += "\n\caption{%s}"%caption
     s += "\n\label{tab:%s}"%label
     s += "\n\centering"
-    s += "\n"+r'''\footnotesize'''
+    #s += "\n"+r'''\footnotesize'''
     s += "\n\\begin{tabular}{ %s }"%("c".join(["|"]*(2+len(data.htBinLowerEdges())/2)))
     return s
 
@@ -88,8 +89,11 @@ def RalphaT(data) :
 
 #EWK helpers
 def truncate(t, index = 2) :
-    l = list(t)
-    return tuple(l[:index] + [sum(l[index:])]*(len(l)-index))
+    return t
+
+#def truncate(t, index = 2) :
+#    l = list(t)
+#    return tuple(l[:index] + [sum(l[index:])]*(len(l)-index))
 
 def nr(x, value = 0.0) :
     return x if x!=None else value
@@ -202,7 +206,7 @@ def fitResults(data, fileName = "") :
 def document() :
     data = data2011()
     out = ""
-    for blob in [beginDocument(), RalphaT(data), photon(data), muon(data),
+    for blob in [beginDocument("Dec. 6 input numbers"), RalphaT(data), photon(data), muon(data),
                  ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
                  ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt"),
                  #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v13/numbers_v1.txt"),
