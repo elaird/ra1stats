@@ -91,30 +91,37 @@ def truncate(t, index = 2) :
     l = list(t)
     return tuple(l[:index] + [sum(l[index:])]*(len(l)-index))
 
+def nr(x, value = 0.0) :
+    return x if x!=None else value
+
 def purity(data, indices, *args) :
-    return ["%4.2f"%data.purities()[args[0]][i] for i in indices]
+    p = data.purities()[args[0]]
+    return ["%4.2f"%nr(p[i]) for i in indices]
 
 def mcYieldHadLumi(data, indices, *args) :
-    return ["%4.1f $\pm$ %4.1f$_{stat}$"%(data.mcExpectations()[args[0]][i], data.mcStatError()[args[0]+"Err"][i]) for i in indices]
+    value = data.mcExpectations()[args[0]]
+    error = data.mcStatError()[args[0]+"Err"]
+    return ["%4.1f $\pm$ %4.1f$_{stat}$"%(nr(value[i]), nr(error[i])) for i in indices]
 
 def mcYieldOtherLumi(data, indices, *args) :
     mcOther = data.mcExpectations()[args[0]]
     mcOtherErr = data.mcStatError()[args[0]+"Err"]
     lumiOther = data.lumi()[args[1]]
     lumiHad   = data.lumi()[args[2]]
-    return ["%4.1f $\pm$ %4.1f$_{stat}$"%(mcOther[i]*lumiHad/lumiOther, mcOtherErr[i]*lumiHad/lumiOther) for i in indices]
+    return ["%4.1f $\pm$ %4.1f$_{stat}$"%(nr(mcOther[i])*lumiHad/lumiOther, nr(mcOtherErr[i])*lumiHad/lumiOther) for i in indices]
 
 def mcRatio(data, indices, *args) :
     mcPhot = truncate(data.mcExpectations()[args[0]])
     mcZinv = truncate(data.mcExpectations()[args[1]])
     lumiPhot = data.lumi()[args[2]]
     lumiHad  = data.lumi()[args[3]]
-    return ["%4.2f"%(mcZinv[i]/(mcPhot[i]*lumiHad/lumiPhot)) for i in indices]
+    return ["%4.2f"%(nr(mcZinv[i])/(nr(mcPhot[i], 1.0)*lumiHad/lumiPhot)) for i in indices]
 
 def dataYieldOtherLumi(data, indices, *args) :
     lumiPhot = data.lumi()[args[1]]
     lumiHad = data.lumi()[args[2]]
-    return ["%5.1f"%(data.observations()[args[0]][i]*lumiHad/lumiPhot) for i in indices]
+    obs = data.observations()[args[0]]
+    return ["%5.1f"%(nr(obs[i])*lumiHad/lumiPhot) for i in indices]
 
 def error(obs) :
     d = {}
@@ -128,7 +135,9 @@ def prediction(data, indices, *args) :
         return "%5.1f $\pm$ %5.1f$_{stat}$ %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f$_{syst}$"%(obs*ratio*sysFactor))
     mcPhot = truncate(data.mcExpectations()[args[1]] if args[1] in data.mcExpectations() else data.mcExtra()[args[1]])
     mcZinv = truncate(data.mcExpectations()[args[2]])
-    return [oneString(data.observations()[args[0]][i], mcZinv[i]/mcPhot[i], data.fixedParameters()[args[3]]) for i in indices]
+    obs = data.observations()[args[0]]
+    print [mcPhot[i] for i in indices]
+    return [oneString(nr(obs[i]), nr(mcZinv[i])/nr(mcPhot[i], 1.0), data.fixedParameters()[args[3]]) for i in indices]
 
 #photon to Z
 def photon(data) :
@@ -197,7 +206,7 @@ def document() :
                  ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
                  ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt"),
                  #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v13/numbers_v1.txt"),
-                 fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v15/fitResults.txt"),
+                 #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v15/fitResults.txt"),
                  endDocument()] :
         out += blob
     return out
