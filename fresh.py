@@ -1175,7 +1175,6 @@ class foo(object) :
                     "printPages": False, "toyNumber":i}
 
             for item in ["REwk", "RQcd"] : args[item] = self.likelihoodSpec[item]
-            args["mumuTerms"] = False #temporary
             args["hadControlLabels"] = [] #temporary
                     
             plotter = plotting.validationPlotter(args)
@@ -1195,7 +1194,6 @@ class foo(object) :
         for item in ["REwk", "RQcd"] :
             args[item] = self.likelihoodSpec[item]
 
-        args["mumuTerms"] = False #temporary
         args["hadControlLabels"] = [] #temporary
         
         plotter = plotting.validationPlotter(args)
