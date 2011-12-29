@@ -206,7 +206,7 @@ def fitResults(data, fileName = "") :
 def document() :
     data = data2011()
     out = ""
-    for blob in [beginDocument("Dec. 6 input numbers"), RalphaT(data), photon(data), muon(data),
+    for blob in [beginDocument(), RalphaT(data), photon(data), muon(data),
                  ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v10/numbers.txt")
                  ##fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v11/numbers_602pb.txt"),
                  #fitResults(data, fileName = "/home/hep/elaird1/81_fit/10_sm_only/v13/numbers_v1.txt"),
