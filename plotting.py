@@ -799,10 +799,9 @@ class validationPlotter(object) :
 	    if not histos["value"].GetEntries() : continue
 
             if "dens" in d :
-                for item in ["value", "min", "max"] :
-                    if item not in histos : continue
+                for h in histos.values() :
                     for den,denType in zip(d["dens"], d["denTypes"]) :
-                        histos[item].Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
+                        h.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
             
             hist = histos["value"]
 	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
@@ -817,10 +816,8 @@ class validationPlotter(object) :
                                      goptions = "%ssame"%inDict(d, "goptions", ""),
                                      errorBand = inDict(d, "errorBand", False),
                                      bandFillStyle = inDict(d, "bandStyle", [1001,3004][0]))
-	        for item in ["min", "max"] :
-	            if item not in histos : continue
-                    if item in inDict(d, "suppress", []) : continue
-                    h = histos[item]
+                for key,h in histos.iteritems() :
+                    if key in ["value"]+inDict(d, "suppress", []) : continue
 	            h.Draw("same")
                     histoList.append(h)
         return stacks,legEntries,histoList

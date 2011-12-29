@@ -7,7 +7,7 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     #               }
 
     d["alphaT"] = {"": {"samples": [("had", True),
-                                    ("muon", False),
+                                    ("muon", True),
                                     ("phot", False),
                                     #("mumu", False)
                                     ]}
@@ -20,9 +20,9 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     else :
         d["simpleOneBin"] = {}
     
-    d["REwk"] = ["", "Linear", "FallingExp", "Constant"][3]
+    d["REwk"] = ["", "Linear", "FallingExp", "Constant"][0]
     d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
-    d["nFZinv"] = ["All", "One", "Two"][0]
+    d["nFZinv"] = ["All", "One", "Two"][2]
     d["qcdSearch"] = qcdSearch
 
     return d
