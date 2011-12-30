@@ -56,10 +56,13 @@ class data2011_5(data) :
             "mcGjets":         excl(scaled((  None,    None, 1.86e+3, 6.4e+2, 2.4e+2,     82,     30,   13), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             #"mcZinv":     trig(excl(scaled((  None,    None,  8.3e+2,    302,    111,     39,     14,    5), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
             #                   self._triggerEfficiencies["had"]),
-            "mcZinv":     trig(excl(scaled((1663.76,  702.96, 8.3e+2,    302,    111,     39,     14,    5), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
+            "mcZinv01":                    (1663.76, 702.96,     0.0,    0.0,    0.0,    0.0,    0.0,  0.0),
+            "mcZinv27":   trig(excl(scaled((    0.0,    0.0,  8.3e+2,    302,    111,     39,     14,    5), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
                                self._triggerEfficiencies["had"]),
             "mcZmumu":              scaled(( 125.21,  76.95,   45.27,  16.12,   9.04,   3.02,   0.00, 1.21), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
             }
+        self._mcExpectations["mcZinv"] = [a+b for a,b in zip(self._mcExpectations["mcZinv01"], self._mcExpectations["mcZinv27"])]
+
         print "WARNING: mcZinv  needs to be updated"
         print "WARNING: mcZmumu needs to be updated"
 
