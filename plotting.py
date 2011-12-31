@@ -256,7 +256,7 @@ class validationPlotter(object) :
         #self.hadControlPlots()
         self.muonPlots()
         self.photPlots()
-        #self.mumuPlots()
+        self.mumuPlots()
         self.ewkPlots()
         self.mcFactorPlots()
         self.alphaTRatioPlots()
@@ -282,8 +282,6 @@ class validationPlotter(object) :
             # "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
             ]
 
-        desc2 = "#rho_{ph} = %4.2f #pm %4.2f"%(self.wspace.var("rhoPhotZ").getVal(), self.wspace.var("rhoPhotZ").getError()) if self.wspace.var("rhoPhotZ") else ""
-        if self.mumuTerms : desc2 += "; #rho_{#mu#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMumuZ").getVal(), self.wspace.var("rhoMumuZ").getError())
         vars += [
             {"var":"zInv", "type":"function", "desc":"Z#rightarrow#nu#bar{#nu}",  "color":r.kOrange+7, "style":2, "width":self.width1, "stack":"ewk"},
             #{"var":"ttw",  "type":"function", "desc":"t#bar{t} + W",
@@ -367,10 +365,10 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
             fileName = "mumu_control_fit%s"%("_logy" if logY else "")
-            self.plot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True,
+            self.plot(note = self.label, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True,
                       obs = {"var":"nMumu", "desc": "mumu data %s"%lumi(self.lumi["mumu"])}, logY = logY, otherVars = [
                 {"var":"mcZmumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
-                {"var":"mumuExp", "type":"function", "color":r.kBlue,   "style":1, "width":3, "desc":"expected SM yield", "stack":None},
+                {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"expected SM yield", "stack":None},
                 ])
 
     def ewkPlots(self) :
@@ -774,7 +772,7 @@ class validationPlotter(object) :
                               ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e"),
                               ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
                               ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
-                              #("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
+                              ("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
                               ]) :
             var,label = t
             if self.wspace.var(var) :

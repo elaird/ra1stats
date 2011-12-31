@@ -396,8 +396,7 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         hadTerms(label = sliceTag, **args)
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
-        #mumuTerms(w, inputData)
-        print "include mumuTerms"
+        mumuTerms(w, inputData)
         
     if "had" in samples :
         terms.append(ni(name = "hadTerms", label = sliceTag))
@@ -1176,7 +1175,6 @@ class foo(object) :
                     "printPages": False, "toyNumber":i}
 
             for item in ["REwk", "RQcd"] : args[item] = self.likelihoodSpec[item]
-            args["mumuTerms"] = False #temporary
             args["hadControlLabels"] = [] #temporary
                     
             plotter = plotting.validationPlotter(args)
@@ -1196,7 +1194,6 @@ class foo(object) :
         for item in ["REwk", "RQcd"] :
             args[item] = self.likelihoodSpec[item]
 
-        args["mumuTerms"] = False #temporary
         args["hadControlLabels"] = [] #temporary
         
         plotter = plotting.validationPlotter(args)
