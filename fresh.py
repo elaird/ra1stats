@@ -410,7 +410,7 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         qcdTerms( w, inputData)
 
         terms.append("qcdTerms")
-        obs.append("k_qcd")
+        obs.append("k_qcd_nom")
         nuis.append("k_qcd_unc_inp")
         
         
