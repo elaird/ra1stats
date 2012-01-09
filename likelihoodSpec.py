@@ -8,8 +8,8 @@ def spec(simpleOneBin = False, qcdSearch = False) :
 
     d["alphaT"] = {"": {"samples": [("had", True),
                                     ("muon", True),
-                                    ("phot", False),
-                                    ("mumu", False)
+                                    ("phot", True),
+                                    ("mumu", True)
                                     ]}
                    }
 
