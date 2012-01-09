@@ -2,4 +2,4 @@
 *.pyc
 plots
 log
-output
+output*
