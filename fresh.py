@@ -323,7 +323,7 @@ def qcdTerms( w = None, inputData = None ) :
     wimport(w, r.RooRealVar("k_qcd_unc_inp", "k_qcd_unc_input", inputData.fixedParameters()["k_qcd_unc_inp"]))
     wimport(w, r.RooGaussian("qcdGaus", "qcdGaus", w.var("k_qcd_nom"), w.var("k_qcd"), w.var("k_qcd_unc_inp")))
 
-    w.factory("PROD::qcdlTerms(qcdGaus)")
+    w.factory("PROD::qcdTerms(qcdGaus)")
 
 
 
@@ -408,6 +408,11 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         muonTerms(w, inputData, smOnly)
         mumuTerms(w, inputData)
         qcdTerms( w, inputData)
+
+        terms.append("qcdTerms")
+        obs.append("k_qcd")
+        nuis.append("k_qcd_unc_inp")
+        
         
     if "had" in samples :
         terms.append(ni(name = "hadTerms", label = sliceTag))
