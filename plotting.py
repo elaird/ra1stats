@@ -773,6 +773,8 @@ class validationPlotter(object) :
                               ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
                               ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
                               ("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
+                              #("k_qcd_nom", "k_{QCDnom} = %4.2e #pm %4.2e"),
+                              #("k_qcd_unc_inp", "#sigma k_{QCDnom} = %4.2e #pm %4.2e"),
                               ]) :
             var,label = t
             if self.wspace.var(var) :
