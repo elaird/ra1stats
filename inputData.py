@@ -28,7 +28,7 @@ class data2011_6(data) :
             "mumu":    4650.,
             "mcZmumu": 4650.,
             }
-        print "muon and mumu numbers are old"
+        print "the muon and mumu numbers are old"
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
         self._observations = {
