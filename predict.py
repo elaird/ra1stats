@@ -31,12 +31,13 @@ data = data2011(requireFullImplementation = False)
 htBins = data.htBinLowerEdges()
 constantR = data.constantMcRatioAfterHere()
 
-mode = 2
+mode = 0
 
 if mode==0 :
+    print "photon to muon (2-jet)"
     nMuon     = data.observations()["nMuon2Jet"]
-    mcMuon    = data.mcExpectations()["mcMuon2JetSpring11Re"]
-    mcMuonErr = data.mcStatError()["mcMuon2JetSpring11ReErr"]
+    mcMuon    = data.mcExpectations()["mcMuon2Jet"]
+    mcMuonErr = data.mcStatError()["mcMuon2JetErr"]
     
     nPhot     = data.observations()["nPhot2Jet"]
     mcPhot    = data.mcExpectations()["mcPhot2Jet"]
@@ -48,6 +49,7 @@ if mode==0 :
     phot = fill(constantR, histo(data, name = "mcPhot2Jet", title = "mcPhot2Jet"), mcPhot, mcPhotErr)
 
 if mode==1 :
+    print "photon to muon (n-jet)"
     nMuon     = data.observations()["nMuon"]
     mcMuon    = data.mcExpectations()["mcMuon"]
     mcMuonErr = data.mcStatError()["mcMuonErr"]
@@ -62,6 +64,7 @@ if mode==1 :
     phot = fill(constantR, histo(data, name = "mcPhot", title = "mcPhot"), mcPhot, mcPhotErr)
 
 if mode==2 :
+    print "photon to mumu (n-jet)"
     nMuon     = data.observations()["nMumu"]
     mcMuon    = data.mcExtra()["mcMumu"]
     mcMuonErr = data.mcStatError()["mcZmumuErr"]
