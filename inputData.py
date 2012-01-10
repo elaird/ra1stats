@@ -28,7 +28,7 @@ class data2011_6(data) :
             "mumu":    4650.,
             "mcZmumu": 4650.,
             }
-
+        print "muon and mumu numbers are old"
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
         self._observations = {
@@ -51,9 +51,9 @@ class data2011_6(data) :
         self._mcExpectations = {
             "mcMuon":     trig(     scaled((1672.52, 737.68,  522.85, 180.61,  66.33,  22.22,   7.67, 5.21), self.lumi()["muon"]/self.lumi()["mcMuon"]),  #old
                                     self._triggerEfficiencies["had"]),
-            "mcTtw":      trig(     scaled((2008.69, 733.84,  502.97, 173.22,  57.86,  23.08,   6.77, 5.48), self.lumi()["muon"]/self.lumi()["mcTtw"]),   #old
+            "mcMuon2Jet": trig(     scaled(( 407.87, 230.78,  157.66,  39.43,  13.58,   5.00,   1.25, 1.00), self.lumi()["muon"]/self.lumi()["mcTtw"]),
                                     self._triggerEfficiencies["had"]),
-            "mcTtw2Jet":  trig(     scaled(( 407.87, 230.78,  157.66,  39.43,  13.58,   5.00,   1.25, 1.00), self.lumi()["muon"]/self.lumi()["mcTtw"]),
+            "mcTtw":      trig(     scaled((2008.69, 733.84,  502.97, 173.22,  57.86,  23.08,   6.77, 5.48), self.lumi()["muon"]/self.lumi()["mcTtw"]),   #old
                                     self._triggerEfficiencies["had"]),
             "mcGjets":         excl(scaled((  None,    None, 2.00e+3, 7.1e+2, 2.7e+2,     92,     34,   14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             "mcPhot2Jet":      excl(scaled((  None,    None,  8.3e+2, 2.3e+2,     80,     23,      7,    3), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
@@ -66,8 +66,8 @@ class data2011_6(data) :
 
         self._mcStatError = {
             "mcMuonErr":                   (  60.4,    40.2,     7.0,    4.2,    2.5,    1.4,    0.8,   0.6), #old
+            "mcMuon2JetErr":               ( 34.35,   26.15,    2.97,   1.48,   0.85,   0.49,   0.25,  0.22),
             "mcTtwErr":                    (  68.8,    40.7,     6.9,    4.1,    2.4,    1.6,    0.7,   0.7), #old
-            "mcTtw2JetErr":                ( 34.35,   26.15,    2.97,   1.48,   0.85,   0.49,   0.25,  0.22),
             "mcGjetsErr":           scaled((  None,    None, 0.04e+3, 0.2e+2, 0.1e+2,      8,      5,     3), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcPhot2JetErr":        scaled((  None,    None,  0.2e+2, 0.1e+2,      7,      4,      2,     1), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcZinvErr":            scaled(( 10.39,    6.71,  0.2e+2, 0.1e+2,      6,      4,      2,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),  #old (first 2)
