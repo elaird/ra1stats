@@ -24,5 +24,6 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
     d["nFZinv"] = ["All", "One", "Two"][2]
     d["qcdSearch"] = qcdSearch
+    d["constrainQcdSlope"] = True
 
     return d

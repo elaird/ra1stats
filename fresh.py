@@ -318,6 +318,14 @@ def muonTerms(w, inputData, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
+def qcdTerms( w = None, inputData = None ) :
+    wimport(w, r.RooRealVar("k_qcd_nom", "k_qcd_nom", inputData.fixedParameters()["k_qcd_nom"]))
+    wimport(w, r.RooRealVar("k_qcd_unc_inp", "k_qcd_unc_inp", inputData.fixedParameters()["k_qcd_unc_inp"]))
+    wimport(w, r.RooGaussian("qcdGaus", "qcdGaus", w.var("k_qcd_nom"), w.var("k_qcd"), w.var("k_qcd_unc_inp")))
+    w.var("A_qcd").setVal(1.0e-2)
+    w.var("k_qcd").setVal(inputData.fixedParameters()["k_qcd_nom"])
+    w.factory("PROD::qcdTerms(qcdGaus)")
+
 def signalTerms(w = None, inputData = None, signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
@@ -354,7 +362,7 @@ def multi(w, variables, inputData) :
     return out
 
 def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, signal = {}, simpleOneBin = {},
+                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signal = {}, simpleOneBin = {},
                     samples = [], sliceTag = "") :
 
     terms = []
@@ -397,6 +405,11 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
         mumuTerms(w, inputData)
+        if constrainQcdSlope :
+            qcdTerms(w, inputData)
+            terms.append("qcdTerms")
+            obs.append("k_qcd_nom")
+            nuis.append("k_qcd_unc_inp")
         
     if "had" in samples :
         terms.append(ni(name = "hadTerms", label = sliceTag))
@@ -1086,6 +1099,9 @@ class foo(object) :
         if l["qcdSearch"] :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
+        if l["constrainQcdSlope"] :
+            assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
+
         bins = self.inputData.htBinLowerEdges()
         for d in [self.signal, self.signalExampleToStack] :
             for key,value in d.iteritems() :
