@@ -1123,7 +1123,7 @@ class foo(object) :
         #wspace.Print("v")
 
     def profile(self) :
-        profilePlots(self.data, self.modelConfig, self.note(), self.smOnly(), self.qcdSearch)
+        profilePlots(self.data, self.modelConfig, self.note(), self.smOnly(), self.likelihoodSpec["qcdSearch"])
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
                  nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
