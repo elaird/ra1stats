@@ -28,7 +28,8 @@ class data2011_6(data) :
             "mumu":    4650.,
             "mcZmumu": 4650.,
             }
-        print "the muon and mumu numbers are old"
+        print "the 2jet numbers are old"
+        print "the mumu purities are old"
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
         self._observations = {
@@ -38,7 +39,7 @@ class data2011_6(data) :
             "nPhot2Jet": excl((      None,      None,       601,       174,        47,        13,         3,         1), isExcl),
             "nMuon":          (      1421,       644,       517,       169,        52,        18,         8,         1),
             "nMuon2Jet":      (       436,       192,       164,        37,         6,         1,         0,         0),#old
-            "nMuMu":          (       114,        65,        42,        15,         7,         1,         0,         2)
+            "nMumu":          (       114,        65,        42,        15,         7,         1,         0,         2)
             }
 
         self._triggerEfficiencies = {
@@ -73,14 +74,14 @@ class data2011_6(data) :
             "mcGjetsErr":           scaled((  None,    None, 0.04e+3, 0.2e+2, 0.1e+2,      8,      5,     3), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcPhot2JetErr":        scaled((  None,    None,  0.2e+2, 0.1e+2,      7,      4,      2,     1), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcZinvErrTM":          scaled(( 10.39,    6.71,  0.2e+2, 0.1e+2,      6,      4,      2,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),
-            "mcZinvErrDB"                  ( 10.17,    6.69,    5.79,   3.46,    2.1,    1.2,    0.8,   0.7),
-            "mcZmumuErr"                   (  6.76,    5.46,    4.22,   2.57,    1.9,   1.09,   0.16,  0.78),
+            "mcZinvErrDB":                 ( 10.17,    6.69,    5.79,   3.46,    2.1,    1.2,    0.8,   0.7),
+            "mcZmumuErr":                  (  6.76,    5.46,    4.22,   2.57,    1.9,   1.09,   0.16,  0.78),
             }
-        self._mcStatError["mcZinv"] = self._mcStatError["mcZinvDB"]
+        self._mcStatError["mcZinvErr"] = self._mcStatError["mcZinvErrDB"]
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
         self._purities = {
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
-            "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),
+            "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),#old
             }
 
         self._mcExtra = {}
@@ -94,6 +95,8 @@ class data2011_6(data) :
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             "sigmaMumuZ": 0.20,
+            "k_qcd_nom"     : 3.3e-2,
+            "k_qcd_unc_inp" : 0.66e-2,
             }
 
 class data2011_5(data) :
@@ -424,7 +427,7 @@ class data2011_3_no_cleaning_cuts(data2011_3) :
         self._observations["nHad"] = self._observations["nHad55"]
         self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
         
-class data2011(data2011_5) :
+class data2011(data2011_6) :
     pass
 
 class data2010(data) :
