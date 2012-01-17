@@ -1201,11 +1201,11 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False) :
+    def bestFit(self, printPages = False, drawMc = True) :
         args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
                 "lumi": self.inputData.lumi(), "htBinLowerEdges": self.inputData.htBinLowerEdges(),
                 "htMaxForPlot": self.inputData.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
-                "signalExampleToStack": self.signalExampleToStack, "printPages": printPages}
+                "signalExampleToStack": self.signalExampleToStack, "printPages": printPages, "drawMc": drawMc}
 
         for item in ["REwk", "RQcd"] :
             args[item] = self.likelihoodSpec[item]
