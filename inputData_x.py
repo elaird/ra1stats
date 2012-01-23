@@ -38,7 +38,7 @@ class inputData( object ) :
         i = 0
         while h.ClassName()[:3] != "TH2" :
             # lol wut
-            h = hist_dict[ hist_dict.keys().sorted()[0] ].keys()[i]
+            h = hist_dict[ hist_dict.keys().sorted()[0] ].keys().sorted()[i]
             i+=1
 
 
