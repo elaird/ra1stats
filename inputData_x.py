@@ -45,8 +45,12 @@ class inputData( object ) :
         nxbins =  h.GetXaxis().GetNbins()
         nybins =  h.GetYaxis().GetNbins()
 
-        self._htBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in range(1,nxbins+1) ]
-        self._atBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in range(1,nybins+1) ]
+        # save repeated calls
+        xbins   = range(1,nxbins+1)
+        ybins   = range(1,nxbins+1)
+
+        self._htBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in xbins ]
+        self._atBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in ybins ]
 
         self._htMaxForPlot = h.GetXaxis().GetBinUpEdge( nxbins )
         self._atMaxForPlot = h.GetXaxis().GetBinUpEdge( nybins )
@@ -58,17 +62,26 @@ class inputData( object ) :
             self._lumi[dir] = histo_dict[dir]["lumiData"]
             self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"]
 
-        self._htMeans = [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in range(1,nxbins+1) ]
+        self._htMeans = [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ]
 
         #self._sigEffCorr =    (
         # this was apparently a hack
 
         # this needs fixing: it's unsafe on dictionary being invalid at second layer i.e. top level "phot" dir doesn't contain corresponding TH2D names "phot"
         for objName in hist_dict.keys() :
-            self._observations[ "n"+objName ]       = tuple( [ histo_dict[objName]["obs"].GetBinContent(bin)    for bin in range(1,nxbins+1) ] )
-            self._mcExpectations[ "mc"+objName ]    = tuple( [ histo_dict[objName][objName].GetBinContent(bin)  for bin in range(1,nxbins+1) ] )
-            self._mcStatError[ "mc"+objName+"Err" ] = tuple( [ histo_dict[objName][objName].GetBinError(bin)    for bin in range(1,nxbins+1) ] )
-            self._purities[ objName ]               = tuple( [ histo_dict[objName]["purity"].GetBinContent(bin) for bin in range(1,nxbins+1) ] )
+            objKeys = hist_dict[objName].keys()
+            if "obs" in objKeys :
+                self._observations[ "n"+objName ]       = 
+                    tuple( [ [ histo_dict[objName]["obs"].GetBinContent(xbin,ybin)   for xbin in xbins ] for ybin in ybins ] )
+            if objName in objKeys :
+                self._mcExpectations[ "mc"+objName ]    =
+                    tuple( [ [ histo_dict[objName][objName].GetBinContent(xbin,ybin) for xbin in xbins ] for ybin in ybins ] )
+                self._mcStatError[ "mc"+objName+"Err" ] = 
+                    tuple( [ [ histo_dict[objName][objName].GetBinError(xbin,ybin)   for xbin in xbins ] for ybin in ybins ] )
+            if "purity" in objKeys :
+                self._purities[ objName ]               = 
+                    tuple( [ [ histo_dict[objName]["purity"].GetBinError(xbin,ybin)  for xbin in xbins ] for ybin in ybins ] )
+
                                
         self._triggerEfficienci
             "hadBulk":       ( 
