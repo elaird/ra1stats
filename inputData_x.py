@@ -38,7 +38,7 @@ class inputData( object ) :
         i = 0
         while h.ClassName()[:3] != "TH2" :
             # lol wut
-            h = hist_dict[ hist_dict.keys().sorted()[0] ].keys().sorted()[i]
+            h = histo_dict[ histo_dict.keys().sorted()[0] ].keys().sorted()[i]
             i+=1
 
 
@@ -46,8 +46,8 @@ class inputData( object ) :
         nybins =  h.GetYaxis().GetNbins()
 
         # save repeated calls
-        xbins   = range(1,nxbins+1)
-        ybins   = range(1,nxbins+1)
+        xbins   = xrange(1,nxbins+1) # probably unnecessary use of xrange but..
+        ybins   = xrange(1,nybins+1)
 
         self._htBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in xbins ]
         self._atBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in ybins ]
@@ -58,38 +58,35 @@ class inputData( object ) :
         #self._mergeBins = None
         #self._constantMcRatioAfterHere =  [ ] 
 
-        for dir in histo_dict.keys() :
-            self._lumi[dir] = histo_dict[dir]["lumiData"]
-            self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"]
-
         self._htMeans = [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ]
 
         #self._sigEffCorr =    (
         # this was apparently a hack
 
-        # this needs fixing: it's unsafe on dictionary being invalid at second layer i.e. top level "phot" dir doesn't contain corresponding TH2D names "phot"
-        for objName in hist_dict.keys() :
-            objKeys = hist_dict[objName].keys()
+        dirs = hist_dict.keys(
+        for objName in histo_dict.keys() :
+            objKeys = histo_dict[objName].keys()
             if "obs" in objKeys :
                 self._observations[ "n"+objName ]       = 
-                    tuple( [ [ histo_dict[objName]["obs"].GetBinContent(xbin,ybin)   for xbin in xbins ] for ybin in ybins ] )
+                    tuple( [ [ histo_dict[objName]["obs"].GetBinContent(xbin,ybin)        for xbin in xbins ] for ybin in ybins ] )
             if objName in objKeys :
                 self._mcExpectations[ "mc"+objName ]    =
-                    tuple( [ [ histo_dict[objName][objName].GetBinContent(xbin,ybin) for xbin in xbins ] for ybin in ybins ] )
+                    tuple( [ [ histo_dict[objName][objName].GetBinContent(xbin,ybin)      for xbin in xbins ] for ybin in ybins ] )
                 self._mcStatError[ "mc"+objName+"Err" ] = 
-                    tuple( [ [ histo_dict[objName][objName].GetBinError(xbin,ybin)   for xbin in xbins ] for ybin in ybins ] )
+                    tuple( [ [ histo_dict[objName][objName].GetBinError(xbin,ybin)        for xbin in xbins ] for ybin in ybins ] )
             if "purity" in objKeys :
                 self._purities[ objName ]               = 
-                    tuple( [ [ histo_dict[objName]["purity"].GetBinError(xbin,ybin)  for xbin in xbins ] for ybin in ybins ] )
-
-                               
-        self._triggerEfficienci
-            "hadBulk":       ( 
-            "had":           ( 
-            "phot":          ( 
-            "mumu":          ( 
-            }
-                               
+                    tuple( [ [ histo_dict[objName]["purity"].GetBinError(xbin,ybin)       for xbin in xbins ] for ybin in ybins ] )
+            if "atTriggerEff" in objKeys :
+                self._HtTriggerEff[dir] = 
+                    tuple( [ [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin,ybin) for xbin in xbins ] for ybin in ybins ] )
+            if "HtTriggerEff" in objKeys :
+                self._HtTriggerEff[dir] = 
+                    tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin,ybin)   for xbin in xbins ] )
+            if "lumiData" in objKeys :
+                self._lumi[dir] = histo_dict[dir]["lumiData"]
+            if "lumiMc" in objKeys :
+                self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"]
 
 
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
