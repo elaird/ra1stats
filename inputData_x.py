@@ -14,6 +14,8 @@ def getMultiHists( d ) :
         for dir in d[file].keys() :
             for histo_name in d[file][dir] :
                 # create new entry in dictionary at directory level
+                # ideally we should add hP.getMultiHistos( file, list )
+                # then we can avoid the overhead in the function calls
                 h_temp  = hP.oneHisto(file, dir, histo_name)
                 histo_dict[dir][histo_name] =  h_temp
                 if h_temp.ClassName()[:3] == "TH2" :
