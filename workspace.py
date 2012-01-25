@@ -178,7 +178,7 @@ def simpleOneBinTerm(w, inputData, smOnly, varDict) :
     
     w.factory("PROD::simpleOneBinTerm(%s)"%",".join(terms))
 
-def mumuTerms(w, inputData) :
+def mumuTerms(w = None, inputData = None, label = "", smOnly = None) :
     terms = []
     wimport(w, r.RooRealVar("rhoMumuZ", "rhoMumuZ", 1.0, 1.0e-3, 3.0))
     wimport(w, r.RooRealVar("oneMumu", "oneMumu", 1.0))
@@ -206,7 +206,7 @@ def mumuTerms(w, inputData) :
     
     w.factory("PROD::mumuTerms(%s)"%",".join(terms))
 
-def photTerms(w, inputData) :
+def photTerms(w = None, inputData = None, label = "", smOnly = None) :
     terms = []
     wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 3.0))
     wimport(w, r.RooRealVar("onePhot", "onePhot", 1.0))
@@ -234,7 +234,7 @@ def photTerms(w, inputData) :
     
     w.factory("PROD::photTerms(%s)"%",".join(terms))
 
-def muonTerms(w, inputData, smOnly) :
+def muonTerms(w = None, inputData = None, label = "", smOnly = None) :
     terms = []
     wimport(w, r.RooRealVar("rhoMuonW", "rhoMuonW", 1.0, 0.0, 2.0))
     wimport(w, r.RooRealVar("oneMuon", "oneMuon", 1.0))
@@ -267,7 +267,7 @@ def muonTerms(w, inputData, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def qcdTerms( w = None, inputData = None, label = "") :
+def qcdTerms(w = None, inputData = None, label = "", smOnly = None) :
     k_qcd_nom = ni(name = "k_qcd_nom", label = label)
     k_qcd_unc_inp = ni(name = "k_qcd_unc_inp", label = label)
     k_qcd = ni(name = "k_qcd", label = label)
@@ -282,7 +282,8 @@ def qcdTerms( w = None, inputData = None, label = "") :
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
-def signalTerms(w = None, inputData = None, signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
+def signalTerms(w = None, inputData = None, label = "", smOnly = None, #smOnly not used
+                signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
     wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", signalDict["xs"]))
@@ -334,7 +335,7 @@ def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
 def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signal = {}, simpleOneBin = {}) :
+                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signalDict = {}, simpleOneBin = {}) :
 
     terms = []
     obs = []
@@ -347,8 +348,22 @@ def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffU
     inputData = selection.data
     label = selection.name
 
+    args = {}
+    for item in ["w", "inputData", "label", "smOnly"] :
+        args[item] = eval(item)
+
+    hadArgs = {}
+    for item in ["REwk", "RQcd", "nFZinv", "qcdSearch"] :
+        hadArgs[item] = eval(item)
+    hadArgs.update(args)
+
+    sigArgs = {}
+    for item in ["signalDict", "extraSigEffUncSources", "rhoSignalMin"] :
+        sigArgs[item] = eval(item)
+    sigArgs.update(args)
+
     if not smOnly :
-        signalTerms(w = w, inputData = inputData, signalDict = signal, extraSigEffUncSources = extraSigEffUncSources, rhoSignalMin = rhoSignalMin)
+        signalTerms(**sigArgs)
         terms.append("signalTerms")
         obs.append("oneRhoSignal")
         nuis.append("rhoSignal")
@@ -371,16 +386,13 @@ def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffU
                 multiBinNuis += [ni("fZinv", label)]
                 break
 
-        args = {}
-        for item in ["w", "inputData", "REwk", "RQcd", "nFZinv", "smOnly", "qcdSearch"] : args[item] = eval(item)
-
-        hadTerms(label = label, **args)
-        photTerms(w, inputData)
-        muonTerms(w, inputData, smOnly)
-        if "mumu" in inputData.lumi() : mumuTerms(w, inputData)
-
+        hadTerms(**hadArgs)
+        photTerms(**args)
+        muonTerms(**args)
+        if "mumu" in inputData.lumi() :
+            mumuTerms(**args)
         if constrainQcdSlope :
-            qcdTerms(w, inputData, label = label)
+            qcdTerms(**args)
             terms.append(ni("qcdTerms", label))
             obs.append(ni("k_qcd_nom", label))
             nuis.append(ni("k_qcd_unc_inp", label))
@@ -452,7 +464,7 @@ class foo(object) :
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec["selections"] :
             args["selection"] = sel
-            args["signal"] = self.signal[sel.name] if sel.name in self.signal else {}
+            args["signalDict"] = self.signal[sel.name] if sel.name in self.signal else {}
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
