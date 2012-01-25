@@ -161,7 +161,7 @@ def hadTerms(w = None, inputData = None, REwk = None, RQcd = None, nFZinv = None
 
     w.factory("PROD::%s(%s)"%(ni(name = "hadTerms", label = label), ",".join(terms)))
 
-def simpleOneBinTerm(w, inputData, smOnly, varDict) :
+def simpleOneBinTerm(w = None, inputData = None, label = "", smOnly = None, varDict = {}) :
     assert not smOnly
     obs = inputData.observations()
     terms = []
@@ -369,7 +369,7 @@ def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffU
         nuis.append("rhoSignal")
 
     if simpleOneBin :
-        simpleOneBinTerm(w, inputData, smOnly, simpleOneBin)
+        simpleOneBinTerm(varDict = simpleOneBin, **args)
         terms.append("simpleOneBinTerm")
         multiBinObs.append("nHad")
     else :
