@@ -417,25 +417,25 @@ def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffU
             nuis.append(ni("k_qcd_unc_inp", label))
         
     if "had" in samples :
-        terms.append(ni(name = "hadTerms", label = label))
-        multiBinObs.append(ni(name = "nHad", label = label))
+        terms.append(ni("hadTerms", label))
+        multiBinObs.append(ni("nHad", label))
 
     if "phot" in samples :
         terms.append(ni("photTerms", label))
         obs.append("onePhot")
-        multiBinObs.append("nPhot")
+        multiBinObs.append(ni("nPhot", label))
         nuis.append("rhoPhotZ")
         
     if "muon" in samples :
         terms.append(ni("muonTerms", label))
         obs.append("oneMuon")
-        multiBinObs.append("nMuon")
+        multiBinObs.append(ni("nMuon", label))
         nuis.append("rhoMuonW")
         
     if "mumu" in samples :
-        terms.append("mumuTerms")
+        terms.append(ni("mumuTerms", label))
         obs.append("oneMumu")
-        multiBinObs.append("nMumu")
+        multiBinObs.append(ni("nMumu", label))
         nuis.append("rhoMumuZ")
 
     obs += multi(w, multiBinObs, inputData)
