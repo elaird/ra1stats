@@ -3,7 +3,6 @@ to change back:
 - PL -> CLs
 
 to fix:
-- grep for temporary (e.g., mumuTerms in fresh.bestfit())
 - trigger efficiency per slice
 - variable map k_qcd --> k_qcd
 - fix "not i" dependence in importEwk, importFZinv, ...
@@ -20,3 +19,5 @@ to consider:
 - bin masking
 
 - consider seed
+- signalTerms decision
+- signal data format
