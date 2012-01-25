@@ -363,6 +363,7 @@ class validationPlotter(object) :
                 ])
 
     def mumuPlots(self) :
+        if "mumu" not in self.lumi : return
         for logY in [False, True] :
             thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
             fileName = "mumu_control_fit%s"%("_logy" if logY else "")
