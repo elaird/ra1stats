@@ -1,6 +1,6 @@
 import configuration as conf
 import histogramProcessing as hp
-import fresh,utils
+import common,utils
 import cPickle,math,os
 import ROOT as r
 
@@ -162,7 +162,7 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         
 ##merge functions
 def mergedFile() :
-    note = fresh.note(likelihoodSpec = conf.likelihood())
+    note = common.note(likelihoodSpec = conf.likelihood())
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
 
 def mergePickledFiles(printExample = False) :

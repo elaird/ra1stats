@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import configuration as conf
-import pickling,fresh
+import pickling,workspace
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
@@ -37,8 +37,8 @@ def results(switches = None, data = None, likelihoodSpec = None, signal = None) 
     out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
-        f = fresh.foo(inputData = data, signal = signal, likelihoodSpec = likelihoodSpec,
-                      extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
+        f = workspace.foo(inputData = data, signal = signal, likelihoodSpec = likelihoodSpec,
+                          extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
 
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"],
