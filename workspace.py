@@ -284,15 +284,15 @@ def qcdTerms(w = None, inputData = None, label = "", smOnly = None) :
 
 def signalTerms(w = None, inputData = None, label = "", smOnly = None, #smOnly not used
                 signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
-    wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
-    wimport(w, r.RooRealVar("muonLumi", "muonLumi", inputData.lumi()["muon"]))
     wimport(w, r.RooRealVar("xs", "xs", signalDict["xs"]))
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
-
+    
+    for item in ["had", "muon"] :
+        lumi = ni(item+"Lumi", label = label)
+        wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
+    
     wimport(w, r.RooRealVar("oneRhoSignal", "oneRhoSignal", 1.0))
-    #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0))
     wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, rhoSignalMin, 2.0))
-    #wimport(w, r.RooRealVar("rhoSignal", "rhoSignal", 1.0, 0.8, 1.2))
     deltaSignal = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalDict[item] for item in extraSigEffUncSources])
     wimport(w, r.RooRealVar("deltaSignal", "deltaSignal", deltaSignal))
     wimport(w, r.RooGaussian("signalGaus", "signalGaus", w.var("oneRhoSignal"), w.var("rhoSignal"), w.var("deltaSignal")))
@@ -301,7 +301,7 @@ def signalTerms(w = None, inputData = None, label = "", smOnly = None, #smOnly n
         if "eff"!=key[:3] : continue
         if type(value) not in [list,tuple] : continue
         for iBin,eff,corr in zip(range(len(value)), value, inputData.sigEffCorr()) :
-            name = "signal%s%d"%(key.replace("eff","Eff"), iBin)
+            name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
             wimport(w, r.RooRealVar(name, name, eff*corr))
 
     w.factory("PROD::signalTerms(%s)"%",".join(["signalGaus"]))
