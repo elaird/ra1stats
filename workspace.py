@@ -198,15 +198,22 @@ def mumuTerms(w = None, inputData = None, label = "", smOnly = None) :
                                                                      ) :
         if nMumuValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcZmumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
-        wimport(w, r.RooRealVar("nMumu%d"%i, "nMumu%d"%i, nMumuValue))
-        wimport(w, r.RooRealVar("rMumu%d"%i, "rMumu%d"%i, (mcZmumuValue/mcZinvValue if not rFinal else rFinal)/purity))
-        wimport(w, r.RooFormulaVar("mumuExp%d"%i, "(@0)*(@1)*(@2)",
-                                   r.RooArgList(w.var("rhoMumuZ"), w.var("rMumu%d"%i), w.function(ni(name = "zInv", i = i)))
-                                   ))
-        wimport(w, r.RooPoisson("mumuPois%d"%i, "mumuPois%d"%i, w.var("nMumu%d"%i), w.function("mumuExp%d"%i)))
-        terms.append("mumuPois%d"%i)
+        nMumu = ni("nMumu", label, i)
+        rMumu = ni("rMumu", label, i)
+        wimport(w, r.RooRealVar(nMumu, nMumu, nMumuValue))
+        wimport(w, r.RooRealVar(rMumu, rMumu, (mcZmumuValue/mcZinvValue if not rFinal else rFinal)/purity))
+
+        mumuExp = ni("mumuExp", label, i)
+        wimport(w, r.RooFormulaVar(mumuExp, "(@0)*(@1)*(@2)",
+                                   r.RooArgList(w.var("rhoMumuZ"), w.var(rMumu), w.function(ni("zInv", label, i)))
+                                   )
+                )
+
+        mumuPois = ni("mumuPois", label, i)
+        wimport(w, r.RooPoisson(mumuPois, mumuPois, w.var(nMumu), w.function(mumuExp)))
+        terms.append(mumuPois)
     
-    w.factory("PROD::mumuTerms(%s)"%",".join(terms))
+    w.factory("PROD::%s(%s)"%(ni("mumuTerms", label), ",".join(terms)))
 
 def photTerms(w = None, inputData = None, label = "", smOnly = None) :
     terms = []
