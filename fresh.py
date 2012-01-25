@@ -412,7 +412,8 @@ def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffU
         hadTerms(label = label, **args)
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
-        mumuTerms(w, inputData)
+        if "mumu" in inputData.lumi() : mumuTerms(w, inputData)
+
         if constrainQcdSlope :
             qcdTerms(w, inputData, label = label)
             terms.append(ni("qcdTerms", label))
@@ -1120,7 +1121,7 @@ class foo(object) :
             for dct in [self.signal, self.signalExampleToStack] :
                 if sel.name not in dct : continue
                 for key,value in dct[sel.name].iteritems() :
-                    if type(key) is list : assert len(value)==len(bins)
+                    if type(value) is list : assert len(value)==len(bins)
             
     def smOnly(self) :
         return not self.signal
