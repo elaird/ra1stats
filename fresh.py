@@ -154,7 +154,7 @@ def hadTerms(w = None, inputData = None, REwk = None, RQcd = None, nFZinv = None
 
     #more
     iLast = len(htMeans)-1
-    for i,nHadValue in enumerate(obs[ni(name = "nHad", label = label)]) :
+    for i,nHadValue in enumerate(obs["nHad"]) :
         qcdName = ni(name = "qcd", label = label)
         if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, sample = qcdName, i = i))
         else :                   wimport(w, parametrizedExp (w = w, sample = qcdName, i = i))
@@ -318,13 +318,20 @@ def muonTerms(w, inputData, smOnly) :
     
     w.factory("PROD::muonTerms(%s)"%",".join(terms))
 
-def qcdTerms( w = None, inputData = None ) :
-    wimport(w, r.RooRealVar("k_qcd_nom", "k_qcd_nom", inputData.fixedParameters()["k_qcd_nom"]))
-    wimport(w, r.RooRealVar("k_qcd_unc_inp", "k_qcd_unc_inp", inputData.fixedParameters()["k_qcd_unc_inp"]))
-    wimport(w, r.RooGaussian("qcdGaus", "qcdGaus", w.var("k_qcd_nom"), w.var("k_qcd"), w.var("k_qcd_unc_inp")))
-    w.var("A_qcd").setVal(1.0e-2)
-    w.var("k_qcd").setVal(inputData.fixedParameters()["k_qcd_nom"])
-    w.factory("PROD::qcdTerms(qcdGaus)")
+def qcdTerms( w = None, inputData = None, label = "") :
+    k_qcd_nom = ni(name = "k_qcd_nom", label = label)
+    k_qcd_unc_inp = ni(name = "k_qcd_unc_inp", label = label)
+    k_qcd = ni(name = "k_qcd", label = label)
+    A_qcd = ni(name = "A_qcd", label = label)
+    qcdGaus = ni(name = "qcdGaus", label = label)
+    qcdTerms = ni(name = "qcdTerms", label = label)
+
+    wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
+    wimport(w, r.RooRealVar(k_qcd_unc_inp, k_qcd_unc_inp, inputData.fixedParameters()["k_qcd_unc_inp"]))
+    wimport(w, r.RooGaussian(qcdGaus, qcdGaus, w.var(k_qcd_nom), w.var(k_qcd), w.var(k_qcd_unc_inp)))
+    w.var(A_qcd).setVal(1.0e-2)
+    w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
+    w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
 def signalTerms(w = None, inputData = None, signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
     wimport(w, r.RooRealVar("hadLumi", "hadLumi", inputData.lumi()["had"]))
@@ -361,9 +368,8 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signal = {}, simpleOneBin = {},
-                    samples = [], sliceTag = "") :
+def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
+                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signal = {}, simpleOneBin = {}) :
 
     terms = []
     obs = []
@@ -372,8 +378,10 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
     multiBinNuis = []
 
     w = wspace
-    samples = [s[0] for s in samples]
-    
+    samples = selection.samplesAndSignalEff.keys()
+    inputData = selection.data
+    label = selection.name
+
     if not smOnly :
         signalTerms(w = w, inputData = inputData, signalDict = signal, extraSigEffUncSources = extraSigEffUncSources, rhoSignalMin = rhoSignalMin)
         terms.append("signalTerms")
@@ -386,39 +394,34 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         multiBinObs.append("nHad")
     else :
         if "FallingExp" in RQcd :
-            nuis += ["k_qcd"]
-            if not qcdSearch : nuis += ["A_qcd"]
+            nuis += [ni("k_qcd", label)]
+            if not qcdSearch : nuis += [ni("A_qcd", label)]
         if REwk :
-            nuis += ["A_ewk"]
+            nuis += [ni("A_ewk", label)]
             if REwk!="Constant" :
-                nuis += ["k_ewk"]
+                nuis += [ni("k_ewk", label)]
 
         for item in ["muon", "phot", "mumu"] :
             if item in samples :
-                multiBinNuis += ["fZinv"]
+                multiBinNuis += [ni("fZinv", label)]
                 break
 
         args = {}
         for item in ["w", "inputData", "REwk", "RQcd", "nFZinv", "smOnly", "qcdSearch"] : args[item] = eval(item)
-            
-        hadTerms(label = sliceTag, **args)
+
+        hadTerms(label = label, **args)
         photTerms(w, inputData)
         muonTerms(w, inputData, smOnly)
         mumuTerms(w, inputData)
         if constrainQcdSlope :
-            qcdTerms(w, inputData)
-            terms.append("qcdTerms")
-            obs.append("k_qcd_nom")
-            nuis.append("k_qcd_unc_inp")
+            qcdTerms(w, inputData, label = label)
+            terms.append(ni("qcdTerms", label))
+            obs.append(ni("k_qcd_nom", label))
+            nuis.append(ni("k_qcd_unc_inp", label))
         
     if "had" in samples :
-        terms.append(ni(name = "hadTerms", label = sliceTag))
-        multiBinObs.append(ni(name = "nHad", label = sliceTag))
-
-    #for item in hadControlSamples :
-    #    hadControlTerms(w, inputData, REwk, RQcd, smOnly, item)
-    #    terms.append("hadControlTerms_%s"%item)
-    #    multiBinObs.append("nHadControl_%s"%item)
+        terms.append(ni(name = "hadTerms", label = label))
+        multiBinObs.append(ni(name = "nHad", label = label))
 
     if "phot" in samples :
         terms.append("photTerms")
@@ -437,7 +440,16 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
         obs.append("oneMumu")
         multiBinObs.append("nMumu")
         nuis.append("rhoMumuZ")
-        
+
+    obs += multi(w, multiBinObs, inputData)
+    nuis += multi(w, multiBinNuis, inputData)
+
+    out = {}
+    for item in ["terms", "obs", "nuis"] :
+        out[item] = eval(item)
+    return out
+
+def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if not smOnly :
@@ -445,8 +457,6 @@ def setupLikelihood(wspace = None, inputData = None, smOnly = None, extraSigEffU
     elif qcdSearch :
         w.defineSet("poi", "A_qcd,k_qcd")
 
-    obs += multi(w, multiBinObs, inputData)
-    nuis += multi(w, multiBinNuis, inputData)
     w.defineSet("obs", ",".join(obs))
     w.defineSet("nuis", ",".join(nuis))
 
@@ -1023,9 +1033,8 @@ def obs(w) :
 def sampleCode(samples) :
     yes = []
     no = []
-    for box,considerSignal in samples :
-        if considerSignal : yes.append(box)
-        else : no.append(box)
+    for box,considerSignal in samples.iteritems() :
+        (yes if considerSignal else no).append(box)
 
     d = {"had":"h", "phot":"p", "muon":"1", "mumu":"2"}
     out = ""
@@ -1048,15 +1057,15 @@ def note(likelihoodSpec = {}) :
     out += "_fZinv%s"%l["nFZinv"]
     if l["qcdSearch"] :  out += "_qcdSearch"
 
-    for key,valueDict in l["alphaT"].iteritems() :
-        out += "_%s%s"%(key, sampleCode(valueDict["samples"]))
+    for selection in l["selections"] :
+        out += "_%s%s"%(selection.name, sampleCode(selection.samplesAndSignalEff))
     return out
 
 class foo(object) :
-    def __init__(self, inputData = None, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0,
+    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0,
                  signal = {}, signalExampleToStack = {}, trace = False) :
                  
-        for item in ["inputData", "likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
+        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -1068,20 +1077,22 @@ class foo(object) :
         args = {}
         args["smOnly"] = self.smOnly()
         args.update(self.likelihoodSpec)
-        del args["alphaT"]#pass only local slice info
+        del args["selections"]#pass only local slice info
 
-        for item in ["wspace", "inputData", "extraSigEffUncSources", "signal", "rhoSignalMin"] :
+        for item in ["wspace", "extraSigEffUncSources", "rhoSignalMin"] :
             args[item] = getattr(self, item)
 
-        assert len(self.likelihoodSpec["alphaT"])==1, "Multiple slices not yet supported."
+        assert len(self.likelihoodSpec["selections"])==1, "Multiple selections not yet supported."
 
-        #loop over alphaT slices
-        keys = sorted(self.likelihoodSpec["alphaT"].keys())
-        for iKey,key in enumerate(keys) :
-            args["sliceTag"] = "_%s_%s"%(key, keys[iKey+1]) if iKey!=len(keys)-1 else "%s"%key
-            args.update(self.likelihoodSpec["alphaT"][key])
-            setupLikelihood(**args)
-        
+        total = collections.defaultdict(list)
+        for sel in self.likelihoodSpec["selections"] :
+            args["selection"] = sel
+            args["signal"] = self.signal[sel.name] if sel.name in self.signal else {}
+            d = setupLikelihood(**args)
+            for key,value in d.iteritems() :
+                total[key] += value
+        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), qcdSearch = self.likelihoodSpec["qcdSearch"], **total)
+
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), self.likelihoodSpec["qcdSearch"])
 
@@ -1103,11 +1114,13 @@ class foo(object) :
             assert "FallingExp" in l["RQcd"]
         if l["constrainQcdSlope"] :
             assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
-
-        bins = self.inputData.htBinLowerEdges()
-        for d in [self.signal, self.signalExampleToStack] :
-            for key,value in d.iteritems() :
-                if type(key) is list : assert len(value)==len(bins)
+        
+        for sel in l["selections"] :
+            bins = sel.data.htBinLowerEdges()
+            for dct in [self.signal, self.signalExampleToStack] :
+                if sel.name not in dct : continue
+                for key,value in dct[sel.name].iteritems() :
+                    if type(key) is list : assert len(value)==len(bins)
             
     def smOnly(self) :
         return not self.signal
@@ -1204,19 +1217,18 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False, drawMc = True) :
-        args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
-                "lumi": self.inputData.lumi(), "htBinLowerEdges": self.inputData.htBinLowerEdges(),
-                "htMaxForPlot": self.inputData.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
-                "signalExampleToStack": self.signalExampleToStack, "printPages": printPages, "drawMc": drawMc}
+        for selection in self.likelihoodSpec["selections"] :
+            example = self.signalExampleToStack[selection.name] if selection.name in self.signalExampleToStack else {}
+            args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
+                    "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(),
+                    "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
+                    "signalExampleToStack": example, "printPages": printPages, "drawMc": drawMc}
+            for item in ["REwk", "RQcd"] :
+                args[item] = self.likelihoodSpec[item]
 
-        for item in ["REwk", "RQcd"] :
-            args[item] = self.likelihoodSpec[item]
-
-        args["hadControlLabels"] = [] #temporary
-        
-        plotter = plotting.validationPlotter(args)
-        plotter.inputData = self.inputData
-        plotter.go()
+            plotter = plotting.validationPlotter(args)
+            plotter.inputData = selection.data #temporary
+            plotter.go()
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
