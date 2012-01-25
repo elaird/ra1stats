@@ -705,9 +705,8 @@ class validationPlotter(object) :
                 if not var : var = self.wspace.var(item2)
 	        func = self.wspace.function(item1)
                 if not func : func = self.wspace.function(item2)
-	        if (not var) and (not func) :
-                    print item1,item2
-                    continue
+	        if (not var) and (not func) : continue
+                    
 	        value = (var if var else func).getVal()
 	        d["value"].SetBinContent(i+1, value)
 	        if var :
