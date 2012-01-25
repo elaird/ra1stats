@@ -4,14 +4,14 @@ class selection(object) :
     def __init__(self, name = "", samplesAndSignalEff = {}, data = None) :
         for item in ["name", "samplesAndSignalEff", "data"] :
             value = eval(item)
-            #assert value
+            assert value
             setattr(self, item, value)
 
 def spec(simpleOneBin = False, qcdSearch = False) :
     d = {}
 
     d["selections"] = []
-    d["selections"].append(selection(name = "",
+    d["selections"].append(selection(name = "55",
                                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                      data = inputData.data2011_6(),
                                      )
