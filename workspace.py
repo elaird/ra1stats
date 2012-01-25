@@ -618,7 +618,7 @@ class foo(object) :
             args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
                     "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(),
                     "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
-                    "signalExampleToStack": example, "printPages": printPages, "drawMc": drawMc}
+                    "signalExampleToStack": example, "label":selection.name, "printPages": printPages, "drawMc": drawMc}
             for item in ["REwk", "RQcd"] :
                 args[item] = self.likelihoodSpec[item]
 
