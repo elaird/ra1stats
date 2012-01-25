@@ -1,6 +1,6 @@
 import collections,math
 import utils,plotting,calc
-from common import obs,pdf,note
+from common import obs,pdf,note,ni
 import ROOT as r
 
 def modelConfiguration(w, smOnly, qcdSearch) :
@@ -89,12 +89,6 @@ def importFZinv(w = None, nFZinv = "", name = "", i = None, iLast = None) :
                                    )
             wimport(w, r.RooFormulaVar(this, "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, i)
-
-def ni(name = "", label = "", i = None) :
-    out = name
-    if label : out += "_%s"%label
-    if i!=None : out +="%d"%i
-    return out
 
 def hadTerms(w = None, inputData = None, REwk = None, RQcd = None, nFZinv = None, smOnly = None, label = "", qcdSearch = None) :
     obs = inputData.observations()

@@ -4,6 +4,12 @@ def obs(w) :
 def pdf(w) :
     return w.pdf("model")
 
+def ni(name = "", label = "", i = None) :
+    out = name
+    if label : out += "_%s"%label
+    if i!=None : out +="_%d"%i
+    return out
+
 def sampleCode(samples) :
     yes = []
     no = []
