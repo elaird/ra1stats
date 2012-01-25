@@ -1,19 +1,30 @@
+import inputData
+
+class selection(object) :
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None) :
+        for item in ["name", "samplesAndSignalEff", "data"] :
+            value = eval(item)
+            #assert value
+            setattr(self, item, value)
+
 def spec(simpleOneBin = False, qcdSearch = False) :
     d = {}
 
-    #d["alphaT"] = {"53": {"samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-    #               "55": {"samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-    #               "70": {"samples": [("had", True), ("muon", False), ("phot", False), ("mumu", False)][:-1]},
-    #               }
+    d["selections"] = []
+    d["selections"].append(selection(name = "",
+                                     samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                                     data = inputData.data2011_6(),
+                                     )
+                           )
 
-    d["alphaT"] = {"": {"samples": [("had", True),
-                                    ("muon", True),
-                                    ("phot", False),
-                                    ("mumu", False)
-                                    ]}
-                   }
+    #d["selections"].append(selection(name = "2010",
+    #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
+    #                                 data = inputData.data2010(),
+    #                                 )
+    #                       )
 
     if simpleOneBin :
+        assert False
         d["simpleOneBin"] = {"b":3.0}
         key = max(d["alphaT"].keys())
         d["alphaT"] = {key: {"samples": [("had", True)]} }
