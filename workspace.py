@@ -260,21 +260,31 @@ def muonTerms(w = None, inputData = None, label = "", smOnly = None) :
                                                             ) :
         if nMuonValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/sum(inputData.mcExpectations()["mcTtw"][i:])
-        wimport(w, r.RooRealVar("nMuon%d"%i, "nMuon%d"%i, nMuonValue))
-        wimport(w, r.RooRealVar("rMuon%d"%i, "rMuon%d"%i, mcMuonValue/mcTtwValue if not rFinal else rFinal))
-        wimport(w, r.RooFormulaVar("muonB%d"%i, "(@0)*(@1)*(@2)",
-                                   r.RooArgList(w.var("rhoMuonW"), w.var("rMuon%d"%i), w.function(ni(name = "ttw", i = i)))
-                                   ))
+        nMuon = ni("nMuon", label, i)
+        rMuon = ni("rMuon", label, i)
+        wimport(w, r.RooRealVar(nMuon, nMuon, nMuonValue))
+        wimport(w, r.RooRealVar(rMuon, rMuon, mcMuonValue/mcTtwValue if not rFinal else rFinal))
+
+        muonB = ni("muonB", label, i)
+        wimport(w, r.RooFormulaVar(muonB, "(@0)*(@1)*(@2)",
+                                   r.RooArgList(w.var("rhoMuonW"), w.var(rMuon), w.function(ni("ttw", label, i)))
+                                   )
+                )
+
+        muonPois = ni("muonPois", label, i)
         if smOnly :
-            wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonB%d"%i)))
+            wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonB)))
         else :
-            wimport(w, r.RooProduct("muonS%d"%i, "muonS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("muonLumi"), w.var("signalEffMuon%d"%i))))
-            wimport(w, r.RooAddition("muonExp%d"%i, "muonExp%d"%i, r.RooArgSet(w.function("muonB%d"%i), w.function("muonS%d"%i))))
-            wimport(w, r.RooPoisson("muonPois%d"%i, "muonPois%d"%i, w.var("nMuon%d"%i), w.function("muonExp%d"%i)))
-        
-        terms.append("muonPois%d"%i)
+            muonS = ni("muonS", label, i)
+            muonExp = ni("muonExp", label, i)
+            lumi = ni("muonLumi", label)
+            eff = ni("signalEffMuon", label, i)
+            wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var(lumi), w.var(eff))))
+            wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
+            wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
+        terms.append(muonPois)
     
-    w.factory("PROD::muonTerms(%s)"%",".join(terms))
+    w.factory("PROD::%s(%s)"%(ni("muonTerms", label), ",".join(terms)))
 
 def qcdTerms(w = None, inputData = None, label = "", smOnly = None) :
     k_qcd_nom = ni(name = "k_qcd_nom", label = label)
@@ -411,13 +421,13 @@ def setupLikelihood(wspace = None, selection = None, smOnly = None, extraSigEffU
         multiBinObs.append(ni(name = "nHad", label = label))
 
     if "phot" in samples :
-        terms.append("photTerms")
+        terms.append(ni("photTerms", label))
         obs.append("onePhot")
         multiBinObs.append("nPhot")
         nuis.append("rhoPhotZ")
         
     if "muon" in samples :
-        terms.append("muonTerms")
+        terms.append(ni("muonTerms", label))
         obs.append("oneMuon")
         multiBinObs.append("nMuon")
         nuis.append("rhoMuonW")
