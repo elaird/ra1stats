@@ -699,10 +699,15 @@ class validationPlotter(object) :
 	toPrint = []
 	for i in range(len(self.htBinLowerEdges)) :
 	    if wspaceMemberFunc :
-                item = ni(varName, self.label, i)
-	        var  = self.wspace.var(item)
-	        func = self.wspace.function(item)
-	        if (not var) and (not func) : continue
+                item1 = ni(varName, "", i)
+                item2 = ni(varName, self.label, i)
+	        var = self.wspace.var(item1)
+                if not var : var = self.wspace.var(item2)
+	        func = self.wspace.function(item1)
+                if not func : func = self.wspace.function(item2)
+	        if (not var) and (not func) :
+                    print item1,item2
+                    continue
 	        value = (var if var else func).getVal()
 	        d["value"].SetBinContent(i+1, value)
 	        if var :
@@ -753,14 +758,10 @@ class validationPlotter(object) :
                               #("k_qcd_unc_inp", "#sigma k_{QCDnom} = %4.2e #pm %4.2e"),
                               ]) :
             var,label = t
-            if self.wspace.var(var) :
-                obj = self.wspace.var(var)
-            elif self.wspace.var(ni(var, self.label)) :
-                obj = self.wspace.var(ni(var, self.label))
-            else :
-                continue
+            obj = self.wspace.var(var)
+            if not obj : obj = self.wspace.var(ni(var, self.label))
+            if not obj : continue
             text.DrawLatex(x, y-i*s, label%(obj.getVal(), obj.getError()))
-                
         return
 
     def stacks(self, specs, extraName = "", lumiString = "", scale = 1.0) :
