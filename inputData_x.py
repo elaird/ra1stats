@@ -65,17 +65,18 @@ class inputData( object ) :
         #self._sigEffCorr =    (
         # this was apparently a hack
 
-        dirs = hist_dict.keys(
         for objName in histo_dict.keys() :
             objKeys = histo_dict[objName].keys()
-            if "obs" in objKeys :
-                self._observations[ "n"+objName ]       = 
-                    tuple( [ [ histo_dict[objName]["obs"].GetBinContent(xbin,ybin)        for xbin in xbins ] for ybin in ybins ] )
+
             if objName in objKeys :
                 self._mcExpectations[ "mc"+objName ]    =
                     tuple( [ [ histo_dict[objName][objName].GetBinContent(xbin,ybin)      for xbin in xbins ] for ybin in ybins ] )
                 self._mcStatError[ "mc"+objName+"Err" ] = 
                     tuple( [ [ histo_dict[objName][objName].GetBinError(xbin,ybin)        for xbin in xbins ] for ybin in ybins ] )
+
+            if "obs" in objKeys :
+                self._observations[ "n"+objName ]       = 
+                    tuple( [ [ histo_dict[objName]["obs"].GetBinContent(xbin,ybin)        for xbin in xbins ] for ybin in ybins ] )
             if "purity" in objKeys :
                 self._purities[ objName ]               = 
                     tuple( [ [ histo_dict[objName]["purity"].GetBinError(xbin,ybin)       for xbin in xbins ] for ybin in ybins ] )
@@ -86,11 +87,18 @@ class inputData( object ) :
                 self._HtTriggerEff[dir] = 
                     tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin,ybin)   for xbin in xbins ] )
             if "lumiData" in objKeys :
-                self._lumi[dir] = histo_dict[dir]["lumiData"]
+                self._lumi[dir] = histo_dict[dir]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
-                self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"]
+                self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"].GetBinContent(1)
 
+        if histo_dict.get("had") :
+            hadKeys = histo_dict["had"].keys()
+            for obj in [ "tt", "W", "Z", "t", "QCD" ] :
+                if obj in hadKeys :
+                    self._mcExpectations[ "mc" + obj ] =
+                        tuple( [ [ histo_dict["had"][obj].GetBinContent(xbin,ybin) for xbin in xbins ] for ybins in ybins ] )
 
+# need to update this to 2D
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         self._mcExtra["mcMumu"] = tuple([(zMumu/purity if (zMumu and purity) else None) for zMumu,purity in zip(self._mcExpectations["mcZmumu"], self._purities["mumu"])])
