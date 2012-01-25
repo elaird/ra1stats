@@ -18,3 +18,5 @@ to consider:
 - nBulk per slice
 - trigger efficiency where needed
 - bin masking
+
+- consider seed
