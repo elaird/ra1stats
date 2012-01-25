@@ -57,8 +57,9 @@ class inputData( object ) :
         self._htMaxForPlot = h.GetXaxis().GetBinUpEdge( nxbins )
         self._atMaxForPlot = h.GetXaxis().GetBinUpEdge( nybins )
 
-        #self._mergeBins = None
-        #self._constantMcRatioAfterHere =  [ ] 
+        # called from data.py mergeEfficiency
+        self._mergeBins = None
+        self._constantMcRatioAfterHere =  [ ] 
 
         self._htMeans = [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ]
 
