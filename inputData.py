@@ -448,13 +448,17 @@ class data2010(data) :
             "mcPhot":  35.0,
             "mcZinv":  35.0,
             }
-        self._htMeans = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
+        self._htMeans             = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
+        self._sigEffCorr          = (   1.0,    1.0,    1.0,    1.0)
+        self._triggerEfficiencies = (   1.0,    1.0,    1.0,    1.0)
         self._observations = {
             "nHadBulk": (844459, 331948, 225649, 110034),
             "nHad":     (    33,     11,      8,      5),
             "nPhot":    (    24,      4,      6,      1),
             "nMuon":    (    13,      5,      5,      2),
             }
+        self._purities = {}
+        self._mcExtra = {}
         self._mcExpectations = {
             "mcMuon": (  12.2,    5.2,    4.1,    1.9  ),
             "mcTtw":  (  10.5,    4.47,   3.415,  1.692),
