@@ -154,7 +154,9 @@ def hadTerms(w = None, inputData = None, REwk = None, RQcd = None, nFZinv = None
         if smOnly :
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadB)))
         else :
-            wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("hadLumi"), w.var("signalEffHad%d"%i))))
+            lumi = ni("hadLumi", label)
+            eff = ni("signalEffHad", label, i)
+            wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
         terms.append(hadPois)
@@ -236,7 +238,7 @@ def photTerms(w = None, inputData = None, label = "", smOnly = None) :
                 )
 
         photPois = ni("photPois", label, i)
-        wimport(w, r.RooPoisson(photPois, photPois, nPhot, w.function(photExp)))
+        wimport(w, r.RooPoisson(photPois, photPois, w.var(nPhot), w.function(photExp)))
         terms.append(photPois)
     
     w.factory("PROD::%s(%s)"%(ni("photTerms", label), ",".join(terms)))
