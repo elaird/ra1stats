@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import fresh
+import workspace
 import likelihoodSpec
 
 def signal() :
@@ -88,14 +88,14 @@ def signal() :
     
     return [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][3]
 
-f = fresh.foo(likelihoodSpec = likelihoodSpec.spec(),
-              #signal = {"":signal()},
-              signalExampleToStack = {"":signal()},
+f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
+                  #signal = {"":signal()},
+                  signalExampleToStack = {"":signal()},
 
-              #trace = True
-              #rhoSignalMin = 0.1,
-              #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
-              )
+                  #trace = True
+                  #rhoSignalMin = 0.1,
+                  #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
+                  )
 
 cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
