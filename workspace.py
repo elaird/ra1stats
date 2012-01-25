@@ -224,15 +224,22 @@ def photTerms(w = None, inputData = None, label = "", smOnly = None) :
                                                                     ) :
         if nPhotValue==None : continue
         if stopHere : rFinal = sum(inputData.mcExpectations()["mcGjets"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
-        wimport(w, r.RooRealVar("nPhot%d"%i, "nPhot%d"%i, nPhotValue))
-        wimport(w, r.RooRealVar("rPhot%d"%i, "rPhot%d"%i, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
-        wimport(w, r.RooFormulaVar("photExp%d"%i, "(@0)*(@1)*(@2)",
-                                   r.RooArgList(w.var("rhoPhotZ"), w.var("rPhot%d"%i), w.function(ni(name = "zInv", i = i)))
-                                   ))
-        wimport(w, r.RooPoisson("photPois%d"%i, "photPois%d"%i, w.var("nPhot%d"%i), w.function("photExp%d"%i)))
-        terms.append("photPois%d"%i)
+        nPhot = ni("nPhot", label, i)
+        rPhot = ni("rPhot", label, i)
+        wimport(w, r.RooRealVar(nPhot, nPhot, nPhotValue))
+        wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
+
+        photExp = ni("photExp", label, i)
+        wimport(w, r.RooFormulaVar(photExp, "(@0)*(@1)*(@2)",
+                                   r.RooArgList(w.var("rhoPhotZ"), w.var(rPhot), w.function(ni("zInv", label, i)))
+                                   )
+                )
+
+        photPois = ni("photPois", label, i)
+        wimport(w, r.RooPoisson(photPois, photPois, nPhot, w.function(photExp)))
+        terms.append(photPois)
     
-    w.factory("PROD::photTerms(%s)"%",".join(terms))
+    w.factory("PROD::%s(%s)"%(ni("photTerms", label), ",".join(terms)))
 
 def muonTerms(w = None, inputData = None, label = "", smOnly = None) :
     terms = []
