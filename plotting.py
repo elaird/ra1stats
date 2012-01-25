@@ -254,7 +254,6 @@ class validationPlotter(object) :
 
         self.hadPlots()
         #self.hadDataMcPlots()
-        #self.hadControlPlots()
         self.muonPlots()
         self.photPlots()
         self.mumuPlots()
@@ -314,23 +313,6 @@ class validationPlotter(object) :
                 {"var":"hadB", "type":"function", "desc":"expected total background",
                  "color":r.kBlue, "style":1, "width":3, "stack":"total"},
                 ])
-
-    def hadControlPlots(self) :
-        for labelRaw in self.hadControlLabels :
-            label = "_"+labelRaw+"_"
-            label1 = label[:-1]
-            for logY in [False, True] :
-                thisNote = "Hadronic Control Sample %s %s"%(labelRaw, " (logY)" if logY else "")
-                fileName = "hadronic_control_fit_%s%s"%(labelRaw, "_logy" if logY else "")
-                self.plot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72),
-                          obs = {"var":"nHadControl%s"%label, "desc": obsString(self.obsLabel, "hadronic control sample %s"%labelRaw, self.lumi["had"])},
-                          logY = logY, otherVars = [
-                    {"var":"hadControlB%s"%label, "type":"function", "color":r.kBlue, "style":1, "width":self.width, "desc":"expected SM yield", "stack":None},
-                    {"var":"ewkControl%s"%label,  "type":"function", "desc":"EWK", "desc2":akDesc(self.wspace, "A_ewkControl%s"%label1, "d_ewkControl%s"%label1, errors = True),
-                     "color":r.kCyan,    "style":2, "width":self.width, "stack":"background"},
-                    {"var":"qcdControl%s"%label,  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcdControl%s"%label1, "k_qcd", errors = True),
-                     "color":r.kMagenta, "style":3, "width":self.width, "stack":"background"},
-                    ])
 
     def muonPlots(self) :
         vars = [
@@ -424,16 +406,6 @@ class validationPlotter(object) :
                   obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},
                   otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2, reverseLegend = True)
         
-        #for labelRaw in self.hadControlLabels :
-        #    label = "_"+labelRaw+"_"
-        #    label1 = label[:-1]
-        #    self.plot(note = "hadronic control %s"%labelRaw, legend0 = (0.12, 0.7), legend1 = (0.52, 0.88),
-        #              obs = {"var":"nHadControl%s"%label1, "dens":["nHadBulk"], "denTypes":["var"], "desc":"nHadControl / nHadBulk",}, otherVars = [
-        #        {"var":"qcdControl%s"%label,   "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML QCD / nHadBulk", "color":r.kMagenta},
-        #        {"var":"ewkControl%s"%label,   "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML EWK / nHadBulk", "color":r.kCyan},
-        #        {"var":"hadControlB%s"%label,  "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"ML hadControlB / nHadBulk", "color":r.kBlue},
-        #        ], yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6, reverseLegend = True)
-
         self.plot(note = "muon to tt+W", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2,
                   obs = {"var":"nMuon", "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ttW / MC mu) / nHadBulk"},
                   otherVars = [{"var":"ttw",   "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML ttW / nHadBulk", "color":r.kGreen}])

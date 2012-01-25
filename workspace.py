@@ -34,21 +34,6 @@ def initialAQcd(inputData, factor, A_ewk_ini, kQcd) :
     out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
     return out
                      
-def initialkQcdControl(inputData, label) :
-    obs = inputData.observations()
-    out = float(obs["nHadControl%s"%label][0]*obs["nHadBulk"][1])/float(obs["nHadControl%s"%label][1]*obs["nHadBulk"][0])
-    out = math.log(out)
-    htMeans = inputData.htMeans()    
-    out /= (htMeans[1] - htMeans[0])
-    return out
-
-def initialAQcdControl(inputData, label) :
-    obs = inputData.observations()
-    htMeans = inputData.htMeans()
-    out = math.exp( initialkQcdControl(inputData, label)*htMeans[0] )
-    out *= (obs["nHadControl%s"%label][0]/float(obs["nHadBulk"][0]))
-    return out
-
 def parametrizedExp(w = None, sample = "", i = None) :
     return r.RooFormulaVar(ni(name = sample, i = i), "(@0)*(@1)*exp(-(@2)*(@3))",
                            r.RooArgList(w.var(ni(name = "nHadBulk", i = i)), w.var("A_%s"%sample), w.var("k_%s"%sample), w.var(ni(name = "htMean", i = i)))
@@ -136,9 +121,6 @@ def hadTerms(w = None, inputData = None, REwk = None, RQcd = None, nFZinv = None
         factor = 0.7
         w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
         w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
-        #for future
-        #w.var("k_qcd%s"%s()).setVal(4.7e-2)
-        #w.var("A_qcd%s"%s()).setVal( initialAQcdControl(inputData, s()) )
 
     #observed "constants", not depending upon slice
     for i,htMeanValue,nHadBulkValue,hadTrgEffValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"]) :
@@ -195,34 +177,6 @@ def simpleOneBinTerm(w, inputData, smOnly, varDict) :
     terms.append("hadPois%d"%i)
     
     w.factory("PROD::simpleOneBinTerm(%s)"%",".join(terms))
-
-def hadControlTerms(w, inputData, REwk, RQcd, smOnly, label = "") :
-    def s(i = None) : return ("_%s%s"%(label, "_%d"%i if i!=None else ""))
-    obs = inputData.observations()
-    htMeans = inputData.htMeans()
-    terms = []
-
-    assert (REwk and ("FallingExp" in RQcd))
-    wimport(w, r.RooRealVar("A_qcdControl%s"%s(), "A_qcdControl%s"%s(), initialAQcdControl(inputData, s()), 0.0, 100.0))
-    wimport(w, r.RooRealVar("A_ewkControl%s"%s(), "A_ewkControl%s"%s(), 10.0e-6, 0.0, 1.0))
-    wimport(w, r.RooRealVar("d_ewkControl%s"%s(), "d_ewkControl%s"%s(), 0.0, -1.0, 1.0))
-    w.var("d_ewkControl%s"%s()).setVal(0.0)
-    w.var("d_ewkControl%s"%s()).setConstant()
-
-    for i,htMeanValue,nHadBulkValue,nControlValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], obs["nHadControl%s"%s()]) :
-        wimport(w, r.RooFormulaVar("qcdControl%s"%s(i), "(@0)*(@1)*exp(-(@2)*(@3))",
-                                   r.RooArgList(w.var("nHadBulk%d"%i), w.var("A_qcdControl%s"%s()), w.var("k_qcd"), w.var("htMean%d"%i))))
-
-        wimport(w, parametrizedLinearEwk(w = w, ewk = "ewkControl", i = i, iLast = iLast))
-        wimport(w, r.RooFormulaVar("hadControlB%s"%s(i), "(@0)+(@1)", r.RooArgList(w.function("ewkControl%s"%s(i)), w.function("qcdControl%s"%s(i)))))
-        wimport(w, r.RooRealVar("nHadControl%s"%s(i), "nHadControl%s"%s(i), nControlValue))
-        if smOnly :
-            wimport(w, r.RooPoisson("hadControlPois%s"%s(i), "hadControlPois%s"%s(i), w.var("nHadControl%s"%s(i)), w.function("hadControlB%s"%s(i))))
-        else :
-            wimport(w, r.RooPoisson("hadControlPois%s"%s(i), "hadControlPois%s"%s(i), w.var("nHadControl%s"%s(i)), w.function("hadControlB%s"%s(i))))            
-        terms.append("hadControlPois%s"%s(i))
-    
-    w.factory("PROD::hadControlTerms%s(%s)"%(s(), ",".join(terms)))
 
 def mumuTerms(w, inputData) :
     terms = []
@@ -617,7 +571,6 @@ class foo(object) :
                     "printPages": False, "toyNumber":i}
 
             for item in ["REwk", "RQcd"] : args[item] = self.likelihoodSpec[item]
-            args["hadControlLabels"] = [] #temporary
                     
             plotter = plotting.validationPlotter(args)
             plotter.inputData = self.inputData
