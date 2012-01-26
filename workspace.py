@@ -97,6 +97,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
     trg = inputData.triggerEfficiencies()
     htMeans = inputData.htMeans()
     terms = []
+    out = collections.defaultdict(list)
 
     assert not qcdSearch
     assert RQcd!="FallingExpA"
@@ -113,7 +114,8 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
         w.var(k).setVal(0.0)
         w.var(k).setConstant()
     else :
-        #as in past
+        out["nuis"].append(k)
+        if not qcdSearch : out["nuis"].append(A)
         factor = 0.7
         w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
         w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
@@ -161,9 +163,11 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
     hadTermsName = ni("hadTerms", label)
     w.factory("PROD::%s(%s)"%(hadTermsName, ",".join(terms)))
 
-    out = collections.defaultdict(list)
     out["terms"].append(hadTermsName)
     out["multiBinObs"].append(ni("nHad", label))
+    if REwk :
+        out["nuis"].append(ni("A_ewk", label))
+        if REwk!="Constant" : out["nuis"].append(ni("k_ewk", label))
     return out
 
 def simpleOneBinTerm(w = None, inputData = None, label = "", smOnly = None, varDict = {}) :
@@ -446,15 +450,6 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
         simpleOneBinTerm(varDict = simpleOneBin, **args)
         terms.append("simpleOneBinTerm")
         multiBinObs.append("nHad")
-
-    #move this
-    if "FallingExp" in RQcd :
-        nuis += [ni("k_qcd", label)]
-        if not qcdSearch : nuis += [ni("A_qcd", label)]
-    if REwk :
-        nuis += [ni("A_ewk", label)]
-        if REwk!="Constant" :
-            nuis += [ni("k_ewk", label)]
 
     #move this
     for item in ["muon", "phot", "mumu"] :
