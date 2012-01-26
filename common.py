@@ -38,5 +38,5 @@ def note(likelihoodSpec = {}) :
     if l["qcdSearch"] :  out += "_qcdSearch"
 
     for selection in l["selections"] :
-        out += "_%s%s"%(selection.name, sampleCode(selection.samplesAndSignalEff))
+        out += "_%s-%s"%(selection.name, sampleCode(selection.samplesAndSignalEff))
     return out
