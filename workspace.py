@@ -579,6 +579,7 @@ class foo(object) :
         selections = self.likelihoodSpec["selections"]
         syst = [s.universalSystematics for s in selections]
         assert sum(syst)<2
+        if any(syst) : assert not syst.index(True)
         return name if sum(syst)!=1 else selections[syst.index(True)].name
 
     def note(self) :
