@@ -102,8 +102,8 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
     assert RQcd!="FallingExpA"
 
     #QCD variables
-    A = ni(name = "A_qcd", label = label); wimport(w, r.RooRealVar(A, A, 1.5e-5, 0.0, 100.0))
-    k = ni(name = "k_qcd", label = label); wimport(w, r.RooRealVar(k, k, 1.0e-5, 0.0,   1.0))
+    A = ni("A_qcd", label); wimport(w, r.RooRealVar(A, A, 1.5e-5, 0.0, 100.0))
+    k = ni("k_qcd", label); wimport(w, r.RooRealVar(k, k, 1.0e-5, 0.0,   1.0))
 
     #inital values
     A_ewk_ini = 1.3e-5
@@ -133,17 +133,17 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
         else :                   wimport(w, parametrizedExp (w = w, sample = qcdName, i = i))
         qcd = w.function(ni(name = qcdName, i = i))
         
-        ewk   = importEwk(  w = w, REwk   = REwk,   name = ni(name = "ewk",   label = label), i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = ni(name = "fZinv", label = label), i = i, iLast = iLast)
+        ewk   = importEwk(  w = w, REwk   = REwk,   name = ni("ewk",   label), i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = ni("fZinv", label), i = i, iLast = iLast)
 
-        wimport(w, r.RooFormulaVar(ni(name = "zInv", label = label, i = i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
-        wimport(w, r.RooFormulaVar(ni(name = "ttw",  label = label, i = i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
+        wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
+        wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
-        hadB    = ni(name = "hadB",    label = label, i = i)
-        hadS    = ni(name = "hadS",    label = label, i = i)
-        nHad    = ni(name = "nHad",    label = label, i = i)
-        hadPois = ni(name = "hadPois", label = label, i = i)
-        hadExp  = ni(name = "hadExp",  label = label, i = i)
+        hadB    = ni("hadB",    label, i)
+        hadS    = ni("hadS",    label, i)
+        nHad    = ni("nHad",    label, i)
+        hadPois = ni("hadPois", label, i)
+        hadExp  = ni("hadExp",  label, i)
         
         wimport(w, r.RooFormulaVar(hadB, "(@0)+(@1)", r.RooArgList(ewk, qcd)))
         wimport(w, r.RooRealVar(nHad, nHad, nHadValue))
@@ -158,7 +158,13 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
         terms.append(hadPois)
 
-    w.factory("PROD::%s(%s)"%(ni(name = "hadTerms", label = label), ",".join(terms)))
+    hadTermsName = ni("hadTerms", label)
+    w.factory("PROD::%s(%s)"%(hadTermsName, ",".join(terms)))
+
+    out = collections.defaultdict(list)
+    out["terms"].append(hadTermsName)
+    out["multiBinObs"].append(ni("nHad", label))
+    return out
 
 def simpleOneBinTerm(w = None, inputData = None, label = "", smOnly = None, varDict = {}) :
     assert not smOnly
@@ -333,9 +339,9 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", s
         wimport(w, r.RooRealVar(delta, delta, deltaSignalValue))
         wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(delta)))
 
-        signalTerms = ni("signalTerms", label)
-        w.factory("PROD::%s(%s)"%(signalTerms, gaus))
-        out["terms"].append(signalTerms)
+        signalTermsName = ni("signalTerms", label)
+        w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
+        out["terms"].append(signalTermsName)
         out["obs"].append(one)
         out["nuis"].append(rho)
     return out
@@ -446,10 +452,6 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
         obs.append(ni("k_qcd_nom", label))
         nuis.append(ni("k_qcd_unc_inp", label))
     
-    if "had" in samples :
-        terms.append(ni("hadTerms", label))
-        multiBinObs.append(ni("nHad", label))
-
     if "phot" in samples :
         terms.append(ni("photTerms", label))
         obs.append("onePhot")
