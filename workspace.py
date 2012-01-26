@@ -34,26 +34,35 @@ def initialAQcd(inputData, factor, A_ewk_ini, kQcd) :
     out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
     return out
                      
-def parametrizedExp(w = None, sample = "", i = None) :
-    return r.RooFormulaVar(ni(name = sample, i = i), "(@0)*(@1)*exp(-(@2)*(@3))",
-                           r.RooArgList(w.var(ni(name = "nHadBulk", i = i)), w.var("A_%s"%sample), w.var("k_%s"%sample), w.var(ni(name = "htMean", i = i)))
-                           )
+def parametrizedExp(w = None, name = "", label = "", i = None) :
+    A = ni("A_%s"%name, label)
+    k = ni("k_%s"%name, label)
+    bulk = ni("nHadBulk", label, i)
+    mean = ni("htMean", label, i)
+    varName = ni(name, label, i)
+    return r.RooFormulaVar(varName, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
     
-def parametrizedExpA(w = None, sample = "", i = None) :
-    return r.RooFormulaVar(ni(name = sample, i = i), "(@0)*exp((@1)-(@2)*(@3))",
-                           r.RooArgList(w.var(ni(name = "nHadBulk", i = i)), w.var("A_%s"%sample), w.var("k_%s"%sample), w.var(ni(name = "htMean", i = i)))
-                           )
+def parametrizedExpA(w = None, name = "", label = "", i = None) :
+    A = ni("A_%s"%name, label)
+    k = ni("k_%s"%name, label)
+    bulk = ni("nHadBulk", label, i)
+    mean = ni("htMean", label, i)
+    varName = ni(name, label, i)
+    return r.RooFormulaVar(varName, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
     
-def parametrizedLinearEwk(w = None, ewk = "", i = None, iLast = None) :
-    return r.RooFormulaVar(ni(name = ewk, i = i), "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
-                           r.RooArgList(w.var(ni(name = "nHadBulk", i = i)), w.var("A_%s"%ewk), w.var("k_%s"%ewk),
-                                        w.var(ni(name = "htMean", i = i)), w.var(ni(name = "htMean", i = 0)), w.var(ni(name = "htMean", i = iLast))
-                                        )
+def parametrizedLinear(w = None, name = "", label = "", i = None, iLast = None) :
+    def mean(j) : return ni("htMean", label, j)
+    A = ni("A_%s"%name, label)
+    k = ni("k_%s"%name, label)
+    bulk = ni("nHadBulk", label, i)
+    varName = ni(name, label, i)
+    return r.RooFormulaVar(varName, "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
+                           r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean(i)), w.var(mean(0)), w.var(mean(iLast)))
                            )
 
-def importEwk(w = None, REwk = None, name = "", i = None, iLast = None, nHadValue = None, A_ini = None) :
-    A = "A_%s"%name
-    k = "k_%s"%name
+def importEwk(w = None, REwk = None, name = "", label = "", i = None, iLast = None, nHadValue = None, A_ini = None) :
+    A = ni("A_%s"%name, label)
+    k = ni("k_%s"%name, label)
 
     if REwk and not i :
         wimport(w, r.RooRealVar(A, A, A_ini, 0.0, 1.0))
@@ -62,33 +71,30 @@ def importEwk(w = None, REwk = None, name = "", i = None, iLast = None, nHadValu
         w.var(k).setVal(0.0)
         w.var(k).setConstant()
     
-    if REwk=="Linear" : wimport(w, parametrizedLinearEwk(w = w, ewk = name, i = i, iLast = iLast))
-    elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, sample = name, i = i))
-    else : wimport(w, r.RooRealVar(ni(name = name, i = i), ni(name = name, i = i), max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
-    return varOrFunc(w, name, i)
+    if REwk=="Linear" : wimport(w, parametrizedLinear(w = w, name = name, label = label, i = i, iLast = iLast))
+    elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, name = name, label = label, i = i))
+    else :
+        varName = ni(name, label, i)
+        wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
+    return varOrFunc(w, name, label, i)
 
-def importFZinv(w = None, nFZinv = "", name = "", i = None, iLast = None) :
-    first = ni(name = name, i = 0)
-    this  = ni(name = name, i = i)
-    last  = ni(name = name, i = iLast)
+def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iLast = None) :
+    def mean(j) : return ni("htMean", label, j)
+    def fz(j) : return ni(name, label, j)
     
     if nFZinv=="All" :
-        wimport(w, r.RooRealVar(this, this, 0.5, 0.2, 0.8))
+        wimport(w, r.RooRealVar(fz(i), fz(i), 0.5, 0.2, 0.8))
     elif nFZinv=="One" :
-        if not i : wimport(w, r.RooRealVar(this, this, 0.5, 0.0, 1.0))
-        else     : wimport(w, r.RooFormulaVar(this, "(@0)", r.RooArgList(w.var(first))))
+        if not i : wimport(w, r.RooRealVar(fz(i), fz(i), 0.5, 0.0, 1.0))
+        else     : wimport(w, r.RooFormulaVar(fz(i), "(@0)", r.RooArgList(w.var(fz(0)))))
     elif nFZinv=="Two" :
         if not i :
-            wimport(w, r.RooRealVar(this, this, 0.5, 0.0, 1.0))
-            wimport(w, r.RooRealVar(last, last, 0.5, 0.0, 1.0))
+            wimport(w, r.RooRealVar(fz(i),     fz(i),     0.5, 0.0, 1.0))
+            wimport(w, r.RooRealVar(fz(iLast), fz(iLast), 0.5, 0.0, 1.0))
         elif i!=iLast :
-            argList = r.RooArgList(w.var(first), w.var(last),
-                                   w.var(ni(name = "htMean", i = i    )),
-                                   w.var(ni(name = "htMean", i = 0    )),
-                                   w.var(ni(name = "htMean", i = iLast))
-                                   )
-            wimport(w, r.RooFormulaVar(this, "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
-    return varOrFunc(w, name, i)
+            argList = r.RooArgList(w.var(fz(0)), w.var(fz(iLast)), w.var(mean(i)), w.var(mean(0)), w.var(mean(iLast)))
+            wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
+    return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None,
              REwk = None, RQcd = None, nFZinv = None, qcdSearch = None) :
@@ -122,21 +128,20 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
 
     #observed "constants", not depending upon slice
     for i,htMeanValue,nHadBulkValue,hadTrgEffValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"]) :
-        m = ni(name = "htMean", i = i)
+        m = ni("htMean", label, i)
         if not w.var(m) : wimport(w, r.RooRealVar(m, m, htMeanValue))
-        b = ni(name = "nHadBulk", i = i)
+        b = ni("nHadBulk", label, i)
         if not w.var(b) : wimport(w, r.RooRealVar(b, b, nHadBulkValue*hadTrgEffValue))
 
     #more
     iLast = len(htMeans)-1
     for i,nHadValue in enumerate(obs["nHad"]) :
-        qcdName = ni(name = "qcd", label = label)
-        if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, sample = qcdName, i = i))
-        else :                   wimport(w, parametrizedExp (w = w, sample = qcdName, i = i))
-        qcd = w.function(ni(name = qcdName, i = i))
+        if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, i = i))
+        else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, i = i))
+        qcd = w.function(ni("qcd", label, i))
         
-        ewk   = importEwk(  w = w, REwk   = REwk,   name = ni("ewk",   label), i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = ni("fZinv", label), i = i, iLast = iLast)
+        ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iLast = iLast)
 
         wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
         wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
@@ -413,8 +418,8 @@ def multi(w, variables, inputData) :
             out.append(name)
     return out
 
-def varOrFunc(w = None, name = "", i = None) :
-    s = ni(name = name, i = i)
+def varOrFunc(w = None, name = "", label = "", i = None) :
+    s = ni(name, label, i)
     return w.var(s) if w.var(s) else w.function(s)
 
 def dataset(obsSet) :
@@ -522,8 +527,6 @@ class foo(object) :
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
             args[item] = getattr(self, item)
-
-        assert len(self.likelihoodSpec["selections"])==1, "Multiple selections not yet supported."
 
         print "fix signal format"
         if not self.smOnly() :
