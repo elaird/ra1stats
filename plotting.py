@@ -376,9 +376,9 @@ class validationPlotter(object) :
         self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 4.0,
                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC #gamma / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                   yLabel = "", scale = self.lumi["had"]/self.lumi["phot"])
-        #self.plot(note = "muon-muon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 1.0,
-        #          otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
-        #          yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
+        self.plot(note = "mumu translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 0.5,
+                  otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
+                  yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
         ewk = {"var":"ewk", "type":self.ewkType, "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK", "suppress":["min","max"],
