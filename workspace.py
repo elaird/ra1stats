@@ -361,6 +361,12 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
+    out = collections.defaultdict(list)
+    out["terms"].append(qcdTerms)
+    out["obs"].append(k_qcd_nom)
+    out["nuis"].append(k_qcd_unc_inp)
+    return out
+
 def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None, #smOnly not used
                 signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
 
@@ -433,13 +439,6 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
                  "multiBinNuis": [],
                  }
 
-    #temporary
-    terms = variables["terms"]
-    obs = variables["obs"]
-    nuis = variables["nuis"]
-    multiBinObs = variables["multiBinObs"]
-    multiBinNuis = variables["multiBinNuis"]
-
     w = wspace
     samples = selection.samplesAndSignalEff.keys()
     inputData = selection.data
@@ -448,13 +447,12 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
     if simpleOneBin :
         assert False
         simpleOneBinTerm(varDict = simpleOneBin, **args)
-        terms.append("simpleOneBinTerm")
-        multiBinObs.append("nHad")
+        variables["terms"].append("simpleOneBinTerm")
+        variables["multiBinObs"].append("nHad")
 
-    #move this
     for item in ["muon", "phot", "mumu"] :
         if item in samples :
-            multiBinNuis += [ni("fZinv", label)]
+            variables["multiBinNuis"] += [ni("fZinv", label)]
             break
     
     boxes = ["had", "phot", "muon", "mumu"]
@@ -481,23 +479,13 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
         func = eval("%sTerms"%item)
         d = func(**(args[item]))
         if (item in boxes) and (item not in samples) : continue
-        if not d :
-            print "fix",item
-            continue
         for key in variables : #include terms, obs, etc. in likelihood
             variables[key] += d[key]
 
-    if constrainQcdSlope :
-        terms.append(ni("qcdTerms", label))
-        obs.append(ni("k_qcd_nom", label))
-        nuis.append(ni("k_qcd_unc_inp", label))
-    
-    obs += multi(w, multiBinObs, inputData)
-    nuis += multi(w, multiBinNuis, inputData)
-
     out = {}
-    for item in ["terms", "obs", "nuis"] :
-        out[item] = eval(item)
+    for item in ["terms", "obs", "nuis"] : out[item] = variables[item]
+    out["obs"]  += multi(w, variables["multiBinObs"], inputData)
+    out["nuis"] += multi(w, variables["multiBinNuis"], inputData)
     return out
 
 def startLikelihood(w = None, smOnly = None, signal = {}) :
