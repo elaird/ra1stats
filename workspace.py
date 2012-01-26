@@ -185,11 +185,20 @@ def simpleOneBinTerm(w = None, inputData = None, label = "", smOnly = None, varD
 
 def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
     terms = []
-    wimport(w, r.RooRealVar("rhoMumuZ", "rhoMumuZ", 1.0, 1.0e-3, 3.0))
-    wimport(w, r.RooRealVar("oneMumu", "oneMumu", 1.0))
-    wimport(w, r.RooRealVar("sigmaMumuZ", "sigmaMumuZ", inputData.fixedParameters()["sigmaMumuZ"]))
-    wimport(w, r.RooGaussian("mumuGaus", "mumuGaus", w.var("oneMumu"), w.var("rhoMumuZ"), w.var("sigmaMumuZ")))
-    terms.append("mumuGaus")
+    out = collections.defaultdict(list)
+
+    if label==systematicsLabel :
+        rho = ni("rhoMumuZ", label)
+        one = ni("oneMumu", label)
+        sigma = ni("sigmaMumuZ", label)
+        gaus = ni("mumuGaus", label)
+        wimport(w, r.RooRealVar(rho, rho, 1.0, 1.0e-3, 3.0))
+        wimport(w, r.RooRealVar(one, one, 1.0))
+        wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"]))
+        wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+        out["obs"].append(one)
+        out["nuis"].append(rho)
+        terms.append(gaus)
 
     rFinal = None
     for i,nMumuValue,purity,mcZmumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
@@ -207,16 +216,22 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", smO
         wimport(w, r.RooRealVar(rMumu, rMumu, (mcZmumuValue/mcZinvValue if not rFinal else rFinal)/purity))
 
         mumuExp = ni("mumuExp", label, i)
+        rhoMumuZ = ni("rhoMumuZ", systematicsLabel)
         wimport(w, r.RooFormulaVar(mumuExp, "(@0)*(@1)*(@2)",
-                                   r.RooArgList(w.var("rhoMumuZ"), w.var(rMumu), w.function(ni("zInv", label, i)))
+                                   r.RooArgList(w.var(rhoMumuZ), w.var(rMumu), w.function(ni("zInv", label, i)))
                                    )
                 )
 
         mumuPois = ni("mumuPois", label, i)
         wimport(w, r.RooPoisson(mumuPois, mumuPois, w.var(nMumu), w.function(mumuExp)))
         terms.append(mumuPois)
-    
-    w.factory("PROD::%s(%s)"%(ni("mumuTerms", label), ",".join(terms)))
+
+    mumuTermsName = ni("mumuTerms", label)
+    w.factory("PROD::%s(%s)"%(mumuTermsName, ",".join(terms)))
+
+    out["terms"].append(mumuTermsName)
+    out["multiBinObs"].append(ni("nMumu", label))
+    return out
 
 def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
     out = collections.defaultdict(list)
@@ -482,12 +497,6 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
         obs.append(ni("k_qcd_nom", label))
         nuis.append(ni("k_qcd_unc_inp", label))
     
-    if "mumu" in samples :
-        terms.append(ni("mumuTerms", label))
-        obs.append("oneMumu")
-        multiBinObs.append(ni("nMumu", label))
-        nuis.append("rhoMumuZ")
-
     obs += multi(w, multiBinObs, inputData)
     nuis += multi(w, multiBinNuis, inputData)
 
