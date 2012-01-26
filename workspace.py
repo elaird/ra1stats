@@ -429,7 +429,7 @@ def wimport(w, item) :
     getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
-def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
+def setupLikelihood(w = None, selection = None, systematicsLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
                     REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signalDict = {}, simpleOneBin = {}) :
 
     variables = {"terms": [],
@@ -439,10 +439,7 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
                  "multiBinNuis": [],
                  }
 
-    w = wspace
     samples = selection.samplesAndSignalEff.keys()
-    inputData = selection.data
-    label = selection.name
 
     if simpleOneBin :
         assert False
@@ -450,21 +447,17 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
         variables["terms"].append("simpleOneBinTerm")
         variables["multiBinObs"].append("nHad")
 
-    for item in ["muon", "phot", "mumu"] :
-        if item in samples :
-            variables["multiBinNuis"] += [ni("fZinv", label)]
-            break
-    
     boxes = ["had", "phot", "muon", "mumu"]
     items = [] if smOnly else ["signal"]
     items += boxes
     if constrainQcdSlope : items.append("qcd")
 
-
     args = {}
     for item in items :
         args[item] = {}
-        for x in ["w", "inputData", "label", "systematicsLabel", "smOnly"] :
+        args[item]["inputData"] = selection.data
+        args[item]["label"] = selection.name
+        for x in ["w", "systematicsLabel", "smOnly"] :
             args[item][x] = eval(x)
 
     for x in ["REwk", "RQcd", "nFZinv", "qcdSearch"] :
@@ -473,9 +466,13 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
     for x in ["signalDict", "extraSigEffUncSources", "rhoSignalMin"] :
         args["signal"][x] = eval(x)
 
+    for item in ["muon", "phot", "mumu"] :
+        if item in samples :
+            variables["multiBinNuis"] += [ni("fZinv", args[item]["label"])]
+            break
 
     for item in items :
-        if (item in boxes) and (item not in inputData.lumi()) : continue
+        if (item in boxes) and (item not in selection.data.lumi()) : continue
         func = eval("%sTerms"%item)
         d = func(**(args[item]))
         if (item in boxes) and (item not in samples) : continue
@@ -484,8 +481,8 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
 
     out = {}
     for item in ["terms", "obs", "nuis"] : out[item] = variables[item]
-    out["obs"]  += multi(w, variables["multiBinObs"], inputData)
-    out["nuis"] += multi(w, variables["multiBinNuis"], inputData)
+    out["obs"]  += multi(w, variables["multiBinObs"], selection.data)
+    out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
 def startLikelihood(w = None, smOnly = None, signal = {}) :
@@ -518,11 +515,12 @@ class foo(object) :
         self.wspace = r.RooWorkspace("Workspace")
 
         args = {}
+        args["w"] = self.wspace
         args["smOnly"] = self.smOnly()
         args.update(self.likelihoodSpec)
         del args["selections"]#pass only local slice info
 
-        for item in ["wspace", "extraSigEffUncSources", "rhoSignalMin"] :
+        for item in ["extraSigEffUncSources", "rhoSignalMin"] :
             args[item] = getattr(self, item)
 
         assert len(self.likelihoodSpec["selections"])==1, "Multiple selections not yet supported."
