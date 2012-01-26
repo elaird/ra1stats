@@ -463,8 +463,9 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, smOnly 
     for x in ["REwk", "RQcd", "nFZinv", "qcdSearch"] :
         args["had"][x] = eval(x)
 
-    for x in ["signalDict", "extraSigEffUncSources", "rhoSignalMin"] :
-        args["signal"][x] = eval(x)
+    if "signal" in args :
+        for x in ["signalDict", "extraSigEffUncSources", "rhoSignalMin"] :
+            args["signal"][x] = eval(x)
 
     for item in ["muon", "phot", "mumu"] :
         if item in samples :
@@ -485,10 +486,9 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, smOnly 
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
-def startLikelihood(w = None, smOnly = None, signal = {}) :
-    if not smOnly :
-        wimport(w, r.RooRealVar("xs", "xs", signal["xs"]))
-        wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
+def startLikelihood(w = None, signal = {}) :
+    wimport(w, r.RooRealVar("xs", "xs", signal["xs"]))
+    wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
 
 def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
@@ -526,7 +526,9 @@ class foo(object) :
         assert len(self.likelihoodSpec["selections"])==1, "Multiple selections not yet supported."
 
         print "fix signal format"
-        startLikelihood(w = self.wspace, smOnly = self.smOnly(), signal = self.signal[self.signal.keys()[0]])
+        if not self.smOnly() :
+            startLikelihood(w = self.wspace, signal = self.signal[self.signal.keys()[0]])
+
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec["selections"] :
             args["selection"] = sel
