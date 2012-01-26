@@ -219,12 +219,21 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", smO
     w.factory("PROD::%s(%s)"%(ni("mumuTerms", label), ",".join(terms)))
 
 def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
+    out = collections.defaultdict(list)
+
     terms = []
-    wimport(w, r.RooRealVar("rhoPhotZ", "rhoPhotZ", 1.0, 1.0e-3, 3.0))
-    wimport(w, r.RooRealVar("onePhot", "onePhot", 1.0))
-    wimport(w, r.RooRealVar("sigmaPhotZ", "sigmaPhotZ", inputData.fixedParameters()["sigmaPhotZ"]))
-    wimport(w, r.RooGaussian("photGaus", "photGaus", w.var("onePhot"), w.var("rhoPhotZ"), w.var("sigmaPhotZ")))
-    terms.append("photGaus")
+    if label==systematicsLabel :
+        rho = ni("rhoPhotZ", label)
+        one = ni("onePhot", label)
+        sigma = ni("sigmaPhotZ", label)
+        gaus = ni("photGaus", label)
+        wimport(w, r.RooRealVar(rho, rho, 1.0, 1.0e-3, 3.0))
+        wimport(w, r.RooRealVar(one, one, 1.0))
+        wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaPhotZ"]))
+        wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+        terms.append(gaus)
+        out["obs"].append(one)
+        out["nuis"].append(rho)
 
     rFinal = None
     for i,nPhotValue,purity,mcGjetValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
@@ -241,17 +250,23 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", smO
         wimport(w, r.RooRealVar(nPhot, nPhot, nPhotValue))
         wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
 
+        rho = ni("rhoPhotZ", systematicsLabel)
         photExp = ni("photExp", label, i)
         wimport(w, r.RooFormulaVar(photExp, "(@0)*(@1)*(@2)",
-                                   r.RooArgList(w.var("rhoPhotZ"), w.var(rPhot), w.function(ni("zInv", label, i)))
+                                   r.RooArgList(w.var(rho), w.var(rPhot), w.function(ni("zInv", label, i)))
                                    )
                 )
 
         photPois = ni("photPois", label, i)
         wimport(w, r.RooPoisson(photPois, photPois, w.var(nPhot), w.function(photExp)))
         terms.append(photPois)
-    
-    w.factory("PROD::%s(%s)"%(ni("photTerms", label), ",".join(terms)))
+
+    photTermsName = ni("photTerms", label)
+    w.factory("PROD::%s(%s)"%(photTermsName, ",".join(terms)))
+
+    out["terms"].append(photTermsName)
+    out["multiBinObs"].append(ni("nPhot", label))
+    return out
 
 def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
     terms = []
@@ -452,12 +467,6 @@ def setupLikelihood(wspace = None, selection = None, systematicsLabel = None, sm
         obs.append(ni("k_qcd_nom", label))
         nuis.append(ni("k_qcd_unc_inp", label))
     
-    if "phot" in samples :
-        terms.append(ni("photTerms", label))
-        obs.append("onePhot")
-        multiBinObs.append(ni("nPhot", label))
-        nuis.append("rhoPhotZ")
-        
     if "muon" in samples :
         terms.append(ni("muonTerms", label))
         obs.append("oneMuon")
