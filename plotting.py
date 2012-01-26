@@ -236,7 +236,8 @@ class validationPlotter(object) :
         
         if not self.smOnly :
             self.signalDesc = "signal"
-            self.signalDesc2 = "xs/xs^{nom} = %4.2e #pm %4.2e; #rho = %4.2f"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), self.wspace.var("rhoSignal").getVal())
+            rhoValue = self.wspace.var(ni("rhoSignal", self.systematicsLabel)).getVal()
+            self.signalDesc2 = "xs/xs^{nom} = %4.2e #pm %4.2e; #rho = %4.2f"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), rhoValue)
 
         self.width1 = 2
         self.width2 = 3
