@@ -376,6 +376,8 @@ class validationPlotter(object) :
         self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 4.0,
                   otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC #gamma / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                   yLabel = "", scale = self.lumi["had"]/self.lumi["phot"])
+
+        if "mumu" not in self.lumi : return
         self.plot(note = "mumu translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 0.5,
                   otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                   yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
