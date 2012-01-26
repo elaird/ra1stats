@@ -672,9 +672,10 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False, drawMc = True) :
+        results = utils.rooFitResults(pdf(self.wspace), self.data)
         for selection in self.likelihoodSpec["selections"] :
             example = self.signalExampleToStack[selection.name] if selection.name in self.signalExampleToStack else {}
-            args = {"wspace": self.wspace, "results": utils.rooFitResults(pdf(self.wspace), self.data),
+            args = {"wspace": self.wspace, "results": results,
                     "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(),
                     "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
                     "signalExampleToStack": example, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
