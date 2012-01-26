@@ -1,11 +1,9 @@
 import inputData
 
 class selection(object) :
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None) :
-        for item in ["name", "samplesAndSignalEff", "data"] :
-            value = eval(item)
-            assert value
-            setattr(self, item, value)
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, universalSystematics = False) :
+        for item in ["name", "samplesAndSignalEff", "data", "universalSystematics"] :
+            setattr(self, item, eval(item))
 
 def spec(simpleOneBin = False, qcdSearch = False) :
     d = {}
@@ -14,6 +12,7 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     d["selections"].append(selection(name = "55",
                                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                      data = inputData.data2011_6(),
+                                     universalSystematics = True,
                                      )
                            )
 
