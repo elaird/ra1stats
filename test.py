@@ -3,7 +3,7 @@
 import workspace
 import likelihoodSpec
 
-def signal() :
+def signal(i) :
 
     def scaled(t, factor) :
         return tuple([factor*item for item in t])
@@ -86,11 +86,11 @@ def signal() :
         "xs":1.0,
         }
     
-    return [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][3]
+    return [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signal = {"":signal()},
-                  signalExampleToStack = {"":signal()},
+                  #signal = {"55":signal(3), "2010":signal(5)},
+                  signalExampleToStack = {"55":signal(3), "2010":signal(5)},
 
                   #trace = True
                   #rhoSignalMin = 0.1,
