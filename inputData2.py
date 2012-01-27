@@ -40,15 +40,16 @@ class data2011_55_v7(data) :
             }
 
         self._triggerEfficiencies = {
-            "hadBulk":       (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            "had":           (  0.921536,  0.977216,  0.995232,  0.987821,  1.000000,  1.000000,  1.000000,  1.000000),
+            "hadBulk":       (     0.878,     0.906,     0.957,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "had":           (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "muon":          (     0.727,     0.869,     0.950,     0.950,     0.950,     0.950,     0.950,     0.950),
             "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            "mumu":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "mumu":          (     0.727,     0.869,     0.950,     0.950,     0.950,     0.950,     0.950,     0.950),
             }
 
         self._mcExpectations = {
             "mcMuon":     trig(     scaled((1690.37, 771.57, 2773.48, 1313.90, 590.73, 273.98, 128.62, 151.03), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-                                    self._triggerEfficiencies["had"]),
+                                    self._triggerEfficiencies["muon"]),
             "mcTtw":      trig(     scaled((2244.21, 874.85,  571.91,  206.83,  70.18,  31.07,   8.48,   6.14), self.lumi()["muon"]/self.lumi()["mcTtw"]),
                                     self._triggerEfficiencies["had"]),
             "mcGjets":         excl(scaled((  None,    None, 2.00e+3,  7.1e+2, 2.7e+2,     92,     34,     14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
@@ -57,7 +58,7 @@ class data2011_55_v7(data) :
             "mcZinv27":   trig(excl(scaled((    0.0,    0.0,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
                                     self._triggerEfficiencies["had"]),                                   
             "mcZmumu":    trig(     scaled((133.431,  77.45,  294.54,  137.61,  63.58,  28.83,  14.55,  12.95), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
-                                    self._triggerEfficiencies["had"]),
+                                    self._triggerEfficiencies["mumu"]),
             }
         self._mcExpectations["mcZinv"] = [a+b for a,b in zip(self._mcExpectations["mcZinv01"], self._mcExpectations["mcZinv27"])]
 
@@ -88,7 +89,6 @@ class data2011_55_v7(data) :
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             "sigmaMumuZ": 0.20,
-            "k_qcd_nom"     : 3.3e-2,
-            "k_qcd_unc_inp" : 0.66e-2,
+            "k_qcd_nom"     : 2.89e-2,
+            "k_qcd_unc_inp" : 0.76e-2,
             }
-
