@@ -90,7 +90,7 @@ def signal(i) :
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signal = signal(4),
-                  signalExampleToStack = signal(4),
+                  #signalExampleToStack = signal(4),
 
                   #trace = True
                   #rhoSignalMin = 0.1,
@@ -102,7 +102,7 @@ cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.cls(cl = cl, calculatorType = 0, testStatType = 3, nToys = 2000,
 #            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
-f.bestFit()
+f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = False, printNom = False)
 #f.bestFit(printPages = True)
 #f.qcdPlot()
