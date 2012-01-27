@@ -499,8 +499,8 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
-def startLikelihood(w = None, signal = {}) :
-    wimport(w, r.RooRealVar("xs", "xs", signal["xs"]))
+def startLikelihood(w = None, xs = None) :
+    wimport(w, r.RooRealVar("xs", "xs", xs))
     wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
 
 def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
@@ -538,7 +538,7 @@ class foo(object) :
 
         print "fix signal format"
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, signal = self.signal[self.signal.keys()[0]])
+            startLikelihood(w = self.wspace, xs = self.signal.xs)
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec["selections"] :
@@ -692,11 +692,10 @@ class foo(object) :
     def bestFit(self, printPages = False, drawMc = True) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         for selection in self.likelihoodSpec["selections"] :
-            example = self.signalExampleToStack[selection.name] if selection.name in self.signalExampleToStack else {}
             args = {"wspace": self.wspace, "results": results,
                     "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(),
                     "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
-                    "signalExampleToStack": example, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
+                    "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
                     "printPages": printPages, "drawMc": drawMc}
             for item in ["REwk", "RQcd"] :
                 args[item] = self.likelihoodSpec[item]
