@@ -78,26 +78,26 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iLast = No
         wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, label, i)
 
-def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iLast = None) :
+def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iLast = None, iniVal = None) :
     def mean(j) : return ni("htMean", label, j)
     def fz(j) : return ni(name, label, j)
     
     if nFZinv=="All" :
-        wimport(w, r.RooRealVar(fz(i), fz(i), 0.5, 0.2, 0.8))
+        wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, 0.2, 0.8))
     elif nFZinv=="One" :
-        if not i : wimport(w, r.RooRealVar(fz(i), fz(i), 0.5, 0.0, 1.0))
+        if not i : wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, 0.0, 1.0))
         else     : wimport(w, r.RooFormulaVar(fz(i), "(@0)", r.RooArgList(w.var(fz(0)))))
     elif nFZinv=="Two" :
         if not i :
-            wimport(w, r.RooRealVar(fz(i),     fz(i),     0.5, 0.0, 1.0))
-            wimport(w, r.RooRealVar(fz(iLast), fz(iLast), 0.5, 0.0, 1.0))
+            wimport(w, r.RooRealVar(fz(i),     fz(i),     iniVal, 0.0, 1.0))
+            wimport(w, r.RooRealVar(fz(iLast), fz(iLast), iniVal, 0.0, 1.0))
         elif i!=iLast :
             argList = r.RooArgList(w.var(fz(0)), w.var(fz(iLast)), w.var(mean(i)), w.var(mean(0)), w.var(mean(iLast)))
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
-             REwk = None, RQcd = None, nFZinv = None, qcdSearch = None) :
+             REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, iniValFZinv = 0.5) :
 
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -146,7 +146,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         qcd = w.function(ni("qcd", label, i))
         
         ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iLast = iLast)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iLast = iLast, iniVal = iniValFZinv)
 
         wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
         wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
