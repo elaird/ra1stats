@@ -3,6 +3,7 @@
 import ROOT as r
 from array import array
 
+import inputData_x as iDx
 
 
 xbins = array('d', [ 275, 325, 375, 475, 575, 675, 775, 875 ] )
@@ -31,3 +32,8 @@ histo.Write("",r.TObject.kOverwrite)
 
 f.Close()
 
+d = { "data_factory_test.root" : { "phot" : [ "photMC" ] } }
+
+dsf = iDx.DataSliceFactory( d )
+
+ds_52_53 = dsf.makeSlice(0.52,0.53)
