@@ -45,11 +45,13 @@ class DataSliceFactory( object ) :
         h_options = "e" # calcualte errors too
         for dir in self._histos.keys() :
             for histo in dir.keys() :
-                # TED: I think we're safe w.r.t. overflows here:
                 firstybin = histo.GetYaxis().FindBin( aTmin ) 
                 lastybin  = histo.GetYaxis().FindBin( aTmax ) 
                 # how is ProjectionX defined in the binning varies across slices.  Should probably put some check on this
                 if histo.ClassName()[:3] == "TH2" : 
+                    # TED: I think we're safe w.r.t. overflows here: all I need
+                    # to do is put everything form the X overflow (nxbins
+                    # +1),(0) into the last bins (1, nxbins)
                     h[dir][histo.GetName()] = ( histo.ProjectionX( histo.GetName()+h_suffix, firstybin, lastybin, h_options  )
                 elif histo.ClassName()[:3] == "TH1" :
                     h[dir][hist.GetName()] = append( histo )
