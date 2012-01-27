@@ -434,7 +434,7 @@ def wimport(w, item) :
     getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
-def setupLikelihood(w = None, selection = None, systematicsLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
+def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
                     REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signalDict = {}, simpleOneBin = {}) :
 
     variables = {"terms": [],
@@ -537,6 +537,7 @@ class foo(object) :
             args["selection"] = sel
             args["signalDict"] = self.signal[sel.name] if sel.name in self.signal else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
+            args["kQcdLabel"] = self.kQcdLabel(sel.name)
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
@@ -563,7 +564,8 @@ class foo(object) :
             assert "FallingExp" in l["RQcd"]
         if l["constrainQcdSlope"] :
             assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
-
+        if any([sel.universalKQcd for sel in l["selections"]]) :
+            assert "FallingExp" in l["RQcd"]
         for sel in l["selections"] :
             assert sel.samplesAndSignalEff,sel.name
             bins = sel.data.htBinLowerEdges()
@@ -581,6 +583,13 @@ class foo(object) :
         assert sum(syst)<2
         if any(syst) : assert not syst.index(True)
         return name if sum(syst)!=1 else selections[syst.index(True)].name
+
+    def kQcdLabel(self, name) :
+        selections = self.likelihoodSpec["selections"]
+        k = [s.universalKQcd for s in selections]
+        assert sum(k)<2
+        if any(k) : assert not k.index(True)
+        return name if sum(k)!=1 else selections[k.index(True)].name
 
     def note(self) :
         return note(likelihoodSpec = self.likelihoodSpec)
