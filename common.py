@@ -1,3 +1,13 @@
+class signal(dict) :
+    def __init__(self, xs = None, label = "") :
+        for item in ["xs", "label"] :
+            assert item
+            setattr(self, item, eval(item))
+    
+    def update(self, key = "", dct = {}) :
+        self[key] = dct
+
+
 def obs(w) :
     return w.set("obs")
 
