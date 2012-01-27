@@ -1,4 +1,4 @@
-from inputData import orig,mixedMuons,afterAlphaT
+from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b
 
 class selection(object) :
     def __init__(self, name = "", samplesAndSignalEff = {}, data = None,
@@ -10,19 +10,25 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     d = {}
 
     d["selections"] = []
-    d["selections"].append(selection(name = "55",
-                                     samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                                     data = afterAlphaT.data_55_v1(),
-                                     #universalSystematics = True,
-                                     #universalKQcd = True,
+    #d["selections"].append(selection(name = "55",
+    #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+    #                                 data = afterAlphaT.data_55_v1(),
+    #                                 #universalSystematics = True,
+    #                                 #universalKQcd = True,
+    #                                 )
+    #                       )
+
+    d["selections"].append(selection(name = "55b",
+                                     samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
+                                     data = afterAlphaT_b.data_55_v1(),
                                      )
                            )
 
-    d["selections"].append(selection(name = "53",
-                                     samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                                     data = afterAlphaT.data_53_v1(),
-                                     )
-                           )
+    #d["selections"].append(selection(name = "53",
+    #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+    #                                 data = afterAlphaT.data_53_v1(),
+    #                                 )
+    #                       )
 
     #d["selections"].append(selection(name = "2010",
     #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
