@@ -1,7 +1,7 @@
 import utils
 from data import data,scaled,excl,trig
 
-class data2011_6(data) :
+class data2011_55_v6(data) :
     """no odd-muon-veto"""
     
     def _fill(self) :
@@ -427,9 +427,6 @@ class data2011_3_no_cleaning_cuts(data2011_3) :
         self._observations["nHad"] = self._observations["nHad55"]
         self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
         
-class data2011(data2011_6) :
-    pass
-
 class data2010(data) :
     def _fill(self) :
         self._htBinLowerEdges =          (250.0, 300.0, 350.0, 450.0)
