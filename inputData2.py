@@ -89,6 +89,13 @@ class data2011_55_v7(data) :
             "sigmaPhotZ": 0.40,
             "sigmaMuonW": 0.30,
             "sigmaMumuZ": 0.20,
+
             "k_qcd_nom"     : 2.89e-2,
             "k_qcd_unc_inp" : 0.76e-2,
+
+            #"k_qcd_nom"     : 3.30e-2,
+            #"k_qcd_unc_inp" : 0.66e-2,
+
+            #"k_qcd_nom"     : 2.89e-2,
+            #"k_qcd_unc_inp" : 0.01e-2,
             }
