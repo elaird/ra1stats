@@ -34,26 +34,26 @@ def initialAQcd(inputData, factor, A_ewk_ini, kQcd) :
     out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
     return out
                      
-def parametrizedExp(w = None, name = "", label = "", i = None) :
+def parametrizedExp(w = None, name = "", label = "", kLabel = "", i = None) :
     A = ni("A_%s"%name, label)
-    k = ni("k_%s"%name, label)
+    k = ni("k_%s"%name, kLabel)
     bulk = ni("nHadBulk", label, i)
     mean = ni("htMean", label, i)
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
     
-def parametrizedExpA(w = None, name = "", label = "", i = None) :
+def parametrizedExpA(w = None, name = "", label = "", kLabel = "", i = None) :
     A = ni("A_%s"%name, label)
-    k = ni("k_%s"%name, label)
+    k = ni("k_%s"%name, kLabel)
     bulk = ni("nHadBulk", label, i)
     mean = ni("htMean", label, i)
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
     
-def parametrizedLinear(w = None, name = "", label = "", i = None, iLast = None) :
+def parametrizedLinear(w = None, name = "", label = "", kLabel = "", i = None, iLast = None) :
     def mean(j) : return ni("htMean", label, j)
     A = ni("A_%s"%name, label)
-    k = ni("k_%s"%name, label)
+    k = ni("k_%s"%name, kLabel)
     bulk = ni("nHadBulk", label, i)
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
@@ -71,8 +71,8 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iLast = No
         w.var(k).setVal(0.0)
         w.var(k).setConstant()
     
-    if REwk=="Linear" : wimport(w, parametrizedLinear(w = w, name = name, label = label, i = i, iLast = iLast))
-    elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, name = name, label = label, i = i))
+    if REwk=="Linear" : wimport(w, parametrizedLinear(w = w, name = name, label = label, kLabel = label, i = i, iLast = iLast))
+    elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, name = name, label = label, kLabel = label, i = i))
     else :
         varName = ni(name, label, i)
         wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
@@ -109,8 +109,12 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     assert RQcd!="FallingExpA"
 
     #QCD variables
-    A = ni("A_qcd", label); wimport(w, r.RooRealVar(A, A, 1.5e-5, 0.0, 100.0))
-    k = ni("k_qcd", label); wimport(w, r.RooRealVar(k, k, 1.0e-5, 0.0,   1.0))
+    A = ni("A_qcd", label)
+    wimport(w, r.RooRealVar(A, A, 1.5e-5, 0.0, 100.0))
+
+    k = ni("k_qcd", kQcdLabel)
+    if label==kQcdLabel :
+        wimport(w, r.RooRealVar(k, k, 1.0e-5, 0.0, 1.0))
 
     #inital values
     A_ewk_ini = 1.3e-5
@@ -136,8 +140,8 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     #more
     iLast = len(htMeans)-1
     for i,nHadValue in enumerate(obs["nHad"]) :
-        if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, i = i))
-        else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, i = i))
+        if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
+        else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
         qcd = w.function(ni("qcd", label, i))
         
         ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
@@ -352,12 +356,16 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     return out
 
 def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
-    k_qcd_nom = ni(name = "k_qcd_nom", label = label)
-    k_qcd_unc_inp = ni(name = "k_qcd_unc_inp", label = label)
-    k_qcd = ni(name = "k_qcd", label = label)
-    A_qcd = ni(name = "A_qcd", label = label)
-    qcdGaus = ni(name = "qcdGaus", label = label)
-    qcdTerms = ni(name = "qcdTerms", label = label)
+    out = collections.defaultdict(list)
+
+    if label!=kQcdLabel : return out
+
+    k_qcd_nom = ni("k_qcd_nom", label)
+    k_qcd_unc_inp = ni("k_qcd_unc_inp", label)
+    k_qcd = ni("k_qcd", label)
+    A_qcd = ni("A_qcd", label)
+    qcdGaus = ni("qcdGaus", label)
+    qcdTerms = ni("qcdTerms", label)
 
     wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
     wimport(w, r.RooRealVar(k_qcd_unc_inp, k_qcd_unc_inp, inputData.fixedParameters()["k_qcd_unc_inp"]))
@@ -366,7 +374,6 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
-    out = collections.defaultdict(list)
     out["terms"].append(qcdTerms)
     out["obs"].append(k_qcd_nom)
     out["nuis"].append(k_qcd_unc_inp)
