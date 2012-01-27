@@ -18,6 +18,12 @@ def spec(simpleOneBin = False, qcdSearch = False) :
                                      )
                            )
 
+    d["selections"].append(selection(name = "53",
+                                     samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                                     data = afterAlphaT.data_53_v1(),
+                                     )
+                           )
+
     #d["selections"].append(selection(name = "2010",
     #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
     #                                 data = inputData.data2010(),
