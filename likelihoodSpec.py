@@ -1,4 +1,4 @@
-import inputData,inputData2
+from inputData import orig,mixedMuons,afterAlphaT
 
 class selection(object) :
     def __init__(self, name = "", samplesAndSignalEff = {}, data = None,
@@ -12,7 +12,7 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     d["selections"] = []
     d["selections"].append(selection(name = "55",
                                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                                     data = inputData2.data2011_55_v7(),
+                                     data = afterAlphaT.data_55_v1(),
                                      #universalSystematics = True,
                                      #universalKQcd = True,
                                      )
