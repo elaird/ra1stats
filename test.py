@@ -103,6 +103,7 @@ cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
 f.bestFit()
+#f.bestFit(drawMc = False, printValues = False, printNom = False)
 #f.bestFit(printPages = True)
 #f.qcdPlot()
 #f.pValue(nToys = 300)
