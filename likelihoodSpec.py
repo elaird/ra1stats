@@ -1,4 +1,4 @@
-import inputData
+import inputData,inputData2
 
 class selection(object) :
     def __init__(self, name = "", samplesAndSignalEff = {}, data = None,
@@ -12,17 +12,17 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     d["selections"] = []
     d["selections"].append(selection(name = "55",
                                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                                     data = inputData.data2011_55_v6(),
-                                     universalSystematics = True,
-                                     universalKQcd = True,
+                                     data = inputData2.data2011_55_v7(),
+                                     #universalSystematics = True,
+                                     #universalKQcd = True,
                                      )
                            )
 
-    d["selections"].append(selection(name = "2010",
-                                     samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
-                                     data = inputData.data2010(),
-                                     )
-                           )
+    #d["selections"].append(selection(name = "2010",
+    #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
+    #                                 data = inputData.data2010(),
+    #                                 )
+    #                       )
 
     if simpleOneBin :
         assert False
