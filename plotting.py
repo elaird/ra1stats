@@ -749,16 +749,23 @@ class validationPlotter(object) :
         s = 0.023
         text.SetTextSize(0.5*text.GetTextSize())
         #text.DrawLatex(x, y + s, "ML fit values")
-        for i,t in enumerate([("A_ewk", "A_{EWK} = %4.2e #pm %4.2e"),
-                              ("k_ewk", "k_{EWK} = %4.2e #pm %4.2e"),
-                              ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e"),
-                              ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e"),
-                              ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
-                              ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
-                              ("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
-                              #("k_qcd_nom", "k_{QCDnom} = %4.2e #pm %4.2e"),
-                              #("k_qcd_unc_inp", "#sigma k_{QCDnom} = %4.2e #pm %4.2e"),
-                              ]) :
+
+        l = [("A_ewk", "A_{EWK} = %4.2e #pm %4.2e"),
+             ("k_ewk", "k_{EWK} = %4.2e #pm %4.2e"),
+             ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e"),
+             ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e"),
+             ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
+             ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
+             ("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
+             ]
+
+        if self.printNom :
+            l +=  [("", ""),
+                   ("k_qcd_nom", "k nom = %4.2e #pm %4.2e"),
+                   ("k_qcd_unc_inp", "#sigma k nom = %4.2e #pm %4.2e"),
+                   ]
+
+        for i,t in enumerate(l) :
             var,label = t
             obj = self.wspace.var(var)
             if not obj : obj = self.wspace.var(ni(var, self.label))

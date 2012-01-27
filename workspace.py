@@ -684,14 +684,14 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True) :
+    def bestFit(self, printPages = False, drawMc = True, printNom = False) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         for selection in self.likelihoodSpec["selections"] :
             args = {"wspace": self.wspace, "results": results,
                     "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(),
                     "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
                     "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
-                    "printPages": printPages, "drawMc": drawMc}
+                    "printPages": printPages, "drawMc": drawMc, "printNom":printNom}
             for item in ["REwk", "RQcd"] :
                 args[item] = self.likelihoodSpec[item]
 
