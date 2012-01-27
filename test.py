@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import workspace
+import common,workspace
 import likelihoodSpec
 
 def signal(i) :
@@ -8,22 +8,22 @@ def signal(i) :
     def scaled(t, factor) :
         return tuple([factor*item for item in t])
 
-    lm1_2010 = {"xs": 4.9,
-                "effHad":  (0.0,    0.0,    0.02,   0.10),
-                "effMuon": (0.0,    0.0,    0.002,  0.01),
-                "label":"LM1 (LO)",
-                }
+    lm1 = common.signal(xs = 4.9, label = "LM1 (LO)")
+    lm1.update("2010", {
+            "effHad":  (0.0,    0.0,    0.02,   0.10),
+            "effMuon": (0.0,    0.0,    0.002,  0.01),
+            })
+
+    lm1.update("55", {
+            "effHad":(0.0059, 0.0091, 0.0285, 0.0328, 0.0218, 0.0105, 0.0046, 0.0042),
+            "effMuon":tuple([0.0]*8),
+            })
 
     lm6_2011 = {"xs": 0.3104,
                 "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
                 #"effMuon":(0.0,     0.0,     0.005/6, 0.012/6,0.019/6,0.022/6,0.018/6,0.029/6),#approx. for pT>20 GeV
                 "effMuon":scaled((0.045, 0.045, 0.1568, 0.245, 0.3254, 0.3481, 0.2836, 0.3618), 1.0e-2),#pT>10 GeV, |eta|<2.5
                 "label":"LM6 (LO)",
-                }
-
-    lm1_2011 = {"xs":4.9,
-                "effHad":(0.0059, 0.0091, 0.0285, 0.0328, 0.0218, 0.0105, 0.0046, 0.0042),
-                "effMuon":tuple([0.0]*8),
                 }
 
     p_29_25 = {"xs":5.4534794,
@@ -86,11 +86,11 @@ def signal(i) :
         "xs":1.0,
         }
     
-    return [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][i]
+    return [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signal = {"55":signal(3), "2010":signal(5)},
-                  signalExampleToStack = {"55":signal(3), "2010":signal(5)},
+                  #signal = signal(5),
+                  signalExampleToStack = signal(5),
 
                   #trace = True
                   #rhoSignalMin = 0.1,
