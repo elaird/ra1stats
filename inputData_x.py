@@ -122,9 +122,9 @@ class DataSlice( object, data ) :
 
             if objName in objKeys :
                 self._mcExpectations[ "mc"+objName ] =
-                    tuple( [ histo_dict[objName][objName].GetBinContent(xbin)      for xbin in xbins ] )
+                    tuple( [ histo_dict[objName][objName+"MC"].GetBinContent(xbin)      for xbin in xbins ] )
                 self._mcStatError[ "mc"+objName+"Err" ] =
-                    tuple( [ histo_dict[objName][objName].GetBinError(xbin)        for xbin in xbins ] )
+                    tuple( [ histo_dict[objName][objName+"MC"].GetBinError(xbin)        for xbin in xbins ] )
 
             if "obs" in objKeys :
                 self._observations[ "n"+objName ] =
