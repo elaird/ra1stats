@@ -1,8 +1,9 @@
 import inputData
 
 class selection(object) :
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, universalSystematics = False) :
-        for item in ["name", "samplesAndSignalEff", "data", "universalSystematics"] :
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None,
+                 universalSystematics = False, universalKQcd = False) :
+        for item in ["name", "samplesAndSignalEff", "data", "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
 def spec(simpleOneBin = False, qcdSearch = False) :
@@ -13,6 +14,7 @@ def spec(simpleOneBin = False, qcdSearch = False) :
                                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                      data = inputData.data2011_6(),
                                      universalSystematics = True,
+                                     universalKQcd = True,
                                      )
                            )
 
