@@ -2,6 +2,9 @@
 
 import histogramProcessing as hP
 
+import utils
+from data import data,scaled,excl,trig
+
 def getMultiHists( d ) :
     # d is a dictionary: structured:
     #   "filename_as_key" : { "phot" : [ "obs", "purity", "" ] }
@@ -24,40 +27,59 @@ def getMultiHists( d ) :
     hP.checkHistoBinning( h )
     return histo_dict
 
+# ok from here: 
+#   - we want a class the *just* holds the histograms: this means any sort of
+#   import of this module cannot accidently cause huge overhead. This is the
+#   only reason to do a class rather than a function here
 
+class DataSliceFactory( object ) :
+    self.__init__( self, d ) :
+        self._histos = getMultiHists( d )
 
-# might use this....
-class inputData( object ) :
-    """ Skeleton class for new approach to inputData """
-    def __init__( self, d , store_histos = False ) :
+    self.makeSlice( self, aT1, aT2 ) :
+        aTmin = min( aT1, aT2 )
+        aTmax = max( aT1, aT2 )
+        # want to operator on hists (second level of the dictionary) and turn them into cuts with the appropriate at values
+        h = {} # h is going to be used to hold the tempory 1Ds used to instantiate a DataSlice
+        h_suffix = "_%d-%d" % ( int(aTmin*100), int(aTmax*100) )
+        h_options = "e" # calcualte errors too
+        for dir in self._histos.keys() :
+            for histo in dir.keys() :
+                # TED: I think we're safe w.r.t. overflows here:
+                firstybin = histo.GetYaxis().FindBin( aTmin ) 
+                lastybin  = histo.GetYaxis().FindBin( aTmax ) 
+                # how is ProjectionX defined in the binning varies across slices.  Should probably put some check on this
+                if histo.ClassName()[:3] == "TH2" : 
+                    h[dir][histo.GetName()] = ( histo.ProjectionX( histo.GetName()+h_suffix, firstybin, lastybin, h_options  )
+                elif histo.ClassName()[:3] == "TH1" :
+                    h[dir][hist.GetName()] = append( histo )
+        return DataSlice( h, suffix )
+        
 
-        histo_dict = getMultiHists( d )
-        # hist_dict contains { "phot"       : [ histos ]
-        #                      "phot_names" : [ "phot", "obs" ]
-        if store_histos :
-            self._histos = histo_dict
+class DataSlice( object, data ) :
+    # this class *checks* that everything souhld be a TH1D as otherwise makes no
+    # sense for it
+    self.__init__( self, histo_dict, suffix = "" ) :
+        for obj in histo_dict.keys() :
+            for hist in obj :
+                if obj.ClassName()[:3] != "TH1"
+                    assert False, "Attempted to take a 1D histogram slice without providing 1D histos"
+                lol
 
-
-        h = 0
-        i = 0
-        while h.ClassName()[:3] != "TH2" :
-            # lol wut
-            h = histo_dict[ histo_dict.keys().sorted()[0] ].keys().sorted()[i]
+        i = 0 
+        h = histo_dict[ histo_dict.keys().sorted()[0] ].keys().sorted()[i]
+        while h.GetName().find("lumi") > 0 :
             i+=1
-
+            h = histo_dict[ histo_dict.keys().sorted()[0] ].keys().sorted()[i]
 
         nxbins =  h.GetXaxis().GetNbins()
-        nybins =  h.GetYaxis().GetNbins()
 
         # save repeated calls
         xbins   = xrange(1,nxbins+1) # probably unnecessary use of xrange but..
-        ybins   = xrange(1,nybins+1)
 
         self._htBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in xbins ]
-        self._atBinLowerEdges = [ h.GetXaxis().GetBinLowEdge(bin) for bin in ybins ]
 
         self._htMaxForPlot = h.GetXaxis().GetBinUpEdge( nxbins )
-        self._atMaxForPlot = h.GetXaxis().GetBinUpEdge( nybins )
 
         # called from data.py mergeEfficiency
         self._mergeBins = None
@@ -72,23 +94,23 @@ class inputData( object ) :
             objKeys = histo_dict[objName].keys()
 
             if objName in objKeys :
-                self._mcExpectations[ "mc"+objName ]    =
-                    tuple( [ [ histo_dict[objName][objName].GetBinContent(xbin,ybin)      for xbin in xbins ] for ybin in ybins ] )
+                self._mcExpectations[ "mc"+objName ] =
+                    tuple( [ histo_dict[objName][objName].GetBinContent(xbin)      for xbin in xbins ] )
                 self._mcStatError[ "mc"+objName+"Err" ] =
-                    tuple( [ [ histo_dict[objName][objName].GetBinError(xbin,ybin)        for xbin in xbins ] for ybin in ybins ] )
+                    tuple( [ histo_dict[objName][objName].GetBinError(xbin)        for xbin in xbins ] )
 
             if "obs" in objKeys :
-                self._observations[ "n"+objName ]       =
-                    tuple( [ [ histo_dict[objName]["obs"].GetBinContent(xbin,ybin)        for xbin in xbins ] for ybin in ybins ] )
+                self._observations[ "n"+objName ] =
+                    tuple( [ histo_dict[objName]["obs"].GetBinContent(xbin)        for xbin in xbins ] )
             if "purity" in objKeys :
-                self._purities[ objName ]               =
-                    tuple( [ [ histo_dict[objName]["purity"].GetBinError(xbin,ybin)       for xbin in xbins ] for ybin in ybins ] )
+                self._purities[ objName ] =
+                    tuple( [ histo_dict[objName]["purity"].GetBinError(xbin)       for xbin in xbins ] )
             if "atTriggerEff" in objKeys :
                 self._atTriggerEff[dir] =
-                    tuple( [ [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin,ybin) for xbin in xbins ] for ybin in ybins ] )
+                    tuple( [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
             if "HtTriggerEff" in objKeys :
                 self._HtTriggerEff[dir] =
-                    tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin,ybin)   for xbin in xbins ] )
+                    tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
             if "lumiData" in objKeys :
                 self._lumi[dir] = histo_dict[dir]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
