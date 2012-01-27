@@ -158,6 +158,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         hadExp  = ni("hadExp",  label, i)
         
         wimport(w, r.RooFormulaVar(hadB, "(@0)+(@1)", r.RooArgList(ewk, qcd)))
+        if nHadValue==None : continue
         wimport(w, r.RooRealVar(nHad, nHad, nHadValue))
         if smOnly :
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadB)))
