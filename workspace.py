@@ -112,24 +112,24 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     A_ewk_ini = 1.3e-5
     factor = 0.7
     A = ni("A_qcd", label)
-    wimport(w, r.RooRealVar(A, A, 1.5e-5, 0.0, 100.0))
+    wimport(w, r.RooRealVar(A, A, 1.0e-2, 0.0, 100.0))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
-        wimport(w, r.RooRealVar(k, k, 1.0e-5, 0.0, 1.0))
+        wimport(w, r.RooRealVar(k, k, 3.0e-2, 0.0, 1.0))
         if RQcd=="Zero" :
             w.var(k).setVal(0.0)
             w.var(k).setConstant()
         else :
             out["nuis"].append(k)
-            w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
+            #w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
 
     if RQcd=="Zero" :
         w.var(A).setVal(0.0)
         w.var(A).setConstant()
     else :
         if not qcdSearch : out["nuis"].append(A)
-        w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
+        #w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
 
     #observed "constants", not depending upon slice
     for i,htMeanValue,nHadBulkValue,hadTrgEffValue in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"]) :
