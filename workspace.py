@@ -109,25 +109,26 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     assert RQcd!="FallingExpA"
 
     #QCD variables
+    A_ewk_ini = 1.3e-5
+    factor = 0.7
     A = ni("A_qcd", label)
     wimport(w, r.RooRealVar(A, A, 1.5e-5, 0.0, 100.0))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
         wimport(w, r.RooRealVar(k, k, 1.0e-5, 0.0, 1.0))
+        if RQcd=="Zero" :
+            w.var(k).setVal(0.0)
+            w.var(k).setConstant()
+        else :
+            out["nuis"].append(k)
+            w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
 
-    #inital values
-    A_ewk_ini = 1.3e-5
     if RQcd=="Zero" :
         w.var(A).setVal(0.0)
         w.var(A).setConstant()
-        w.var(k).setVal(0.0)
-        w.var(k).setConstant()
     else :
-        out["nuis"].append(k)
         if not qcdSearch : out["nuis"].append(A)
-        factor = 0.7
-        w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
         w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
 
     #observed "constants", not depending upon slice
