@@ -26,7 +26,7 @@ def getMultiHists( d ) :
                 histo_dict[dir][histo_name] =  h_temp
                 if h_temp.ClassName()[:3] == "TH2" :
                     h.append( h_temp )
-
+                    h_temp.Draw("text")
     hP.checkHistoBinning( h )
     return histo_dict
 
@@ -68,6 +68,7 @@ class DataSliceFactory( object ) :
         h_proj.SetBinContent( 1, minBinContent + underflow )
         h_proj.SetBinError( nbins, sqrt(maxBinErr**2 + overflowErr**2)  )
         h_proj.SetBinError( 1,     sqrt(minBinErr**2 + underflowErr**2) )
+        h_proj.Draw("text")
         return h_proj
 
     def makeSlice( self, aT1 = None, aT2 = None ) :
@@ -181,3 +182,5 @@ class DataSlice( object ) :
             }
 
         print self._mcExpectations
+        print self._htBinLowerEdges
+        print self._htMaxForPlot

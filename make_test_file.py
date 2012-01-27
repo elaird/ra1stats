@@ -15,25 +15,31 @@ nybins = len(ybins)
 nbins = (nxbins+1) * (nybins+1)
 bins = range( 1, nbins+1 )
 
-f = r.TFile.Open( "data_factory_test.root", "UPDATE" )
-histo = r.TH2D("photMC", "DataFactory Test", nxbins-1, xbins, nybins-1, ybins)
-rn = r.TRandom()
+#f = r.TFile.Open( "data_factory_test.root", "UPDATE" )
+#histo = r.TH2D("photMC", "DataFactory Test", nxbins-1, xbins, nybins-1, ybins)
+#rn = r.TRandom()
+#
+#for bin in bins :
+#    histo.SetBinContent(bin, rn.Rndm()*1000. )
+#
+#directory = "phot"
+#if not f.cd( directory ) : 
+#    print "--> Creating directory: %s" % ( directory )
+#    f.mkdir( directory ).cd()
+#    f.cd( directory )
+#
+#histo.Write("",r.TObject.kOverwrite)
+#
+#f.Close()
 
-for bin in bins :
-    histo.SetBinContent(bin, rn.Rndm()*1000. )
-
-directory = "phot"
-if not f.cd( directory ) : 
-    print "--> Creating directory: %s" % ( directory )
-    f.mkdir( directory ).cd()
-    f.cd( directory )
-
-histo.Write("",r.TObject.kOverwrite)
-
-f.Close()
 
 d = { "data_factory_test.root" : { "phot" : [ "photMC" ] } }
 
+r.gStyle.SetOptStat(0)
+canvas = r.TCanvas()
+canvas.Print("test2.pdf[")
 dsf = iDx.DataSliceFactory( d )
-
+canvas.Print("test2.pdf")
 ds_52_53 = dsf.makeSlice(0.52,0.53)
+canvas.Print("test2.pdf")
+canvas.Print("test2.pdf]")
