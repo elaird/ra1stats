@@ -12,7 +12,7 @@ def spec(simpleOneBin = False, qcdSearch = False) :
     d["selections"] = []
     d["selections"].append(selection(name = "55",
                                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                                     data = inputData.data2011_6(),
+                                     data = inputData.data2011_55_v6(),
                                      universalSystematics = True,
                                      universalKQcd = True,
                                      )
