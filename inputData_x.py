@@ -96,7 +96,7 @@ class DataSlice( object, data ) :
 
         i = 0 
         h = histo_dict[ histo_dict.keys().sorted()[0] ].keys().sorted()[i]
-        while h.GetName().find("lumi") > 0 :
+        while h.GetName().find("lumi") != 0 :
             i+=1
             h = histo_dict[ histo_dict.keys().sorted()[0] ].keys().sorted()[i]
 
@@ -113,10 +113,9 @@ class DataSlice( object, data ) :
         self._mergeBins = None
         self._constantMcRatioAfterHere =  [ ]
 
-        self._htMeans = [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ]
+        self._htMeans = tuple( [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ] )
 
-        #self._sigEffCorr =    (
-        # this was apparently a hack
+        self._sigEffCorr =  
 
         for objName in histo_dict.keys() :
             objKeys = histo_dict[objName].keys()
@@ -164,17 +163,3 @@ class DataSlice( object, data ) :
             "k_qcd_unc_inp" : 0.66e-2,
             }
 
-    def HtProjection( self, aTmin = None, aTmax = None ) :
-        assert hasattr( self, "_histos" ) False, "Attempted to take projection \
-            of data_x class with no  histograms stored.  class should be \
-            constructed with \"store_histos=True\" "
-
-# silly way of doing it as we don't store the histograms in the lists so we'd
-# have to maanuall project
-#        for attr in [ "_mcExtra", "_mcExpectations", "_lumi", "_HtTriggerEff", 
-#            "_atTriggerEff", "_purities", "_observations", "_mcStatError",
-#            "_mcExpectations" ] :
-#            d = getattr( self, attr, None )
-#            if d is not None :
-#                for histo in d.keys() :
-#                    # need to assign to some class here
