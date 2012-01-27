@@ -46,7 +46,7 @@ class data_55_v1(data) :
                                     self._triggerEfficiencies["had"]),
             "mcZinv":     trig(            (  86.75,  35.80,   25.30,   10.69,    3.5,    1.4,    0.5,    0.2),
                                     self._triggerEfficiencies["had"]),
-            "mcZmumu":    trig(     scaled((  13.55,   6.17,    2.13,    2.64,    0.0,    0.6,    0.1,    1.0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
+            "mcZmumu":    trig(     scaled((  13.55,   6.17,    2.13,    2.64,    0.1,    0.6,    0.1,    1.0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
                                     self._triggerEfficiencies["had"]),
             }
 
