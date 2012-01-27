@@ -1,3 +1,5 @@
+import ROOT as r
+
 class signal(dict) :
     def __init__(self, xs = None, label = "") :
         for item in ["xs", "label"] :
@@ -7,6 +9,10 @@ class signal(dict) :
     def update(self, key = "", dct = {}) :
         self[key] = dct
 
+def wimport(w, item) :
+    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
+    getattr(w, "import")(item)
+    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
 def obs(w) :
     return w.set("obs")

@@ -1,6 +1,6 @@
 import collections,math
 import utils,plotting,calc
-from common import obs,pdf,note,ni
+from common import obs,pdf,note,ni,wimport
 import ROOT as r
 
 def modelConfiguration(w, smOnly, qcdSearch) :
@@ -437,11 +437,6 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def wimport(w, item) :
-    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
-    getattr(w, "import")(item)
-    r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
-
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
                     REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signalDict = {}, simpleOneBin = {}) :
 
@@ -633,9 +628,9 @@ class foo(object) :
     
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
         if self.likelihoodSpec["qcdSearch"] :
-            return plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
+            return calc.plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
         elif method=="profileLikelihood" :
-            return plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
+            return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
@@ -658,9 +653,9 @@ class foo(object) :
             if s.first().getMin() : s.first().setMin(0.0)
             if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
             
-        out2 = cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
-                   cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
-                   plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
+        out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
+                        cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
+                        plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
         out.update(out2)
         return out
 
