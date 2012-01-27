@@ -1,7 +1,7 @@
 import utils
 from data import data,scaled,excl,trig
 
-class data2011_55_v7(data) :
+class data_55_v1(data) :
     """muons and mumu have no alt cut for highest six bins"""
     
     def _fill(self) :
