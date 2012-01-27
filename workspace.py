@@ -96,7 +96,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iLast = 
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
-def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None,
+def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
              REwk = None, RQcd = None, nFZinv = None, qcdSearch = None) :
 
     obs = inputData.observations()
@@ -192,7 +192,7 @@ def simpleOneBinTerm(w = None, inputData = None, label = "", smOnly = None, varD
     
     w.factory("PROD::simpleOneBinTerm(%s)"%",".join(terms))
 
-def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
+def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -242,7 +242,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", smO
     out["multiBinObs"].append(ni("nMumu", label))
     return out
 
-def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
+def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
     out = collections.defaultdict(list)
 
     terms = []
@@ -292,7 +292,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", smO
     out["multiBinObs"].append(ni("nPhot", label))
     return out
 
-def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
+def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -351,7 +351,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", smO
     out["multiBinObs"].append(ni("nMuon", label))
     return out
 
-def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None) :
+def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
     k_qcd_nom = ni(name = "k_qcd_nom", label = label)
     k_qcd_unc_inp = ni(name = "k_qcd_unc_inp", label = label)
     k_qcd = ni(name = "k_qcd", label = label)
@@ -372,7 +372,7 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOn
     out["nuis"].append(k_qcd_unc_inp)
     return out
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", smOnly = None, #smOnly not used
+def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, #kQcdLabel,smOnly not used
                 signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
 
     for item in ["had", "muon"] :
@@ -462,7 +462,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         args[item] = {}
         args[item]["inputData"] = selection.data
         args[item]["label"] = selection.name
-        for x in ["w", "systematicsLabel", "smOnly"] :
+        for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
             args[item][x] = eval(x)
 
     for x in ["REwk", "RQcd", "nFZinv", "qcdSearch"] :
