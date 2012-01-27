@@ -5,6 +5,8 @@ import histogramProcessing as hP
 import utils
 from data import data,scaled,excl,trig
 
+from math import sqrt
+
 def getMultiHists( d ) :
     # d is a dictionary: structured:
     #   "filename_as_key" : { "phot" : [ "obs", "purity", "" ] }
@@ -36,7 +38,7 @@ class DataSliceFactory( object ) :
     self.__init__( self, d ) :
         self._histos = getMultiHists( d )
 
-    self.makeSlice( self, aT1, aT2 ) :
+    self.makeSlice( self, aT1 = None, aT2 = None ) :
         aTmin = min( aT1, aT2 )
         aTmax = max( aT1, aT2 )
         # want to operator on hists (second level of the dictionary) and turn them into cuts with the appropriate at values
@@ -45,15 +47,40 @@ class DataSliceFactory( object ) :
         h_options = "e" # calcualte errors too
         for dir in self._histos.keys() :
             for histo in dir.keys() :
-                firstybin = histo.GetYaxis().FindBin( aTmin ) 
-                lastybin  = histo.GetYaxis().FindBin( aTmax ) 
+                # set some sensible defaults
+                firstybin = 1
+                lastybin  = hist.GetYaxis().GetNbins()
+                if aTmin is not None :
+                    firstybin = histo.GetYaxis().FindBin( aTmin ) 
+                if aTmax is not None :
+                    lastybin  = histo.GetYaxis().FindBin( aTmax ) 
                 # how is ProjectionX defined in the binning varies across slices.  Should probably put some check on this
-                if histo.ClassName()[:3] == "TH2" : 
+                cName = histo.ClassName()
+                if cName[:3] == "TH2" : 
                     # TED: I think we're safe w.r.t. overflows here: all I need
                     # to do is put everything form the X overflow (nxbins
                     # +1),(0) into the last bins (1, nxbins)
-                    h[dir][histo.GetName()] = ( histo.ProjectionX( histo.GetName()+h_suffix, firstybin, lastybin, h_options  )
-                elif histo.ClassName()[:3] == "TH1" :
+                    name = histo.GetName()
+                    h_proj = histo.ProjectionX( name+h_suffix, firstybin, lastybin, h_options )
+
+                    # save on multiple function calls
+                    nbins = h_proj.GetNbins()
+                    maxBinContent = h_proj.GetBinContent( nbins )
+                    minBinContent = h_proj.GetBinContent( 1 )
+                    maxBinErr = h_proj.GetBinError( nbins )
+                    minBinErr = h_proj.GetBinError( 1 )
+                    overflow  = h_proj.GetBinContent( nbins+1 )
+                    underflow = h_proj.GetBinContent( 0 )
+                    overflowErr  = h_proj.GetBinError( nbins + 1 )
+                    underflowErr = h_proj.GetBinError( 0 )
+
+                    h_proj.SetBinContent( nbins, maxBinContent + overflow )
+                    h_proj.SetBinContent( 1, minBinContent + underflow )
+                    h_proj.SetBinError( nbins, sqrt(maxBinErr**2 + overflowErr**2)  )
+                    h_proj.SetBinError( 1,     sqrt(minBinErr**2 + underflowErr**2) )
+
+                    h[dir][name] = h_proj
+                elif cName[:3] == "TH1" : # only the lumi hists are 1D
                     h[dir][hist.GetName()] = append( histo )
         return DataSlice( h, suffix )
         
@@ -64,9 +91,8 @@ class DataSlice( object, data ) :
     self.__init__( self, histo_dict, suffix = "" ) :
         for obj in histo_dict.keys() :
             for hist in obj :
-                if obj.ClassName()[:3] != "TH1"
+                if obj.ClassName()[:3] != "TH1" :
                     assert False, "Attempted to take a 1D histogram slice without providing 1D histos"
-                lol
 
         i = 0 
         h = histo_dict[ histo_dict.keys().sorted()[0] ].keys().sorted()[i]
@@ -139,10 +165,9 @@ class DataSlice( object, data ) :
             }
 
     def HtProjection( self, aTmin = None, aTmax = None ) :
-        if not hasattr( self, "_histos" ) :
-            assert False, "Attempted to take projection of data_x class with no \
-            histograms stored.  class should be constructed with \
-            \"store_histos=True\" "
+        assert hasattr( self, "_histos" ) False, "Attempted to take projection \
+            of data_x class with no  histograms stored.  class should be \
+            constructed with \"store_histos=True\" "
 
 # silly way of doing it as we don't store the histograms in the lists so we'd
 # have to maanuall project
