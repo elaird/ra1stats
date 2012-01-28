@@ -1,5 +1,9 @@
 import collections
 
+def locations() :
+    return {"eff": "/vols/cms02/elaird1/20_yieldHistograms/2011/",
+            "xs": "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria"}
+
 def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
