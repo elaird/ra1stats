@@ -131,7 +131,9 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         stem = conf.strings(*point)["pickledFileName"]
         writeNumbers(fileName = stem + ".in", d = signal)
         if not outFilesAlso : return
-        writeNumbers(fileName = stem + ".out", d = stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
+        writeNumbers(fileName = stem + ".out", d = signal)
+        print "ERROR: stuff vars"
+        #stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
 
     map(one, points)
         
