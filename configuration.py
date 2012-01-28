@@ -1,7 +1,7 @@
-import collections
+import collections,socket
 
 def locations() :
-    s = "/vols/cms02/elaird1/"
+    s = "/vols/cms02/elaird1/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
     return {"eff": "%s/20_yieldHistograms/2011/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
