@@ -141,24 +141,24 @@ class data_53_v1(data) :
             }
 
         self._mcExpectations = {
-            "mcMuon":     trig(     scaled((      0,      0,       0,       0,   46.64,  17.35,   6.12,   4.85), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcMuon":     trig(     scaled((   None,   None,    None,    None,   46.64,  17.35,   6.12,   4.85), self.lumi()["muon"]/self.lumi()["mcMuon"]),
                                     self._triggerEfficiencies["had"]),
-            "mcTtw":      trig(     scaled((      0,      0,       0,       0,   65.31,  30.30,  11.55,   8.47), self.lumi()["muon"]/self.lumi()["mcTtw"]),
+            "mcTtw":      trig(     scaled((   None,   None,    None,    None,   65.31,  30.30,  11.55,   8.47), self.lumi()["muon"]/self.lumi()["mcTtw"]),
                                     self._triggerEfficiencies["had"]),
-            "mcGjets":         excl(scaled((      0,      0,   460.0,   180.0,    68.0,   26.0,   13.0,    7.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcGjets":         excl(scaled((   None,   None,    None,    None,    68.0,   26.0,   13.0,    7.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
 
-            "mcZinv":     trig(            (      0,      0,       0,       0,    37.1,   12.7,    6.0,    5.8),
+            "mcZinv":     trig(            (   None,   None,    None,    None,    37.1,   12.7,    6.0,    5.8),
                                     self._triggerEfficiencies["had"]),
-            "mcZmumu":    trig(     scaled((      0,      0,       0,       0,     3.1,    0.7,    0.0,    0.4), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
+            "mcZmumu":    trig(     scaled((   None,   None,    None,    None,     3.1,    0.7,    0.0,    0.4), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
                                     self._triggerEfficiencies["had"]),
             }
 
         self._mcStatError = {
-            "mcMuonErr":                   (     0,       0,       0,      0,    2.4,    1.3,    0.8,   0.7),
-            "mcTtwErr":                    (     0,       0,       0,      0,    2.6,    1.9,    1.2,   0.8),
-            "mcGjetsErr":           scaled((   0.0,     0.0,    20.0,   10.0,    7.0,    4.0,    3.0,   2.0), self.lumi()["phot"]/self.lumi()["mcGjets"]),
-            "mcZinvErr":                   (     0,       0,       0,      0,    1.5,    0.9,    0.6,   0.6),
-            "mcZmumuErr":                  (     0,       0,       0,      0,    1.0,    0.5,    0.0,   0.4),
+            "mcMuonErr":                   (  None,    None,    None,   None,    2.4,    1.3,    0.8,   0.7),
+            "mcTtwErr":                    (  None,    None,    None,   None,    2.6,    1.9,    1.2,   0.8),
+            "mcGjetsErr":           scaled((  None,    None,    None,   None,    7.0,    4.0,    3.0,   2.0), self.lumi()["phot"]/self.lumi()["mcGjets"]),
+            "mcZinvErr":                   (  None,    None,    None,   None,    1.5,    0.9,    0.6,   0.6),
+            "mcZmumuErr":                  (  None,    None,    None,   None,    1.0,    0.5,    0.0,   0.4),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
 
