@@ -1,9 +1,10 @@
 from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b
 
 class selection(object) :
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None,
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None),
                  universalSystematics = False, universalKQcd = False) :
-        for item in ["name", "samplesAndSignalEff", "data", "universalSystematics", "universalKQcd"] :
+        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax",
+                     "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
 class spec(dict) :
