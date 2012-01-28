@@ -448,8 +448,8 @@ class validationPlotter(object) :
         text.SetTextFont(102)
         text.SetTextSize(0.45*text.GetTextSize())
         x = 0.1
-        y = 0.9
-        slope = 0.03
+        y = 0.95
+        slope = 0.023
         
         self.canvas.Clear()
         y = printText(x, y, "%20s:    %6s   +/-   %6s       [ %6s    -  %6s   ]"%("par name", "value", "error", "min", "max"))
