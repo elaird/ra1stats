@@ -9,7 +9,7 @@ def ratio(file, numDir, numHisto, denDir, denHisto) :
     assert not f.IsZombie(), file
         
     hOld = f.Get("%s/%s"%(numDir, numHisto))
-    assert hOld,"%s/%s"%(numDir, numHisto)
+    assert hOld,"%s:%s/%s"%(file, numDir, numHisto)
     h = hOld.Clone("%s_clone"%hOld.GetName())
     h.SetDirectory(0)
     h.Divide(f.Get("%s/%s"%(denDir, denHisto)))
