@@ -1,6 +1,6 @@
 import configuration as conf
 import histogramProcessing as hp
-import common,utils
+import common,utils,likelihoodSpec
 import cPickle,math,os
 import ROOT as r
 
@@ -18,39 +18,25 @@ def readNumbers(fileName) :
 
 ##number collection
 def effHistos(nloToLoRatios = False) :
-    data = conf.data()
-    binsInput = data.htBinLowerEdgesInput()
-    htThresholdsInput = zip(binsInput, list(binsInput[1:])+[None])
-    binsMerged =  data.htBinLowerEdges()
-
-    d = conf.likelihood()["alphaT"]
-    keys = sorted(d.keys())
     out = {}
+    for sel in likelihoodSpec.spec()["selections"] :
+        assert sel.data.htBinLowerEdgesInput()==sel.data.htBinLowerEdges(), "merging bins is not yet supported"
+        bins = sel.data.htBinLowerEdges()
+        htThresholds = zip(bins, list(bins[1:])+[None])
 
-    for iKey,key in enumerate(keys) :
-        nextKey = ""
-        if iKey!=len(keys)-1 :
-            nextKey = keys[iKey+1]
-        elif key :
-            nextKey = "inf"
-        
-        for box,considerSignal in d[key]["samples"] :
-            item = "eff%s%s"%(box.capitalize(), key)
+        alphaT = {"alphaTLower": sel.alphaTMinMax[0], "alphaTUpper": sel.alphaTMinMax[1]}
+        d = {}
+        for box,considerSignal in sel.samplesAndSignalEff.iteritems() :
+            item = "eff%s"%(box.capitalize())
             if not considerSignal :
-                out[item] = [0.0]*len(binsMerged)
-                if nloToLoRatios : out["_LO"%item] = out[item]
+                d[item] = [0.0]*len(bins)
+                if nloToLoRatios : d["_LO"%item] = out[item]
                 continue
 
-    	    out[item] = [hp.effHisto(box = box, scale = "1",
-                                     htLower = htLower, htUpper = htUpper,
-                                     alphaTLower = key, alphaTUpper = nextKey,
-                                     ) for htLower, htUpper in htThresholdsInput]
-    	                 
-    	    if nloToLoRatios :
-    	        out[item+"_LO"] = [hp.loEffHisto(box = box, scale = "1",
-                                                 htLower = htLower, htUpper = htUpper,
-                                                 alphaTLower = key, alphaTUpper = nextKey,
-                                                 ) for htLower, htUpper in htThresholdsInput]
+    	    d[item] = [hp.effHisto(box = box, scale = "1", htLower = l, htUpper = u, **alphaT) for l,u in htThresholds]
+    	    if not nloToLoRatios : continue
+            d[item+"_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = l, htUpper = u, **alphaT) for l,u in htThresholds]
+        out[sel.name] = d
     return out
 
 def numberDict(histos = {}, data = None, point = None) :
@@ -142,8 +128,7 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
 def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
     
-    args = {"data": conf.data(),
-            "switches": switches,
+    args = {"switches": switches,
             "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"]),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
