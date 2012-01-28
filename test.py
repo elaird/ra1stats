@@ -9,18 +9,18 @@ def signal(i) :
         return tuple([factor*item for item in t])
 
     lm1 = common.signal(xs = 4.9, label = "LM1 (LO)")
-    lm1.update("2010", {
+    lm1.insert("2010", {
             "effHad":  (0.0,    0.0,    0.02,   0.10),
             "effMuon": (0.0,    0.0,    0.002,  0.01)})
-    lm1.update("55", {
+    lm1.insert("55", {
             "effHad":(0.0059, 0.0091, 0.0285, 0.0328, 0.0218, 0.0105, 0.0046, 0.0042),
             "effMuon":tuple([0.0]*8)})
 
     lm6 = common.signal(xs = 0.3104, label = "LM6 (LO)")
-    lm6.update("55", {
+    lm6.insert("55", {
             "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
             "effMuon":scaled((0.045, 0.045, 0.1568, 0.245, 0.3254, 0.3481, 0.2836, 0.3618), 1.0e-2)})
-    lm6.update("2010", { #mocked up from 2011
+    lm6.insert("2010", { #mocked up from 2011
             "effHad": (0.0,     0.0,     0.005,   0.012 + 0.019 + 0.022 + 0.018 + 0.029),
             "effMuon":scaled((0.045, 0.045, 0.1568, 0.245 + 0.3254 + 0.3481 + 0.2836 + 0.3618), 1.0e-2)})
 
@@ -37,10 +37,10 @@ def signal(i) :
                }
     
     p_181_19 = common.signal(xs = 5.6887135, label = "m_{0}=1800 GeV, m_{1/2}=180 GeV (NLO)")
-    p_181_19.update("55", {
+    p_181_19.insert("55", {
             "effMuon":[0.000147, 0.000000, 0.000441, 0.000588, 0.000147, 0.000147, 0.000147, 0.000000],
             "effHad": [0.000231, 0.001030, 0.003325, 0.003974, 0.001766, 0.000588, 0.000000, 0.000000]})
-    p_181_19.update("2010", { #mocked up from 2011
+    p_181_19.insert("2010", { #mocked up from 2011
             "effMuon":[0.000147, 0.000000, 0.000441, 0.000588 + 0.000147 + 0.000147 + 0.000147 + 0.000000],
             "effHad": [0.000231, 0.001030, 0.003325, 0.003974 + 0.001766 + 0.000588 + 0.000000 + 0.000000]})
     
@@ -103,7 +103,7 @@ cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
 f.bestFit(printValues = True)
-#f.bestFit(drawMc = False, printValues = False, printNom = False)
+#f.bestFit(drawMc = False, printValues = True)
 #f.bestFit(printPages = True)
 #f.qcdPlot()
 #f.pValue(nToys = 300)

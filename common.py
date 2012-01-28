@@ -6,7 +6,7 @@ class signal(dict) :
             assert item
             setattr(self, item, eval(item))
     
-    def update(self, key = "", dct = {}) :
+    def insert(self, key = "", dct = {}) :
         self[key] = dct
 
 def wimport(w, item) :
