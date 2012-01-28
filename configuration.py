@@ -1,9 +1,5 @@
 import collections
 
-def likelihood() :
-    import likelihoodSpec
-    return likelihoodSpec.spec()
-
 def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
