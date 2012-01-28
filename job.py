@@ -32,17 +32,19 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
     printDict(signal)
     out = {}
     if signal["eventsInRange"] :
-        out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
-        if switches["method"] and bool(signal["effHadSum"])  : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
+        print "ERROR: stuff vars"
+        #out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
+        print "ERROR: implement a effHadSum check" #and bool(signal["effHadSum"])
+        if switches["method"] : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
     else :
         print "WARNING nEventsIn = %d not in allowed range[ %d, %d ] " % ( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
     return out
 
-def results(switches = None, data = None, likelihoodSpec = None, signal = None) :
+def results(switches = None, likelihoodSpec = None, signal = None) :
     out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
-        f = workspace.foo(inputData = data, signal = signal, likelihoodSpec = likelihoodSpec,
+        f = workspace.foo(signal = signal, likelihoodSpec = likelihoodSpec,
                           extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
 
         if switches["method"]=="CLs" :
