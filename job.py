@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import configuration as conf
-import pickling,workspace
+import pickling,workspace,likelihoodSpec
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
@@ -11,18 +11,23 @@ def description(key, cl = None) :
     if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
     else : return ""
 
-def printDict(d) :
-    print "{"
-    for key,value in d.iteritems() :
-        out = '"%s":'%key
-        if type(value)!=tuple and type(value)!=list :
+def printDict(d, space = "") :
+    print "%s{"%space
+    for key in sorted(d.keys()) :
+        value = d[key]
+        out = '%s"%s":'%(space, key)
+        if type(value)==dict :
+            print out
+            printDict(value, space = "  ")
+            continue
+        elif type(value)!=tuple and type(value)!=list :
             out+=str(value)
         else :
             out += "[%s]"%(", ".join(["%s"%str(item) for item in value]))
         print out+","
-    print "}"
+    print "%s}"%space
 
-def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) :
+def onePoint(switches = None, likelihoodSpec = None, point = None) :
     signal = pickling.readNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in")
     printDict(signal)
     out = {}
@@ -73,10 +78,8 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
-    data = conf.data()
-    likelihoodSpec = conf.likelihood()
     for point in points() :
-        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
+        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = onePoint(switches = s, likelihoodSpec = likelihoodSpec.spec(), point = point))
 
 if False :
     import cProfile
