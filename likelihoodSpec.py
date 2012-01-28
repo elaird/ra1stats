@@ -6,48 +6,58 @@ class selection(object) :
         for item in ["name", "samplesAndSignalEff", "data", "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
-def spec(simpleOneBin = False, qcdSearch = False) :
-    d = {}
+class spec(dict) :
+    def __init__(self, simpleOneBin = False, qcdSearch = False) :
+        self._selections = []
+        self.load()
 
-    d["selections"] = []
-    #d["selections"].append(selection(name = "55",
-    #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-    #                                 data = afterAlphaT.data_55_v1(),
-    #                                 #universalSystematics = True,
-    #                                 #universalKQcd = True,
-    #                                 )
-    #                       )
+        #for compatibility; to be rewritten
+        d = self
 
-    d["selections"].append(selection(name = "55b",
-                                     samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
-                                     data = afterAlphaT_b.data_55_v1(),
-                                     )
-                           )
-
-    #d["selections"].append(selection(name = "53",
-    #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-    #                                 data = afterAlphaT.data_53_v1(),
-    #                                 )
-    #                       )
-
-    #d["selections"].append(selection(name = "2010",
-    #                                 samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
-    #                                 data = inputData.data2010(),
-    #                                 )
-    #                       )
-
-    if simpleOneBin :
-        assert False
-        d["simpleOneBin"] = {"b":3.0}
-        key = max(d["alphaT"].keys())
-        d["alphaT"] = {key: {"samples": [("had", True)]} }
-    else :
-        d["simpleOneBin"] = {}
+        if simpleOneBin :
+            assert False
+            d["simpleOneBin"] = {"b":3.0}
+            key = max(d["alphaT"].keys())
+            d["alphaT"] = {key: {"samples": [("had", True)]} }
+        else :
+            d["simpleOneBin"] = {}
     
-    d["REwk"] = ["", "Linear", "FallingExp", "Constant"][0]
-    d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
-    d["nFZinv"] = ["All", "One", "Two"][2]
-    d["qcdSearch"] = qcdSearch
-    d["constrainQcdSlope"] = True
+        d["selections"] = self.selections()
+        d["REwk"] = ["", "Linear", "FallingExp", "Constant"][0]
+        d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
+        d["nFZinv"] = ["All", "One", "Two"][2]
+        d["qcdSearch"] = qcdSearch
+        d["constrainQcdSlope"] = True
+    
+    def selections(self) :
+        return self._selections
 
-    return d
+    def add(self, sel = None) :
+        self._selections.append(sel)
+
+    def load(self) :
+        self.add(selection(name = "55",
+                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                           data = afterAlphaT.data_55_v1(),
+                           #universalSystematics = True,
+                           #universalKQcd = True,
+                           )
+                 )
+
+        #self.add(selection(name = "55b",
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
+        #                   data = afterAlphaT_b.data_55_v1(),
+        #                   )
+        #         )
+        #
+        #self.add(selection(name = "53",
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = afterAlphaT.data_53_v1(),
+        #                   )
+        #         )
+        #
+        #self.add(selection(name = "2010",
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
+        #                   data = inputData.data2010(),
+        #                   )
+        #         )
