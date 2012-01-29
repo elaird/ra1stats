@@ -181,6 +181,6 @@ class DataSlice( object ) :
             "k_qcd_unc_inp" : 0.66e-2,
             }
 
-        print self._mcExpectations
-        print self._htBinLowerEdges
-        print self._htMaxForPlot
+       #print self._mcExpectations
+       #print self._htBinLowerEdges
+       #print self._htMaxForPlot
