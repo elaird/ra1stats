@@ -1,3 +1,5 @@
+from configuration import locations
+
 def smsRanges(model) :
     x = {"":     ( 50.0, 1499.9), #(min, max)
          "T1":   ( 50.0, 1224.9),
@@ -20,7 +22,7 @@ def smsRanges(model) :
     return d
 
 def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
-    base = "/vols/cms02/elaird1/20_yieldHistograms/2011/"
+    base = locations()["eff"]
 
     cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import configuration as conf
-import pickling,fresh
+import pickling,workspace,likelihoodSpec
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
@@ -11,34 +11,46 @@ def description(key, cl = None) :
     if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
     else : return ""
 
-def printDict(d) :
-    print "{"
-    for key,value in d.iteritems() :
-        out = '"%s":'%key
-        if type(value)!=tuple and type(value)!=list :
+def printDict(d, space = "") :
+    print "%s{"%space
+    for key in sorted(d.keys()) :
+        value = d[key]
+        out = '%s"%s":'%(space, key)
+        if type(value)==dict :
+            print out
+            printDict(value, space = "  ")
+            continue
+        elif type(value)!=tuple and type(value)!=list :
             out+=str(value)
         else :
             out += "[%s]"%(", ".join(["%s"%str(item) for item in value]))
         print out+","
-    print "}"
+    print "%s}"%space
 
-def onePoint(switches = None, data = None, likelihoodSpec = None, point = None) :
+def onePoint(switches = None, likelihoodSpec = None, point = None) :
     signal = pickling.readNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in")
     printDict(signal)
     out = {}
     if signal["eventsInRange"] :
-        out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
-        if switches["method"] and bool(signal["effHadSum"])  : out.update(results(switches = switches, data = data, likelihoodSpec = likelihoodSpec, signal = signal))
+        #out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
+        out.update(signal)
+        eff = False
+        for key,dct in signal.iteritems() :
+            if type(dct)!=dict : continue
+            if "effHadSum" in dct and dct["effHadSum"] :
+                eff = True
+                break
+        if switches["method"] and eff : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
     else :
         print "WARNING nEventsIn = %d not in allowed range[ %d, %d ] " % ( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
     return out
 
-def results(switches = None, data = None, likelihoodSpec = None, signal = None) :
+def results(switches = None, likelihoodSpec = None, signal = None) :
     out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
-        f = fresh.foo(inputData = data, signal = signal, likelihoodSpec = likelihoodSpec,
-                      extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
+        f = workspace.foo(signal = signal, likelihoodSpec = likelihoodSpec,
+                          extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
 
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"],
@@ -73,10 +85,9 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
-    data = conf.data()
-    likelihoodSpec = conf.likelihood()
     for point in points() :
-        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = onePoint(switches = s, data = data, likelihoodSpec = likelihoodSpec, point = point))
+        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out",
+                              d = onePoint(switches = s, likelihoodSpec = likelihoodSpec.spec(), point = point))
 
 if False :
     import cProfile

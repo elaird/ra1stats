@@ -1,7 +1,7 @@
 import utils
 from data import data,scaled,excl,trig
 
-class data2011_6(data) :
+class data2011_55_v6(data) :
     """no odd-muon-veto"""
     
     def _fill(self) :
@@ -427,9 +427,6 @@ class data2011_3_no_cleaning_cuts(data2011_3) :
         self._observations["nHad"] = self._observations["nHad55"]
         self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
         
-class data2011(data2011_6) :
-    pass
-
 class data2010(data) :
     def _fill(self) :
         self._htBinLowerEdges =          (250.0, 300.0, 350.0, 450.0)
@@ -448,12 +445,20 @@ class data2010(data) :
             "mcPhot":  35.0,
             "mcZinv":  35.0,
             }
-        self._htMeans = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
+        self._htMeans             = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
+        self._sigEffCorr          = (   1.0,    1.0,    1.0,    1.0)
+        self._triggerEfficiencies = {
+            "had": (  1.0, 1.0, 1.0, 1.0)
+            }
+
         self._observations = {
             "nHadBulk": (844459, 331948, 225649, 110034),
             "nHad":     (    33,     11,      8,      5),
             "nPhot":    (    24,      4,      6,      1),
             "nMuon":    (    13,      5,      5,      2),
+            }
+        self._purities = {
+            "phot": (1.0, 1.0, 1.0, 1.0)
             }
         self._mcExpectations = {
             "mcMuon": (  12.2,    5.2,    4.1,    1.9  ),
@@ -461,10 +466,15 @@ class data2010(data) :
             "mcPhot": (  22.4,    7.0,    4.4,    2.1  ),
             "mcZinv": (   8.1,    3.9,    2.586,  1.492),
             }
+        self._mcExpectations["mcGjets"] = self._mcExpectations["mcPhot"]
+
         self._mcStatError = {}
+        self._mcExtra = {}
 
         self._fixedParameters = {
             "sigmaLumiLike": 0.04,
             "sigmaPhotZ":    0.40,
             "sigmaMuonW":    0.30,
+            "k_qcd_nom"     : 3.3e-2,
+            "k_qcd_unc_inp" : 0.66e-2,
             }

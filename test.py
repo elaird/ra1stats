@@ -1,29 +1,28 @@
 #!/usr/bin/env python
 
-import fresh
+import common,workspace
 import likelihoodSpec
-from inputData import data2011
 
-def signal() :
+def signal(i) :
 
     def scaled(t, factor) :
         return tuple([factor*item for item in t])
 
-    lm1_2010 = {"xs": 4.9,
-                "effHad":  (0.0,    0.0,    0.02,   0.10),
-                "effMuon": (0.0,    0.0,    0.002,  0.01)}
+    lm1 = common.signal(xs = 4.9, label = "LM1 (LO)")
+    lm1.insert("2010", {
+            "effHad":  (0.0,    0.0,    0.02,   0.10),
+            "effMuon": (0.0,    0.0,    0.002,  0.01)})
+    lm1.insert("55", {
+            "effHad":(0.0059, 0.0091, 0.0285, 0.0328, 0.0218, 0.0105, 0.0046, 0.0042),
+            "effMuon":tuple([0.0]*8)})
 
-    lm6_2011 = {"xs": 0.3104,
-                "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
-                #"effMuon":(0.0,     0.0,     0.005/6, 0.012/6,0.019/6,0.022/6,0.018/6,0.029/6),#approx. for pT>20 GeV
-                "effMuon":scaled((0.045, 0.045, 0.1568, 0.245, 0.3254, 0.3481, 0.2836, 0.3618), 1.0e-2),#pT>10 GeV, |eta|<2.5
-                "label":"LM6 (LO)",
-                }
-
-    lm1_2011 = {"xs":4.9,
-                "effHad":(0.0059, 0.0091, 0.0285, 0.0328, 0.0218, 0.0105, 0.0046, 0.0042),
-                "effMuon":tuple([0.0]*8),
-                }
+    lm6 = common.signal(xs = 0.3104, label = "LM6 (LO)")
+    lm6.insert("55", {
+            "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
+            "effMuon":scaled((0.045, 0.045, 0.1568, 0.245, 0.3254, 0.3481, 0.2836, 0.3618), 1.0e-2)})
+    lm6.insert("2010", { #mocked up from 2011
+            "effHad": (0.0,     0.0,     0.005,   0.012 + 0.019 + 0.022 + 0.018 + 0.029),
+            "effMuon":scaled((0.045, 0.045, 0.1568, 0.245 + 0.3254 + 0.3481 + 0.2836 + 0.3618), 1.0e-2)})
 
     p_29_25 = {"xs":5.4534794,
                "effMuon":[0.000146, 0.000833, 0.001835, 0.001565, 0.001366, 0.001371, 0.000196, 8.888631e-05],
@@ -37,11 +36,13 @@ def signal() :
                "label":"m0= 280 GeV, m12=540 GeV (NLO)"
                }
     
-    p_181_19 = {"xs":5.6887135,
-                "effMuon":[0.000147, 0.000000, 0.000441, 0.000588, 0.000147, 0.000147, 0.000147, 0.000000],
-                "effHad": [0.000231, 0.001030, 0.003325, 0.003974, 0.001766, 0.000588, 0.000000, 0.000000],
-                "label":"m_{0}=1800 GeV, m_{1/2}=180 GeV (NLO)",
-                }
+    p_181_19 = common.signal(xs = 5.6887135, label = "m_{0}=1800 GeV, m_{1/2}=180 GeV (NLO)")
+    p_181_19.insert("55", {
+            "effMuon":[0.000147, 0.000000, 0.000441, 0.000588, 0.000147, 0.000147, 0.000147, 0.000000],
+            "effHad": [0.000231, 0.001030, 0.003325, 0.003974, 0.001766, 0.000588, 0.000000, 0.000000]})
+    p_181_19.insert("2010", { #mocked up from 2011
+            "effMuon":[0.000147, 0.000000, 0.000441, 0.000588 + 0.000147 + 0.000147 + 0.000147 + 0.000000],
+            "effHad": [0.000231, 0.001030, 0.003325, 0.003974 + 0.001766 + 0.000588 + 0.000000 + 0.000000]})
     
     filips_point1 = {'xs': 0.0909,
                      'effMuon': [0.0003, 0.0003, 0.0004, 0.0007, 0.0012, 0.0011, 0.0015, 0.0032],
@@ -85,24 +86,24 @@ def signal() :
         "xs":1.0,
         }
     
-    return [{}, p_29_25, p_29_55, p_181_19, lm6_2011, lm1_2010, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][3]
+    return [{}, p_29_25, p_29_55, p_181_19, lm6, lm1, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][i]
 
-f = fresh.foo(inputData = data2011(),
-              likelihoodSpec = likelihoodSpec.spec(),
-              #signal = signal()
-              signalExampleToStack = signal(),
+f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
+                  #signal = signal(4),
+                  #signalExampleToStack = signal(4),
 
-              #trace = True
-              #rhoSignalMin = 0.1,
-              #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
-              )
+                  #trace = True
+                  #rhoSignalMin = 0.1,
+                  #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
+                  )
 
 cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = cl, calculatorType = 0, testStatType = 3, nToys = 2000,
 #            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
 #f.profile()
-f.bestFit()
+f.bestFit(printValues = True)
+#f.bestFit(drawMc = False, printValues = True)
 #f.bestFit(printPages = True)
 #f.qcdPlot()
 #f.pValue(nToys = 300)
