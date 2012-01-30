@@ -32,10 +32,15 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
     printDict(signal)
     out = {}
     if signal["eventsInRange"] :
-        print "ERROR: stuff vars"
         #out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
-        print "ERROR: implement a effHadSum check" #and bool(signal["effHadSum"])
-        if switches["method"] : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
+        out.update(signal)
+        eff = False
+        for key,dct in signal.iteritems() :
+            if type(dct)!=dict : continue
+            if "effHadSum" in dct and dct["effHadSum"] :
+                eff = True
+                break
+        if switches["method"] and eff : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
     else :
         print "WARNING nEventsIn = %d not in allowed range[ %d, %d ] " % ( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
     return out
@@ -81,7 +86,8 @@ def compare(item, threshold) :
 def go() :
     s = conf.switches()
     for point in points() :
-        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out", d = onePoint(switches = s, likelihoodSpec = likelihoodSpec.spec(), point = point))
+        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out",
+                              d = onePoint(switches = s, likelihoodSpec = likelihoodSpec.spec(), point = point))
 
 if False :
     import cProfile

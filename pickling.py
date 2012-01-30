@@ -139,8 +139,25 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         
 ##merge functions
 def mergedFile() :
-    note = common.note(likelihoodSpec = conf.likelihood())
+    note = common.note(likelihoodSpec.spec())
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
+
+#note: improve this data format
+def flatten(target = {}, key = None, obj = None) :
+    if type(obj)==dict :
+        for k,v in obj.iteritems() :
+            flatten(target, "%s_%s"%(key, k), v)
+    elif type(obj)==list :
+        for i,x in enumerate(obj) :
+            flatten(target, "%s_%d"%(key, i), x)
+    elif type(obj) in [float, int, bool] :
+        flatten(target, key, (obj, ''))
+    elif type(obj)==tuple and len(obj)==2 and type(obj[1])==str :
+        assert key not in target,key
+        target[key] = obj
+    else :
+        assert False,type(obj)
+    return
 
 def mergePickledFiles(printExample = False) :
     example = hp.xsHisto()
@@ -156,26 +173,25 @@ def mergePickledFiles(printExample = False) :
     for point in hp.points() :
         fileName = conf.strings(*point)["pickledFileName"]+".out"
         if not os.path.exists(fileName) :
-            print "skipping file",fileName            
-        else :
-            d = readNumbers(fileName)
-            for key,value in d.iteritems() :
-                if type(value) is tuple :
-                    content,zTitle = value
-                else :
-                    content = value
-                    zTitle = ""
-                if key not in histos :
-                    histos[key] = example.Clone(key)
-                    histos[key].Reset()
-                    zTitles[key] = zTitle
+            print "skipping file",fileName
+            continue
 
-                histos[key].SetBinContent(point[0], point[1], point[2], content)
-            os.remove(fileName)
-            os.remove(fileName.replace(".out", ".in"))
+        d = readNumbers(fileName)
+        contents = {}
+        for key,value in d.iteritems() :
+            print key,value
+            flatten(contents, key, value)
+
+        for key,value in contents.iteritems() :
+            histos[key] = example.Clone(key)
+            histos[key].Reset()
+            histos[key].SetBinContent(point[0], point[1], point[2], value[0])
+
+        os.remove(fileName)
+        os.remove(fileName.replace(".out", ".in"))
 
     for key,histo in histos.iteritems() :
-        histo.GetZaxis().SetTitle(zTitles[key])
+        histo.GetZaxis().SetTitle(contents[key][1])
 
     f = r.TFile(mergedFile(), "RECREATE")
     for histo in histos.values() :
