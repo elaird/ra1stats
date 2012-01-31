@@ -663,9 +663,9 @@ class validationPlotter(object) :
         
         l = self.lumi[box]
         xs = d["example"].xs
+        eff = inDict(d["example"][self.label], "eff%s"%box.capitalize(), [0.0]*len(self.htBinLowerEdges))
         for i in range(len(self.htBinLowerEdges)) :
-            eff = d["example"][self.label]["eff%s"%box.capitalize()][i]
-            out.SetBinContent(i+1, l*xs*eff)
+            out.SetBinContent(i+1, l*xs*eff[i])
         return out
     
     def varHisto(self, spec = {}, extraName = "", yLabel = "", note = "", lumiString = "") :
