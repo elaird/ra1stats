@@ -2,7 +2,6 @@ import math,array,copy,collections
 import utils
 import plotting
 import ROOT as r
-from runInverter import RunInverter
 from common import obs,pdf,wimport
 
 def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
