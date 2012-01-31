@@ -1,8 +1,9 @@
 import collections
 import ROOT as r
+from configuration import locations
 
 def histoSpec(model) :
-    base = "/vols/cms02/elaird1/25_sms_reference_xs_from_mariarosaria"
+    base = locations()["xs"]
     tgqFile = "%s/TGQ_xSec.root"%base
     tgqHisto = "clone"
     tgqFactor = 1.0

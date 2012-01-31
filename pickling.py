@@ -1,6 +1,6 @@
 import configuration as conf
 import histogramProcessing as hp
-import fresh,utils
+import common,utils,likelihoodSpec
 import cPickle,math,os
 import ROOT as r
 
@@ -18,53 +18,25 @@ def readNumbers(fileName) :
 
 ##number collection
 def effHistos(nloToLoRatios = False) :
-    data = conf.data()
-    binsInput = data.htBinLowerEdgesInput()
-    htThresholdsInput = zip(binsInput, list(binsInput[1:])+[None])
-    binsMerged =  data.htBinLowerEdges()
-
-    d = conf.likelihood()["alphaT"]
-    keys = sorted(d.keys())
     out = {}
+    for sel in likelihoodSpec.spec()["selections"] :
+        assert sel.data.htBinLowerEdgesInput()==sel.data.htBinLowerEdges(), "merging bins is not yet supported"
+        bins = sel.data.htBinLowerEdges()
+        htThresholds = zip(bins, list(bins[1:])+[None])
 
-    for iKey,key in enumerate(keys) :
-        nextKey = ""
-        if iKey!=len(keys)-1 :
-            nextKey = keys[iKey+1]
-        elif key :
-            nextKey = "inf"
-        
-        nHtBins = len(d[key]["htBinMask"])
-        for box,considerSignal in d[key]["samples"] :
-            item = "eff%s%s"%(box.capitalize(), key)
+        alphaT = {"alphaTLower": sel.alphaTMinMax[0], "alphaTUpper": sel.alphaTMinMax[1]}
+        d = {}
+        for box,considerSignal in sel.samplesAndSignalEff.iteritems() :
+            item = "eff%s"%(box.capitalize())
             if not considerSignal :
-                out[item] = [0.0]*nHtBins
-                if nloToLoRatios : out["_LO"%item] = out[item]
+                d[item] = [0.0]*len(bins)
+                if nloToLoRatios : d["_LO"%item] = out[item]
                 continue
 
-    	    out[item] = [hp.effHisto(box = box, scale = "1",
-                                     htLower = htLower, htUpper = htUpper,
-                                     alphaTLower = key, alphaTUpper = nextKey,
-                                     ) for htLower, htUpper in htThresholdsInput]
-    	                 
-    	    if nloToLoRatios :
-    	        out[item+"_LO"] = [hp.loEffHisto(box = box, scale = "1",
-                                                 htLower = htLower, htUpper = htUpper,
-                                                 alphaTLower = key, alphaTUpper = nextKey,
-                                                 ) for htLower, htUpper in htThresholdsInput]
-    return out
-
-def numberDict(histos = {}, data = None, point = None) :
-    out = {}
-    for key,value in histos.iteritems() :
-        numList = []
-        for item in value :
-            if not hasattr(item, "GetBinContent") : break
-            numList.append(item.GetBinContent(*point))
-        if numList : out[key] = numList
-        else : out[key] = value
-        out[key] = data.mergeEfficiency(out[key])
-        out[key+"Sum"] = sum(out[key])
+    	    d[item] = [hp.effHisto(box = box, scale = "1", htLower = l, htUpper = u, **alphaT) for l,u in htThresholds]
+    	    if not nloToLoRatios : continue
+            d[item+"_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = l, htUpper = u, **alphaT) for l,u in htThresholds]
+        out[sel.name] = d
     return out
 
 def histoList(histos = {}) :
@@ -75,44 +47,47 @@ def histoList(histos = {}) :
             out.append(item)
     return out
 
-def effSums(d = {}) :
-    out = {}
-    for key,value in d.iteritems() :
-        if key[-3:]=="Sum" :
-            key2 = key.replace("eff","nEvents")
-            out[key2] = value*d["nEventsIn"]
-            if out[key2] :
-                out[key+"UncRelMcStats"] = 1.0/math.sqrt(out[key2])
-    return out
-
 def eventsInRange(switches = None, nEventsIn = None) :
     out = True
     if switches["minEventsIn"]!=None : out &= switches["minEventsIn"]<=nEventsIn
     if switches["maxEventsIn"]!=None : out &= nEventsIn<=switches["maxEventsIn"]
     return out
 
-def signalDict(point = None, eff = None, xs = None, xsLo = None, nEventsIn = None, data = None, switches = None) :
-    out = {}
+def signalModel(point = None, eff = None, xs = None, xsLo = None, nEventsIn = None, switches = None) :
+    out = common.signal(xs = xs.GetBinContent(*point), label = "%d_%d_%d"%point)
+    if xsLo : out["xs_LO"] = xsLo.GetBinContent(*point)
+    out["xs"] = out.xs
     out["x"] = xs.GetXaxis().GetBinLowEdge(point[0])
     out["y"] = xs.GetYaxis().GetBinLowEdge(point[1])
     out["nEventsIn"] = nEventsIn.GetBinContent(*point)
     out["eventsInRange"] = eventsInRange(switches, out["nEventsIn"])
     if not out["eventsInRange"] : return out
-    
-    out["xs"] = xs.GetBinContent(*point)
-    out.update(numberDict(histos = eff, data = data, point = point))
-    out.update(effSums(out))
 
+    for selName,dct in eff.iteritems() :
+        d = {}
+        for box,effHistos in dct.iteritems() :
+            if not all([hasattr(item, "GetBinContent") for item in effHistos]) : continue
+            d[box] = map(lambda x:x.GetBinContent(*point), effHistos)
+
+            d[box+"Sum"] = sum(d[box])
+            key = box.replace("eff","nEvents")
+            d[key] = d[box+"Sum"]*out["nEventsIn"]
+            if d[key] : d[box+"UncRelMcStats"] = 1.0/math.sqrt(d[key])
+        out[selName] = d
+    return out
+
+def broken() :
     if switches["nloToLoRatios"] :
+        for selName,dct in out.iteritems() :
+            for box,effs in dct.iteritems() :
+                if box+"_LO" in dct :
+                    pass
         remove = []
         for key,value in out.iteritems() :
             if key+"_LO" in out :
                 out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_LO"])]
                 remove.append(key+"_LO")
         for item in remove : del out[item]
-            
-        #if xsLo : lo = xsLo.GetBinContent(*point)
-        #signal["xs_NLO_over_LO"] = signal["xs"]/lo if lo else 0.0
     return out
 
 def stuffVars(switches = None, binsMerged = None, signal = None) :
@@ -142,9 +117,8 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
 
 def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
-
-    args = {"data": conf.data(),
-            "switches": switches,
+    
+    args = {"switches": switches,
             "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"]),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
@@ -153,18 +127,37 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
     hp.checkHistoBinning([args["xs"]]+histoList(args["eff"]))
 
     def one(point) :
-        signal = signalDict(point = point, **args)
+        signal = signalModel(point = point, **args)
         stem = conf.strings(*point)["pickledFileName"]
         writeNumbers(fileName = stem + ".in", d = signal)
         if not outFilesAlso : return
-        writeNumbers(fileName = stem + ".out", d = stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
+        writeNumbers(fileName = stem + ".out", d = signal)
+        print "ERROR: stuff vars"
+        #stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
 
     map(one, points)
         
 ##merge functions
 def mergedFile() :
-    note = fresh.note(likelihoodSpec = conf.likelihood())
+    note = common.note(likelihoodSpec.spec())
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
+
+#note: improve this data format
+def flatten(target = {}, key = None, obj = None) :
+    if type(obj)==dict :
+        for k,v in obj.iteritems() :
+            flatten(target, "%s_%s"%(key, k), v)
+    elif type(obj)==list :
+        for i,x in enumerate(obj) :
+            flatten(target, "%s_%d"%(key, i), x)
+    elif type(obj) in [float, int, bool] :
+        flatten(target, key, (obj, ''))
+    elif type(obj)==tuple and len(obj)==2 and type(obj[1])==str :
+        assert key not in target,key
+        target[key] = obj
+    else :
+        assert False,type(obj)
+    return
 
 def mergePickledFiles(printExample = False) :
     example = hp.xsHisto()
@@ -180,26 +173,25 @@ def mergePickledFiles(printExample = False) :
     for point in hp.points() :
         fileName = conf.strings(*point)["pickledFileName"]+".out"
         if not os.path.exists(fileName) :
-            print "skipping file",fileName            
-        else :
-            d = readNumbers(fileName)
-            for key,value in d.iteritems() :
-                if type(value) is tuple :
-                    content,zTitle = value
-                else :
-                    content = value
-                    zTitle = ""
-                if key not in histos :
-                    histos[key] = example.Clone(key)
-                    histos[key].Reset()
-                    zTitles[key] = zTitle
+            print "skipping file",fileName
+            continue
 
-                histos[key].SetBinContent(point[0], point[1], point[2], content)
-            os.remove(fileName)
-            os.remove(fileName.replace(".out", ".in"))
+        d = readNumbers(fileName)
+        contents = {}
+        for key,value in d.iteritems() :
+            print key,value
+            flatten(contents, key, value)
+
+        for key,value in contents.iteritems() :
+            histos[key] = example.Clone(key)
+            histos[key].Reset()
+            histos[key].SetBinContent(point[0], point[1], point[2], value[0])
+
+        os.remove(fileName)
+        os.remove(fileName.replace(".out", ".in"))
 
     for key,histo in histos.iteritems() :
-        histo.GetZaxis().SetTitle(zTitles[key])
+        histo.GetZaxis().SetTitle(contents[key][1])
 
     f = r.TFile(mergedFile(), "RECREATE")
     for histo in histos.values() :

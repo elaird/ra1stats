@@ -1,18 +1,15 @@
-import collections
+import collections,socket
 
-def likelihood() :
-    import likelihoodSpec
-    return likelihoodSpec.spec()
-
-def data() :
-    import inputData
-    return inputData.data2011()
+def locations() :
+    s = "/vols/cms02/elaird1/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
+    return {"eff": "%s/20_yieldHistograms/2011/"%s,
+            "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
-            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][1],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -44,12 +41,12 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][2],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
             }
 
 def points() :
-    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
-            "listOfTestPoints": [],
+    return {"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
+            #"listOfTestPoints": [],
             #"listOfTestPoints": [(32, 8, 1)],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],

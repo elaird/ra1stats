@@ -188,12 +188,14 @@ def makeEfficiencyUncertaintyPlots() :
     go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelMcStatsZRange")
 
 def printTimeStamp() :
-    l = conf.likelihood()
+    #l = conf.likelihood()
     text = r.TText()
     text.SetNDC()
     text.DrawText(0.1, 0.1, "file created at %s"%r.TDatime().AsString())
-    text.DrawText(0.1, 0.30, "RQcd = %s"%(l["RQcd"] if l["RQcd"] else "[no form assumed]"))
-    text.DrawText(0.1, 0.35, "REwk = %s"%(l["REwk"] if l["REwk"] else "[no form assumed]"))
+    text.DrawText(0.1, 0.35, "[restore useful info here]")
+    #text.DrawText(0.1, 0.35, "REwk = %s"%(l["REwk"] if l["REwk"] else "[no form assumed]"))
+    #text.DrawText(0.1, 0.30, "RQcd = %s"%(l["RQcd"] if l["RQcd"] else "[no form assumed]"))
+    #text.DrawText(0.1, 0.25, "nFZinv = %s"%(l["nFZinv"].replace("fZinv","")))
     return text
 
 def printSuppressed(l) :
@@ -212,6 +214,9 @@ def printLumis() :
     x = 0.1
     y = 0.9
     s = 0.035
+    text.DrawText(x, y  , "restore useful info here")
+    return text
+
     text.DrawText(x, y  , "sample     lumi (/pb)")
     text.DrawText(x, y-s, "---------------------")
     inputData = conf.data()
