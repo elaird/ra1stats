@@ -94,8 +94,8 @@ def pbatch() :
         if end > npoints : 
             end = npoints
         subCmds.append( "%s -t %d-%d:1 %s"%(conf.switches()["subCmd"], start, end, j ) )
-    print subCmds
-    assert False
+    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip)
