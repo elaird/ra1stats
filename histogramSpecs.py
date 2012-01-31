@@ -24,7 +24,7 @@ def smsRanges(model) :
 def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
     base = locations()["eff"]
 
-    cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v2", "muon":"v2"},
+    cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v3", "muon":"v2"},
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              #"tanBeta10": {"cmssw":"38", "had":"v2", "muon":"v5"},
              }
