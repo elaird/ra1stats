@@ -189,12 +189,35 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
 
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
-    result = RunInverter(w = wspace, modelSBName = "modelConfig", dataName = "dataName",
-                         nworkers = nWorkers, ntoys = nToys, type = calculatorType, testStatType = testStatType,
-                         npoints = nPoints, poimin = poiMin, poimax = poiMax, debug = False)
 
-    #r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
-    #result = r.RunInverter(wspace, "modelConfig", "", "dataName", calculatorType, testStatType, 1, 1.0, 1.0, nToys, True)
+    r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
+    #from StandardHypoTestInvDemo.C
+    opts = {"PlotHypoTestResult": True,
+            "WriteResult": False,
+            "Optimize": True,
+            "UseVectorStore": True,
+            "GenerateBinned": False,
+            "NToysRatio": 2,
+            "MaxPOI": -1.0,
+            "UseProof": nWorkers>1,
+            "Nworkers": nWorkers,
+            "Rebuild": False,
+            "NToyToRebuild": 100,
+            "MassValue": "",
+            "MinimizerType": "",
+            "PrintLevel": 0}
+
+    hypoTestInvTool = r.RooStats.HypoTestInvTool()
+    for key,value in opts.iteritems() :
+        hypoTestInvTool.SetParameter(key, value)
+
+    result = hypoTestInvTool.RunInverter(wspace, #RooWorkspace * w,
+                                         "modelConfig", "", #const char * modelSBName, const char * modelBName,
+                                         "dataName", calculatorType, testStatType, #const char * dataName, int type,  int testStatType,
+                                         True, nPoints, poiMin, poiMax, #bool useCLs, int npoints, double poimin, double poimax,
+                                         nToys, #int ntoys,
+                                         True, #bool useNumberCounting = false,
+                                         "") #const char * nuisPriorName = 0);
 
     out = {}
     args = {}
