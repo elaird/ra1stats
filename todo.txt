@@ -8,11 +8,7 @@ CMSSM
 1 mc stats as systematic
 1 bin-by-bin systematics on signal eff.
 1 use scaled yields in lowest two bins
-2 sided-ness
-2 sys on R
 2 nlo scale variations
-3 trigger efficiency in had control sample
-3 trigger efficiency in mu-mu control sample
 4 upgrade dirac delta
 5 look at g(l) for f = 1
 6 lognormal vs. gaussian
@@ -29,5 +25,17 @@ technical
 fix leaks in pValue() and expectedLimit()
 plot FC belt
 tweak FC running
-try ProfileLikelihoodTestStatistic.SetOneSided()
 query fit status for toys (improve 0 cut)
+
+2D
+---
+- fix "not i" dependence in importEwk, importFZinv, ...
+- pickling.stuffVars
+- more histos in check
+- all sms function in histogramSpecs and histogramProcessing
+- nBulk per slice
+- trigger efficiency uncertainty
+- consider seed
+- signalExampleToStack
+- consider removing PROD
+- signal efficiency toggle
