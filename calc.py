@@ -192,7 +192,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
 
     r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
     #from StandardHypoTestInvDemo.C
-    opts = {"PlotHypoTestResult": True,
+    opts = {"PlotHypoTestResult": False,
             "WriteResult": False,
             "Optimize": True,
             "UseVectorStore": True,
