@@ -62,12 +62,17 @@ def mkdirs() :
     utils.mkdir(s["logDir"])
     utils.mkdir(s["outputDir"])
 ############################################
+def compile() :
+    import ROOT as r
+    r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
+############################################
 options = opts()
 
 import configuration as conf
 import plottingGrid,pickling,histogramProcessing,utils
 
 mkdirs()
+compile()
 
 if options.batch : batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
 if options.local : local(nWorkers = int(options.local), skip = options.skip)
