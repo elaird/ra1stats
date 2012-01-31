@@ -3,3 +3,5 @@
 plots*
 log
 output*
+*.d
+*.so
