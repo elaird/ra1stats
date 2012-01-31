@@ -38,7 +38,8 @@ class spec(dict) :
 
     def load(self) :
         self.add(selection(name = "55",
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                           alphaTMinMax = ("55", None),
+                           samplesAndSignalEff = {"had":True, "muon":False, "phot":False, "mumu":False},
                            data = afterAlphaT.data_55_v1(),
                            #universalSystematics = True,
                            #universalKQcd = True,
