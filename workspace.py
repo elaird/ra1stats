@@ -204,7 +204,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
 
     if label==systematicsLabel :
         rho = ni("rhoMumuZ", label)
-        one = ni("oneMumu", label)
+        one = ni("oneMumuZ", label)
         sigma = ni("sigmaMumuZ", label)
         gaus = ni("mumuGaus", label)
         wimport(w, r.RooRealVar(rho, rho, 1.0, 1.0e-3, 3.0))
@@ -254,7 +254,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     terms = []
     if label==systematicsLabel :
         rho = ni("rhoPhotZ", label)
-        one = ni("onePhot", label)
+        one = ni("onePhotZ", label)
         sigma = ni("sigmaPhotZ", label)
         gaus = ni("photGaus", label)
         wimport(w, r.RooRealVar(rho, rho, 1.0, 1.0e-3, 3.0))
