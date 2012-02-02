@@ -393,10 +393,11 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
     
     for key,value in signalDict.iteritems() :
         if "eff"!=key[:3] : continue
+        box = key.replace("eff", "").lower()
         if type(value) not in [list,tuple] : continue
-        for iBin,eff,corr in zip(range(len(value)), value, inputData.sigEffCorr()) :
+        for iBin,signalEff,trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]) :
             name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
-            wimport(w, r.RooRealVar(name, name, eff*corr))
+            wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
 
     out = collections.defaultdict(list)
     if label==systematicsLabel :
