@@ -8,8 +8,6 @@ from data import data,scaled,excl,trig
 from math import sqrt
 from collections import defaultdict
 
-import ROOT as r
-
 def projectHistogram( histo, axis, amin, amax, suffix, addOverFlow = True,
                       addUnderFlow = False) :
     ax = histo.GetXaxis() if axis == "y" else histo.GetYaxis()
@@ -136,10 +134,6 @@ class DataSlice( object ) :
 
         self._sigEffCorr =  (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
 
-        canvas = r.TCanvas()
-        r.gStyle.SetOptStat(0)
-        canvas.Print("test2.pdf[")
-
         for objName in histo_dict.keys() :
             objKeys = histo_dict[objName].keys()
 
@@ -151,7 +145,6 @@ class DataSlice( object ) :
 
             if "obs" in objKeys :
                 histo_dict[objName]["obs"].Draw()
-                canvas.Print("test2.pdf")
                 self._observations[ "n"+objName ] = \
                     tuple( [ histo_dict[objName]["obs"].GetBinContent(xbin)        for xbin in xbins ] )
             if "purity" in objKeys :
@@ -168,7 +161,6 @@ class DataSlice( object ) :
             if "lumiMc" in objKeys :
                 self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"].GetBinContent(1)
 
-        canvas.Print("test2.pdf]")
         if histo_dict.get("had") :
             hadKeys = histo_dict["had"].keys()
             for obj in [ "tt", "W", "Z", "t", "QCD" ] :
