@@ -28,7 +28,7 @@ def makeFile() :
 
 r.gROOT.SetBatch(True)
 
-mF = False
+mF = True
 if mF: makeFile()
 
 d = { "data_factory_test.root" : { "phot" : [ "photMC" ] } }
@@ -40,7 +40,7 @@ canvas.Print(filename+"[")
 
 dsf = DF.DataSliceFactory( d )
 canvas.Print("test2.pdf")
-ds_52_53 = dsf.makeSlice(0.52,0.53)
+ds_52_53 = dsf.makeSlice("x",0.52,0.53)
 
 canvas.Print(filename)
 canvas.Print(filename+"]")
