@@ -1,4 +1,4 @@
-from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b
+from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -61,9 +61,15 @@ class spec(dict) :
         #                   )
         #         )
 
-        self.add(selection(name = "55b",
+        #self.add(selection(name = "55b_after",
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = afterAlphaT_b.data_55_v1(),
+        #                   )
+        #         )
+        
+        self.add(selection(name = "55b_mixed",
                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = afterAlphaT_b.data_55_v1(),
+                           data = mixedMuons_b.data_55_v1(),
                            )
                  )
         
