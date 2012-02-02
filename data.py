@@ -12,7 +12,7 @@ def excl(counts, isExclusive) :
         out.append(count if (isExcl or count==None) else (count-counts[i+1]))
     return tuple(out)
 
-vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "sigEffCorr",
+vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans",
         "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExtra", "mcStatError", "fixedParameters"]
 
 class data(object) :
