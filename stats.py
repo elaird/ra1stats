@@ -18,7 +18,7 @@ def opts() :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
 ############################################
-def jobCmds(nSlices = None, offset = 0, skip = False, filename = None) :
+def jobCmds(nSlices = None, offset = 0, skip = False) :
     pwd = os.environ["PWD"]
     points = histogramProcessing.points()
     if not offset : pickling.writeSignalFiles(points, outFilesAlso = skip)
@@ -82,6 +82,7 @@ def pointsToFile( filename, points ) :
 ############################################
 def pbatch() :
     from socket import gethostname
+    utils.mkdir("points")
     filename = "points/%s_%d.points" % ( gethostname(), os.getpid() )
     jcs, npoints = pjobCmds(filename)
     njm = conf.switches()["nJobsMax"]
