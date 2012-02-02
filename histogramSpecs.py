@@ -31,7 +31,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     sms = {"T1":      {"had": "v3"},
            "T2":      {"had": "v3"},
-           "T2tt":    {"had": "v1"},
+           "T2tt":    {"had": "v3", "muon": "v3"},
            "T5zz":    {"had": "v1", "muon": "v1"},
            "TGQ_0p0": {"had": "v1"},
            "TGQ_0p2": {"had": "v1"},
@@ -59,7 +59,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
         out["afterDir"] = "smsScan"
     else :
         assert False, "model %s not in list"%model
-    
+
     if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
     if htLower        : out["afterDir"] += "_%d"%htLower
