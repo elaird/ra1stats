@@ -34,11 +34,13 @@ if mF: makeFile()
 #d = { "data_factory_test.root" : { "phot" : [ "photMC" ] } }
 d = { "/home/hyper/Documents/RA1/RA1_Status_baseline.root" :
         { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                     "DY", "tt", "obs", "WZ" ]
+                     "DY", "tt", "obs", "WZ" ],
           "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                     "DY", "tt", "obs", "WZ" ]
+                     "DY", "tt", "obs", "WZ" ],
           "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                     "DY", "tt", "obs", "WZ" ]
+                     "DY", "tt", "obs", "WZ" ],
+         },
+     }
 
 filename = "test2.pdf"
 
