@@ -5,6 +5,8 @@ from array import array
 
 import DataFactory as DF
 
+import inspect
+
 def makeFile() :
     xbins = array('d', [ 275, 325, 375, 475, 575, 675, 775, 875 ] )
     ybins = array('d', [ 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57 ] )
@@ -57,7 +59,13 @@ dsf = DF.DataSliceFactory( d )
 ds_52_53 = dsf.makeSlice("x",52.5,54.6)
 
 dsf_b = DF.DataSliceFactory( e )
-ds_52_53_b = dsf_b.makeSlice("x",52.5,54.6)
+ds_52_53_b = dsf_b.makeSlice("x",50.5,58.6)
 print ds_52_53._observations
-
 print ds_52_53_b._observations
+
+mems = dir( ds_52_53_b )
+
+for attr in mems :
+    if not "__" in attr:
+        x = getattr( ds_52_53_b, attr )
+        print attr, x
