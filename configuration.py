@@ -9,6 +9,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
+            "calculatorType": {"frequentist":0, "asymptotic":2}["frequentist"],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][1],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
