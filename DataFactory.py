@@ -138,17 +138,17 @@ class DataSlice( object ) :
             objKeys = histo_dict[objName].keys()
 
             if objName+"MC" in objKeys :
-                self._mcExpectations[ "mc"+objName ] = \
+                self._mcExpectations[ "mc"+objName.capitalize() ] = \
                     tuple( [ histo_dict[objName][objName+"MC"].GetBinContent(xbin)      for xbin in xbins ] )
-                self._mcStatError[ "mc"+objName+"Err" ] = \
+                self._mcStatError[ "mc"+objName.capitalize()+"Err" ] = \
                     tuple( [ histo_dict[objName][objName+"MC"].GetBinError(xbin)        for xbin in xbins ] )
 
             if "obs" in objKeys :
                 histo_dict[objName]["obs"].Draw()
-                self._observations[ "n"+objName ] = \
+                self._observations[ "n"+objName.capitalize() ] = \
                     tuple( [ histo_dict[objName]["obs"].GetBinContent(xbin)        for xbin in xbins ] )
             if "purity" in objKeys :
-                self._purities[ objName ] = \
+                self._purities[ objName.capitalize() ] = \
                     tuple( [ histo_dict[objName]["purity"].GetBinError(xbin)       for xbin in xbins ] )
             if "atTriggerEff" in objKeys :
                 self._atTriggerEff[dir] = \
