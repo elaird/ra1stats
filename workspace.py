@@ -50,17 +50,17 @@ def parametrizedExpA(w = None, name = "", label = "", kLabel = "", i = None) :
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
     
-def parametrizedLinear(w = None, name = "", label = "", kLabel = "", i = None, iLast = None) :
+def parametrizedLinear(w = None, name = "", label = "", kLabel = "", i = None, iFirst = None, iLast = None) :
     def mean(j) : return ni("htMean", label, j)
     A = ni("A_%s"%name, label)
     k = ni("k_%s"%name, kLabel)
     bulk = ni("nHadBulk", label, i)
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*(@1)*(1 + (@2)*((@3)-(@4))/((@5)-(@4)))",
-                           r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean(i)), w.var(mean(0)), w.var(mean(iLast)))
+                           r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean(i)), w.var(mean(iFirst)), w.var(mean(iLast)))
                            )
 
-def importEwk(w = None, REwk = None, name = "", label = "", i = None, iLast = None, nHadValue = None, A_ini = None) :
+def importEwk(w = None, REwk = None, name = "", label = "", i = None, iFirst = None, iLast = None, nHadValue = None, A_ini = None) :
     A = ni("A_%s"%name, label)
     k = ni("k_%s"%name, label)
 
@@ -71,28 +71,28 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iLast = No
         w.var(k).setVal(0.0)
         w.var(k).setConstant()
     
-    if REwk=="Linear" : wimport(w, parametrizedLinear(w = w, name = name, label = label, kLabel = label, i = i, iLast = iLast))
+    if REwk=="Linear" : wimport(w, parametrizedLinear(w = w, name = name, label = label, kLabel = label, i = i, iFirst = iFirst, iLast = iLast))
     elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, name = name, label = label, kLabel = label, i = i))
     else :
         varName = ni(name, label, i)
         wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, label, i)
 
-def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iLast = None, iniVal = None) :
+def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst = None, iLast = None, iniVal = None) :
     def mean(j) : return ni("htMean", label, j)
     def fz(j) : return ni(name, label, j)
     
     if nFZinv=="All" :
         wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, 0.2, 0.8))
     elif nFZinv=="One" :
-        if not i : wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, 0.0, 1.0))
-        else     : wimport(w, r.RooFormulaVar(fz(i), "(@0)", r.RooArgList(w.var(fz(0)))))
+        if i==iFirst : wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, 0.0, 1.0))
+        else         : wimport(w, r.RooFormulaVar(fz(i), "(@0)", r.RooArgList(w.var(fz(iFirst)))))
     elif nFZinv=="Two" :
-        if not i :
+        if i==iFirst :
             wimport(w, r.RooRealVar(fz(i),     fz(i),     iniVal, 0.0, 1.0))
             wimport(w, r.RooRealVar(fz(iLast), fz(iLast), iniVal, 0.0, 1.0))
         elif i!=iLast :
-            argList = r.RooArgList(w.var(fz(0)), w.var(fz(iLast)), w.var(mean(i)), w.var(mean(0)), w.var(mean(iLast)))
+            argList = r.RooArgList(w.var(fz(iFirst)), w.var(fz(iLast)), w.var(mean(i)), w.var(mean(iFirst)), w.var(mean(iLast)))
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
@@ -139,14 +139,18 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if not w.var(b) : wimport(w, r.RooRealVar(b, b, nHadBulkValue*hadTrgEff/hadBulkTrgEff))
 
     #more
+    iFirst = None
     iLast = len(htMeans)-1
     for i,nHadValue in enumerate(obs["nHad"]) :
+        if nHadValue==None : continue
+        if iFirst==None : iFirst = i
+
         if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
         else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
         qcd = w.function(ni("qcd", label, i))
         
-        ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iLast = iLast, iniVal = iniValFZinv)
+        ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = iniValFZinv)
 
         wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
         wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
@@ -158,7 +162,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         hadExp  = ni("hadExp",  label, i)
         
         wimport(w, r.RooFormulaVar(hadB, "(@0)+(@1)", r.RooArgList(ewk, qcd)))
-        if nHadValue==None : continue
         wimport(w, r.RooRealVar(nHad, nHad, nHadValue))
         if smOnly :
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadB)))
@@ -688,8 +691,12 @@ class foo(object) :
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         for selection in self.likelihoodSpec["selections"] :
+            activeBins = {}
+            for key,value in selection.data.observations().iteritems() :
+                activeBins[key] = map(lambda x:x!=None, value)
+
             args = {"wspace": self.wspace, "results": results,
-                    "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(),
+                    "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
                     "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
                     "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
                     "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "printValues":printValues}

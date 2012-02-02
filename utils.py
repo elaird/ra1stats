@@ -12,6 +12,10 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::pair<std::string,std::vector<double> >","string;vector")
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
 #####################################
+def histoMax(h) :
+    i = h.GetMaximumBin()
+    return (h.GetBinContent(i)+h.GetBinError(i))
+#####################################
 class thstack(object) :
     """work-around for buggy THStacks in ROOT 5.30.00"""
     def __init__(self, name = "") :
@@ -26,6 +30,9 @@ class thstack(object) :
         histos = self.histos if not reverse else reversed(self.histos)
         for histo,options in histos :
             histo.Draw(goptions+options)
+    def Maximum(self) :
+        if not len(self.histos) : return None
+        return max([histoMax(h[0]) for h in self.histos])
 #####################################
 class numberedCanvas(r.TCanvas) :
     page = 0

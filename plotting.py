@@ -202,10 +202,6 @@ def legSpec(goptions) :
     if "hist" in goptions : out += "l"
     return out
 
-def histoMax(h, factor = 1.1) :
-    i = h.GetMaximumBin()
-    return factor*(h.GetBinContent(i)+h.GetBinError(i))
-
 def akDesc(wspace, var1 = "", var2 = "", errors = True) :
     varA = wspace.var("%s"%var1)
     vark = wspace.var("%s"%var2)
@@ -664,7 +660,9 @@ class validationPlotter(object) :
         l = self.lumi[box]
         xs = d["example"].xs
         eff = inDict(d["example"][self.label], "eff%s"%box.capitalize(), [0.0]*len(self.htBinLowerEdges))
+        activeBins = self.activeBins["n%s"%box.capitalize()]
         for i in range(len(self.htBinLowerEdges)) :
+            if not activeBins[i] : continue
             out.SetBinContent(i+1, l*xs*eff[i])
         return out
     
@@ -854,9 +852,9 @@ class validationPlotter(object) :
 
         stackDict,legEntries,histoList = self.stacks(otherVars, **args)
 
-        maxes = [histoMax(h, customMaxFactor[logY]) for h in histoList+[obsHisto]]
+        maxes = [utils.histoMax(h) for h in histoList+[obsHisto]]+[s.Maximum() for s in stackDict.values()]
         if maxes and not maximum :
-            obsHisto.SetMaximum(max(maxes))
+            obsHisto.SetMaximum(customMaxFactor[logY]*max(maxes))
             
         stuff += [stackDict, histoList]
 
