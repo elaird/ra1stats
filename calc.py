@@ -309,6 +309,7 @@ def clsOnePoint(args) :
                 #http://root.cern.ch/root/html/RooStats__SamplingDistPlot.html#RooStats__SamplingDistPlot:AddSamplingDistribution
                 bDist = result.GetBackgroundTestStatDist(i)
                 sbDist = result.GetSignalAndBackgroundTestStatDist(i)
+                if (not bDist) or (not sbDist) : continue
                 b,nBadB   = prunedValues(bDist.GetSamplingDistribution(),   bDist.GetSampleWeights())
                 sb,nBadSb = prunedValues(sbDist.GetSamplingDistribution(), sbDist.GetSampleWeights())
                 lo = min(b[ 0][0], sb[ 0][0])
