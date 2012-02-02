@@ -8,7 +8,9 @@ from data import data,scaled,excl,trig
 from math import sqrt
 from collections import defaultdict
 
-def projectHistogram( histo, axis, amin, amax, suffix, name, addOverFlow = True,
+import ROOT as r
+
+def projectHistogram( histo, axis, amin, amax, suffix, addOverFlow = True,
                       addUnderFlow = False) :
     ax = histo.GetXaxis() if axis == "y" else histo.GetYaxis()
     Projection = histo.ProjectionX if axis == "x" else histo.ProjectionY
@@ -21,7 +23,7 @@ def projectHistogram( histo, axis, amin, amax, suffix, name, addOverFlow = True,
         lastbin  = ax.FindBin( amax )
 
     h_options = "e"
-    h_proj = Projection( name+suffix, firstbin, lastbin, h_options )
+    h_proj = Projection( suffix, firstbin, lastbin, h_options )
 
     nbins = h_proj.GetNbinsX()
     maxBinContent = h_proj.GetBinContent( nbins )
@@ -87,9 +89,10 @@ class DataSliceFactory( object ) :
                 # how is ProjectionX defined in the binning varies across slices.  Should probably put some check on this
                 cName = histo.ClassName()
                 if cName[:3] == "TH2" : 
-                    h[dir][histo_name] = projectHistogram( histo, axis,  amin, amax, h_suffix, histo_name )
+                    h[dir][histo_name] = projectHistogram( histo, axis,  amin, amax, h_suffix ).Clone()
                 elif cName[:3] == "TH1" : # only the lumi hists are 1D
                     h[dir][histo_name] = histo 
+
         return DataSlice( h, h_suffix )
         
 
@@ -105,7 +108,6 @@ class DataSlice( object ) :
             for name in histo_dict[dir] :
                 if histo_dict[dir][name].ClassName()[:3] != "TH1" :
                     assert False, "Attempted to take a 1D histogram slice without providing 1D histos"
-
         i = 0 
         hname = histo_dict[ histo_dict.keys()[0] ].keys()[i]
         h = histo_dict[ histo_dict.keys()[0] ][hname]
@@ -134,6 +136,10 @@ class DataSlice( object ) :
 
         self._sigEffCorr =  (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
 
+        canvas = r.TCanvas()
+        r.gStyle.SetOptStat(0)
+        canvas.Print("test2.pdf[")
+
         for objName in histo_dict.keys() :
             objKeys = histo_dict[objName].keys()
 
@@ -144,6 +150,8 @@ class DataSlice( object ) :
                     tuple( [ histo_dict[objName][objName+"MC"].GetBinError(xbin)        for xbin in xbins ] )
 
             if "obs" in objKeys :
+                histo_dict[objName]["obs"].Draw()
+                canvas.Print("test2.pdf")
                 self._observations[ "n"+objName ] = \
                     tuple( [ histo_dict[objName]["obs"].GetBinContent(xbin)        for xbin in xbins ] )
             if "purity" in objKeys :
@@ -160,6 +168,7 @@ class DataSlice( object ) :
             if "lumiMc" in objKeys :
                 self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"].GetBinContent(1)
 
+        canvas.Print("test2.pdf]")
         if histo_dict.get("had") :
             hadKeys = histo_dict["had"].keys()
             for obj in [ "tt", "W", "Z", "t", "QCD" ] :
