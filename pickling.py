@@ -132,9 +132,9 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         writeNumbers(fileName = stem + ".in", d = signal)
         if not outFilesAlso : return
         writeNumbers(fileName = stem + ".out", d = signal)
-        print "ERROR: stuff vars"
         #stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
 
+    print "FIX: stuff vars"
     map(one, points)
         
 ##merge functions
@@ -179,19 +179,20 @@ def mergePickledFiles(printExample = False) :
         d = readNumbers(fileName)
         contents = {}
         for key,value in d.iteritems() :
-            print key,value
             flatten(contents, key, value)
 
         for key,value in contents.iteritems() :
-            histos[key] = example.Clone(key)
-            histos[key].Reset()
+            if key not in histos :
+                histos[key] = example.Clone(key)
+                histos[key].Reset()
             histos[key].SetBinContent(point[0], point[1], point[2], value[0])
+            zTitles[key] = value[1]
 
         os.remove(fileName)
         os.remove(fileName.replace(".out", ".in"))
 
     for key,histo in histos.iteritems() :
-        histo.GetZaxis().SetTitle(contents[key][1])
+        histo.GetZaxis().SetTitle(zTitles[key])
 
     f = r.TFile(mergedFile(), "RECREATE")
     for histo in histos.values() :

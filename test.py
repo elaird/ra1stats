@@ -43,6 +43,15 @@ def signal(i) :
     p_181_19.insert("2010", { #mocked up from 2011
             "effMuon":[0.000147, 0.000000, 0.000441, 0.000588 + 0.000147 + 0.000147 + 0.000147 + 0.000000],
             "effHad": [0.000231, 0.001030, 0.003325, 0.003974 + 0.001766 + 0.000588 + 0.000000 + 0.000000]})
+
+    p_181_19.insert("55", {
+            "effHad":[0.000231, 0.001030, 0.003325, 0.003974, 0.001766, 0.001030, 0.000000, 0.000147]})
+
+    p_181_19.insert("52", {
+            "effHad":[0.0, 0.0, 0.00103037596947, 0.0013247691036, 0.00147196567067, 0.000588786268269, 0.00103037596947, 0.00111767162955]})
+
+    p_181_19.insert("53", {
+            "effHad":[0.0, 0.0, 0.00140895753019, 0.00279673477428, 0.00191355537187, 0.000588786268269, 0.000883179402403, 0.000301583120295]})
     
     filips_point1 = {'xs': 0.0909,
                      'effMuon': [0.0003, 0.0003, 0.0004, 0.0007, 0.0012, 0.0011, 0.0015, 0.0032],
@@ -89,9 +98,8 @@ def signal(i) :
     return [{}, p_29_25, p_29_55, p_181_19, lm6, lm1, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signal = signal(4),
-                  #signalExampleToStack = signal(4),
-
+                  #signal = signal(3),
+                  signalExampleToStack = signal(3),
                   #trace = True
                   #rhoSignalMin = 0.1,
                   #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
@@ -99,8 +107,9 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
 
 cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = cl, calculatorType = 0, testStatType = 3, nToys = 2000,
-#            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
+#out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
+#            calculatorType = {"frequentist":0, "asymptotic":2}["frequentist"],
+#            testStatType = 3, nToys = 2000, nWorkers = 6); print out
 #f.profile()
 f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = True)
