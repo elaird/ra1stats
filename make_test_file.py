@@ -28,10 +28,18 @@ def makeFile() :
 
 r.gROOT.SetBatch(True)
 
-mF = True
+mF = False
 if mF: makeFile()
 
-d = { "data_factory_test.root" : { "phot" : [ "photMC" ] } }
+#d = { "data_factory_test.root" : { "phot" : [ "photMC" ] } }
+d = { "/home/hyper/Documents/RA1/RA1_Status_baseline.root" :
+        { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                     "DY", "tt", "obs", "WZ" ]
+          "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                     "DY", "tt", "obs", "WZ" ]
+          "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                     "DY", "tt", "obs", "WZ" ]
+
 filename = "test2.pdf"
 
 r.gStyle.SetOptStat(0)
@@ -39,7 +47,7 @@ canvas = r.TCanvas()
 canvas.Print(filename+"[")
 
 dsf = DF.DataSliceFactory( d )
-canvas.Print("test2.pdf")
+canvas.Print(filename)
 ds_52_53 = dsf.makeSlice("x",0.52,0.53)
 
 canvas.Print(filename)
