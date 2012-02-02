@@ -165,7 +165,7 @@ class DataSlice( object ) :
             hadKeys = histo_dict["had"].keys()
             for obj in [ "tt", "W", "Z", "t", "QCD" ] :
                 if obj in hadKeys :
-                    self._mcExpectations[ "mc" + obj ] = \
+                    self._mcExpectations[ "mc" + obj.capitalize() ] = \
                         tuple( [ histo_dict["had"][obj].GetBinContent(xbin) for xbin in xbins ] )
 
 # need to update this to 2D
