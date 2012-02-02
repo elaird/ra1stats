@@ -53,7 +53,8 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
                           extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
 
         if switches["method"]=="CLs" :
-            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], testStatType = switches["testStatistic"],
+            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"],
+                            testStatType = switches["testStatistic"], calculatorType = switches["calculatorType"],
                             plSeed = switches["plSeedForCLs"], plNIterationsMax = switches["nIterationsMax"])
             for key,value in results.iteritems() :
                 out[key] = (value, description(key))

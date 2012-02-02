@@ -98,9 +98,8 @@ def signal(i) :
     return [{}, p_29_25, p_29_55, p_181_19, lm6, lm1, filips_point2, sue_anns_point, t1_600_100, t2_39_7, broken][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signal = signal(4),
+                  #signal = signal(3),
                   signalExampleToStack = signal(3),
-
                   #trace = True
                   #rhoSignalMin = 0.1,
                   #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
@@ -108,8 +107,9 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
 
 cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = cl, calculatorType = 0, testStatType = 3, nToys = 2000,
-#            plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True, nWorkers = 6); print out
+#out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
+#            calculatorType = {"frequentist":0, "asymptotic":2}["frequentist"],
+#            testStatType = 3, nToys = 2000, nWorkers = 6); print out
 #f.profile()
 f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = True)
