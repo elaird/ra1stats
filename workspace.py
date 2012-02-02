@@ -337,13 +337,13 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
                 )
 
         muonPois = ni("muonPois", label, i)
-        if smOnly :
+        eff = ni("signalEffMuon", label, i)
+        if smOnly or not w.var(eff) :
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonB)))
         else :
             muonS = ni("muonS", label, i)
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
-            eff = ni("signalEffMuon", label, i)
             rhoSignal = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
