@@ -98,7 +98,7 @@ def mergedFileStem(outputDir, switches) :
     if "CLs" in switches["method"] :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
     out += "_%s"%switches["signalModel"]
-    out += "nlo" if switches["nlo"] else "lo"
+    out += "_nlo" if switches["nlo"] else "_lo"
     for item in ["computeExpectedLimit"] :
         if switches[item] : out += "_%s"%item
     return out
