@@ -39,20 +39,21 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
            "TGQ_0p8": {"had": "v1"},
            }
 
+    #remove these hard-coded numbers
+    thresh = ""
+    if htLower==275 : thresh = "0"
+    if htLower==325 : thresh = "1"
+
     out = {}
     if model in cmssm :
         assert box in ["had", "muon"]
         assert scale in ["1", "05", "2"]
         d = cmssm[model]
-        if d["had"] in ["v3"]: print "WARNING: using %s had spec; v2 is the stable one."%d["had"]
-        out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+".root"])
+        out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+"%s.root"%thresh])
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
         out["afterDir"] = "mSuGraScan"
     elif model in sms :
         assert box in ["had","muon"]
-        thresh = ""
-        if htLower==275 : thresh = "0"
-        if htLower==325 : thresh = "1"
         out["file"] = "/".join([base, "sms", model, box, sms[model][box], box+"%s.root"%thresh])
         out["beforeDir"] = "smsScan_before"
         out["afterDir"] = "smsScan"
