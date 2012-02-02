@@ -1,8 +1,6 @@
 physics
 -------
 - error propagation in plots
-- trigger efficiency in signal efficiency
-- correction to signal efficiency central value
 - improve mc ratio
 - mc stats as systematic
 - bin-by-bin systematics on signal eff.
@@ -30,6 +28,5 @@ technical
 - all sms function in histogramSpecs and histogramProcessing
 - trigger efficiency uncertainty
 - consider seed
-- signalExampleToStack
 - consider removing PROD
-- signal efficiency toggle
+
