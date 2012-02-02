@@ -45,4 +45,6 @@ d = { "/home/samr/Documents/RA1/RA1_Stats_baseline.root" :
 
 dsf = DF.DataSliceFactory( d )
 ds_52_53 = dsf.makeSlice("x",52.5,54.6)
+print ds_52_53._htBinLowerEdges
+print ds_52_53._observations
 
