@@ -1,6 +1,9 @@
 from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b
 
 class selection(object) :
+    '''Each key appearing in samplesAndSignalEff is used in the likelihood;
+    the corresponding value determines whether signal efficiency is considered for that sample.'''
+
     def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None),
                  universalSystematics = False, universalKQcd = False) :
         for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax",
@@ -37,33 +40,33 @@ class spec(dict) :
         self._selections.append(sel)
 
     def load(self) :
-        self.add(selection(name = "55",
-                           alphaTMinMax = ("55", None),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = afterAlphaT.data_55_v1(),
-                           universalSystematics = True,
-                           universalKQcd = True,
-                           )
-                 )
-        self.add(selection(name = "53",
-                           alphaTMinMax = ("53", "55"),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = afterAlphaT.data_53_v1(),
-                           )
-                 )
-        self.add(selection(name = "52",
-                           alphaTMinMax = ("52", "53"),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = afterAlphaT.data_52_v1(),
-                           )
-                 )
-
-        #self.add(selection(name = "55b",
-        #                   samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
-        #                   data = afterAlphaT_b.data_55_v1(),
+        #self.add(selection(name = "55",
+        #                   alphaTMinMax = ("55", None),
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = afterAlphaT.data_55_v1(),
+        #                   universalSystematics = True,
+        #                   universalKQcd = True,
         #                   )
         #         )
-        #
+        #self.add(selection(name = "53",
+        #                   alphaTMinMax = ("53", "55"),
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = afterAlphaT.data_53_v1(),
+        #                   )
+        #         )
+        #self.add(selection(name = "52",
+        #                   alphaTMinMax = ("52", "53"),
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = afterAlphaT.data_52_v1(),
+        #                   )
+        #         )
+
+        self.add(selection(name = "55b",
+                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                           data = afterAlphaT_b.data_55_v1(),
+                           )
+                 )
+        
         #self.add(selection(name = "2010",
         #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
         #                   data = inputData.data2010(),
