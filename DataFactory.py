@@ -87,7 +87,7 @@ class DataSliceFactory( object ) :
                 if cName[:3] == "TH2" : 
                     h[dir][histo_name] = projectHistogram( histo, axis,  amin, amax, h_suffix, histo_name )
                 elif cName[:3] == "TH1" : # only the lumi hists are 1D
-                    h[dir][hist.GetName()] = append( histo )
+                    h[dir][histo_name] = histo 
         return DataSlice( h, h_suffix )
         
 
@@ -163,7 +163,7 @@ class DataSlice( object ) :
             for obj in [ "tt", "W", "Z", "t", "QCD" ] :
                 if obj in hadKeys :
                     self._mcExpectations[ "mc" + obj ] = \
-                        tuple( [ [ histo_dict["had"][obj].GetBinContent(xbin,ybin) for xbin in xbins ] for ybins in ybins ] )
+                        tuple( [ histo_dict["had"][obj].GetBinContent(xbin) for xbin in xbins ] )
 
 # need to update this to 2D
         try : 
