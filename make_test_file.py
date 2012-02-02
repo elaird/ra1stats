@@ -32,7 +32,7 @@ mF = False
 if mF: makeFile()
 
 #d = { "data_factory_test.root" : { "phot" : [ "photMC" ] } }
-d = { "/home/hyper/Documents/RA1/RA1_Status_baseline.root" :
+d = { "/home/samr/Documents/RA1/RA1_Stats_baseline.root" :
         { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                      "DY", "tt", "obs", "WZ" ],
           "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
