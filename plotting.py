@@ -664,7 +664,9 @@ class validationPlotter(object) :
         l = self.lumi[box]
         xs = d["example"].xs
         eff = inDict(d["example"][self.label], "eff%s"%box.capitalize(), [0.0]*len(self.htBinLowerEdges))
+        activeBins = self.activeBins["n%s"%box.capitalize()]
         for i in range(len(self.htBinLowerEdges)) :
+            if not activeBins[i] : continue
             out.SetBinContent(i+1, l*xs*eff[i])
         return out
     
