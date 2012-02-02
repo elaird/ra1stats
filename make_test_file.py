@@ -42,9 +42,22 @@ d = { "/home/samr/Documents/RA1/RA1_Stats_baseline.root" :
          },
      }
 
+e = { "/home/samr/Documents/RA1/RA1_Stats_Btagged.root" :
+        { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                     "DY", "tt", "obs", "WZ" ],
+          "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                     "DY", "tt", "obs", "WZ" ],
+          "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                     "DY", "tt", "obs", "WZ" ],
+         },
+     }
+
 
 dsf = DF.DataSliceFactory( d )
 ds_52_53 = dsf.makeSlice("x",52.5,54.6)
-print ds_52_53._htBinLowerEdges
+
+dsf_b = DF.DataSliceFactory( e )
+ds_52_53_b = dsf_b.makeSlice("x",52.5,54.6)
 print ds_52_53._observations
 
+print ds_52_53_b._observations
