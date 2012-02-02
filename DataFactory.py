@@ -159,7 +159,7 @@ class DataSlice( object ) :
             if "lumiData" in objKeys :
                 self._lumi[dir] = histo_dict[dir]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
-                self._lumi["mc"+dir] = histo_dict[dir]["lumiMc"].GetBinContent(1)
+                self._lumi["mc"+dir.capitalize()] = histo_dict[dir]["lumiMc"].GetBinContent(1)
 
         if histo_dict.get("had") :
             hadKeys = histo_dict["had"].keys()
