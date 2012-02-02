@@ -8,7 +8,8 @@ from data import data,scaled,excl,trig
 from math import sqrt
 from collections import defaultdict
 
-def projectHistogram( histo, axis, amin, amax, suffix, name ) :
+def projectHistogram( histo, axis, amin, amax, suffix, name, addOverFlow = True,
+                      addUnderFlow = False) :
     ax = histo.GetXaxis() if axis == "y" else histo.GetYaxis()
     Projection = histo.ProjectionX if axis == "x" else histo.ProjectionY
 
@@ -32,11 +33,12 @@ def projectHistogram( histo, axis, amin, amax, suffix, name ) :
     overflowErr   = h_proj.GetBinError( nbins+1 )
     underflowErr  = h_proj.GetBinError( 0 )
 
-    h_proj.SetBinContent( nbins, maxBinContent + overflow )
-    h_proj.SetBinContent( 1,     minBinContent + overflow )
-    h_proj.SetBinError(   nbins, sqrt(maxBinErr**2 + overflowErr**2)  )
-    h_proj.SetBinError(   1,     sqrt(minBinErr**2 + underflowErr**2) )
-    h_proj.Draw("text")
+    if addOverFlow :
+        h_proj.SetBinContent( nbins, maxBinContent + overflow )
+        h_proj.SetBinError(   nbins, sqrt(maxBinErr**2 + overflowErr**2)  )
+    if addUnderFlow :
+        h_proj.SetBinContent( 1,     minBinContent + overflow )
+        h_proj.SetBinError(   1,     sqrt(minBinErr**2 + underflowErr**2) )
     return h_proj
     
 
@@ -58,7 +60,6 @@ def getMultiHists( d ) :
                 histo_dict[dir][histo_name] =  h_temp
                 if h_temp.ClassName()[:3] == "TH2" :
                     h.append( h_temp )
-                    h_temp.Draw("text")
     hP.checkHistoBinning( h )
     return histo_dict
 
@@ -78,6 +79,7 @@ class DataSliceFactory( object ) :
         # want to operator on hists (second level of the dictionary) and turn them into cuts with the appropriate at values
         h = defaultdict(dict) # h is going to be used to hold the tempory 1Ds used to instantiate a DataSlice
         h_suffix = "_%d-%d" % ( int(amin*100), int(amax*100) )
+
         for dir in self._histos.keys() :
             for histo_name in self._histos[dir].keys() :
                 histo = self._histos[dir][histo_name]
