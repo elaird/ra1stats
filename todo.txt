@@ -29,7 +29,6 @@ query fit status for toys (improve 0 cut)
 
 2D
 ---
-- fix "not i" dependence in importEwk, importFZinv, ...
 - pickling.stuffVars
 - more histos in check
 - all sms function in histogramSpecs and histogramProcessing
