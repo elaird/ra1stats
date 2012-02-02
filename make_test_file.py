@@ -42,15 +42,7 @@ d = { "/home/samr/Documents/RA1/RA1_Stats_baseline.root" :
          },
      }
 
-filename = "test2.pdf"
-
-r.gStyle.SetOptStat(0)
-canvas = r.TCanvas()
-canvas.Print(filename+"[")
 
 dsf = DF.DataSliceFactory( d )
-canvas.Print(filename)
-ds_52_53 = dsf.makeSlice("x",0.52,0.53)
+ds_52_53 = dsf.makeSlice("x",52.5,54.6)
 
-canvas.Print(filename)
-canvas.Print(filename+"]")
