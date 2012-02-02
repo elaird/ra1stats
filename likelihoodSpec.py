@@ -45,18 +45,18 @@ class spec(dict) :
                            universalKQcd = True,
                            )
                  )
-        self.add(selection(name = "53",
-                           alphaTMinMax = ("53", "55"),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = afterAlphaT.data_53_v1(),
-                           )
-                 )
-        self.add(selection(name = "52",
-                           alphaTMinMax = ("52", "53"),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = afterAlphaT.data_52_v1(),
-                           )
-                 )
+        #self.add(selection(name = "53",
+        #                   alphaTMinMax = ("53", "55"),
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = afterAlphaT.data_53_v1(),
+        #                   )
+        #         )
+        #self.add(selection(name = "52",
+        #                   alphaTMinMax = ("52", "53"),
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = afterAlphaT.data_52_v1(),
+        #                   )
+        #         )
 
         #self.add(selection(name = "55b",
         #                   samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
