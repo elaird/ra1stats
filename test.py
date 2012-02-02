@@ -114,7 +114,7 @@ def signal(i) :
     return [{}, p_29_25, p_29_55, p_181_19, p_181_29, lm6, t1_600_100, t2_39_7, broken][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  signal = signal(3),
+                  #signal = signal(3),
                   #signalExampleToStack = signal(4),
                   #trace = True
                   #rhoSignalMin = 0.1,
