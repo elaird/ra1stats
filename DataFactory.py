@@ -8,6 +8,38 @@ from data import data,scaled,excl,trig
 from math import sqrt
 from collections import defaultdict
 
+def projectHistogram( histo, axis, amin, amax, suffix, name ) :
+    ax = histo.GetXaxis() if axis == "y" else histo.GetYaxis()
+    Projection = histo.ProjectionX if axis == "x" else histo.ProjectionY
+
+    firstbin = 1
+    lastbin  = ax.GetNbins()
+    if amin is not None :
+        firstbin = ax.FindBin( amin )
+    if amax is not None :
+        lastbin  = ax.FindBin( amax )
+
+    h_options = "e"
+    h_proj = Projection( name+suffix, firstbin, lastbin, h_options )
+
+    nbins = h_proj.GetNbinsX()
+    maxBinContent = h_proj.GetBinContent( nbins )
+    minBinContent = h_proj.GetBinContent( 1 )
+    maxBinErr     = h_proj.GetBinError( nbins )
+    minBinErr     = h_proj.GetBinError( 1 )
+    overflow      = h_proj.GetBinContent( nbins+1 )
+    underflow     = h_proj.GetBinContent( 0 )
+    overflowErr   = h_proj.GetBinError( nbins+1 )
+    underflowErr  = h_proj.GetBinError( 0 )
+
+    h_proj.SetBinContent( nbins, maxBinContent + overflow )
+    h_proj.SetBinContent( 1,     minBinContent + overflow )
+    h_proj.SetBinError(   nbins, sqrt(maxBinErr**2 + overflowErr**2)  )
+    h_proj.SetBinError(   1,     sqrt(minBinErr**2 + underflowErr**2) )
+    h_proj.Draw("text")
+    return h_proj
+    
+
 def getMultiHists( d ) :
     # d is a dictionary: structured:
     #   "filename_as_key" : { "phot" : [ "obs", "purity", "" ] }
@@ -39,44 +71,13 @@ class DataSliceFactory( object ) :
     def __init__( self, d ) :
         self._histos = getMultiHists( d )
 
-    def _projectHistogram( self, histo, aTmin, aTmax, suffix, name ) :
-        firstybin = 1
-        lastybin  = histo.GetYaxis().GetNbins()
-        if aTmin is not None :
-            firstybin = histo.GetYaxis().FindBin( aTmin ) 
-        if aTmax is not None :
-            lastybin  = histo.GetYaxis().FindBin( aTmax ) 
 
-        h_options = "e" # calcualte errors too
-        h_proj = histo.ProjectionX( name+suffix, firstybin, lastybin, h_options )
-
-        # save on multiple function calls
-        nbins = h_proj.GetNbinsX()
-        maxBinContent = h_proj.GetBinContent( nbins )
-        minBinContent = h_proj.GetBinContent( 1 )
-        maxBinErr = h_proj.GetBinError( nbins )
-        minBinErr = h_proj.GetBinError( 1 )
-        overflow  = h_proj.GetBinContent( nbins+1 )
-        underflow = h_proj.GetBinContent( 0 )
-        overflowErr  = h_proj.GetBinError( nbins + 1 )
-        underflowErr = h_proj.GetBinError( 0 )
-
-        # TED: I think we're safe w.r.t. overflows here: all I need
-        # to do is put everything form the X overflow (nxbins
-        # +1),(0) into the last bins (1, nxbins)
-        h_proj.SetBinContent( nbins, maxBinContent + overflow )
-        h_proj.SetBinContent( 1, minBinContent + underflow )
-        h_proj.SetBinError( nbins, sqrt(maxBinErr**2 + overflowErr**2)  )
-        h_proj.SetBinError( 1,     sqrt(minBinErr**2 + underflowErr**2) )
-        h_proj.Draw("text")
-        return h_proj
-
-    def makeSlice( self, aT1 = None, aT2 = None ) :
-        aTmin = min( aT1, aT2 )
-        aTmax = max( aT1, aT2 )
+    def makeSlice( self, axis="x", a1 = None, a2 = None ) :
+        amin = min( a1, a2 )
+        amax = max( a1, a2 )
         # want to operator on hists (second level of the dictionary) and turn them into cuts with the appropriate at values
         h = defaultdict(dict) # h is going to be used to hold the tempory 1Ds used to instantiate a DataSlice
-        h_suffix = "_%d-%d" % ( int(aTmin*100), int(aTmax*100) )
+        h_suffix = "_%d-%d" % ( int(amin*100), int(amax*100) )
         for dir in self._histos.keys() :
             for histo_name in self._histos[dir].keys() :
                 histo = self._histos[dir][histo_name]
@@ -84,7 +85,7 @@ class DataSliceFactory( object ) :
                 # how is ProjectionX defined in the binning varies across slices.  Should probably put some check on this
                 cName = histo.ClassName()
                 if cName[:3] == "TH2" : 
-                    h[dir][histo_name] = self._projectHistogram( histo, aTmin, aTmax, h_suffix, histo_name )
+                    h[dir][histo_name] = projectHistogram( histo, axis,  amin, amax, h_suffix, histo_name )
                 elif cName[:3] == "TH1" : # only the lumi hists are 1D
                     h[dir][hist.GetName()] = append( histo )
         return DataSlice( h, h_suffix )
