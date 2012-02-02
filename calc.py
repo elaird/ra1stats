@@ -210,9 +210,10 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     for key,value in opts.iteritems() :
         hypoTestInvTool.SetParameter(key, value)
 
+    ctd = {"frequentist":0, "asymptotic":2}
     result = hypoTestInvTool.RunInverter(wspace, #RooWorkspace * w,
                                          "modelConfig", "", #const char * modelSBName, const char * modelBName,
-                                         "dataName", calculatorType, testStatType, #const char * dataName, int type,  int testStatType,
+                                         "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
                                          True, nPoints, poiMin, poiMax, #bool useCLs, int npoints, double poimin, double poimax,
                                          nToys, #int ntoys,
                                          True, #bool useNumberCounting = false,

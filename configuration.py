@@ -9,8 +9,8 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 500,
             "testStatistic": 3,
-            "calculatorType": {"frequentist":0, "asymptotic":2}["frequentist"],
-            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][1],
+            "calculatorType": ["frequentist", "asymptotic"][1],
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -47,8 +47,8 @@ def signal() :
 
 def points() :
     return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
-            "listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1)][-1:]
-            #"listOfTestPoints": [],
+            #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1)][-1:]
+            "listOfTestPoints": [],
             #"listOfTestPoints": [(32, 8, 1)],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
@@ -94,14 +94,13 @@ def checkAndAdjust(d) :
     return
 
 def mergedFileStem(outputDir, switches) :
-    out  = "%s/"%outputDir
-    out += "_".join([switches["method"],
-                     switches["signalModel"],
-                     "nlo" if switches["nlo"] else "lo",
-                     ])
+    out  = "%s/%s"%(outputDir, switches["method"])
+    if "CLs" in switches["method"] :
+        out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
+    out += "_%s"%switches["signalModel"]
+    out += "nlo" if switches["nlo"] else "lo"
     for item in ["computeExpectedLimit"] :
         if switches[item] : out += "_%s"%item
-    if "CLs" in switches["method"] : out +="_TS%d"%switches["testStatistic"]
     return out
 
 def stringsNoArgs() :
