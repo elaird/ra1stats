@@ -137,6 +137,7 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   signalExampleToStack = signal(6),
                   #trace = True
                   #rhoSignalMin = 0.1,
+                  #fIni = 0.1,
                   #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                   )
 

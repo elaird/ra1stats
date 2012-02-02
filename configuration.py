@@ -80,8 +80,10 @@ def checkAndAdjust(d) :
     d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     d["extraSigEffUncSources"] = []
 
+    d["fIni"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
     if d["isSms"] :
+        d["fIni"] = 0.1
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
         d["nIterationsMax"] = 10

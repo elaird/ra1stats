@@ -49,8 +49,8 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
     out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
-        f = workspace.foo(signal = signal, likelihoodSpec = likelihoodSpec,
-                          extraSigEffUncSources = switches["extraSigEffUncSources"], rhoSignalMin = switches["rhoSignalMin"])
+        f = workspace.foo(signal = signal, likelihoodSpec = likelihoodSpec, extraSigEffUncSources = switches["extraSigEffUncSources"],
+                          rhoSignalMin = switches["rhoSignalMin"], fIni = switches["fIni"])
 
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"],
