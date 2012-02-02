@@ -72,7 +72,7 @@ def signalModel(point = None, eff = None, xs = None, xsLo = None, nEventsIn = No
             d[box+"Sum"] = sum(d[box])
             key = box.replace("eff","nEvents")
             d[key] = d[box+"Sum"]*out["nEventsIn"]
-            if d[key] : d[box+"UncRelMcStats"] = 1.0/math.sqrt(d[key])
+            if d[key] : d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
         out[selName] = d
     return out
 
