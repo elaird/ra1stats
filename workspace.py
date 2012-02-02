@@ -691,8 +691,12 @@ class foo(object) :
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         for selection in self.likelihoodSpec["selections"] :
+            activeBins = {}
+            for key,value in selection.data.observations().iteritems() :
+                activeBins[key] = map(lambda x:x!=None, value)
+
             args = {"wspace": self.wspace, "results": results,
-                    "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(),
+                    "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
                     "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
                     "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
                     "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "printValues":printValues}
