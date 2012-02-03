@@ -15,6 +15,7 @@ hard-coded
 - remove hard-coded HT thresholds in histoSpec(), xsHisto(), nEventsInHisto()
 - consider hard-coded CLb_2 in plottingGrid.clsValidation()
 - 0.95 in StandardHypoTestInvDemo.C
+- plottingGrid.makePlots()
 
 technical
 ---------

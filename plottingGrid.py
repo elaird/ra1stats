@@ -471,7 +471,7 @@ def makePlots() :
     s = conf.switches()
     if s["isSms"] and s["method"]=="CLs" :
         for cl in s["CL"] :
-            clsValidation(tag = "clsValidation", masterKey = "effHadSum", cl = cl)
+            clsValidation(tag = "clsValidation", masterKey = "55_effHadSum", cl = cl)
             #clsValidation(tag = "clsValidation2", masterKey = "effHadSum", cl = cl,
             #              whiteList = [(35,17), (36,23)], divide = (2, 1), stampTitle = False,
             #              )

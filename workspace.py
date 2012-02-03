@@ -499,9 +499,9 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
-def startLikelihood(w = None, xs = None) :
+def startLikelihood(w = None, xs = None, fIni = None) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
-    wimport(w, r.RooRealVar("f", "f", 1.0, 0.0, 2.0))
+    wimport(w, r.RooRealVar("f", "f", fIni, 0.0, 2.0))
 
 def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
@@ -515,7 +515,7 @@ def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs 
     w.defineSet("nuis", ",".join(nuis))
 
 class foo(object) :
-    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0,
+    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIni = 1.0,
                  signal = {}, signalExampleToStack = {}, trace = False) :
                  
         for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
@@ -538,7 +538,7 @@ class foo(object) :
 
         print "fix signal format"
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signal.xs)
+            startLikelihood(w = self.wspace, xs = self.signal.xs, fIni = fIni)
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec["selections"] :
