@@ -219,19 +219,18 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
         terms.append(gaus)
 
     rFinal = None
-    for i,nMumuValue,purity,mcZmumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
-                                                                     inputData.observations()["nMumu"],
-                                                                     inputData.purities()["mumu"],
-                                                                     inputData.mcExpectations()["mcZmumu"],
-                                                                     inputData.mcExpectations()["mcZinv"],
-                                                                     inputData.constantMcRatioAfterHere(),
-                                                                     ) :
+    for i,nMumuValue,mcMumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
+                                                             inputData.observations()["nMumu"],
+                                                             inputData.mcExpectations()["mcMumu"],
+                                                             inputData.mcExpectations()["mcZinv"],
+                                                             inputData.constantMcRatioAfterHere(),
+                                                             ) :
         if nMumuValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcZmumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
+        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         nMumu = ni("nMumu", label, i)
         rMumu = ni("rMumu", label, i)
         wimport(w, r.RooRealVar(nMumu, nMumu, nMumuValue))
-        wimport(w, r.RooRealVar(rMumu, rMumu, (mcZmumuValue/mcZinvValue if not rFinal else rFinal)/purity))
+        wimport(w, r.RooRealVar(rMumu, rMumu, (mcMumuValue/mcZinvValue if not rFinal else rFinal)))
 
         mumuExp = ni("mumuExp", label, i)
         rhoMumuZ = ni("rhoMumuZ", systematicsLabel)
