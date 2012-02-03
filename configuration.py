@@ -19,6 +19,7 @@ def signal() :
     overwriteInput = collections.defaultdict(list)
     overwriteOutput = collections.defaultdict(list)
     overwriteOutput.update({"T1": [(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
+                            "T2tt": [(22, 2, 1), (31, 17, 1)],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
@@ -49,8 +50,8 @@ def signal() :
 def points() :
     return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
             #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (33, 53, 1)][-1:]
-            #"listOfTestPoints": [],
-            "listOfTestPoints": [(32, 8, 1), (42, 2, 1)][-1:],
+            "listOfTestPoints": [],
+            #"listOfTestPoints": [(32, 8, 1), (42, 2, 1)][-1:],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
