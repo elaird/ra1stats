@@ -348,7 +348,7 @@ class validationPlotter(object) :
             fileName = "mumu_control_fit%s"%("_logy" if logY else "")
             self.plot(fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True,
                       obs = {"var":"nMumu", "desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])}, logY = logY, otherVars = [
-                {"var":"mcZmumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2,
+                {"var":"mcMumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
                 {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"expected SM yield", "stack":None},
                 ])
@@ -416,7 +416,7 @@ class validationPlotter(object) :
                   otherVars = [{"var":"zInv",  "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
         
         #self.plot(note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6,
-        #          obs = {"num":"nMumu", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Zmumu) / nHadBulk"},
+        #          obs = {"num":"nMumu", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Mumu) / nHadBulk"},
         #          otherVars = [{"num":"zInv",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
 
         self.plot(note = "``naive prediction''", legend0 = (0.12, 0.7), legend1 = (0.82, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6,#customMaxFactor = [1.5]*2,
