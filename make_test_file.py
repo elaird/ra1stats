@@ -60,12 +60,9 @@ ds_52_53 = dsf.makeSlice("x",52.5,54.6)
 
 dsf_b = DF.DataSliceFactory( e )
 ds_52_53_b = dsf_b.makeSlice("x",50.5,58.6)
-print ds_52_53._observations
-print ds_52_53_b._observations
 
 mems = dir( ds_52_53_b )
-
 for attr in mems :
     if not "__" in attr:
         x = getattr( ds_52_53_b, attr )
-        print attr, x
+        print "%s.%s = %s" % ( "self", attr, x )
