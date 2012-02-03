@@ -5,3 +5,6 @@ log
 output*
 *.d
 *.so
+.*.swp
+*.root
+*.pdf
