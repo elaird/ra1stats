@@ -27,6 +27,11 @@ def signal(i) :
             "effHad": [0.008697, 0.004366, 0.004120, 0.005746, 0.007165, 0.011060, 0.014814, 0.079827],
             "effMuon":[0.000498, 0.000514, 0.000512, 0.000850, 0.000758, 0.000766, 0.001994, 0.004008]})
 
+    p_33_53b = common.signal(xs = 0.050740907, label = "RM1 (>=1 b-tag)")#, label = "m_{0}=320 GeV, m_{1/2}=520 GeV (NLO) (>=1 b-tag)")
+    p_33_53b.insert("55b_mixed", {
+            "effHad": [0.003522, 0.001881, 0.001108, 0.001453, 0.002007, 0.002189, 0.003275, 0.021969],
+            "effMuon":[0.000334, 8.59e-05, 0.000170, 0.000494, 0.000429, 0.000343, 0.000678, 0.001018]})
+
     p_181_19 = common.signal(xs = 5.6887135, label = "m_{0}=1800 GeV, m_{1/2}=180 GeV (NLO)")
     p_181_19.insert("55", {
             "effMuon":[0.000147, 0.000000, 0.000441, 0.000588, 0.000147, 0.000147, 0.000147, 0.000000],
@@ -96,11 +101,11 @@ def signal(i) :
                "label":"T2 39 7, xs = 1.0 pb",
                }
     
-    return [{}, p_33_53, p_181_19, p_181_29, p_181_29b, t2tt, lm6, t1_600_100, t2_39_7][i]
+    return [{}, p_33_53, p_33_53b, p_181_19, p_181_29, p_181_29b, t2tt, lm6, t1_600_100, t2_39_7][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signal = signal(3),
-                  signalExampleToStack = signal(1),
+                  signalExampleToStack = signal(2),
                   #trace = True
                   #rhoSignalMin = 0.1,
                   #fIni = 0.1,
