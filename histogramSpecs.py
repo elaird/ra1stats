@@ -21,7 +21,7 @@ def smsRanges(model) :
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
-def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None) :
+def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, bTag = None) :
     base = locations()["eff"]
 
     cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v5", "muon":"v5"},
@@ -60,6 +60,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     else :
         assert False, "model %s not in list"%model
     
+    if bTag           : out["afterDir"] += "_btag"
     if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
     if htLower        : out["afterDir"] += "_%d"%htLower
