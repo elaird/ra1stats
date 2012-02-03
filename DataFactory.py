@@ -160,6 +160,10 @@ class DataSlice( object ) :
                 self._lumi[dir] = histo_dict[dir]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
                 self._lumi["mc"+dir.capitalize()] = histo_dict[dir]["lumiMc"].GetBinContent(1)
+            for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ" ] :
+                if MC in objKeys : 
+                    self._mcExpectations[ "mc%s%s" % (objName.capitalize(),MC)] = tuple([ histo_dict[objName][MC].GetBinContent(xbin) for xbin in xbins ])
+                    self._mcStatError[ "mc%s%sErr" % (objName.capitalize(),MC)] = tuple([ histo_dict[objName][MC].GetBinError(xbin)   for xbin in xbins ])
 
         if histo_dict.get("had") :
             hadKeys = histo_dict["had"].keys()
