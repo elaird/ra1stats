@@ -56,13 +56,17 @@ e = { "~/Documents/RA1/RA1_Stats_Btagged.root" :
 
 
 dsf = DF.DataSliceFactory( d )
-ds_52_53 = dsf.makeSlice("x",52.5,54.6)
+ds_52_53 = dsf.makeSlice("x",55.5,55.6)
 
 dsf_b = DF.DataSliceFactory( e )
-ds_52_53_b = dsf_b.makeSlice("x",50.5,58.6)
+ds_52_53_b = dsf_b.makeSlice("x",55.5,55.6)
 
-mems = dir( ds_52_53_b )
-for attr in mems :
-    if not "__" in attr:
-        x = getattr( ds_52_53_b, attr )
-        print "%s.%s = %s" % ( "self", attr, x )
+for slice in [ ds_52_53_b, ds_52_53 ] :
+    mems = dir( slice )
+    for attr in mems :
+        if not "__" in attr:
+            x = getattr( ds_52_53, attr )
+            print "%s.%s = %s" % ( "self", attr, x )
+    print
+    print
+    print
