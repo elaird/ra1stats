@@ -73,6 +73,25 @@ def signal(i) :
     p_181_29.insert("53", {
             "effHad": [0.000835, 9.05e-05, 0.000362, 0.000403, 0.001192, 0.001009, 0.001009, 0.001080],
             "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000201, 0.000201, 0.000000, 0.000000]})
+
+    t2tt = common.signal(xs = 1.0, label = "T2tt m_{stop}= 875 GeV, m_{LSP}= 225 GeV (1 pb)")
+    t2tt.insert("52", {
+            "effHad":[0.00012, 0.00022, 0.00068, 0.00148, 0.00204, 0.00274, 0.00254, 0.01006],
+            "effHadSumUncRelMcStats":0.0317180739848,
+            "effMuon":[8e-05, 8e-05, 0.00016, 0.00022, 0.00012, 8e-05, 6e-05, 0.00016],
+            "effMuonSumUncRelMcStats":0.144337567297})
+
+    t2tt.insert("53", {
+            "effHad":[0.00022, 0.00034, 0.00136, 0.00268, 0.0038, 0.00472, 0.0047, 0.0148],
+            "effHadSumUncRelMcStats":0.0247612759121,
+            "effMuon":[8e-05, 0.00012, 0.00016, 0.00048, 0.00052, 0.0005, 0.00042, 0.00036],
+            "effMuonSumUncRelMcStats":0.0870388279778})
+    
+    t2tt.insert("55", {
+            "effHad":[0.00364, 0.0051, 0.01772, 0.03308, 0.04384, 0.04716, 0.03638, 0.05002],
+            "effHadSumUncRelMcStats":0.00918746728765,
+            "effMuon":[0.0022, 0.0028, 0.0061, 0.00744, 0.0061, 0.00334, 0.00188, 0.00208],
+            "effMuonSumUncRelMcStats":0.0250234705106})
     
     filips_point1 = {'xs': 0.0909,
                      'effMuon': [0.0003, 0.0003, 0.0004, 0.0007, 0.0012, 0.0011, 0.0015, 0.0032],
@@ -116,13 +135,14 @@ def signal(i) :
         "xs":1.0,
         }
     
-    return [{}, p_29_25, p_29_55, p_181_19, p_181_29, p_181_29b, lm6, t1_600_100, t2_39_7, broken][i]
+    return [{}, p_29_25, p_29_55, p_181_19, p_181_29, p_181_29b, t2_tt, lm6, t1_600_100, t2_39_7, broken][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signal = signal(3),
                   signalExampleToStack = signal(5),
                   #trace = True
                   #rhoSignalMin = 0.1,
+                  #fIni = 0.1,
                   #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                   )
 
