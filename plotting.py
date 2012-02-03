@@ -272,7 +272,7 @@ class validationPlotter(object) :
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
-            {"var":"ewk",  "type":self.ewkType, "desc":"EWK (t#bar{t} + W + Z#rightarrow#nu#bar{#nu})",
+            {"var":"ewk",  "type":self.ewkType, "desc":"EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
              "color":self.ewk, "style":2, "width":self.width1, "stack":"background"},
             #{"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcd", "k_qcd", errors = True),
             # "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
@@ -348,7 +348,7 @@ class validationPlotter(object) :
             fileName = "mumu_control_fit%s"%("_logy" if logY else "")
             self.plot(fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True,
                       obs = {"var":"nMumu", "desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])}, logY = logY, otherVars = [
-                {"var":"mcMumu", "type":None, "purityKey": "mumu", "color":r.kGray+2, "style":2, "width":2,
+                {"var":"mcMumu", "type":None, "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
                 {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"expected SM yield", "stack":None},
                 ])
