@@ -471,7 +471,7 @@ class validationPlotter(object) :
 
 	if self.printPages and fileName :
 	    h.SetTitle("")
-	    printOnePage(self.canvas, fileName)
+	    printOnePage(self.canvas, fileName+self.label)
 	    #printOnePage(self.canvas, fileName, ext = ".C")
 	self.canvas.Print(self.psFileName)
         
@@ -874,7 +874,7 @@ class validationPlotter(object) :
         
 	if self.printPages and fileName :
 	    #obsHisto.SetTitle("")
-	    printOnePage(self.canvas, fileName)
+	    printOnePage(self.canvas, fileName+self.label)
 	    #printOnePage(self.canvas, fileName, ext = ".C")
 	self.canvas.Print(self.psFileName)
 
