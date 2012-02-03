@@ -19,7 +19,7 @@ def signal() :
     overwriteInput = collections.defaultdict(list)
     overwriteOutput = collections.defaultdict(list)
     overwriteOutput.update({"T1": [(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
-                            "T2tt": [(22, 2, 1), (31, 17, 1)],
+                            "T2tt": [(22, 2, 1), (31, 17, 1), (9, 2, 1), (36, 23, 1)],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
