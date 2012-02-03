@@ -43,14 +43,14 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][4],
             }
 
 def points() :
     return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
-            "listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (33, 53, 1)][-1:]
+            #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (33, 53, 1)][-1:]
             #"listOfTestPoints": [],
-            #"listOfTestPoints": [(32, 8, 1)],
+            "listOfTestPoints": [(32, 8, 1), (42, 2, 1)][-1:],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
