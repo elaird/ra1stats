@@ -4,9 +4,9 @@ class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
     the corresponding value determines whether signal efficiency is considered for that sample.'''
 
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None),
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), bTag = False,
                  universalSystematics = False, universalKQcd = False) :
-        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax",
+        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax", "bTag",
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
@@ -61,17 +61,19 @@ class spec(dict) :
         #                   )
         #         )
 
-        #self.add(selection(name = "55b_after",
-        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-        #                   data = afterAlphaT_b.data_55_v1(),
-        #                   )
-        #         )
-        
-        self.add(selection(name = "55b_mixed",
+        self.add(selection(name = "55b_after",
+                           alphaTMinMax = ("55", None),
+                           bTag = True,
                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = mixedMuons_b.data_55_v1(),
+                           data = afterAlphaT_b.data_55_v1(),
                            )
                  )
+        
+        #self.add(selection(name = "55b_mixed",
+        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+        #                   data = mixedMuons_b.data_55_v1(),
+        #                   )
+        #         )
         
         #self.add(selection(name = "2010",
         #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False},

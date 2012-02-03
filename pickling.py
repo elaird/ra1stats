@@ -24,7 +24,7 @@ def effHistos(nloToLoRatios = False) :
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
 
-        alphaT = {"alphaTLower": sel.alphaTMinMax[0], "alphaTUpper": sel.alphaTMinMax[1]}
+        kargs = {"alphaTLower": sel.alphaTMinMax[0], "alphaTUpper": sel.alphaTMinMax[1], "bTag": sel.bTag}
         d = {}
         for box,considerSignal in sel.samplesAndSignalEff.iteritems() :
             item = "eff%s"%(box.capitalize())
@@ -33,9 +33,9 @@ def effHistos(nloToLoRatios = False) :
                 if nloToLoRatios : d["_LO"%item] = out[item]
                 continue
 
-    	    d[item] = [hp.effHisto(box = box, scale = "1", htLower = l, htUpper = u, **alphaT) for l,u in htThresholds]
+    	    d[item] = [hp.effHisto(box = box, scale = "1", htLower = l, htUpper = u, **kargs) for l,u in htThresholds]
     	    if not nloToLoRatios : continue
-            d[item+"_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = l, htUpper = u, **alphaT) for l,u in htThresholds]
+            d[item+"_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = l, htUpper = u, **kargs) for l,u in htThresholds]
         out[sel.name] = d
     return out
 
