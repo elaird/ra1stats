@@ -695,7 +695,7 @@ class foo(object) :
             for key,value in selection.data.observations().iteritems() :
                 activeBins[key] = map(lambda x:x!=None, value)
 
-            args = {"wspace": self.wspace, "results": results,
+            args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
                     "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
                     "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
                     "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
