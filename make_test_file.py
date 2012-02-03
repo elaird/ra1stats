@@ -65,8 +65,6 @@ for slice in [ ds_52_53_b, ds_52_53 ] :
     mems = dir( slice )
     for attr in mems :
         if not "__" in attr:
-            x = getattr( ds_52_53, attr )
+            x = getattr( slice, attr )
             print "%s.%s = %s" % ( "self", attr, x )
-    print
-    print
-    print
+    print "\n\n\n"
