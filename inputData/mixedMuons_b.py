@@ -35,7 +35,7 @@ class data_55_v1(data) :
             "nHad": (784.0, 370.0, 274.0, 91.0, 31.0, 13.0, 4.0, 2.0), 
             "nMuon": (472.0, 201.0, 854.0, 456.0, 192.0, 77.0, 33.0, 44.0), 
             "nMumu": (19.0, 12.0, 43.0, 27.0, 15.0, 9.0, 1.0, 6.0),
-            "nPhot":     excl((      None,      None,       101,        28,        11,         5,         1,         1), isExcl),
+            "nPhot":     excl((      None,      None,       221,        84,        37,        16,         7,         2), isExcl),
             }
 
         self._triggerEfficiencies = {
@@ -71,7 +71,7 @@ class data_55_v1(data) :
 	    "mcMumuWZ": (0.1605, 0.04718, 0.09031, 0.08585, 0.01541, 0.0, 0.01233, 0.01233), 
 	    "mcHadDY": (1.628, 0.4649, 1.503, 0.4368, 0.0, 0.0, 0.0, 0.0), 
 	    "mcHadt": (33.961999999999996, 13.878499999999999, 9.2675, 3.2643, 1.3421699999999999, 0.39313, 0.05267, 0.37420000000000003),
-            "mcGjets": excl(scaled((  None,    None,      91,      34,     15,      7,      4,    0.7), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
 	    }
         
         for item in ["mcMuon", "mcMumu"] :
