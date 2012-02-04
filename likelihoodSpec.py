@@ -58,14 +58,12 @@ class spec(dict) :
                                alphaTMinMax = ("53", "55"),
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = afterAlphaT.data_53_v1(),
-                               zeroQcd = True,
                                )
                      )
             self.add(selection(name = "52",
                                alphaTMinMax = ("52", "53"),
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = afterAlphaT.data_52_v1(),
-                               zeroQcd = True,
                                )
                      )
 
