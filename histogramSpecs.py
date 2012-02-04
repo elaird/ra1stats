@@ -14,7 +14,7 @@ def smsRanges(model) :
     d["smsXRange"] = x[model if model in x else ""]
     d["smsYRange"] = y[model if model in y else ""]
     d["smsXsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
-    d["smsXsZRangeLog"] = (0.5e-2, 500.0, 20)
+    d["smsXsZRangeLog"] = (1.0e-3, 100.0, 20)
     d["smsEffZRange"]   = (0.0, 0.35, 35)
 
     d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
@@ -31,7 +31,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     sms = {"T1":      {"had": "v3"},
            "T2":      {"had": "v3"},
-           "T2tt":    {"had": "v3", "muon": "v3"},
+           "T2tt":    {"had": "v5", "muon": "v5"},
            "T5zz":    {"had": "v1", "muon": "v1"},
            "TGQ_0p0": {"had": "v1"},
            "TGQ_0p2": {"had": "v1"},

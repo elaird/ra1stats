@@ -149,7 +149,7 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    s3 = stamp(text = "%s, 1.1 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.62, factor = 0.7)
+    s3 = stamp(text = "%s, 4.6 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.62, factor = 0.7)
     
     printOnce(c, printName)
     printHoles(h2)

@@ -26,7 +26,7 @@ class data_55_v1(data) :
             "mcZinv":  4529.,
 
             "mumu":    4650.,
-            "mcZmumu": 4650.,
+            "mcMumu":  4650.,
             }
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
@@ -96,7 +96,6 @@ class data_55_v1(data) :
             self._mcExpectations[item] = trig(total, self._triggerEfficiencies["had"])
 
         self._mcExpectations["mcZinv"] = self._mcExpectations["mcHadZinv"]
-        self._mcExpectations["mcZmumu"] = self._mcExpectations["mcMumuDY"]
         
         print "put in new stat errors"
         self._mcStatError = {
@@ -108,15 +107,12 @@ class data_55_v1(data) :
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
 
-        print "the mumu purities are old"
         self._purities = {
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
-            "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),#old
             }
 
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-        #self._mcExtra["mcMumu"] = tuple([(zMumu/purity if (zMumu and purity) else None) for zMumu,purity in zip(self._mcExpectations["mcZmumu"], self._purities["mumu"])])
         
         self._fixedParameters = {
             "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
