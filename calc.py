@@ -191,20 +191,25 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
 
     r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
     #from StandardHypoTestInvDemo.C
-    opts = {"PlotHypoTestResult": False,
-            "WriteResult": False,
-            "Optimize": True,
-            "UseVectorStore": True,
-            "GenerateBinned": False,
-            "NToysRatio": 2,
-            "MaxPOI": -1.0,
-            "UseProof": nWorkers>1,
-            "Nworkers": nWorkers,
-            "Rebuild": False,
-            "NToyToRebuild": 100,
-            "MassValue": "",
-            "MinimizerType": "",
-            "PrintLevel": 0}
+    opts = {
+        "PlotHypoTestResult": False,
+        "WriteResult": False,
+        "Optimize": True,
+        "UseVectorStore": True,
+        "GenerateBinned": False,
+        "UseProof": nWorkers>1,
+        "Rebuild": False,
+        "NWorkers": nWorkers,
+        "NToyToRebuild": 100,
+        "PrintLevel": 0,
+        "InitialFit": -1,
+        "RandomSeed": -1,
+        "NToysRatio": 2,
+        "MaxPOI": -1.0,
+        "MassValue": "",
+        "MinimizerType": "",
+        "ResultFileName": "",
+        }
 
     hypoTestInvTool = r.RooStats.HypoTestInvTool()
     for key,value in opts.iteritems() :
