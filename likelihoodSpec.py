@@ -40,8 +40,8 @@ class spec(dict) :
         self._selections.append(sel)
 
     def load(self) :
-        slices = True
-        b = False
+        slices = False
+        b = True
 
         assert slices^b
         

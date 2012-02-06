@@ -104,8 +104,8 @@ def signal(i) :
     return [{}, p_33_53, p_33_53b, p_181_19, p_181_29, p_181_29b, t2tt, lm6, t1_600_100, t2_39_7][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signal = signal(3),
-                  signalExampleToStack = signal(1),
+                  signal = signal(5),
+                  #signalExampleToStack = signal(1),
                   #trace = True
                   #rhoSignalMin = 0.1,
                   #fIni = 0.1,
@@ -114,11 +114,11 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
 
 cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
-#            calculatorType = ["frequentist", "asymptotic"][1],
-#            testStatType = 3, nToys = 20, nWorkers = 1); print out
+out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
+            calculatorType = ["frequentist", "asymptotic"][1],
+            testStatType = 3, nToys = 20, nWorkers = 1); print out
 #f.profile()
-f.bestFit(printValues = True)
+#f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = False)
 #f.bestFit(printPages = True)
 #f.qcdPlot()
