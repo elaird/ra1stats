@@ -44,7 +44,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][4],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
             }
 
 def points() :
@@ -126,13 +126,13 @@ def strings(xBin, yBin, zBin) :
 def benchmarkPoints() :
     out = {}
     fields =                       [  "m0",  "m12",  "A0", "tanBeta", "sgn(mu)"]
-    out["LM0" ] = dict(zip(fields, [   200,    160,  -400,        10,         1]))
-    out["LM1" ] = dict(zip(fields, [    60,    250,     0,        10,         1]))
+    #out["LM0" ] = dict(zip(fields, [   200,    160,  -400,        10,         1]))
+    #out["LM1" ] = dict(zip(fields, [    60,    250,     0,        10,         1]))
     out["LM2" ] = dict(zip(fields, [   185,    350,     0,        35,         1]))
     out["LM3" ] = dict(zip(fields, [   330,    240,     0,        20,         1]))
-    out["LM4" ] = dict(zip(fields, [   210,    285,     0,        10,         1]))
-    out["LM5" ] = dict(zip(fields, [   230,    360,     0,        10,         1]))
-    out["LM6" ] = dict(zip(fields, [    85,    400,     0,        10,         1]))
+    #out["LM4" ] = dict(zip(fields, [   210,    285,     0,        10,         1]))
+    #out["LM5" ] = dict(zip(fields, [   230,    360,     0,        10,         1]))
+    #out["LM6" ] = dict(zip(fields, [    85,    400,     0,        10,         1]))
     out["LM7" ] = dict(zip(fields, [  3000,    230,     0,        10,         1]))
     out["LM8" ] = dict(zip(fields, [   500,    300,  -300,        10,         1]))
     out["LM9" ] = dict(zip(fields, [  1450,    175,     0,        50,         1]))
@@ -141,10 +141,13 @@ def benchmarkPoints() :
     out["LM12"] = dict(zip(fields, [  2545,    247,  -866,        48,         1]))
     out["LM13"] = dict(zip(fields, [   270,    218,  -553,        40,         1]))
     
-    out["IM1" ] = dict(zip(fields, [   100,    510,     0,        10,         1]))
-    out["IM2" ] = dict(zip(fields, [   180,    510,     0,        10,         1]))
-    out["IM3" ] = dict(zip(fields, [   260,    450,     0,        10,         1]))
+    #out["IM1" ] = dict(zip(fields, [   100,    510,     0,        10,         1]))
+    #out["IM2" ] = dict(zip(fields, [   180,    510,     0,        10,         1]))
+    #out["IM3" ] = dict(zip(fields, [   260,    450,     0,        10,         1]))
     out["IM4" ] = dict(zip(fields, [   820,    390,     0,        10,         1]))
+
+    out["RM1" ] = dict(zip(fields, [   320,    520,     0,        10,         1]))
+    out["RM2" ] = dict(zip(fields, [  1800,    280,     0,        10,         1]))
     return out
 
 def scanParameters() :

@@ -97,7 +97,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
-             REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, iniValFZinv = 0.5) :
+             REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, zeroQcd = None, iniValFZinv = 0.5) :
 
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -124,7 +124,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             out["nuis"].append(k)
             #w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
 
-    if RQcd=="Zero" :
+    if RQcd=="Zero" or zeroQcd :
         w.var(A).setVal(0.0)
         w.var(A).setConstant()
     else :
@@ -472,6 +472,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
             args[item][x] = eval(x)
 
+    args["had"]["zeroQcd"] = selection.zeroQcd
     for x in ["REwk", "RQcd", "nFZinv", "qcdSearch"] :
         args["had"][x] = eval(x)
 

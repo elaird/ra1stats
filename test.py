@@ -105,7 +105,7 @@ def signal(i) :
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signal = signal(3),
-                  signalExampleToStack = signal(2),
+                  signalExampleToStack = signal(1),
                   #trace = True
                   #rhoSignalMin = 0.1,
                   #fIni = 0.1,
