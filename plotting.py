@@ -465,16 +465,17 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName)
         return
 
-    def correlationHist(self, fileName = "correlation_matrix") :
-        h = self.results.correlationHist()
+    def correlationHist(self) :
+        name = "correlation_matrix"+self.label
+        h = self.results.correlationHist(name)
         h.SetStats(False)
         r.gStyle.SetPaintTextFormat("5.2f")
         h.Draw("colztext")
 
-	if self.printPages and fileName :
+	if self.printPages and name :
 	    h.SetTitle("")
-	    printOnePage(self.canvas, fileName+self.label)
-	    #printOnePage(self.canvas, fileName, ext = ".C")
+	    printOnePage(self.canvas, name)
+	    #printOnePage(self.canvas, name, ext = ".C")
 	self.canvas.Print(self.psFileName)
         
         
