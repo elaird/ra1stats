@@ -536,7 +536,6 @@ class foo(object) :
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
             args[item] = getattr(self, item)
 
-        print "fix signal format"
         if not self.smOnly() :
             startLikelihood(w = self.wspace, xs = self.signal.xs, fIni = fIni)
 
