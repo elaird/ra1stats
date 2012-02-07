@@ -66,7 +66,7 @@ baseline_noMHT_ov_MET = {
                },
            }
 
-btagged_no_MHT_ov_MET =  { 
+btagged_noMHT_ov_MET =  { 
             "~/Documents/RA1/RA1_Stats_Btagged_No_MHT_ov_MET.root" :
                { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
@@ -79,11 +79,21 @@ btagged_no_MHT_ov_MET =  {
 
 r.gROOT.SetBatch(1)
 #
-dsf = DF.DataSliceFactory( baseline_noMHT_ov_MET )
-ds_55_up = dsf.makeSlice("x",55.5,55.6)
+dsf  = DF.DataSliceFactory( baseline_noMHT_ov_MET )
+dsf2 = DF.DataSliceFactory( btagged_noMHT_ov_MET )
+ds_55_up_baseline = dsf.makeSlice("x",55.5,55.6)
+ds_55_up_btagged  = dsf2.makeSlice("x",55.5,55.6)
+
+slices = { 
+          "baseline no MHT/MET" : ds_55_up_baseline,
+          "btagged  no MHT/MET" : ds_55_up_btagged,
+         }
 
 
-for slice in [ ds_55_up ]:
+for name,slice in slices.iteritems() :
+    print "="*len(name)
+    print name
+    print "="*len(name)
     mems = dir( slice )
     for attr_name in mems :
         if not "__" in attr_name :
@@ -91,3 +101,4 @@ for slice in [ ds_55_up ]:
             print "{classname}.{obj} = \n".format(classname="self", obj=attr_name),
             print_unpack( attr_data,1 )
             print
+    print "\n"
