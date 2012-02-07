@@ -1,13 +1,40 @@
 #! /usr/bin/env python
 
 import ROOT as r
+
+from collections import Iterable
 from array import array
 
 import DataFactory as DF
 
-import inspect
+def print_unpack( item, level = 0, ending_comma = False ) :
+    if not isinstance( item, dict) : 
+        if not isinstance( item, Iterable ) :
+            print "\t"*level,"{item:.4}".format(item=item),
+            if ending_comma :
+                print ","
+            else:
+                print
+        else :
+            s = "(" if isinstance( item,tuple ) else "[" 
+            e = ")" if isinstance( item,tuple ) else "]" 
+            print "\t"*level,s,
+            for i in item :
+                print "{i:.4},".format(i=i),
+            print e,
+            if ending_comma :
+                print ","
+    else :
+        print "\t"*level,"{"
+        for key,value in item.iteritems() :
+            print "\t"*(level+1),
+            keystring = '"%s"' % key
+            print '{k:20} : '.format( k=keystring ),
+            print_unpack( value, 0, True )
+        print "\t"*level,"}"
 
-baseline = { "~/Documents/RA1/RA1_Stats_baseline.root" :
+baseline = { 
+            "~/Documents/RA1/RA1_Stats_baseline.root" :
                { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
@@ -17,7 +44,8 @@ baseline = { "~/Documents/RA1/RA1_Stats_baseline.root" :
                },
            }
 
-btagged = { "~/Documents/RA1/RA1_Stats_Btagged.root" :
+btagged =  { 
+            "~/Documents/RA1/RA1_Stats_Btagged.root" :
                { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
@@ -25,19 +53,41 @@ btagged = { "~/Documents/RA1/RA1_Stats_Btagged.root" :
                  "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                },
-          } 
+           } 
+
+baseline_noMHT_ov_MET = { 
+            "~/Documents/RA1/RA1_Stats_Baseline_No_MHT_ov_MET.root" :
+               { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+               },
+           }
+
+btagged_no_MHT_ov_MET =  { 
+            "~/Documents/RA1/RA1_Stats_Btagged_No_MHT_ov_MET.root" :
+               { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+               },
+           } 
 
 r.gROOT.SetBatch(1)
+#
+dsf = DF.DataSliceFactory( baseline_noMHT_ov_MET )
+ds_55_up = dsf.makeSlice("x",55.5,55.6)
 
-dsf = DF.DataSliceFactory( d )
-ds_52_53 = dsf.makeSlice("x",55.5,55.6)
 
-dsf_b = DF.DataSliceFactory( e )
-ds_52_53_b = dsf_b.makeSlice("x",55.5,55.6)
-
-for slice in [ ds_52_53_b, ds_52_53 ] :
+for slice in [ ds_55_up ]:
     mems = dir( slice )
-    for attr in mems :
-        if not "__" in attr:
-            x = getattr( slice, attr )
-            print "%s.%s = %s" % ( "self", attr, x )
+    for attr_name in mems :
+        if not "__" in attr_name :
+            attr_data = getattr( slice, attr_name )
+            print "{classname}.{obj} = \n".format(classname="self", obj=attr_name),
+            print_unpack( attr_data,1 )
+            print
