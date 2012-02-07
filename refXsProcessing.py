@@ -41,12 +41,19 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
 
     return out
         
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False) :
+def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False, timesTen = False) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
-           ]
+           ] if not timesTen else [
+        {"factor": 10.0 , "label": "#sigma^{prod} = 10 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
+        {"factor": 30.0 , "label": "#sigma^{prod} = 30 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},]
+           
     if not noOneThird :
-        out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
+        if not timesTen :
+            out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
+        else :
+            out.append({"factor": 10/3., "label": "#sigma^{prod} = 10/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
+            
     for d in out :
         d["graph"] = excludedGraph(h, d["factor"], model, interBin)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
