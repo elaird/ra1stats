@@ -215,7 +215,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     for key,value in opts.iteritems() :
         hypoTestInvTool.SetParameter(key, value)
 
-    ctd = {"frequentist":0, "asymptotic":2}
+    ctd = {"frequentist":0, "asymptotic":2, "asymptoticNom":3}
     result = hypoTestInvTool.RunInverter(wspace, #RooWorkspace * w,
                                          "modelConfig", "", #const char * modelSBName, const char * modelBName,
                                          "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
