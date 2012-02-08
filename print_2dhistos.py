@@ -84,9 +84,19 @@ dsf2 = DF.DataSliceFactory( btagged_noMHT_ov_MET )
 ds_55_up_baseline = dsf.makeSlice("x",55.5,55.6)
 ds_55_up_btagged  = dsf2.makeSlice("x",55.5,55.6)
 
+ds_52_53_baseline = dsf.makeSlice("x",52.5,52.6)
+ds_52_53_btagged  = dsf2.makeSlice("x",52.5,52.6)
+
+ds_53_55_baseline = dsf.makeSlice("x",53.5,53.6)
+ds_53_55_btagged  = dsf2.makeSlice("x",53.5,53.6)
+
 slices = { 
-          "baseline no MHT/MET" : ds_55_up_baseline,
-          "btagged  no MHT/MET" : ds_55_up_btagged,
+          "baseline no MHT/MET aT>0.55" : ds_55_up_baseline,
+          "btagged  no MHT/MET aT>0.55" : ds_55_up_btagged,
+          "baseline no MHT/MET 0.52<aT<0.53" : ds_52_53_baseline,
+          "btagged  no MHT/MET 0.52<aT<0.53" : ds_52_53_btagged,
+          "baseline no MHT/MET 0.53<aT<0.55" : ds_53_55_baseline,
+          "btagged  no MHT/MET 0.53<aT<0.55" : ds_53_55_btagged,
          }
 
 
