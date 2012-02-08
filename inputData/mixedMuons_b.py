@@ -116,8 +116,8 @@ class data_55_v1(data) :
         
         self._fixedParameters = {
             "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.40,
-            "sigmaMuonW": 0.30,
+            "sigmaPhotZ": 0.20,
+            "sigmaMuonW": 0.20,
             "sigmaMumuZ": 0.20,
 
             "k_qcd_nom"     : 2.89e-2,
