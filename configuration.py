@@ -1,7 +1,7 @@
 import collections,socket
 
 def locations() :
-    s = "/vols/cms02/elaird1/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
+    s = "/vols/cms02/samr/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
     return {"eff": "%s/20_yieldHistograms/2011/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
@@ -30,6 +30,7 @@ def signal() :
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2tt":lambda iX,x,iY,y,iZ,z:True,
+                           "T2bb":lambda iX,x,iY,y,iZ,z:True,
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
                            },
             "nEventsIn":{""       :(9900., 10100.),
@@ -44,7 +45,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
             }
 
 def points() :
