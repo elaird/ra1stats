@@ -34,7 +34,7 @@ def print_unpack( item, level = 0, ending_comma = False ) :
         print "\t"*level,"}"
 
 baseline = { 
-            "~/Documents/RA1/RA1_Stats_baseline.root" :
+            "/vols/cms02/samr/Correct_Baseline_Root_File.root" :
                { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
@@ -43,60 +43,18 @@ baseline = {
                          "DY", "tt", "obs", "WZ" ],
                },
            }
-
-btagged =  { 
-            "~/Documents/RA1/RA1_Stats_Btagged.root" :
-               { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-               },
-           } 
-
-baseline_noMHT_ov_MET = { 
-            "~/Documents/RA1/RA1_Stats_Baseline_No_MHT_ov_MET.root" :
-               { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-               },
-           }
-
-btagged_noMHT_ov_MET =  { 
-            "~/Documents/RA1/RA1_Stats_Btagged_No_MHT_ov_MET.root" :
-               { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-               },
-           } 
 
 r.gROOT.SetBatch(1)
 #
-dsf  = DF.DataSliceFactory( baseline_noMHT_ov_MET )
-dsf2 = DF.DataSliceFactory( btagged_noMHT_ov_MET )
+dsf  = DF.DataSliceFactory( baseline )
 ds_55_up_baseline = dsf.makeSlice("x",55.5,55.6)
-ds_55_up_btagged  = dsf2.makeSlice("x",55.5,55.6)
-
 ds_52_53_baseline = dsf.makeSlice("x",52.5,52.6)
-ds_52_53_btagged  = dsf2.makeSlice("x",52.5,52.6)
-
 ds_53_55_baseline = dsf.makeSlice("x",53.5,53.6)
-ds_53_55_btagged  = dsf2.makeSlice("x",53.5,53.6)
 
 slices = { 
-          "baseline no MHT/MET aT>0.55" : ds_55_up_baseline,
-          "btagged  no MHT/MET aT>0.55" : ds_55_up_btagged,
-          "baseline no MHT/MET 0.52<aT<0.53" : ds_52_53_baseline,
-          "btagged  no MHT/MET 0.52<aT<0.53" : ds_52_53_btagged,
-          "baseline no MHT/MET 0.53<aT<0.55" : ds_53_55_baseline,
-          "btagged  no MHT/MET 0.53<aT<0.55" : ds_53_55_btagged,
+          "baseline aT0.55" : ds_55_up_baseline,
+          "baseline aT0.53" : ds_53_55_baseline,
+          "baseline aT0.52" : ds_52_53_baseline,
          }
 
 
