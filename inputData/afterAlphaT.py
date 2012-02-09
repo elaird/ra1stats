@@ -243,7 +243,7 @@ class data_52_v1(data) :
         self._mcStatError = {
             "mcMuonErr":                   (  None,    None,    None,   None,   None,   None,    1.1,   0.9),
             "mcTtwErr":                    (  None,    None,    None,   None,   None,   None,    1.5,   1.2),
-            "mcGjetsErr":           scaled((  None,    None,    None,   None,   None,   None,    3.0,   2.0), self.lumi()["phot"]/self.lumi()["mcGjets"]),
+            "mcGjetsErr":           scaled((  None,    None,    None,   None,   None,   None,    2.0,   1.0), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcZinvErr":                   (  None,    None,    None,   None,   None,   None,    0.7,   0.7),
             "mcMumuErr":                   (  None,    None,    None,   None,   None,   None,    0.0,   0.4),
             }
