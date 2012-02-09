@@ -29,9 +29,10 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
              #"tanBeta10": {"cmssw":"38", "had":"v2", "muon":"v5"},
              }
 
-    sms = {"T1":      {"had": "v3"},
-           "T2":      {"had": "v3"},
-           "T2tt":    {"had": "v5", "muon": "v5"},
+    sms = {"T1":      {"had": "v4"},
+           "T2":      {"had": "v4"},
+           "T2tt":    {"had": "v6", "muon": "v6"},
+           "T2bb":    {"had": "v1", "muon": "v1"},
            "T5zz":    {"had": "v1", "muon": "v1"},
            "TGQ_0p0": {"had": "v1"},
            "TGQ_0p2": {"had": "v1"},
@@ -72,6 +73,7 @@ def histoTitle(model = "") :
     d = {"T1"      : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T2"      : ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt"    : ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "T2bb"    : ";m_{sbottom} (GeV);m_{LSP} (GeV)",
          "T5zz"    : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "TGQ_0p0" : ";m_{gluino} (GeV);m_{squark} (GeV)",
          "TGQ_0p2" : ";m_{gluino} (GeV);m_{squark} (GeV)",
