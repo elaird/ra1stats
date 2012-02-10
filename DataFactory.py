@@ -8,6 +8,7 @@ from data import data,scaled,excl,trig
 from math import sqrt
 from collections import defaultdict
 
+
 def projectHistogram( histo, axis, amin, amax, suffix, addOverFlow = True,
                       addUnderFlow = False) :
     ax = histo.GetXaxis() if axis == "y" else histo.GetYaxis()
@@ -127,10 +128,10 @@ class DataSlice( object ) :
         self._mergeBins = None
         self._constantMcRatioAfterHere =  [ ]
 
-        try :
-            self._htMeans = tuple( [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ] )
-        except KeyError :
-            print "hadBulk/Htmeans histogram not defined"
+#        try :
+#            self._htMeans = tuple( [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ] )
+#        except KeyError :
+#            print "hadBulk/Htmeans histogram not defined"
 
         self._sigEffCorr =  (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
 
@@ -160,35 +161,37 @@ class DataSlice( object ) :
                 self._lumi[dir] = histo_dict[dir]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
                 self._lumi["mc"+dir.capitalize()] = histo_dict[dir]["lumiMc"].GetBinContent(1)
-            for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ" ] :
-                if MC in objKeys : 
-                    self._mcExpectations[ "mc%s%s" % (objName.capitalize(),MC)] = tuple([ histo_dict[objName][MC].GetBinContent(xbin) for xbin in xbins ])
-                    self._mcStatError[ "mc%s%sErr" % (objName.capitalize(),MC)] = tuple([ histo_dict[objName][MC].GetBinError(xbin)   for xbin in xbins ])
+            total = None
+            mcstr = "mc%s" % (objName.capitalize())
+            if objName != "had" :
+                for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ" ] :
+                    if MC not in histo_dict[objName] :
+                        continue
+                    if total == None :
+                        total = histo_dict[objName][MC].Clone(mcstr)
+                        total.Reset()
+                    if MC in objKeys : 
+                        total.Add( histo_dict[objName][MC] )
+                self._mcExpectations[ mcstr ]    = tuple([ total.GetBinContent(xbin) for xbin in xbins ])
+                self._mcStatError[ mcstr+"Err" ] = tuple([ total.GetBinError(xbin)   for xbin in xbins ])
+            else :
+                total_zinv = None
+                for MC in [ "Zinv" ] :
+                    if total_zinv == None :
+                        total_zinv = histo_dict[objName][MC].Clone(mcstr)
+                        total_zinv.Reset()
+                    if MC in objKeys : 
+                        total_zinv.Add( histo_dict[objName][MC] )
 
-        if histo_dict.get("had") :
-            hadKeys = histo_dict["had"].keys()
-            for obj in [ "tt", "W", "Z", "t", "QCD" ] :
-                if obj in hadKeys :
-                    self._mcExpectations[ "mc" + obj.capitalize() ] = \
-                        tuple( [ histo_dict["had"][obj].GetBinContent(xbin) for xbin in xbins ] )
+                total_ttw = None
+                for MC  in [ "WW", "WJets", "t", "tt", "DY", "ZZ", "WZ" ] :
+                    if total_ttw == None :
+                        total_ttw = histo_dict[objName][MC].Clone(mcstr)
+                        total_ttw.Reset()
+                    if MC in objKeys : 
+                        total_ttw.Add( histo_dict[objName][MC] )
 
-# need to update this to 2D
-        try : 
-            self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-            self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
-            self._mcExtra["mcMumu"] = tuple([(zMumu/purity if (zMumu and purity) else None) for zMumu,purity in zip(self._mcExpectations["mcZmumu"], self._purities["mumu"])])
-        except KeyError,e :
-            print "Missing %s required for mcExtra" % ( e )
-
-        self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.40,
-            "sigmaMuonW": 0.30,
-            "sigmaMumuZ": 0.20,
-            "k_qcd_nom"     : 3.3e-2,
-            "k_qcd_unc_inp" : 0.66e-2,
-            }
-
-       #print self._mcExpectations
-       #print self._htBinLowerEdges
-       #print self._htMaxForPlot
+                self._mcExpectations[ "mcZinv" ] = tuple([ total_zinv.GetBinContent(xbin) for xbin in xbins ])
+                self._mcExpectations[ "mcTtw" ]  = tuple([ total_ttw.GetBinContent(xbin)  for xbin in xbins ])
+                self._mcStatError[ "mcZinvErr" ] = tuple([ total_zinv.GetBinError(xbin)   for xbin in xbins ])
+                self._mcStatError[ "mcTtwErr" ]  = tuple([ total_ttw.GetBinError(xbin)    for xbin in xbins ])
