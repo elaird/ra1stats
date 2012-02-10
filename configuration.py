@@ -9,7 +9,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 2000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic"][0],
+            "calculatorType": ["frequentist", "asymptotic"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
@@ -18,7 +18,11 @@ def method() :
 def signal() :
     overwriteInput = collections.defaultdict(list)
     overwriteOutput = collections.defaultdict(list)
-    overwriteOutput.update({"T1": [(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
+    overwriteOutput.update({"T1": [(12, 4, 1), (13, 5, 1), (14, 3, 1), (24, 11, 1),
+                                   (30, 6, 1), (32, 24, 1), (37, 25, 1), (38, 18, 1),
+                                   (40, 20, 1), (40, 21, 1), (35, 17, 1), ( 9, 1, 1),
+                                   #(12,  7, 1), (20, 15, 1), 
+                                   ],
                             "T2tt": [(22, 2, 1), (31, 17, 1), (9, 2, 1), (36, 23, 1)],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
