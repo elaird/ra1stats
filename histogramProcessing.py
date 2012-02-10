@@ -197,7 +197,9 @@ def printHoles(h) :
     for iBinX in range(1, 1+h.GetNbinsX()) :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                if h.GetBinContent(iBinX, iBinY, iBinZ)==0.0 and h.GetBinContent(iBinX, iBinY+1, iBinZ)!=0.0 and h.GetBinContent(iBinX, iBinY-1, iBinZ)!=0.0 :
+                xNeighbors = h.GetBinContent(iBinX+1, iBinY  , iBinZ)!=0.0 and h.GetBinContent(iBinX-1, iBinY  , iBinZ)
+                yNeighbors = h.GetBinContent(iBinX  , iBinY+1, iBinZ)!=0.0 and h.GetBinContent(iBinX  , iBinY-1, iBinZ)
+                if h.GetBinContent(iBinX, iBinY, iBinZ)==0.0 and (xNeighbors or yNeighbors) :
                     print "found hole: (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ,
                                                                      h.GetXaxis().GetBinCenter(iBinX),
                                                                      h.GetYaxis().GetBinCenter(iBinY),
