@@ -143,6 +143,7 @@ cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
 #f.profile()
 f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = False)
+#f.bestFit(drawMc = False, printValues = False, drawComponents = False)
 #f.bestFit(printPages = True)
 #f.qcdPlot()
 #f.pValue(nToys = 300)
