@@ -90,7 +90,7 @@ def checkAndAdjust(d) :
         d["nIterationsMax"] = 10
         if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
         d["plSeedForCLs"] = True
-        d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
+        #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
     else :
