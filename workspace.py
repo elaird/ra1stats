@@ -141,6 +141,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     #more
     iFirst = None
     iLast = len(htMeans)-1
+    systBin = inputData.systBins()["sigmaLumiLike"]
     for i,nHadValue in enumerate(obs["nHad"]) :
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
@@ -168,7 +169,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         else :
             lumi = ni("hadLumi", label)
             eff = ni("signalEffHad", label, i)
-            rho = ni("rhoSignal", systematicsLabel)
+            rho = ni("rhoSignal", systematicsLabel, systBin[i])
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
@@ -324,6 +325,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
 
     rFinal = None
     systBin = inputData.systBins()["sigmaMuonW"]
+    signalSystBin = inputData.systBins()["sigmaLumiLike"]
     for i,nMuonValue,mcMuonValue,mcTtwValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
                                                             inputData.observations()["nMuon"],
                                                             inputData.mcExpectations()["mcMuon"],
@@ -352,7 +354,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             muonS = ni("muonS", label, i)
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
-            rhoSignal = ni("rhoSignal", systematicsLabel)
+            rhoSignal = ni("rhoSignal", systematicsLabel, signalSystBin[i])
             wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
@@ -389,9 +391,10 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["nuis"].append(k_qcd_unc_inp)
     return out
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, #kQcdLabel,smOnly not used
+def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
                 signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
-
+    
+    assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
     for item in ["had", "muon"] :
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
@@ -406,22 +409,24 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
 
     out = collections.defaultdict(list)
     if label==systematicsLabel :
-        deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalDict[item] for item in extraSigEffUncSources])
-        one = ni("oneRhoSignal", label)
-        rho = ni("rhoSignal", label)
-        delta = ni("deltaSignal", label)
-        gaus = ni("signalGaus", label)
+        for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
+            #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalDict[item] for item in extraSigEffUncSources])
+            deltaSignalValue = inputData.fixedParameters()["sigmaLumiLike"][iPar]
+            one = ni("oneRhoSignal", label, iPar)
+            rho = ni("rhoSignal", label, iPar)
+            delta = ni("deltaSignal", label, iPar)
+            gaus = ni("signalGaus", label, iPar)
 
-        wimport(w, r.RooRealVar(one, one, 1.0))
-        wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
-        wimport(w, r.RooRealVar(delta, delta, deltaSignalValue))
-        wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(delta)))
+            wimport(w, r.RooRealVar(one, one, 1.0))
+            wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
+            wimport(w, r.RooRealVar(delta, delta, deltaSignalValue))
+            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(delta)))
 
-        signalTermsName = ni("signalTerms", label)
-        w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
-        out["terms"].append(signalTermsName)
-        out["obs"].append(one)
-        out["nuis"].append(rho)
+            signalTermsName = ni("signalTerms", label, iPar)
+            w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
+            out["terms"].append(signalTermsName)
+            out["obs"].append(one)
+            out["nuis"].append(rho)
     return out
 
 def multi(w, variables, inputData) :
