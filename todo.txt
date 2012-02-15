@@ -9,6 +9,7 @@ physics
 - lognormal vs. gaussian
 - check signal efficiency merging
 - separate eff unc. for hadrons and muons
+- restore extraSigEffSources
 
 hard-coded
 ----------
