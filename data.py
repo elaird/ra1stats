@@ -46,7 +46,6 @@ class data(object) :
             l = 1+max(value)
             assert key in self._fixedParameters, key
             assert len(self._fixedParameters[key])==l, key
-            print key,value
 
     def _stashInput(self) :
         self._htBinLowerEdgesInput = copy.copy(self._htBinLowerEdges)
