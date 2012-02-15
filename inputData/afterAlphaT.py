@@ -78,11 +78,21 @@ class data_55_v1(data) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
+        systBins = (0, 0, 0, 1, 1, 1, 2, 2)
+        nSyst = 1+max(systBins)
+        self._systBins = {
+            "sigmaLumiLike": systBins,
+            "sigmaPhotZ": systBins,
+            "sigmaMuonW": systBins,
+            "sigmaMumuZ": systBins,
+            }
+
+        lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
         self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.20,
-            "sigmaMuonW": 0.20,
-            "sigmaMumuZ": 0.20,
+            "sigmaLumiLike": tuple([lumiLikeValue]*nSyst),
+            "sigmaPhotZ": tuple([0.20]*nSyst),
+            "sigmaMuonW": tuple([0.20]*nSyst),
+            "sigmaMumuZ": tuple([0.20]*nSyst),
 
             "k_qcd_nom"     : 2.89e-2,
             "k_qcd_unc_inp" : 0.76e-2,
