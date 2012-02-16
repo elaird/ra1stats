@@ -1,4 +1,4 @@
-from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b
+from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -40,8 +40,8 @@ class spec(dict) :
         self._selections.append(sel)
 
     def load(self) :
-        slices = True
-        b = False
+        slices = False
+        b = True
 
         assert slices^b
         
@@ -68,11 +68,44 @@ class spec(dict) :
                      )
 
         if b :
-            self.add(selection(name = "55b_mixed",
+            self.add(selection(name = "55b_0btag",
                                alphaTMinMax = ("55", None),
-                               bTag = True,
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               data = mixedMuons_b.data_55_v1(),
+                               data = mixedMuons_b_sets.data_55_0btag(),
+                               bTag = True,
+                               nbTag = 0,
+                               universalSystematics = True,
+                               universalKQcd = True,
+                               )
+                     )
+            self.add(selection(name = "55b_1btag",
+                               alphaTMinMax = ("55", None),
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               data = mixedMuons_b_sets.data_55_1btag(),
+                               bTag = True,
+                               nbTag = 1,
+                               universalSystematics = True,
+                               universalKQcd = True,
+                               )
+                     )
+            self.add(selection(name = "55b_2btag",
+                               alphaTMinMax = ("55", None),
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               data = mixedMuons_b_sets.data_55_2btag(),
+                               bTag = True,
+                               nbTag = 2,
+                               universalSystematics = True,
+                               universalKQcd = True,
+                               )
+                     )
+            self.add(selection(name = "55b_gt2btag",
+                               alphaTMinMax = ("55", None),
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               data = mixedMuons_b_sets.data_55_gt2btag(),
+                               bTag = True,
+                               bTagLower = 2,
+                               universalSystematics = True,
+                               universalKQcd = True,
                                )
                      )
 
