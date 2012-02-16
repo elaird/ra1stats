@@ -214,10 +214,10 @@ class data_55_2btag(data) :
 
 	self._mcExpectations = {
             "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
-            "mcTtw"          : trig(( None, None, None, None, 9.137, 3.998, 1.44, 0.7699, )        , self._triggerEfficiencies["had"]) ,
-            "mcZinv"         : trig(( None, None, None, None, 0.338, 0.1909, 0.297, None, )         , self._triggerEfficiencies["had"]) ,
-            "mcMumu"         : trig(( None, None, None, None, 0.8922, 0.9244, None3023, None6706, )  , self._triggerEfficiencies["had"]) ,
-            "mcMuon"         : trig(( None, None, None, None, 74.87, 31.07, 14.01, 15.05, )        , self._triggerEfficiencies["had"]) ,
+            "mcTtw"          : trig(( None, None, None, None, 9.137, 3.998, 1.44, 0.7699, ) , self._triggerEfficiencies["had"]) ,
+            "mcZinv"         : trig(( None, None, None, None, 0.338, 0.1909, 0.297, None, ) , self._triggerEfficiencies["had"]) ,
+            "mcMumu"         : trig(( None, None, None, None, 0.8922, 0.9244, 0.0, 0.0, )   , self._triggerEfficiencies["had"]) ,
+            "mcMuon"         : trig(( None, None, None, None, 74.87, 31.07, 14.01, 15.05, ) , self._triggerEfficiencies["had"]) ,
 	    }
         
         
