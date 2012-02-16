@@ -227,7 +227,7 @@ class data_55_2btag(data) :
             "mcTtwErr"  : ( None, None, None, None, 1.296, 0.854, 0.4876, 0.371, ) ,
             "mcZinvErr" : ( None, None, None, None, 0.1469, 0.1104, 0.1377, None, ) ,
             "mcMuonErr" : ( None, None, None, None, 3.707, 2.384, 1.586, 1.637, ) ,
-            "mcMumuErr" : ( None, None, None, None, 0.395, 0.5199, None5894, None5347, ) ,
+            "mcMumuErr" : ( None, None, None, None, 0.395, 0.5199, 0.05894, 0.05347, ) ,
             }
 
         self._purities = {
