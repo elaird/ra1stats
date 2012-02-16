@@ -22,11 +22,11 @@ def smsRanges(model) :
     return d
 
 def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, bTag = None, nbTag = None, bTagLower = None) :
-    assert nbTag^bTagLower, "cannot specify both an exact number of btags and a lower limit"
+    assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"
 
     base = locations()["eff"]
 
-    cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v5", "muon":"v5"},
+    cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v6", "muon":"v6"},
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              #"tanBeta10": {"cmssw":"38", "had":"v2", "muon":"v5"},
              }
