@@ -49,7 +49,6 @@ class data_55_0btag(data) :
 
 	self._mcExpectations = {
             "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
-            "mc": trig( () , self._triggerEfficiencies[item.replace("mc", "").lower()])
             "mcTtw"          : trig(  ( 1620.0, 601.5, 375.3, 128.7, 44.36, 17.35, 5.84, 4.109, ), self._triggerEfficiencies["had"]) ,
             "mcZinv"         : trig(  ( 1515.0, 635.8, 475.6, 165.3, 63.21, 21.3, 9.142, 6.196, ), self._triggerEfficiencies["had"]) ,
             "mcMumu"         : trig(  ( 110.6, 65.92, 255.8, 120.0, 53.79, 24.3, 13.31, 10.74, ), self._triggerEfficiencies["had"]) ,
@@ -137,7 +136,6 @@ class data_55_1btag(data) :
             "mcZinv"         : trig(  ( None, None, None, None, None, None, 0.8416, 0.353, ) , self._triggerEfficiencies["had"]) ,
             "mcMumu"         : trig(  ( None, None, None, None, None, None, 1.211, 2.145, ) , self._triggerEfficiencies["had"]) ,
             "mcMuon"         : trig(  ( None, None, None, None, None, None, 27.97, 29.74, ) , self._triggerEfficiencies["had"]) ,
-            "mc": trig( () , self._triggerEfficiencies[item.replace("mc", "").lower()])
 	    }
         
         
