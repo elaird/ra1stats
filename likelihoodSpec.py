@@ -5,9 +5,9 @@ class selection(object) :
     the corresponding value determines whether signal efficiency is considered for that sample.'''
 
     def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), bTag = False,
-                 universalSystematics = False, universalKQcd = False, zeroQcd = False) :
+                 nbTag = None, bTagLower = None, universalSystematics = False, universalKQcd = False, zeroQcd = False) :
         for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax", "bTag",
-                     "universalSystematics", "universalKQcd", "zeroQcd"] :
+                     "nbTag", "bTagLower", "universalSystematics", "universalKQcd", "zeroQcd"] :
             setattr(self, item, eval(item))
 
 class spec(dict) :
