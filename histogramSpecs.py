@@ -63,9 +63,9 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     else :
         assert False, "model %s not in list"%model
     
-    if bTag           : out["afterDir"] += "_btag"
-    if nbTag          : out["afterDir"] += "_==_%d"%nbTag
-    if bTagLower      : out["afterDir"] += "_>_%d"%bTagLower
+    if bTag                  : out["afterDir"] += "_btag"
+    if nbTag is not None     : out["afterDir"] += "_==_%s"%nbTag
+    if bTagLower is not None : out["afterDir"] += "_>_%s"%bTagLower
     if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
     if htLower        : out["afterDir"] += "_%d"%htLower
