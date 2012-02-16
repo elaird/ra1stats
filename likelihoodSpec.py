@@ -73,7 +73,7 @@ class spec(dict) :
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b_sets.data_55_0btag(),
                                bTag = True,
-                               nbTag = 0,
+                               nbTag = "0",
                                universalSystematics = True,
                                universalKQcd = True,
                                )
@@ -83,7 +83,7 @@ class spec(dict) :
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b_sets.data_55_1btag(),
                                bTag = True,
-                               nbTag = 1,
+                               nbTag = "1",
                                universalSystematics = True,
                                universalKQcd = True,
                                )
@@ -93,7 +93,7 @@ class spec(dict) :
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b_sets.data_55_2btag(),
                                bTag = True,
-                               nbTag = 2,
+                               nbTag = "2",
                                universalSystematics = True,
                                universalKQcd = True,
                                )
@@ -103,7 +103,7 @@ class spec(dict) :
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b_sets.data_55_gt2btag(),
                                bTag = True,
-                               bTagLower = 2,
+                               bTagLower = "2",
                                universalSystematics = True,
                                universalKQcd = True,
                                )
