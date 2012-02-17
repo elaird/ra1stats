@@ -132,20 +132,20 @@ class data_55_1btag(data) :
 	self._mcExpectations = {
             "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
             "mcTtw"          : trig(  ( 1620.0, 601.5, 375.3, 128.7, 44.36, 17.35, 5.84, 4.109, ), self._triggerEfficiencies["had"]) ,
-            "mcTtw"          : trig(  ( None, None, None, None, None, None, 3.013, 2.083, ) , self._triggerEfficiencies["had"]) ,
-            "mcZinv"         : trig(  ( None, None, None, None, None, None, 0.8416, 0.353, ) , self._triggerEfficiencies["had"]) ,
-            "mcMumu"         : trig(  ( None, None, None, None, None, None, 1.211, 2.145, ) , self._triggerEfficiencies["had"]) ,
-            "mcMuon"         : trig(  ( None, None, None, None, None, None, 27.97, 29.74, ) , self._triggerEfficiencies["had"]) ,
+            "mcTtw"          : trig(  ( None, None, 0.0, 0.0, 0.0, 0.0, 3.013, 2.083, ) , self._triggerEfficiencies["had"]) ,
+            "mcZinv"         : trig(  ( None, None, 0.0, 0.0, 0.0, 0.0, 0.8416, 0.353, ) , self._triggerEfficiencies["had"]) ,
+            "mcMumu"         : trig(  ( None, None, 0.0, 0.0, 0.0, 0.0, 1.211, 2.145, ) , self._triggerEfficiencies["had"]) ,
+            "mcMuon"         : trig(  ( None, None, 0.0, 0.0, 0.0, 0.0, 27.97, 29.74, ) , self._triggerEfficiencies["had"]) ,
 	    }
         
         
         print "put in new stat errors"
         self._mcStatError = {
             "mcGjetsErr": (None,  None,   10,    7,    5,    3,    2,    2),
-            "mcTtwErr"           :   ( None, None, None, None, None, None, 0.6712, 0.5333, ) ,
-            "mcZinvErr"          :   ( None, None, None, None, None, None, 0.2319, 0.1502, ) ,
-            "mcMuonErr"          :   ( None, None, None, None, None, None, 1.957, 1.934, ) ,
-            "mcMumuErr"          :   ( None, None, None, None, None, None, 0.6249, 0.8243, ) ,
+            "mcTtwErr"           :   ( None, None, 0.0, 0.0, 0.0, 0.0, 0.6712, 0.5333, ) ,
+            "mcZinvErr"          :   ( None, None, 0.0, 0.0, 0.0, 0.0, 0.2319, 0.1502, ) ,
+            "mcMuonErr"          :   ( None, None, 0.0, 0.0, 0.0, 0.0, 1.957, 1.934, ) ,
+            "mcMumuErr"          :   ( None, None, 0.0, 0.0, 0.0, 0.0, 0.6249, 0.8243, ) ,
             }
 
         self._purities = {
@@ -214,20 +214,20 @@ class data_55_2btag(data) :
 
 	self._mcExpectations = {
             "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
-            "mcTtw"          : trig(( None, None, None, None, 9.137, 3.998, 1.44, 0.7699, ) , self._triggerEfficiencies["had"]) ,
-            "mcZinv"         : trig(( None, None, None, None, 0.338, 0.1909, 0.297, None, ) , self._triggerEfficiencies["had"]) ,
-            "mcMumu"         : trig(( None, None, None, None, 0.8922, 0.9244, 0.0, 0.0, )   , self._triggerEfficiencies["had"]) ,
-            "mcMuon"         : trig(( None, None, None, None, 74.87, 31.07, 14.01, 15.05, ) , self._triggerEfficiencies["had"]) ,
+            "mcTtw"          : trig(( None, None, 0.0, 0.0, 9.137, 3.998, 1.44, 0.7699, ) , self._triggerEfficiencies["had"]) ,
+            "mcZinv"         : trig(( None, None, 0.0, 0.0, 0.338, 0.1909, 0.297, None, ) , self._triggerEfficiencies["had"]) ,
+            "mcMumu"         : trig(( None, None, 0.0, 0.0, 0.8922, 0.9244, 0.0, 0.0, )   , self._triggerEfficiencies["had"]) ,
+            "mcMuon"         : trig(( None, None, 0.0, 0.0, 74.87, 31.07, 14.01, 15.05, ) , self._triggerEfficiencies["had"]) ,
 	    }
         
         
         print "put in new stat errors"
         self._mcStatError = {
             "mcGjetsErr": (None,  None,   10,    7,    5,    3,    2,    2),
-            "mcTtwErr"  : ( None, None, None, None, 1.296, 0.854, 0.4876, 0.371, ) ,
-            "mcZinvErr" : ( None, None, None, None, 0.1469, 0.1104, 0.1377, None, ) ,
-            "mcMuonErr" : ( None, None, None, None, 3.707, 2.384, 1.586, 1.637, ) ,
-            "mcMumuErr" : ( None, None, None, None, 0.395, 0.5199, 0.05894, 0.05347, ) ,
+            "mcTtwErr"  : ( None, None, 0.0, 0.0, 1.296, 0.854, 0.4876, 0.371, ) ,
+            "mcZinvErr" : ( None, None, 0.0, 0.0, 0.1469, 0.1104, 0.1377, None, ) ,
+            "mcMuonErr" : ( None, None, 0.0, 0.0, 3.707, 2.384, 1.586, 1.637, ) ,
+            "mcMumuErr" : ( None, None, 0.0, 0.0, 0.395, 0.5199, 0.05894, 0.05347, ) ,
             }
 
         self._purities = {
@@ -296,20 +296,20 @@ class data_55_gt2btag(data) :
 
 	self._mcExpectations = {
             "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
-            "mcTtw"  : trig(  ( None, None, None, None, 1.733, 0.6396, 0.01408, 0.7542, ) , self._triggerEfficiencies["had"]) ,
-            "mcZinv" : trig(  ( None, None, None, None, 0.0, 0.0, 0.0, 0.0, ) , self._triggerEfficiencies["had"]) ,
-            "mcMumu" : trig(  ( None, None, None, None, 0.002354, 0.0, 0.0, 0.0, ) , self._triggerEfficiencies["had"]) ,
-            "mcMuon" : trig(  ( None, None, None, None, 8.438, 2.703, 1.364, 1.872, ) , self._triggerEfficiencies["had"]) ,
+            "mcTtw"  : trig(  ( None, None, 0.0, 0.0, 1.733, 0.6396, 0.01408, 0.7542, ) , self._triggerEfficiencies["had"]) ,
+            "mcZinv" : trig(  ( None, None, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ) , self._triggerEfficiencies["had"]) ,
+            "mcMumu" : trig(  ( None, None, 0.0, 0.0, 0.002354, 0.0, 0.0, 0.0, ) , self._triggerEfficiencies["had"]) ,
+            "mcMuon" : trig(  ( None, None, 0.0, 0.0, 8.438, 2.703, 1.364, 1.872, ) , self._triggerEfficiencies["had"]) ,
 	    }
         
         
         print "put in new stat errors"
         self._mcStatError = {
             "mcGjetsErr": (None,  None,   10,    7,    5,    3,    2,    2),
-            "mcTtwErr"           :   ( None, None, None, None, 0.5483, 0.3557, 0.05278, 0.3725, ) ,
-            "mcZinvErr"          :   ( None, None, None, None, 0.0, 0.0, 0.0, 0.0, ) ,
-            "mcMuonErr"          :   ( None, None, None, None, 1.274, 0.7076, 0.5003, 0.5946, ) ,
-            "mcMumuErr"          :   ( None, None, None, None, 0.003354, 0.0, 0.0, 0.0, ) ,
+            "mcTtwErr"           :   ( None, None, 0.0, 0.0, 0.5483, 0.3557, 0.05278, 0.3725, ) ,
+            "mcZinvErr"          :   ( None, None, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ) ,
+            "mcMuonErr"          :   ( None, None, 0.0, 0.0, 1.274, 0.7076, 0.5003, 0.5946, ) ,
+            "mcMumuErr"          :   ( None, None, 0.0, 0.0, 0.003354, 0.0, 0.0, 0.0, ) ,
             }
 
         self._purities = {
