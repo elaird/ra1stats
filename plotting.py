@@ -244,7 +244,7 @@ class validationPlotter(object) :
         
     def go(self) :
         self.canvas = utils.numberedCanvas()
-        self.psFileName = "%s/bestFit_%s_sel%s%s.ps"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
+        self.psFileName = "%s/bestFit_%s_sel%s%s.pdf"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
         self.canvas.Print(self.psFileName+"[")        
 
         self.hadPlots()
@@ -265,7 +265,7 @@ class validationPlotter(object) :
             #self.hadronicSummaryTable()
 
         self.canvas.Print(self.psFileName+"]")
-        utils.ps2pdf(self.psFileName, sameDir = True)
+        #utils.ps2pdf(self.psFileName, sameDir = True)
 
     def hadPlots(self) :
         vars = [
