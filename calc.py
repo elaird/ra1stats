@@ -42,24 +42,24 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
     utils.delete(lInt)
     return out
 
-def plIntervalQcd(dataset, modelconfig, wspace, note, cl = None, makePlots = True) :
+def plIntervalQcd(dataset, modelconfig, wspace, note, cl = None, makePlots = True, A_qcd = "") :
     out = {}
     calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
-    out["upperLimit"] = lInt.UpperLimit(wspace.var("A_qcd"))
-    out["lowerLimit"] = lInt.LowerLimit(wspace.var("A_qcd"))
+    out["upperLimit"] = lInt.UpperLimit(wspace.var(A_qcd))
+    out["lowerLimit"] = lInt.LowerLimit(wspace.var(A_qcd))
 
     lInt.Print()
     if makePlots :
         canvas = r.TCanvas()
         canvas.SetTickx()
         canvas.SetTicky()
-        psFile = "intervalPlot_%s_%g.ps"%(note, 100*cl)
+        psFile = "intervalPlot_%s_%g.pdf"%(note, 100*cl)
         plot = r.RooStats.LikelihoodIntervalPlot(lInt)
         plot.Draw(); print
         canvas.Print(psFile)
-        utils.ps2pdf(psFile)
+        #utils.ps2pdf(psFile)
 
     utils.delete(lInt)
     return out
@@ -354,7 +354,7 @@ def profilePlots(dataset, modelconfig, note, smOnly, qcdSearch) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "profilePlots_%s.ps"%note
+    psFile = "profilePlots_%s.pdf"%note
     canvas.Print(psFile+"[")
 
     plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print
@@ -362,7 +362,7 @@ def profilePlots(dataset, modelconfig, note, smOnly, qcdSearch) :
         plots.At(i).Draw("al")
         canvas.Print(psFile)
     canvas.Print(psFile+"]")
-    utils.ps2pdf(psFile)
+    #utils.ps2pdf(psFile)
 
 def pseudoData(wspace, nToys) :
     out = []
