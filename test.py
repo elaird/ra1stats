@@ -131,11 +131,11 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   signalExampleToStack = signal(0),
                   #trace = True
                   #rhoSignalMin = 0.1,
-                  #fIni = 0.1,
+                  #fIniFactor = 0.1,
                   #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                   )
 
-cl = 0.95 if not f.likelihoodSpec["qcdSearch"] else 0.68
+cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
 #            calculatorType = ["frequentist", "asymptotic"][1],
