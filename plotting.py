@@ -761,11 +761,14 @@ class validationPlotter(object) :
 	return d
 
     def stampMlParameters(self) :
+        def sl(s) :
+            return set(self.inputData.systBins()[s])
+
         text = r.TLatex()
         text.SetNDC()
         x = 0.25
         y = 0.85
-        s = 0.023
+        s = 0.03
         text.SetTextSize(0.5*text.GetTextSize())
         #text.DrawLatex(x, y + s, "ML fit values")
         l = []
@@ -775,10 +778,10 @@ class validationPlotter(object) :
                   ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e", None),
                   ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e", None),]
             
-            l += [("rhoPhotZ",  ("#rho_{ph %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaPhotZ"])]
-            l += [("rhoMuonW",  ("#rho_{#mu %d     }"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaMuonW"])]
-            l += [("rhoMumuZ",  ("#rho_{#mu#mu %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaMumuZ"])]
-            l += [("rhoSignal", ("#rho_{sig. %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaLumiLike"])]
+            l += [("rhoPhotZ",  ("#rho (#gammaZ% d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaPhotZ")]
+            l += [("rhoMuonW",  ("#rho (#muW %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMuonW")]
+            l += [("rhoMumuZ",  ("#rho (#mu#muZ %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMumuZ")]
+            l += [("rhoSignal", ("#rho (sig. %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaLumiLike")]
 
         if self.printNom :
             l +=  [("", ""),
