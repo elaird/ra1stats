@@ -270,15 +270,15 @@ class validationPlotter(object) :
 
     def hadPlots(self) :
         vars = [
-            {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)",
+            {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
+            ]
+        if self.drawComponents :
+            vars +=[
             {"var":"ewk",  "type":self.ewkType, "desc":"EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
              "color":self.ewk, "style":2, "width":self.width1, "stack":"background"},
             #{"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcd", "k_qcd", errors = True),
             # "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
-            ]
-
-        vars += [
             {"var":"zInv", "type":"function", "desc":"Z#rightarrow#nu#bar{#nu}",  "color":r.kOrange+7, "style":2, "width":self.width1, "stack":"ewk"},
             #{"var":"ttw",  "type":"function", "desc":"t#bar{t} + W",
             # "desc2": "#rho_{#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMuonW").getVal(), self.wspace.var("rhoMuonW").getError()) if self.wspace.var("rhoMuonW") else "",
