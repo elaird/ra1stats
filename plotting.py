@@ -482,7 +482,7 @@ class validationPlotter(object) :
         name = "correlation_matrix"+self.label
         h = self.results.correlationHist(name)
         h.SetStats(False)
-        r.gStyle.SetPaintTextFormat("5.2f")
+        r.gStyle.SetPaintTextFormat("4.1f")
         h.Draw("colztext")
 
 	if self.printPages and name :
