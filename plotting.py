@@ -255,6 +255,7 @@ class validationPlotter(object) :
         self.ewkPlots()
         self.mcFactorPlots()
         self.alphaTRatioPlots()
+        self.rhoPlots()
         self.printPars()
         self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
@@ -431,6 +432,19 @@ class validationPlotter(object) :
             {"var":"zInv",  "type":"function", "dens":["nHadBulk"],          "denTypes":["data"], "stack":"ml",
              "desc":"ML EWK (ttw+zInv) / nHadBulk", "color":self.ewk},
             ])
+
+    def rhoPlots(self) :
+        self.plot(otherVars = [{"var":"rhoPhotZ", "type":"var", "desc":"#rho_{#gammaZ}", "suppress":["min","max"], "color":self.ewk,
+                                "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
+                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
+
+        self.plot(otherVars = [{"var":"rhoMuonW", "type":"var", "desc":"#rho_{#muW}", "suppress":["min","max"], "color":self.ewk,
+                                "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
+                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
+
+        self.plot(otherVars = [{"var":"rhoMumuZ", "type":"var", "desc":"#rho_{#mu#muZ}", "suppress":["min","max"], "color":self.ewk,
+                                "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
+                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
 
     def printPars(self) :
         def printText(x, y, s, color = r.kBlack) :
@@ -679,6 +693,7 @@ class validationPlotter(object) :
         fillStyle   = inDict(spec, "fillStyle",   0)
         fillColor   = inDict(spec, "fillColor",   color)
         errorsFrom  = inDict(spec, "errorsFrom",  "")
+        systMap     = inDict(spec, "systMap",  False)
 
 	d = {}
 	d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
@@ -705,8 +720,9 @@ class validationPlotter(object) :
 	toPrint = []
 	for i in range(len(self.htBinLowerEdges)) :
 	    if wspaceMemberFunc :
-                item1 = ni(varName, "", i)
-                item2 = ni(varName, self.label, i)
+                iLabel = i if not systMap else self.inputData.systBins()[varName.replace("rho", "sigma")][i]
+                item1 = ni(varName, "", iLabel)
+                item2 = ni(varName, self.label, iLabel)
 	        var = self.wspace.var(item1)
                 if not var : var = self.wspace.var(item2)
 	        func = self.wspace.function(item1)
