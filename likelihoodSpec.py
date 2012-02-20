@@ -11,7 +11,7 @@ class selection(object) :
             setattr(self, item, eval(item))
 
 class spec(dict) :
-    def __init__(self, simpleOneBin = False, qcdSearch = False) :
+    def __init__(self, simpleOneBin = False) :
         self._selections = []
         self.load()
 
@@ -26,15 +26,23 @@ class spec(dict) :
         else :
             d["simpleOneBin"] = {}
     
+        #{"var": initialValue, min, max)
+        d["poi"] = [{"f": (1.0, 0.0, 1.0)},
+                    {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
+                    {"k_qcd_55": (3.0e-2, 0.01, 0.04)},
+                    ][0]
+        
         d["selections"] = self.selections()
         d["REwk"] = ["", "Linear", "FallingExp", "Constant"][0]
         d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
         d["nFZinv"] = ["All", "One", "Two"][2]
-        d["qcdSearch"] = qcdSearch
         d["constrainQcdSlope"] = True
     
     def selections(self) :
         return self._selections
+
+    def standardPoi(self) :
+        return self["poi"].keys()==["f"]
 
     def add(self, sel = None) :
         self._selections.append(sel)
