@@ -105,14 +105,13 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     terms = []
     out = collections.defaultdict(list)
 
-    assert not qcdSearch
     assert RQcd!="FallingExpA"
 
     #QCD variables
     A_ewk_ini = 1.3e-5
     factor = 0.7
     A = ni("A_qcd", label)
-    wimport(w, r.RooRealVar(A, A, 1.0e-2, 0.0, 100.0))
+    wimport(w, r.RooRealVar(A, A, 1.0e-2, 0.0, 100.0 if not qcdSearch else 1.0e-2))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
@@ -514,13 +513,13 @@ def startLikelihood(w = None, xs = None, fIni = None) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
     wimport(w, r.RooRealVar("f", "f", fIni, 0.0, 2.0))
 
-def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
+def finishLikelihood(w = None, smOnly = None, qcdSearch = None, A_qcd = "", terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if not smOnly :
         w.defineSet("poi", "f")
     elif qcdSearch :
-        w.defineSet("poi", "A_qcd,k_qcd")
+        w.defineSet("poi", A_qcd)
 
     w.defineSet("obs", ",".join(obs))
     w.defineSet("nuis", ",".join(nuis))
@@ -560,7 +559,8 @@ class foo(object) :
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
-        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), qcdSearch = self.likelihoodSpec["qcdSearch"], **total)
+        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), qcdSearch = self.likelihoodSpec["qcdSearch"],
+                         A_qcd = ni("A_qcd", self.likelihoodSpec["selections"][0].name), **total)
 
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), self.likelihoodSpec["qcdSearch"])
@@ -581,6 +581,8 @@ class foo(object) :
         if l["qcdSearch"] :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
+            assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
+
         if l["constrainQcdSlope"] :
             assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
         if any([sel.universalKQcd for sel in l["selections"]]) :
@@ -644,7 +646,8 @@ class foo(object) :
     
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
         if self.likelihoodSpec["qcdSearch"] :
-            return calc.plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
+            return calc.plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots,
+                                      A_qcd = ni("A_qcd", self.likelihoodSpec["selections"][0].name))
         elif method=="profileLikelihood" :
             return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
         elif method=="feldmanCousins" :
