@@ -21,6 +21,7 @@ hard-coded
 
 technical
 ---------
+- configurability of initial values
 - fix leaks in pValue() and expectedLimit()
 - query fit status for toys (improve 0 cut)
 
