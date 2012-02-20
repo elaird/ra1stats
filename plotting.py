@@ -232,8 +232,7 @@ class validationPlotter(object) :
         
         if not self.smOnly :
             self.signalDesc = "signal"
-            rhoValue = self.wspace.var(ni("rhoSignal", self.systematicsLabel)).getVal()
-            self.signalDesc2 = "xs/xs^{nom} = %4.2e #pm %4.2e; #rho = %4.2f"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), rhoValue)
+            self.signalDesc2 = "xs/xs^{nom} = %4.2e #pm %4.2e"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError())
 
         self.width1 = 2
         self.width2 = 3
@@ -245,7 +244,7 @@ class validationPlotter(object) :
         
     def go(self) :
         self.canvas = utils.numberedCanvas()
-        self.psFileName = "%s/bestFit_%s_sel%s%s.ps"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
+        self.psFileName = "%s/bestFit_%s_sel%s%s.pdf"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
         self.canvas.Print(self.psFileName+"[")        
 
         self.hadPlots()
@@ -266,7 +265,7 @@ class validationPlotter(object) :
             #self.hadronicSummaryTable()
 
         self.canvas.Print(self.psFileName+"]")
-        utils.ps2pdf(self.psFileName, sameDir = True)
+        #utils.ps2pdf(self.psFileName, sameDir = True)
 
     def hadPlots(self) :
         vars = [
@@ -755,14 +754,16 @@ class validationPlotter(object) :
         #text.DrawLatex(x, y + s, "ML fit values")
         l = []
         if self.printValues :
-            l += [("A_ewk", "A_{EWK} = %4.2e #pm %4.2e"),
-                  ("k_ewk", "k_{EWK} = %4.2e #pm %4.2e"),
-                  ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e"),
-                  ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e"),
-                  ("rhoPhotZ", "#rho_{ph} = %4.2f #pm %4.2f"),
-                  ("rhoMuonW", "#rho_{#mu     } = %4.2f #pm %4.2f"),
-                  ("rhoMumuZ", "#rho_{#mu#mu} = %4.2f #pm %4.2f"),
-                  ]
+            l += [("A_ewk", "A_{EWK} = %4.2e #pm %4.2e", None),
+                  ("k_ewk", "k_{EWK} = %4.2e #pm %4.2e", None),
+                  ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e", None),
+                  ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e", None),]
+            
+            l += [("rhoPhotZ",  ("#rho_{ph %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaPhotZ"])]
+            l += [("rhoMuonW",  ("#rho_{#mu %d     }"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaMuonW"])]
+            l += [("rhoMumuZ",  ("#rho_{#mu#mu %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaMumuZ"])]
+            l += [("rhoSignal", ("#rho_{sig. %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaLumiLike"])]
+
         if self.printNom :
             l +=  [("", ""),
                    ("k_qcd_nom", "k nom = %4.2e #pm %4.2e"),
@@ -770,9 +771,9 @@ class validationPlotter(object) :
                    ]
 
         for i,t in enumerate(l) :
-            var,label = t
+            var,label,iPar = t
             obj = self.wspace.var(var)
-            if not obj : obj = self.wspace.var(ni(var, self.label))
+            if not obj : obj = self.wspace.var(ni(var, self.label, iPar))
             if not obj : continue
             text.DrawLatex(x, y-i*s, label%(obj.getVal(), obj.getError()))
         return
