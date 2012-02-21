@@ -160,7 +160,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         nHad    = ni("nHad",    label, i)
         hadPois = ni("hadPois", label, i)
         hadExp  = ni("hadExp",  label, i)
-        
         wimport(w, r.RooFormulaVar(hadB, "(@0)+(@1)", r.RooArgList(ewk, qcd)))
         wimport(w, r.RooRealVar(nHad, nHad, nHadValue))
         if smOnly :
@@ -503,6 +502,12 @@ def startLikelihood(w = None, xs = None, fIni = None) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
     wimport(w, r.RooRealVar("f", "f", fIni, 0.0, 2.0))
 
+def argSet( w = None, vars = [] ) :
+    out = r.RooArgSet( "out" )
+    for item in vars :
+        out.add( w.var(item) )
+    return out
+
 def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
@@ -511,8 +516,8 @@ def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs 
     elif qcdSearch :
         w.defineSet("poi", "A_qcd,k_qcd")
 
-    w.defineSet("obs", ",".join(obs))
-    w.defineSet("nuis", ",".join(nuis))
+    w.defineSet("obs", argSet(w, obs))
+    w.defineSet("nuis",argSet(w, nuis))
 
 class foo(object) :
     def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIni = 1.0,
