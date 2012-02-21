@@ -4,9 +4,9 @@ class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
     the corresponding value determines whether signal efficiency is considered for that sample.'''
 
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), bTag = False,
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), 
                  nbTag = None, bTagLower = None, universalSystematics = False, universalKQcd = False, zeroQcd = False) :
-        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax", "bTag",
+        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax",
                      "nbTag", "bTagLower", "universalSystematics", "universalKQcd", "zeroQcd"] :
             setattr(self, item, eval(item))
 
@@ -42,8 +42,9 @@ class spec(dict) :
     def load(self) :
         slices = False
         b = True
+        multib = False
 
-        assert slices^b
+        assert sum([slices,b,multib]) == 1
         
         if slices :
             self.add(selection(name = "55",
@@ -66,13 +67,23 @@ class spec(dict) :
                                data = afterAlphaT.data_52_v1(),
                                )
                      )
-
         if b :
-            self.add(selection(name = "55b_0btag",
+            self.add(selection(name = "55b_mixed",
                                alphaTMinMax = ("55", None),
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               data = mixedMuons_b.data_55_v1(),
+                               bTagLower = "0",
+                               universalSystematics = True,
+                               universalKQcd = True,
+                               )
+                     )
+
+        if multib :
+            self.add(selection(name = "55b_0btag",
+                               alphaTMinMax = ("55", None),
+                               #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
                                data = mixedMuons_b_sets.data_55_0btag(),
-                               bTag = True,
                                nbTag = "0",
                                universalSystematics = True,
                                universalKQcd = True,
@@ -80,42 +91,28 @@ class spec(dict) :
                      )
             self.add(selection(name = "55b_1btag",
                                alphaTMinMax = ("55", None),
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
                                data = mixedMuons_b_sets.data_55_1btag(),
-                               bTag = True,
                                nbTag = "1",
-                               universalSystematics = True,
-                               universalKQcd = True,
                                )
                      )
             self.add(selection(name = "55b_2btag",
                                alphaTMinMax = ("55", None),
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
                                data = mixedMuons_b_sets.data_55_2btag(),
-                               bTag = True,
                                nbTag = "2",
-                               universalSystematics = True,
-                               universalKQcd = True,
                                )
                      )
             self.add(selection(name = "55b_gt2btag",
                                alphaTMinMax = ("55", None),
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
                                data = mixedMuons_b_sets.data_55_gt2btag(),
-                               bTag = True,
                                bTagLower = "2",
-                               universalSystematics = True,
-                               universalKQcd = True,
                                )
                      )
-
-        #self.add(selection(name = "55b_after",
-        #                   alphaTMinMax = ("55", None),
-        #                   bTag = True,
-        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-        #                   data = afterAlphaT_b.data_55_v1(),
-        #                   )
-        #         )
         #self.add(selection(name = "2010",
         #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
         #                   data = inputData.data2010(),
