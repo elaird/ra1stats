@@ -21,7 +21,7 @@ def smsRanges(model) :
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
-def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, bTag = None, nbTag = None, bTagLower = None) :
+def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None) :
     assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"
 
     base = locations()["eff"]
@@ -63,9 +63,8 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     else :
         assert False, "model %s not in list"%model
     
-    if bTag                  : out["afterDir"] += "_btag"
-    if nbTag is not None     : out["afterDir"] += "_==_%s"%nbTag
-    if bTagLower is not None : out["afterDir"] += "_>_%s"%bTagLower
+    if nbTag is not None     : out["afterDir"] += "_btag_==_%s"%nbTag
+    if bTagLower is not None : out["afterDir"] += "_btag_>_%s"%bTagLower
     if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
     if htLower        : out["afterDir"] += "_%d"%htLower
