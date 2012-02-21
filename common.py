@@ -51,7 +51,7 @@ def note(likelihoodSpec = {}) :
     if l["constrainQcdSlope"] : out += "Ext"
 
     out += "_fZinv%s"%l["nFZinv"]
-    if l["qcdSearch"] :  out += "_qcdSearch"
+    if not l.standardPoi() :  out += "_poi__%s"%("__".join(l["poi"].keys()))
 
     for selection in l["selections"] :
         out += "_%s-%s"%(selection.name, sampleCode(selection.samplesAndSignalEff))
