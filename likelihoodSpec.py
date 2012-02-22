@@ -81,8 +81,7 @@ class spec(dict) :
         if multib :
             self.add(selection(name = "55_0b",
                                alphaTMinMax = ("55", None),
-                               #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b_sets.data_55_0btag(),
                                nbTag = "0",
                                universalSystematics = True,
