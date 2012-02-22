@@ -369,16 +369,16 @@ class validationPlotter(object) :
         
     def mcFactorPlots(self) :
         if "muon" in self.lumi :
-            self.plot(note = "muon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 2.0,
+            self.plot(note = "muon translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 2.0,
                       otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["muon"])
         if "phot" in self.lumi :
-            self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 4.0,
+            self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 4.0,
                       otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC #gamma / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["phot"])
 
         if "mumu" in self.lumi :
-            self.plot(note = "mumu translation factor (from MC)", legend0 = (0.5, 0.8), maximum = 0.5,
+            self.plot(note = "mumu translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 0.5,
                       otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
@@ -468,7 +468,7 @@ class validationPlotter(object) :
         name = "correlation_matrix"+self.label
         h = self.results.correlationHist(name)
         h.SetStats(False)
-        r.gStyle.SetPaintTextFormat("5.2f")
+        r.gStyle.SetPaintTextFormat("4.1f")
         h.Draw("colztext")
 
 	if self.printPages and name :

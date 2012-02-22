@@ -97,7 +97,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, iniValFZinv = 0.5) :
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None) :
 
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -111,11 +111,12 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     A_ewk_ini = 1.3e-5
     factor = 0.7
     A = ni("A_qcd", label)
-    argsA = poi[A] if A in poi else (1.0e-2, 0.0, 100.0)
+    argsA = poi[A] if A in poi else (0.0, 0.0, 100.0)
     wimport(w, r.RooRealVar(A, A, *argsA))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
+        w.var(A).setVal(1.0e-2)
         argsK = poi[k] if k in poi else (3.0e-2, 0.0, 1.0)
         wimport(w, r.RooRealVar(k, k, *argsK))
 
@@ -153,7 +154,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         qcd = w.function(ni("qcd", label, i))
         
         ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = iniValFZinv)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
 
         wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
         wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
@@ -163,7 +164,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         nHad    = ni("nHad",    label, i)
         hadPois = ni("hadPois", label, i)
         hadExp  = ni("hadExp",  label, i)
-        
         wimport(w, r.RooFormulaVar(hadB, "(@0)+(@1)", r.RooArgList(ewk, qcd)))
         wimport(w, r.RooRealVar(nHad, nHad, nHadValue))
         if smOnly :
@@ -485,7 +485,9 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
             args[item][x] = eval(x)
 
-    args["had"]["zeroQcd"] = selection.zeroQcd
+    for item in ["zeroQcd", "fZinvIni"] :
+        args["had"][item] = getattr(selection, item)
+
     for x in ["REwk", "RQcd", "nFZinv", "poi"] :
         args["had"][x] = eval(x)
 
@@ -517,14 +519,20 @@ def startLikelihood(w = None, xs = None, fIniFactor = None, poi = {}) :
     fIni,fMin,fMax = poi["f"]
     wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
 
+def argSet( w = None, vars = [] ) :
+    out = r.RooArgSet( "out" )
+    for item in vars :
+        out.add( w.var(item) )
+    return out
+
 def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if (not standard) or (not smOnly) :
         w.defineSet("poi", ",".join(poiList))
 
-    w.defineSet("obs", ",".join(obs))
-    w.defineSet("nuis", ",".join(nuis))
+    w.defineSet("obs", argSet(w, obs))
+    w.defineSet("nuis",argSet(w, nuis))
 
 class foo(object) :
     def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
