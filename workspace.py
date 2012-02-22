@@ -111,11 +111,12 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     A_ewk_ini = 1.3e-5
     factor = 0.7
     A = ni("A_qcd", label)
-    argsA = poi[A] if A in poi else (1.0e-2, 0.0, 100.0)
+    argsA = poi[A] if A in poi else (0.0, 0.0, 100.0)
     wimport(w, r.RooRealVar(A, A, *argsA))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
+        w.var(A).setVal(1.0e-2)
         argsK = poi[k] if k in poi else (3.0e-2, 0.0, 1.0)
         wimport(w, r.RooRealVar(k, k, *argsK))
 
