@@ -189,7 +189,7 @@ class data_55_2btag(data) :
         self._htMaxForPlot = 975.0
         
         self._mergeBins = None
-        self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     1,     0,     0)
+        self._constantMcRatioAfterHere = (    0,     0,     0,     0,     1,     0,     0,     0)
         
         self._lumi = {
             "had":     4650.,
