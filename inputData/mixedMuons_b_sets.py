@@ -36,8 +36,7 @@ class data_55_0btag(data) :
             "nHad"               :   ( 2919.0, 1166.0, 769.0, 255.0, 91.0, 31.0, 10.0, 4.0, ) ,
             "nMuon"              :   ( 949.0, 444.0, 1707.0, 748.0, 305.0, 148.0, 81.0, 87.0, ) ,
             "nMumu"              :   ( 95.0, 53.0, 216.0, 86.0, 48.0, 23.0, 5.0, 11.0, ) ,
-            #"nPhot":     excl((      None,      None,       221,        84,        37,        16,         7,         2), isExcl),
-            "nPhot": (None,None,None,None,None,None,None,None),
+            "nPhot"          : excl((  None, None, 1642-221, 596-84, 221-37, 91-16,   32-7,  14-2), isExcl), #>=0 b-tag minus >=1 b-tag
             }
 
         self._triggerEfficiencies = {
@@ -49,7 +48,8 @@ class data_55_0btag(data) :
             }
 
 	self._mcExpectations = {
-            "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
+            "mcGjets": excl(scaled((  None,    None, 2.00e+3 - 2.3e2, 7.1e+2 - 82, 2.7e+2 - 35,  92-15,   34-6,  14-3), #>=0 b-tag minus >=1 b-tag
+                                   self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             "mcTtw"              :   ( 1620.0, 601.5, 375.3, 128.7, 44.36, 17.35, 5.84, 4.109, ) ,
             "mcZinv"             :   ( 1515.0, 635.8, 475.6, 165.3, 63.21, 21.3, 9.142, 6.196, ) ,
             "mcMumu"             :   ( 110.6, 65.92, 255.8, 120.0, 53.79, 24.3, 13.31, 10.74, ) ,
