@@ -98,8 +98,7 @@ class spec(dict) :
                      )
             self.add(selection(name = "55_1b",
                                alphaTMinMax = ("55", None),
-                               #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b_sets.data_55_1btag(),
                                nbTag = "1",
                                )
