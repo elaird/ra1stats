@@ -4,15 +4,15 @@ import plotting
 import ROOT as r
 from common import obs,pdf,wimport
 
-def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True) :
-    assert not smOnly
+def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True, poiList = []) :
+    assert poiList
     out = {}
     calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
 
-    out["lowerLimit"] = lInt.LowerLimit(wspace.var("f"))
-    out["upperLimit"] = lInt.UpperLimit(wspace.var("f"))
+    out["lowerLimit"] = lInt.LowerLimit(wspace.var(poiList[0]))
+    out["upperLimit"] = lInt.UpperLimit(wspace.var(poiList[0]))
 
     ##doesn't work
     #status = r.std.vector('bool')()
@@ -33,33 +33,10 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
         canvas = r.TCanvas()
         canvas.SetTickx()
         canvas.SetTicky()
-        psFile = "intervalPlot_%s_%g.ps"%(note, 100*cl)
+        psFile = "intervalPlot_%s_%g.pdf"%(note, 100*cl)
         plot = r.RooStats.LikelihoodIntervalPlot(lInt)
         plot.Draw(); print
         canvas.Print(psFile)
-        utils.ps2pdf(psFile)
-
-    utils.delete(lInt)
-    return out
-
-def plIntervalQcd(dataset, modelconfig, wspace, note, cl = None, makePlots = True) :
-    out = {}
-    calc = r.RooStats.ProfileLikelihoodCalculator(dataset, modelconfig)
-    calc.SetConfidenceLevel(cl)
-    lInt = calc.GetInterval()
-    out["upperLimit"] = lInt.UpperLimit(wspace.var("A_qcd"))
-    out["lowerLimit"] = lInt.LowerLimit(wspace.var("A_qcd"))
-
-    lInt.Print()
-    if makePlots :
-        canvas = r.TCanvas()
-        canvas.SetTickx()
-        canvas.SetTicky()
-        psFile = "intervalPlot_%s_%g.ps"%(note, 100*cl)
-        plot = r.RooStats.LikelihoodIntervalPlot(lInt)
-        plot.Draw(); print
-        canvas.Print(psFile)
-        utils.ps2pdf(psFile)
 
     utils.delete(lInt)
     return out
@@ -348,13 +325,11 @@ def clsOnePoint(args) :
         utils.ps2pdf(ps)
     return q
 
-def profilePlots(dataset, modelconfig, note, smOnly, qcdSearch) :
-    assert (not smOnly) or qcdSearch
-
+def profilePlots(dataset, modelconfig, note) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "profilePlots_%s.ps"%note
+    psFile = "profilePlots_%s.pdf"%note
     canvas.Print(psFile+"[")
 
     plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print
@@ -362,7 +337,7 @@ def profilePlots(dataset, modelconfig, note, smOnly, qcdSearch) :
         plots.At(i).Draw("al")
         canvas.Print(psFile)
     canvas.Print(psFile+"]")
-    utils.ps2pdf(psFile)
+    #utils.ps2pdf(psFile)
 
 def pseudoData(wspace, nToys) :
     out = []
@@ -375,12 +350,12 @@ def pseudoData(wspace, nToys) :
         out.append(data)
     return out
 
-def limits(wspace, snapName, modelConfig, smOnly, cl, datasets, makePlots = False) :
+def limits(wspace, snapName, modelConfig, smOnly, cl, datasets, makePlots = False, poi = ["f"]) :
     out = []
     for i,dataset in enumerate(datasets) :
         wspace.loadSnapshot(snapName)
         #dataset.Print("v")
-        interval = plInterval(dataset, modelConfig, wspace, note = "", smOnly = smOnly, cl = cl, makePlots = makePlots)
+        interval = plInterval(dataset, modelConfig, wspace, note = "", smOnly = smOnly, cl = cl, makePlots = makePlots, poi = poi)
         out.append(interval["upperLimit"])
     return sorted(out)
 
