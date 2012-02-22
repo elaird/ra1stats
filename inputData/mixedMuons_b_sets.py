@@ -122,14 +122,12 @@ class data_55_1btag(data) :
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
 
-        #### 
         self._observations = {
             "nHadBulk":scaled(( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad"               :   ( 614.0, 294.0, 214.0, 71.0, 20.0, 6.0, 4.0, 0.0, ) ,
             "nMuon"              :   ( 347.0, 146.0, 568.0, 288.0, 116.0, 48.0, 22.0, 26.0, ) ,
             "nMumu"              :   ( 15.0, 9.0, 34.0, 20.0, 10.0, 7.0, 0.0, 6.0, ) ,
-            #"nPhot":     excl((      None,      None,       221,        84,        37,        16,         7,         2), isExcl),
-            "nPhot": (None,None,None,None,None,None,None,None),
+            "nPhot":     excl((      None,      None,       221,        84,        37,        16,         7,         2), isExcl), #>=1 b-tag
             }
 
         self._triggerEfficiencies = {
@@ -141,7 +139,7 @@ class data_55_1btag(data) :
             }
 
         self._mcExpectations = {
-            "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
+            "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl), #>=1 b-tag
             "mcTtw"              :   ( 428.6, 199.0, 143.2, 49.2, 16.34, 9.632, 2.014, 0.7877, ) ,
             "mcZinv"             :   ( 170.1, 72.91, 48.15, 20.86, 7.816, 2.654, 0.9874, 0.8448, ) ,
             "mcMumu"             :   ( 19.41, 6.645, 27.72, 13.81, 8.911, 3.04, 1.211, 2.145, ) ,
