@@ -52,7 +52,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][2],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
             }
 
 def points() :
@@ -89,10 +89,10 @@ def checkAndAdjust(d) :
     d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     d["extraSigEffUncSources"] = []
 
-    d["fIni"] = 1.0
+    d["fIniFactor"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
     if d["isSms"] :
-        d["fIni"] = 0.1
+        d["fIniFactor"] = 0.1
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
         d["nIterationsMax"] = 10

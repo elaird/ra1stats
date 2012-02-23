@@ -3,11 +3,11 @@ import utils,plotting,calc
 from common import obs,pdf,note,ni,wimport
 import ROOT as r
 
-def modelConfiguration(w, smOnly, qcdSearch) :
+def modelConfiguration(w, smOnly, otherPoi = False) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
     modelConfig.SetObservables(w.set("obs"))
-    if (not smOnly) or qcdSearch :
+    if (not smOnly) or otherPoi :
         modelConfig.SetParametersOfInterest(w.set("poi"))
         modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
@@ -97,7 +97,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
-             REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, zeroQcd = None, iniValFZinv = 0.5) :
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None) :
 
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -105,30 +105,33 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     terms = []
     out = collections.defaultdict(list)
 
-    assert not qcdSearch
     assert RQcd!="FallingExpA"
 
     #QCD variables
     A_ewk_ini = 1.3e-5
     factor = 0.7
     A = ni("A_qcd", label)
-    wimport(w, r.RooRealVar(A, A, 1.0e-2, 0.0, 100.0))
+    argsA = poi[A] if A in poi else (0.0, 0.0, 100.0)
+    wimport(w, r.RooRealVar(A, A, *argsA))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
-        wimport(w, r.RooRealVar(k, k, 3.0e-2, 0.0, 1.0))
+        w.var(A).setVal(1.0e-2)
+        argsK = poi[k] if k in poi else (3.0e-2, 0.0, 1.0)
+        wimport(w, r.RooRealVar(k, k, *argsK))
+
         if RQcd=="Zero" :
             w.var(k).setVal(0.0)
             w.var(k).setConstant()
-        else :
+        elif k not in poi :
             out["nuis"].append(k)
             #w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
 
     if RQcd=="Zero" or zeroQcd :
         w.var(A).setVal(0.0)
         w.var(A).setConstant()
-    else :
-        if not qcdSearch : out["nuis"].append(A)
+    elif A not in poi :
+        out["nuis"].append(A)
         #w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
 
     #observed "constants", not depending upon slice
@@ -151,7 +154,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         qcd = w.function(ni("qcd", label, i))
         
         ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = iniValFZinv)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
 
         wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
         wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
@@ -161,7 +164,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         nHad    = ni("nHad",    label, i)
         hadPois = ni("hadPois", label, i)
         hadExp  = ni("hadExp",  label, i)
-        
         wimport(w, r.RooFormulaVar(hadB, "(@0)+(@1)", r.RooArgList(ewk, qcd)))
         wimport(w, r.RooRealVar(nHad, nHad, nHadValue))
         if smOnly :
@@ -453,7 +455,7 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signalDict = {}, simpleOneBin = {}) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}, simpleOneBin = {}) :
 
     variables = {"terms": [],
                  "obs": [],
@@ -483,8 +485,10 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
             args[item][x] = eval(x)
 
-    args["had"]["zeroQcd"] = selection.zeroQcd
-    for x in ["REwk", "RQcd", "nFZinv", "qcdSearch"] :
+    for item in ["zeroQcd", "fZinvIni"] :
+        args["had"][item] = getattr(selection, item)
+
+    for x in ["REwk", "RQcd", "nFZinv", "poi"] :
         args["had"][x] = eval(x)
 
     if "signal" in args :
@@ -510,23 +514,28 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
-def startLikelihood(w = None, xs = None, fIni = None) :
+def startLikelihood(w = None, xs = None, fIniFactor = None, poi = {}) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
-    wimport(w, r.RooRealVar("f", "f", fIni, 0.0, 2.0))
+    fIni,fMin,fMax = poi["f"]
+    wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
 
-def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
+def argSet( w = None, vars = [] ) :
+    out = r.RooArgSet( "out" )
+    for item in vars :
+        out.add( w.var(item) )
+    return out
+
+def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
-    if not smOnly :
-        w.defineSet("poi", "f")
-    elif qcdSearch :
-        w.defineSet("poi", "A_qcd,k_qcd")
+    if (not standard) or (not smOnly) :
+        w.defineSet("poi", ",".join(poiList))
 
-    w.defineSet("obs", ",".join(obs))
-    w.defineSet("nuis", ",".join(nuis))
+    w.defineSet("obs", argSet(w, obs))
+    w.defineSet("nuis",argSet(w, nuis))
 
 class foo(object) :
-    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIni = 1.0,
+    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
                  signal = {}, signalExampleToStack = {}, trace = False) :
                  
         for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
@@ -549,7 +558,7 @@ class foo(object) :
 
         print "fix signal format"
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signal.xs, fIni = fIni)
+            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec["poi"])
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec["selections"] :
@@ -560,10 +569,11 @@ class foo(object) :
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
-        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), qcdSearch = self.likelihoodSpec["qcdSearch"], **total)
+        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), standard = self.likelihoodSpec.standardPoi(),
+                         poiList = self.likelihoodSpec["poi"].keys(), **total)
 
         self.data = dataset(obs(self.wspace))
-        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), self.likelihoodSpec["qcdSearch"])
+        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), otherPoi = not self.likelihoodSpec.standardPoi())
 
         if trace :
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
@@ -578,9 +588,12 @@ class foo(object) :
         if l["simpleOneBin"] : 
             for item in ["hadTerms", "muonTerms", "photTerms", "mumuTerms"] :
                 assert not l[item]
-        if l["qcdSearch"] :
+        assert len(l["poi"])==1, len(l["poi"])
+        if not l.standardPoi() :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
+            assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
+
         if l["constrainQcdSlope"] :
             assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
         if any([sel.universalKQcd for sel in l["selections"]]) :
@@ -621,7 +634,7 @@ class foo(object) :
         #wspace.Print("v")
 
     def profile(self) :
-        calc.profilePlots(self.data, self.modelConfig, self.note(), self.smOnly(), self.likelihoodSpec["qcdSearch"])
+        calc.profilePlots(self.data, self.modelConfig, self.note())
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
                  nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
@@ -643,10 +656,9 @@ class foo(object) :
         return d
     
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
-        if self.likelihoodSpec["qcdSearch"] :
-            return calc.plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
-        elif method=="profileLikelihood" :
-            return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
+        if method=="profileLikelihood" :
+            return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(),
+                                   cl = cl, poiList = self.likelihoodSpec["poi"].keys(), makePlots = makePlots)
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 

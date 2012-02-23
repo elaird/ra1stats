@@ -33,28 +33,66 @@ def print_unpack( item, level = 0, ending_comma = False ) :
             print_unpack( value, 0, True )
         print "\t"*level,"}"
 
-baseline = { 
-            "/vols/cms02/samr/Correct_Baseline_Root_File.root" :
-               { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+btag0 = {
+            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Zero_Btags.root" :
+            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
-               },
-           }
+            },
+        }
+
+btag1 = {
+            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_One_Btags.root" :
+            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+            },
+        }
+
+btag2 = {
+            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Two_Btags.root" :
+            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+            },
+        }
+
+btag_gt2 = {
+            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_More_Than_Two.root" :
+            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+            },
+        }
 
 r.gROOT.SetBatch(1)
 #
-dsf  = DF.DataSliceFactory( baseline )
-ds_55_up_baseline = dsf.makeSlice("x",55.5,55.6)
-ds_52_53_baseline = dsf.makeSlice("x",52.5,52.6)
-ds_53_55_baseline = dsf.makeSlice("x",53.5,53.6)
+dsf_b0  = DF.DataSliceFactory( btag0 )
+dsf_b1  = DF.DataSliceFactory( btag1 )
+dsf_b2  = DF.DataSliceFactory( btag2 )
+dsf_bgt2  = DF.DataSliceFactory( btag_gt2 )
+ds_b0 = dsf_b0.makeSlice("x",55.5,55.6)
+ds_b1 = dsf_b1.makeSlice("x",55.5,55.6)
+ds_b2 = dsf_b2.makeSlice("x",55.5,55.6)
+ds_bgt2 = dsf_bgt2.makeSlice("x",55.5,55.6)
 
 slices = { 
-          "baseline aT0.55" : ds_55_up_baseline,
-          "baseline aT0.53" : ds_53_55_baseline,
-          "baseline aT0.52" : ds_52_53_baseline,
+          "btag0" : ds_b0,
+          "btag1" : ds_b1,
+          "btag2" : ds_b2,
+          "btag_gt2" : ds_bgt2,
          }
 
 

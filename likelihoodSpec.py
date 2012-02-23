@@ -1,17 +1,17 @@
-from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b
+from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
     the corresponding value determines whether signal efficiency is considered for that sample.'''
 
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), bTag = False,
-                 universalSystematics = False, universalKQcd = False, zeroQcd = False) :
-        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax", "bTag",
-                     "universalSystematics", "universalKQcd", "zeroQcd"] :
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), fZinvIni = 0.5,
+                 nbTag = None, bTagLower = None, universalSystematics = False, universalKQcd = False, zeroQcd = False) :
+        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax", "fZinvIni",
+                     "nbTag", "bTagLower", "universalSystematics", "universalKQcd", "zeroQcd"] :
             setattr(self, item, eval(item))
 
 class spec(dict) :
-    def __init__(self, simpleOneBin = False, qcdSearch = False) :
+    def __init__(self, simpleOneBin = False) :
         self._selections = []
         self.load()
 
@@ -26,24 +26,33 @@ class spec(dict) :
         else :
             d["simpleOneBin"] = {}
     
+        #{"var": initialValue, min, max)
+        d["poi"] = [{"f": (1.0, 0.0, 1.0)},
+                    {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
+                    {"k_qcd_55": (3.0e-2, 0.01, 0.04)},
+                    ][0]
+        
         d["selections"] = self.selections()
         d["REwk"] = ["", "Linear", "FallingExp", "Constant"][0]
         d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
         d["nFZinv"] = ["All", "One", "Two"][2]
-        d["qcdSearch"] = qcdSearch
         d["constrainQcdSlope"] = True
     
     def selections(self) :
         return self._selections
 
+    def standardPoi(self) :
+        return self["poi"].keys()==["f"]
+
     def add(self, sel = None) :
         self._selections.append(sel)
 
     def load(self) :
-        slices = True
+        slices = False
         b = False
+        multib = True
 
-        assert slices^b
+        assert sum([slices,b,multib]) == 1
         
         if slices :
             self.add(selection(name = "55",
@@ -66,23 +75,52 @@ class spec(dict) :
                                data = afterAlphaT.data_52_v1(),
                                )
                      )
-
         if b :
             self.add(selection(name = "55b_mixed",
                                alphaTMinMax = ("55", None),
-                               bTag = True,
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b.data_55_v1(),
+                               bTagLower = "0",
+                               universalSystematics = True,
+                               universalKQcd = True,
                                )
                      )
 
-        #self.add(selection(name = "55b_after",
-        #                   alphaTMinMax = ("55", None),
-        #                   bTag = True,
-        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-        #                   data = afterAlphaT_b.data_55_v1(),
-        #                   )
-        #         )
+        if multib :
+            self.add(selection(name = "55_0b",
+                               alphaTMinMax = ("55", None),
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               data = mixedMuons_b_sets.data_55_0btag(),
+                               nbTag = "0",
+                               universalSystematics = True,
+                               universalKQcd = True,
+                               )
+                     )
+            self.add(selection(name = "55_1b",
+                               alphaTMinMax = ("55", None),
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               data = mixedMuons_b_sets.data_55_1btag(),
+                               nbTag = "1",
+                               fZinvIni = 0.25,
+                               )
+                     )
+            self.add(selection(name = "55_2b",
+                               alphaTMinMax = ("55", None),
+                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               data = mixedMuons_b_sets.data_55_2btag(),
+                               nbTag = "2",
+                               fZinvIni = 0.1,
+                               )
+                     )
+            self.add(selection(name = "55_gt2b",
+                               alphaTMinMax = ("55", None),
+                               #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                               samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
+                               data = mixedMuons_b_sets.data_55_gt2btag(),
+                               bTagLower = "2",
+                               fZinvIni = 0.1,
+                               )
+                     )
         #self.add(selection(name = "2010",
         #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
         #                   data = inputData.data2010(),

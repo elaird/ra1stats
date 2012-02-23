@@ -10,6 +10,7 @@ physics
 - check signal efficiency merging
 - separate eff unc. for hadrons and muons
 - restore extraSigEffSources
+- consider floating ewk as nuisance
 
 hard-coded
 ----------
@@ -20,6 +21,7 @@ hard-coded
 
 technical
 ---------
+- configurability of initial values
 - fix leaks in pValue() and expectedLimit()
 - query fit status for toys (improve 0 cut)
 

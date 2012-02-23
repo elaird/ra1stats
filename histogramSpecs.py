@@ -21,18 +21,19 @@ def smsRanges(model) :
     d["smsEffUncThZRange"] = (0.0, 0.40, 40)
     return d
 
-def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, bTag = None) :
+def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None) :
+    assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"
+
     base = locations()["eff"]
 
-    cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v5", "muon":"v5"},
-             "tanBeta40":  {"cmssw":"42", "had":"v3", "muon":"v3"},
-             #"tanBeta10": {"cmssw":"38", "had":"v2", "muon":"v5"},
+    cmssm = {"tanBeta10":  {"cmssw":"42", "had":"v7", "muon":"v7"},
+             "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              }
 
     sms = {"T1":      {"had": "v4"},
            "T2":      {"had": "v4"},
-           "T2tt":    {"had": "v6", "muon": "v6"},
-           "T2bb":    {"had": "v1", "muon": "v1"},
+           "T2tt":    {"had": "v8", "muon": "v8"},
+           "T2bb":    {"had": "v2", "muon": "v2"},
            "T5zz":    {"had": "v1", "muon": "v1"},
            "TGQ_0p0": {"had": "v1"},
            "TGQ_0p2": {"had": "v1"},
@@ -61,7 +62,8 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     else :
         assert False, "model %s not in list"%model
     
-    if bTag           : out["afterDir"] += "_btag"
+    if nbTag is not None     : out["afterDir"] += "_btag_==_%s"%nbTag
+    if bTagLower is not None : out["afterDir"] += "_btag_>_%s"%bTagLower
     if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
     if htLower        : out["afterDir"] += "_%d"%htLower
