@@ -4,10 +4,14 @@ class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
     the corresponding value determines whether signal efficiency is considered for that sample.'''
 
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), fZinvIni = 0.5,
-                 nbTag = None, bTagLower = None, universalSystematics = False, universalKQcd = False, zeroQcd = False) :
-        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax", "fZinvIni",
-                     "nbTag", "bTagLower", "universalSystematics", "universalKQcd", "zeroQcd"] :
+    def __init__(self, name = "", samplesAndSignalEff = {}, data = None,
+                 alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
+                 fZinvIni = 0.5, AQcdIni = 1.0e-2, zeroQcd = False,
+                 universalSystematics = False, universalKQcd = False) :
+        for item in ["name", "samplesAndSignalEff", "data",
+                     "alphaTMinMax","nbTag", "bTagLower",
+                     "fZinvIni", "AQcdIni", "zeroQcd",
+                     "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
 class spec(dict) :
@@ -102,6 +106,7 @@ class spec(dict) :
                                data = mixedMuons_b_sets.data_55_1btag(),
                                nbTag = "1",
                                fZinvIni = 0.25,
+                               AQcdIni = 0.0,
                                )
                      )
             self.add(selection(name = "55_2b",
@@ -110,6 +115,7 @@ class spec(dict) :
                                data = mixedMuons_b_sets.data_55_2btag(),
                                nbTag = "2",
                                fZinvIni = 0.1,
+                               AQcdIni = 0.0,
                                )
                      )
             self.add(selection(name = "55_gt2b",
@@ -119,6 +125,7 @@ class spec(dict) :
                                data = mixedMuons_b_sets.data_55_gt2btag(),
                                bTagLower = "2",
                                fZinvIni = 0.1,
+                               AQcdIni = 0.0,
                                )
                      )
         #self.add(selection(name = "2010",
