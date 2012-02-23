@@ -1,5 +1,8 @@
-import utils
+import syst
 from data import data,scaled,excl,trig
+
+systMode = 1
+
 class data_55_0btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
     
@@ -68,26 +71,8 @@ class data_55_0btag(data) :
 
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-        
-        systBins = tuple([0]*8)
-        nSyst = 1+max(systBins)
-        self._systBins = {
-            "sigmaLumiLike": systBins,
-            "sigmaPhotZ": systBins,
-            "sigmaMuonW": systBins,
-            "sigmaMumuZ": systBins,
-            }
 
-        lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
-        self._fixedParameters = {
-            "sigmaLumiLike": tuple([lumiLikeValue]*nSyst),
-            "sigmaPhotZ": tuple([0.20]*nSyst),
-            "sigmaMuonW": tuple([0.20]*nSyst),
-            "sigmaMumuZ": tuple([0.20]*nSyst),
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-            }
+        syst.load(self, mode = systMode)
 
 class data_55_1btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
@@ -159,25 +144,7 @@ class data_55_1btag(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        systBins = tuple([0]*8)
-        nSyst = 1+max(systBins)
-        self._systBins = {
-            "sigmaLumiLike": systBins,
-            "sigmaPhotZ": systBins,
-            "sigmaMuonW": systBins,
-            "sigmaMumuZ": systBins,
-            }
-
-        lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
-        self._fixedParameters = {
-            "sigmaLumiLike": tuple([lumiLikeValue]*nSyst),
-            "sigmaPhotZ": tuple([0.20]*nSyst),
-            "sigmaMuonW": tuple([0.20]*nSyst),
-            "sigmaMumuZ": tuple([0.20]*nSyst),
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-            }
+        syst.load(self, mode = systMode)
 
 class data_55_2btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
@@ -248,25 +215,7 @@ class data_55_2btag(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        systBins = tuple([0]*8)
-        nSyst = 1+max(systBins)
-        self._systBins = {
-            "sigmaLumiLike": systBins,
-            "sigmaPhotZ": systBins,
-            "sigmaMuonW": systBins,
-            "sigmaMumuZ": systBins,
-            }
-
-        lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
-        self._fixedParameters = {
-            "sigmaLumiLike": tuple([lumiLikeValue]*nSyst),
-            "sigmaPhotZ": tuple([0.20]*nSyst),
-            "sigmaMuonW": tuple([0.20]*nSyst),
-            "sigmaMumuZ": tuple([0.20]*nSyst),
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-            }
+        syst.load(self, mode = systMode)
 
 class data_55_gt2btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
@@ -340,22 +289,4 @@ class data_55_gt2btag(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        systBins = tuple([0]*8)
-        nSyst = 1+max(systBins)
-        self._systBins = {
-            "sigmaLumiLike": systBins,
-            "sigmaPhotZ": systBins,
-            "sigmaMuonW": systBins,
-            "sigmaMumuZ": systBins,
-            }
-
-        lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
-        self._fixedParameters = {
-            "sigmaLumiLike": tuple([lumiLikeValue]*nSyst),
-            "sigmaPhotZ": tuple([0.20]*nSyst),
-            "sigmaMuonW": tuple([0.20]*nSyst),
-            "sigmaMumuZ": tuple([0.20]*nSyst),
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-            }
+        syst.load(self, mode = systMode)

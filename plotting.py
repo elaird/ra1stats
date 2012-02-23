@@ -255,6 +255,7 @@ class validationPlotter(object) :
         self.ewkPlots()
         self.mcFactorPlots()
         self.alphaTRatioPlots()
+        self.rhoPlots()
         self.printPars()
         self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
@@ -431,6 +432,19 @@ class validationPlotter(object) :
             {"var":"zInv",  "type":"function", "dens":["nHadBulk"],          "denTypes":["data"], "stack":"ml",
              "desc":"ML EWK (ttw+zInv) / nHadBulk", "color":self.ewk},
             ])
+
+    def rhoPlots(self) :
+        self.plot(otherVars = [{"var":"rhoPhotZ", "type":"var", "desc":"#rho_{#gammaZ}", "suppress":["min","max"], "color":self.ewk,
+                                "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
+                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
+
+        self.plot(otherVars = [{"var":"rhoMuonW", "type":"var", "desc":"#rho_{#muW}", "suppress":["min","max"], "color":self.ewk,
+                                "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
+                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
+
+        self.plot(otherVars = [{"var":"rhoMumuZ", "type":"var", "desc":"#rho_{#mu#muZ}", "suppress":["min","max"], "color":self.ewk,
+                                "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
+                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
 
     def printPars(self) :
         def printText(x, y, s, color = r.kBlack) :
@@ -679,6 +693,7 @@ class validationPlotter(object) :
         fillStyle   = inDict(spec, "fillStyle",   0)
         fillColor   = inDict(spec, "fillColor",   color)
         errorsFrom  = inDict(spec, "errorsFrom",  "")
+        systMap     = inDict(spec, "systMap",  False)
 
 	d = {}
 	d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
@@ -705,8 +720,9 @@ class validationPlotter(object) :
 	toPrint = []
 	for i in range(len(self.htBinLowerEdges)) :
 	    if wspaceMemberFunc :
-                item1 = ni(varName, "", i)
-                item2 = ni(varName, self.label, i)
+                iLabel = i if not systMap else self.inputData.systBins()[varName.replace("rho", "sigma")][i]
+                item1 = ni(varName, "", iLabel)
+                item2 = ni(varName, self.label, iLabel)
 	        var = self.wspace.var(item1)
                 if not var : var = self.wspace.var(item2)
 	        func = self.wspace.function(item1)
@@ -745,11 +761,14 @@ class validationPlotter(object) :
 	return d
 
     def stampMlParameters(self) :
+        def sl(s) :
+            return set(self.inputData.systBins()[s])
+
         text = r.TLatex()
         text.SetNDC()
         x = 0.25
         y = 0.85
-        s = 0.023
+        s = 0.03
         text.SetTextSize(0.5*text.GetTextSize())
         #text.DrawLatex(x, y + s, "ML fit values")
         l = []
@@ -759,10 +778,10 @@ class validationPlotter(object) :
                   ("A_qcd", "A_{QCD } = %4.2e #pm %4.2e", None),
                   ("k_qcd", "k_{QCD  } = %4.2e #pm %4.2e", None),]
             
-            l += [("rhoPhotZ",  ("#rho_{ph %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaPhotZ"])]
-            l += [("rhoMuonW",  ("#rho_{#mu %d     }"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaMuonW"])]
-            l += [("rhoMumuZ",  ("#rho_{#mu#mu %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaMumuZ"])]
-            l += [("rhoSignal", ("#rho_{sig. %d}"%i)+" = %4.2f #pm %4.2f", i) for i in set(self.inputData.systBins()["sigmaLumiLike"])]
+            l += [("rhoPhotZ",  ("#rho (#gammaZ% d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaPhotZ")]
+            l += [("rhoMuonW",  ("#rho (#muW %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMuonW")]
+            l += [("rhoMumuZ",  ("#rho (#mu#muZ %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMumuZ")]
+            l += [("rhoSignal", ("#rho (sig. %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaLumiLike")]
 
         if self.printNom :
             l +=  [("", ""),
