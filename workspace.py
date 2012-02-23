@@ -383,7 +383,6 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
     wimport(w, r.RooRealVar(k_qcd_unc_inp, k_qcd_unc_inp, inputData.fixedParameters()["k_qcd_unc_inp"]))
     wimport(w, r.RooGaussian(qcdGaus, qcdGaus, w.var(k_qcd_nom), w.var(k_qcd), w.var(k_qcd_unc_inp)))
-    w.var(A_qcd).setVal(1.0e-2)
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
