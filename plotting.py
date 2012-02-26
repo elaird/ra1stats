@@ -852,6 +852,7 @@ class validationPlotter(object) :
         return stacks,legEntries,histoList
 
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
+             selNoteCoords = (0.13, 0.85),
              minimum = 0.0, maximum = None, customMaxFactor = (1.1, 2.0), logY = False, stampParams = False,
              obs = {"var":"", "desc":""}, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
         
@@ -907,7 +908,12 @@ class validationPlotter(object) :
 	r.gPad.Update()
 
         if stampParams and not self.printPages : stuff += [self.stampMlParameters()]
-        
+        if selNoteCoords :
+            latex = r.TLatex()
+            latex.SetTextSize(0.7*latex.GetTextSize())
+            latex.SetNDC()
+            latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
+
 	if self.printPages and fileName :
 	    #obsHisto.SetTitle("")
 	    printOnePage(self.canvas, fileName+self.label)
