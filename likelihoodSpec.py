@@ -126,7 +126,7 @@ class spec(dict) :
                                )
                      )
             self.add(selection(name = "55_gt2b",
-                               note = "#geq 3 b-tags",
+                               note = "#geq3 b-tags",
                                alphaTMinMax = ("55", None),
                                #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
