@@ -69,14 +69,14 @@ class spec(dict) :
                                )
                      )
             self.add(selection(name = "53",
-                               note = "#0.53<alpha_{T}<0.55",
+                               note = "0.53<#alpha_{T}<0.55",
                                alphaTMinMax = ("53", "55"),
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = afterAlphaT.data_53_v1(),
                                )
                      )
             self.add(selection(name = "52",
-                               note = "#0.52<alpha_{T}<0.53",
+                               note = "0.52<#alpha_{T}<0.53",
                                alphaTMinMax = ("52", "53"),
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = afterAlphaT.data_52_v1(),
@@ -84,7 +84,7 @@ class spec(dict) :
                      )
         if b :
             self.add(selection(name = "55b_mixed",
-                               note = "#ge1 b-tag3",
+                               note = "#geq1 b-tag",
                                alphaTMinMax = ("55", None),
                                samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                data = mixedMuons_b.data_55_v1(),
@@ -126,7 +126,7 @@ class spec(dict) :
                                )
                      )
             self.add(selection(name = "55_gt2b",
-                               note = "#ge3 b-tags",
+                               note = "#geq 3 b-tags",
                                alphaTMinMax = ("55", None),
                                #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                                samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
