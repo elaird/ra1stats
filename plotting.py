@@ -447,34 +447,47 @@ class validationPlotter(object) :
                   maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
 
     def printPars(self) :
+        def ini(x, y) :
+            y = printText(x, y, "%20s:  %6s   +/- %6s   [ %4s   -  %4s  ]"%("par name", "value", "error", "min", "max"))
+            y = printText(x, y, "-"*64)
+            return y
+
         def printText(x, y, s, color = r.kBlack) :
-            #print s
             text.SetTextColor(color)
             text.DrawText(x, y, s)
             y -= slope
             return y
+
+        def close(it, factor = 2.0) :
+            return (it.getVal() + factor*it.getError() > it.getMax()) or (it.getVal() - factor*it.getError() < it.getMin())
         
         text = r.TText()
         text.SetNDC()
         text.SetTextFont(102)
-        text.SetTextSize(0.45*text.GetTextSize())
-        x = 0.1
-        y = 0.95
-        slope = 0.023
+        text.SetTextSize(0.4*text.GetTextSize())
+        x = -0.5
+        y = y0 = 0.95
+        slope = 0.02
+        nLines = 40
+        i = 0
         
         self.canvas.Clear()
-        y = printText(x, y, "%20s:    %6s   +/-   %6s       [ %6s    -  %6s   ]"%("par name", "value", "error", "min", "max"))
-        y = printText(x, y, "-"*78)
         vars = self.wspace.allVars()
-        it = vars.createIterator()    
+        it = vars.createIterator()
         while it.Next() :
             if it.getMax()==r.RooNumber.infinity() : continue
             if it.getMin()==-r.RooNumber.infinity() : continue
             if not it.hasError() : continue
-            s = "%20s:  %10.3e +/- %10.3e     [%10.3e - %10.3e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
-            factor = 2.0
-            close = (it.getVal() + factor*it.getError() > it.getMax()) or (it.getVal() - factor*it.getError() < it.getMin())
-            y = printText(x, y, s, color = r.kRed if close else r.kBlack)
+
+            if not (i%nLines) :
+                x += 0.5
+                y = y0
+                y = ini(x, y)
+
+            s = "%20s: %9.2e +/-%8.1e  [%7.1e - %7.1e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
+            y = printText(x, y, s, color = r.kRed if close(it) else r.kBlack)
+            i += 1
+
         self.canvas.Print(self.psFileName)
         return
 
