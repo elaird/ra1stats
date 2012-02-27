@@ -43,6 +43,7 @@ class spec(dict) :
                 self._selections.append(s)
 
     def load(self) :
+        selections.systMode = 1
         slices = False
         b = False
         multib = True
