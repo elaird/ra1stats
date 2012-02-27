@@ -719,7 +719,7 @@ class foo(object) :
 
             args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
                     "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
-                    "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
+                    "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(), "selNote": selection.note,
                     "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
                     "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "drawComponents":drawComponents, "printValues":printValues}
             for item in ["REwk", "RQcd"] :
