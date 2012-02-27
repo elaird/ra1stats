@@ -1,9 +1,7 @@
 import syst
 from data import data,scaled,excl,trig
 
-systMode = 3
-
-class data_55_v1(data) :
+class data_55_v1(data, systMode = 1) :
     """all samples have an alphaT cut applied in all bins"""
     
     def _fill(self) :
@@ -82,7 +80,7 @@ class data_55_v1(data) :
 
         syst.load(self, mode = systMode)
 
-class data_53_v1(data) :
+class data_53_v1(data, systMode = 1) :
     """all samples have an alphaT cut applied in all bins"""
     
     def _fill(self) :
@@ -151,7 +149,7 @@ class data_53_v1(data) :
         
         syst.load(self, mode = systMode)
 
-class data_52_v1(data) :
+class data_52_v1(data, systMode = 1) :
     """all samples have an alphaT cut applied in all bins"""
     
     def _fill(self) :

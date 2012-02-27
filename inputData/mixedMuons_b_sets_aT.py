@@ -1,9 +1,7 @@
 import syst
 from data import data,scaled,excl,trig
 
-systMode = 1
-
-class data_55_0btag(data) :
+class data_55_0btag(data, systMode = 1) :
     """muons and mumu have no alt cut for highest six bins"""
     
     def _fill(self) :
