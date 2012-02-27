@@ -14,13 +14,15 @@ class selection(object) :
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
+systMode = 1
+
 def alphaT_slices() :
     selections = [
         selection(name = "55",
                   note = "#alpha_{T}>0.55",
                   alphaTMinMax = ("55", None),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                  data = afterAlphaT.data_55_v1(),
+                  data = afterAlphaT.data_55_v1( systMode ),
                   universalSystematics = True,
                   universalKQcd = True,
         ),
@@ -28,13 +30,13 @@ def alphaT_slices() :
                   note = "0.53<#alpha_{T}<0.55",
                   alphaTMinMax = ("53", "55"),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                  data = afterAlphaT.data_53_v1(),
+                  data = afterAlphaT.data_53_v1( systMode ),
         ),
         selection(name = "52",
                   note = "0.52<#alpha_{T}<0.53",
                   alphaTMinMax = ("52", "53"),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                  data = afterAlphaT.data_52_v1(),
+                  data = afterAlphaT.data_52_v1( systMode ),
         ),
     ]
     return selections
@@ -44,7 +46,7 @@ def btag() :
                            note = "#geq1 b-tag",
                            alphaTMinMax = ("55", None),
                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = mixedMuons_b.data_55_v1(),
+                           data = mixedMuons_b.data_55_v1( systMode ),
                            bTagLower = "0",
                            universalSystematics = True,
                            universalKQcd = True,
@@ -56,7 +58,7 @@ def alphaT_0btags() :
                            note = "0 b-tags (w/ #alpha_{T})",
                            alphaTMinMax = ("55", None),
                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = mixedMuons_b_sets_aT.data_55_0btag(),
+                           data = mixedMuons_b_sets_aT.data_55_0btag( systMode ),
                            nbTag = "0",
                            universalSystematics = True,
                            universalKQcd = True,
@@ -68,7 +70,7 @@ def noAlphaT_0btags() :
                            note = "0 b-tags",
                            alphaTMinMax = ("55", None),
                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = mixedMuons_b_sets.data_55_0btag(),
+                           data = mixedMuons_b_sets.data_55_0btag( systMode ),
                            nbTag = "0",
                            universalSystematics = True,
                            universalKQcd = True,
@@ -81,7 +83,7 @@ def btags_1_2_gt2() :
                   note = "1 b-tag",
                   alphaTMinMax = ("55", None),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                  data = mixedMuons_b_sets.data_55_1btag(),
+                  data = mixedMuons_b_sets.data_55_1btag( systMode ),
                   nbTag = "1",
                   fZinvIni = 0.25,
                   AQcdIni = 0.0,
@@ -90,7 +92,7 @@ def btags_1_2_gt2() :
                   note = "2 b-tags",
                   alphaTMinMax = ("55", None),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                  data = mixedMuons_b_sets.data_55_2btag(),
+                  data = mixedMuons_b_sets.data_55_2btag( systMode ),
                   nbTag = "2",
                   fZinvIni = 0.1,
                   AQcdIni = 0.0,
@@ -100,7 +102,7 @@ def btags_1_2_gt2() :
                   alphaTMinMax = ("55", None),
                   #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                   samplesAndSignalEff = {"had":True, "muon":True, "mumu":False},
-                  data = mixedMuons_b_sets.data_55_gt2btag(),
+                  data = mixedMuons_b_sets.data_55_gt2btag( systMode ),
                   bTagLower = "2",
                   fZinvIni = 0.1,
                   AQcdIni = 0.0,
