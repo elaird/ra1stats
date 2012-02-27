@@ -1,7 +1,7 @@
 import syst
 from data import data,scaled,excl,trig
 
-class data_55_v1(data, systMode = 1) :
+class data_55_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
     
     def _fill(self) :
@@ -80,7 +80,7 @@ class data_55_v1(data, systMode = 1) :
 
         syst.load(self, mode = systMode)
 
-class data_53_v1(data, systMode = 1) :
+class data_53_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
     
     def _fill(self) :
@@ -149,7 +149,7 @@ class data_53_v1(data, systMode = 1) :
         
         syst.load(self, mode = systMode)
 
-class data_52_v1(data, systMode = 1) :
+class data_52_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
     
     def _fill(self) :
@@ -224,4 +224,4 @@ class data_52_v1(data, systMode = 1) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)
