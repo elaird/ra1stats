@@ -1,7 +1,7 @@
 import syst
 from data import data,scaled,excl,trig
 
-systMode = 1
+systMode = 3
 
 class data_55_0btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
@@ -247,14 +247,12 @@ class data_55_gt2btag(data) :
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
 
-        #### 
         self._observations = {
             "nHadBulk":scaled(( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad"               :   ( 10.0, 8.0, 8.0, 1.0, 0.0, 0.0, 0.0, 0.0, ) ,
             "nMuon"              :   ( 9.0, 6.0, 22.0, 16.0, 13.0, 3.0, 1.0, 4.0, ) ,
             "nMumu"              :   ( 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, ) ,
-            #"nPhot":     excl((      None,      None,       221,        84,        37,        16,         7,         2), isExcl),
-            "nPhot": (None,None,None,None,None,None,None,None),
+            "nPhot"              :   (None, None,  1,   0,   0,   0,   0,   0, ),
             }
 
         self._triggerEfficiencies = {
@@ -266,7 +264,7 @@ class data_55_gt2btag(data) :
             }
 
 	self._mcExpectations = {
-            "mcGjets": excl(       (  0.0,    0.0,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
+            "mcGjets"  : excl(       (  None,  None,  1.0, 0.8, 0.0, 0.0, 0.0, 0.0 ), isExcl),
             "mcTtw"              :   ( 14.98, 4.788, 4.243, 2.604, 0.5211, 0.3001, 0.01408, 0.06082, ) ,
             "mcZinv"             :   ( 1.079, 0.5188, 0.316, 0.1634, 0.0, 0.09114, 0.0, 0.0, ) ,
             "mcMumu"             :   ( 0.01635, 0.0, 0.6904, 0.0, 0.002354, 0.0, 0.0, 0.0, ) ,
@@ -275,7 +273,7 @@ class data_55_gt2btag(data) :
         
         
         self._mcStatError = {
-            "mcGjetsErr": (0.0,  0.0,   10,    7,    5,    3,    2,    2),
+            "mcGjetsErr"         :   ( None,  None,   0.8, 0.8, 0.0, 0.0, 0.0, 0.0),
             "mcTtwErr"           :   ( 1.686, 0.9518, 0.8906, 0.6971, 0.2472, 0.2281, 0.05278, 0.05092, ) ,
             "mcZinvErr"          :   ( 0.2626, 0.1821, 0.1421, 0.1022, 0.0, 0.07631, 0.0, 0.0, ) ,
             "mcMuonErr"          :   ( 1.593, 0.8971, 2.259, 1.693, 1.274, 0.7076, 0.5003, 0.5946, ) ,
