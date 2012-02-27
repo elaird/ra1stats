@@ -234,7 +234,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
         nMumu = ni("nMumu", label, i)
         rMumu = ni("rMumu", label, i)
         wimport(w, r.RooRealVar(nMumu, nMumu, nMumuValue))
-        wimport(w, r.RooRealVar(rMumu, rMumu, (mcMumuValue/mcZinvValue if not rFinal else rFinal)))
+        wimport(w, r.RooRealVar(rMumu, rMumu, (mcMumuValue/mcZinvValue if rFinal==None else rFinal)))
 
         mumuExp = ni("mumuExp", label, i)
         rhoMumuZ = ni("rhoMumuZ", systematicsLabel, systBin[i])
@@ -286,7 +286,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
         nPhot = ni("nPhot", label, i)
         rPhot = ni("rPhot", label, i)
         wimport(w, r.RooRealVar(nPhot, nPhot, nPhotValue))
-        wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
+        wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if rFinal==None else rFinal)/purity))
 
         rho = ni("rhoPhotZ", systematicsLabel, systBin[i])
         photExp = ni("photExp", label, i)
@@ -338,7 +338,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
         nMuon = ni("nMuon", label, i)
         rMuon = ni("rMuon", label, i)
         wimport(w, r.RooRealVar(nMuon, nMuon, nMuonValue))
-        wimport(w, r.RooRealVar(rMuon, rMuon, mcMuonValue/mcTtwValue if not rFinal else rFinal))
+        wimport(w, r.RooRealVar(rMuon, rMuon, mcMuonValue/mcTtwValue if rFinal==None else rFinal))
 
         muonB = ni("muonB", label, i)
         rhoMuonW = ni("rhoMuonW", systematicsLabel, systBin[i])
