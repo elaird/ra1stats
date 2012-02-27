@@ -52,9 +52,9 @@ class spec(dict) :
         self._selections.append(sel)
 
     def load(self) :
-        slices = False
+        slices = True
         b = False
-        multib = True
+        multib = False
 
         assert sum([slices,b,multib]) == 1
         
