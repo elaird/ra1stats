@@ -1,4 +1,4 @@
-from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets
+from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets,mixedMuons_b_sets_aT
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -56,6 +56,8 @@ class spec(dict) :
         b = False
         multib = True
 
+        aT0b = True
+
         assert sum([slices,b,multib]) == 1
         
         if slices :
@@ -95,16 +97,28 @@ class spec(dict) :
                      )
 
         if multib :
-            self.add(selection(name = "55_0b",
-                               note = "0 b-tags",
-                               alphaTMinMax = ("55", None),
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               data = mixedMuons_b_sets.data_55_0btag(),
-                               nbTag = "0",
-                               universalSystematics = True,
-                               universalKQcd = True,
-                               )
-                     )
+            if aT0b :
+                self.add(selection(name = "55_0b",
+                                   note = "0 b-tags (w/ #alpha_{T})",
+                                   alphaTMinMax = ("55", None),
+                                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                                   data = mixedMuons_b_sets_aT.data_55_0btag(),
+                                   nbTag = "0",
+                                   universalSystematics = True,
+                                   universalKQcd = True,
+                                   )
+                         )
+            else :
+                self.add(selection(name = "55_0b",
+                                   note = "0 b-tags",
+                                   alphaTMinMax = ("55", None),
+                                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                                   data = mixedMuons_b_sets.data_55_0btag(),
+                                   nbTag = "0",
+                                   universalSystematics = True,
+                                   universalKQcd = True,
+                                   )
+                         )
             self.add(selection(name = "55_1b",
                                note = "1 b-tag",
                                alphaTMinMax = ("55", None),
