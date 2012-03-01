@@ -15,7 +15,7 @@ class selection(object) :
             setattr(self, item, eval(item))
 
 def alphaT_slices(systMode = 1) :
-    selections = [
+    return [
         selection(name = "55",
                   note = "#alpha_{T}>0.55",
                   alphaTMinMax = ("55", None),
@@ -37,43 +37,39 @@ def alphaT_slices(systMode = 1) :
                   data = afterAlphaT.data_52_v1( systMode = systMode ),
         ),
     ]
-    return selections
  
 def btag(systMode = 1) :
-    selections = selection(name = "55b_mixed",
-                           note = "#geq1 b-tag",
-                           alphaTMinMax = ("55", None),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = mixedMuons_b.data_55_v1( systMode = systMode ),
-                           bTagLower = "0",
-                           universalSystematics = True,
-                           universalKQcd = True,
-                          )
-    return selections
+    return [ selection(name = "55b_mixed",
+                       note = "#geq1 b-tag",
+                       alphaTMinMax = ("55", None),
+                       samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                       data = mixedMuons_b.data_55_v1( systMode = systMode ),
+                       bTagLower = "0",
+                       universalSystematics = True,
+                       universalKQcd = True,
+                       )]
 
 def alphaT_0btags(systMode = 1) :
-    selections = selection(name = "55_0b",
-                           note = "0 b-tags (w/ #alpha_{T})",
-                           alphaTMinMax = ("55", None),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = mixedMuons_b_sets_aT.data_55_0btag( systMode = systMode ),
-                           nbTag = "0",
-                           universalSystematics = True,
-                           universalKQcd = True,
-                          )
-    return selections
+    return [ selection(name = "55_0b",
+                       note = "0 b-tags (w/ #alpha_{T})",
+                       alphaTMinMax = ("55", None),
+                       samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                       data = mixedMuons_b_sets_aT.data_55_0btag( systMode = systMode ),
+                       nbTag = "0",
+                       universalSystematics = True,
+                       universalKQcd = True,
+                       )]
 
 def noAlphaT_0btags(systMode = 1) :
-    selections = selection(name = "55_0b",
-                           note = "0 b-tags",
-                           alphaTMinMax = ("55", None),
-                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                           data = mixedMuons_b_sets.data_55_0btag( systMode = systMode ),
-                           nbTag = "0",
-                           universalSystematics = True,
-                           universalKQcd = True,
-                          )
-    return selections
+    return [selection(name = "55_0b",
+                      note = "0 b-tags",
+                      alphaTMinMax = ("55", None),
+                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                      data = mixedMuons_b_sets.data_55_0btag( systMode = systMode ),
+                      nbTag = "0",
+                      universalSystematics = True,
+                      universalKQcd = True,
+                      )]
 
 def btags_1_2_gt2(systMode = 1) :
     selections = [

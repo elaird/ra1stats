@@ -1,5 +1,4 @@
 import selections
-from collections import Iterable
 
 class spec(dict) :
     def __init__(self, simpleOneBin = False) :
@@ -35,12 +34,8 @@ class spec(dict) :
     def standardPoi(self) :
         return self["poi"].keys()==["f"]
 
-    def add(self, sel = None) :
-        if not isinstance( sel, Iterable ) :
-            self._selections.append(sel)
-        else :
-            for s in sel :
-                self._selections.append(s)
+    def add(self, sel = []) :
+        self._selections += sel
 
     def load(self) :
         systMode = 3
