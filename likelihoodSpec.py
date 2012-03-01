@@ -43,7 +43,8 @@ class spec(dict) :
                 self._selections.append(s)
 
     def load(self) :
-        selections.systMode = 1
+        systMode = 3
+
         slices = False
         b = False
         multib = True
@@ -53,12 +54,12 @@ class spec(dict) :
         assert sum([slices,b,multib]) == 1
         
         if slices :
-            self.add( selections.alphaT_slices() )
+            self.add( selections.alphaT_slices(systMode) )
         if b :
-            self.add( selections.btag() )
+            self.add( selections.btag(systMode) )
         if multib :
             if aT0b :
-                self.add( selections.alphaT_0btags() )
+                self.add( selections.alphaT_0btags(systMode) )
             else :
-                self.add( selections.noAlphaT_0btags() )
-            self.add( selections.btags_1_2_gt2() )
+                self.add( selections.noAlphaT_0btags(systMode) )
+            self.add( selections.btags_1_2_gt2(systMode) )

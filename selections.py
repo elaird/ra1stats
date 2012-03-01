@@ -14,9 +14,7 @@ class selection(object) :
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
-systMode = 1
-
-def alphaT_slices() :
+def alphaT_slices(systMode = 1) :
     selections = [
         selection(name = "55",
                   note = "#alpha_{T}>0.55",
@@ -41,7 +39,7 @@ def alphaT_slices() :
     ]
     return selections
  
-def btag() :
+def btag(systMode = 1) :
     selections = selection(name = "55b_mixed",
                            note = "#geq1 b-tag",
                            alphaTMinMax = ("55", None),
@@ -53,7 +51,7 @@ def btag() :
                           )
     return selections
 
-def alphaT_0btags() :
+def alphaT_0btags(systMode = 1) :
     selections = selection(name = "55_0b",
                            note = "0 b-tags (w/ #alpha_{T})",
                            alphaTMinMax = ("55", None),
@@ -65,7 +63,7 @@ def alphaT_0btags() :
                           )
     return selections
 
-def noAlphaT_0btags() :
+def noAlphaT_0btags(systMode = 1) :
     selections = selection(name = "55_0b",
                            note = "0 b-tags",
                            alphaTMinMax = ("55", None),
@@ -77,7 +75,7 @@ def noAlphaT_0btags() :
                           )
     return selections
 
-def btags_1_2_gt2() :
+def btags_1_2_gt2(systMode = 1) :
     selections = [
         selection(name = "55_1b",
                   note = "1 b-tag",
