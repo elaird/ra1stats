@@ -187,8 +187,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     return out
 
 def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
-    assert not smOnly
-
     terms = []
     out = collections.defaultdict(list)
 
@@ -204,11 +202,14 @@ def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
         wimport(w, r.RooRealVar(b, b, bValue))
         wimport(w, r.RooRealVar(n, n, nValue))
 
-        lumi = ni("simpleLumi", label)
-        eff = ni("signalEffSimple", label, i)
-        wimport(w, r.RooProduct(s, s, r.RooArgSet(w.var("f"), w.var("xs"), w.var(lumi), w.var(eff))))
-        wimport(w, r.RooAddition(exp, exp, r.RooArgSet(w.function(b), w.function(s))))
-        wimport(w, r.RooPoisson(pois, pois, w.var(n), w.function(exp)))
+        if smOnly :
+            wimport(w, r.RooPoisson(pois, pois, w.var(n), w.var(b)))
+        else :
+            lumi = ni("simpleLumi", label)
+            eff = ni("signalEffSimple", label, i)
+            wimport(w, r.RooProduct(s, s, r.RooArgSet(w.var("f"), w.var("xs"), w.var(lumi), w.var(eff))))
+            wimport(w, r.RooAddition(exp, exp, r.RooArgSet(w.function(b), w.function(s))))
+            wimport(w, r.RooPoisson(pois, pois, w.var(n), w.function(exp)))
         terms.append(pois)
 
     termsName = ni("simpleTerms", label)
