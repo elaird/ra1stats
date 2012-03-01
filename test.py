@@ -8,6 +8,11 @@ def signal(i) :
     def scaled(t, factor) :
         return tuple([factor*item for item in t])
 
+    simple = common.signal(xs = 1.0e-2, label = "signal")
+    simple.insert("test", {
+            "effSimple": (0.30, ),
+            })
+    
     lm6 = common.signal(xs = 0.3104, label = "LM6 (LO)")
     lm6.insert("55", {
             "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
@@ -131,7 +136,7 @@ def signal(i) :
                "label":"T2 39 7, xs = 1.0 pb",
                }
     out  = [p_33_53,  p_33_53b, p_181_29]
-    out += [p_181_19, p_181_41, p_61_61, t2tt, lm6, t1_600_100, t2_39_7]
+    out += [p_181_19, p_181_41, p_61_61, t2tt, lm6, t1_600_100, t2_39_7, simple]
     return out[i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),

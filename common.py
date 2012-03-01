@@ -32,7 +32,7 @@ def sampleCode(samples) :
     for box,considerSignal in samples.iteritems() :
         (yes if considerSignal else no).append(box)
 
-    d = {"had":"h", "phot":"p", "muon":"1", "mumu":"2"}
+    d = {"had":"h", "phot":"p", "muon":"1", "mumu":"2", "simple":"s"}
     out = ""
     for item in yes :
         out+=d[item]
@@ -44,7 +44,6 @@ def sampleCode(samples) :
 def note(likelihoodSpec = {}) :
     l = likelihoodSpec
     out = ""
-    if l["simpleOneBin"] : return "simpleOneBin"
     
     if l["REwk"] : out += "REwk%s_"%l["REwk"]
     out += "RQcd%s"%l["RQcd"]

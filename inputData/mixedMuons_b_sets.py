@@ -1,8 +1,6 @@
 import syst
 from data import data,scaled,excl,trig
 
-systMode = 3
-
 class data_55_0btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
     
@@ -72,7 +70,7 @@ class data_55_0btag(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
 
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)
 
 class data_55_1btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
@@ -144,7 +142,7 @@ class data_55_1btag(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)
 
 class data_55_2btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
@@ -215,7 +213,7 @@ class data_55_2btag(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)
 
 class data_55_gt2btag(data) :
     """muons and mumu have no alt cut for highest six bins"""
@@ -287,4 +285,4 @@ class data_55_gt2btag(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)
