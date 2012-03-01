@@ -23,6 +23,26 @@ def load(data = None, mode = None) :
             "k_qcd_unc_inp" : 0.76e-2,
             }
 
+    if mode==2 :
+        systBins = tuple([0]*4+[1]*2+[2]*2)
+        nSyst = 1+max(systBins)
+        data._systBins = {
+            "sigmaLumiLike": systBins,
+            "sigmaPhotZ": systBins,
+            "sigmaMuonW": systBins,
+            "sigmaMumuZ": systBins,
+            }
+
+        data._fixedParameters = {
+            "sigmaLumiLike": tuple([lumiLikeValue]*nSyst),
+            "sigmaPhotZ": tuple([1.00,1.00,1.00]),
+            "sigmaMuonW": tuple([1.00,1.00,1.00]),
+            "sigmaMumuZ": tuple([1.00,1.00,1.00]),
+
+            "k_qcd_nom"     : 2.89e-2,
+            "k_qcd_unc_inp" : 0.76e-2,
+            }
+
     if mode==3 :
         systBins = tuple([0]*4+[1]*2+[2]*2)
         nSyst = 1+max(systBins)
