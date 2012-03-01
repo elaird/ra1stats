@@ -114,4 +114,4 @@ class data_55_v1(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        syst.load(self, mode = 3)
+        syst.load(self, mode = self.systMode)
