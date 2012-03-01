@@ -269,6 +269,7 @@ class validationPlotter(object) :
         #utils.ps2pdf(self.psFileName, sameDir = True)
 
     def hadPlots(self) :
+        if "had" not in self.lumi : return
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
@@ -311,6 +312,7 @@ class validationPlotter(object) :
                 ])
 
     def muonPlots(self) :
+        if "muon" not in self.lumi : return
         vars = [
             {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"SM", "stack":"total"},
             {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2,
@@ -434,6 +436,7 @@ class validationPlotter(object) :
             ])
 
     def rhoPlots(self) :
+        if "simple" in self.lumi : return
         self.plot(otherVars = [{"var":"rhoPhotZ", "type":"var", "desc":"#rho_{#gammaZ}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
                   maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
