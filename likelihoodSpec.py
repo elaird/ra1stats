@@ -34,7 +34,7 @@ class spec(dict) :
 
         slices = False
         b = False
-        multib = False
+        multib = True
 
         aT0b = True
 
