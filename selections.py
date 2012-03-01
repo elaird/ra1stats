@@ -1,4 +1,4 @@
-from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets,mixedMuons_b_sets_aT
+from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets,mixedMuons_b_sets_aT,simpleOneBin
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -104,3 +104,9 @@ def btags_1_2_gt2(systMode = 1) :
     ]
 
     return selections
+
+def simple() :
+    return [selection(name = "test",
+                      samplesAndSignalEff = {"simple": True},
+                      data = simpleOneBin.data_simple(),
+                      )]

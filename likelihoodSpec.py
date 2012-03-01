@@ -1,21 +1,13 @@
 import selections
 
 class spec(dict) :
-    def __init__(self, simpleOneBin = False) :
+    def __init__(self) :
         self._selections = []
         self.load()
 
         #for compatibility; to be rewritten
         d = self
 
-        if simpleOneBin :
-            assert False
-            d["simpleOneBin"] = {"b":3.0}
-            key = max(d["alphaT"].keys())
-            d["alphaT"] = {key: {"samples": [("had", True)]} }
-        else :
-            d["simpleOneBin"] = {}
-    
         #{"var": initialValue, min, max)
         d["poi"] = [{"f": (1.0, 0.0, 1.0)},
                     {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},

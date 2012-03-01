@@ -247,6 +247,7 @@ class validationPlotter(object) :
         self.psFileName = "%s/bestFit_%s_sel%s%s.pdf"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
         self.canvas.Print(self.psFileName+"[")        
 
+        self.simplePlots()
         self.hadPlots()
         #self.hadDataMcPlots()
         self.muonPlots()
@@ -268,7 +269,26 @@ class validationPlotter(object) :
         self.canvas.Print(self.psFileName+"]")
         #utils.ps2pdf(self.psFileName, sameDir = True)
 
+    def simplePlots(self) :
+        if "simple" not in self.lumi : return
+        vars = [
+            {"var":"bSimple", "type":"var", "desc":"b", "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
+            ]
+        if not self.smOnly :
+            vars += [{"var":"sSimple", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+        elif self.signalExampleToStack :
+            vars += [{"example":self.signalExampleToStack, "box":"simple", "desc":self.signalExampleToStack.label,
+                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+
+        for logY in [False, True] :
+            thisNote = "Simple Sample%s"%(" (logY)" if logY else "")
+            fileName = "simple_signal_fit%s"%("_logy" if logY else "")
+            self.plot(fileName = fileName, legend0 = (0.48 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.85),
+                      obs = {"var":"nSimple", "desc": obsString(self.obsLabel, "simple sample", self.lumi["simple"])},
+                      otherVars = vars, logY = logY, stampParams = False)
+            
     def hadPlots(self) :
+        if "had" not in self.lumi : return
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
@@ -311,6 +331,7 @@ class validationPlotter(object) :
                 ])
 
     def muonPlots(self) :
+        if "muon" not in self.lumi : return
         vars = [
             {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"SM", "stack":"total"},
             {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2,
@@ -356,6 +377,7 @@ class validationPlotter(object) :
                 ])
 
     def ewkPlots(self) :
+        if "had" not in self.lumi : return
         self.plot(note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, yLabel = "",
                   otherVars = [ {"var":"ttw", "type":"function", "dens":["mcTtw"], "denTypes":[None], "desc":"ML ttW / MC ttW",
                                  "stack":None, "color":r.kGreen, "goptions": "hist"} ])
@@ -384,6 +406,8 @@ class validationPlotter(object) :
                       yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
     def alphaTRatioPlots(self) :
+        if "had" not in self.lumi : return
+
         ewk = {"var":"ewk", "type":self.ewkType, "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK", "suppress":["min","max"],
                "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lp"+("" if self.ewkType=="function" else "f"), "errorBand":self.ewk-6} #"errorsFrom":"A_ewk"}
                
@@ -434,6 +458,7 @@ class validationPlotter(object) :
             ])
 
     def rhoPlots(self) :
+        if "simple" in self.lumi : return
         self.plot(otherVars = [{"var":"rhoPhotZ", "type":"var", "desc":"#rho_{#gammaZ}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
                   maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
@@ -492,6 +517,8 @@ class validationPlotter(object) :
         return
 
     def correlationHist(self) :
+        if self.smOnly and "simple" in self.lumi : return
+
         name = "correlation_matrix"+self.label
         h = self.results.correlationHist(name)
         h.SetStats(False)
