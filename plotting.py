@@ -272,10 +272,10 @@ class validationPlotter(object) :
     def simplePlots(self) :
         if "simple" not in self.lumi : return
         vars = [
-            {"var":"simpleB", "type":"var", "desc":"b", "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
+            {"var":"bSimple", "type":"var", "desc":"b", "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
             ]
         if not self.smOnly :
-            vars += [{"var":"simple", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+            vars += [{"var":"sSimple", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif self.signalExampleToStack :
             vars += [{"example":self.signalExampleToStack, "box":"simple", "desc":self.signalExampleToStack.label,
                       "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
@@ -517,6 +517,8 @@ class validationPlotter(object) :
         return
 
     def correlationHist(self) :
+        if self.smOnly and "simple" in self.lumi : return
+
         name = "correlation_matrix"+self.label
         h = self.results.correlationHist(name)
         h.SetStats(False)
