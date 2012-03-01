@@ -1,8 +1,6 @@
 import syst
 from data import data,scaled,excl,trig
 
-systMode = 3
-
 class data_55_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
     
@@ -80,7 +78,7 @@ class data_55_v1(data) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
 
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)
 
 class data_53_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
@@ -149,7 +147,7 @@ class data_53_v1(data) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)
 
 class data_52_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
@@ -226,4 +224,4 @@ class data_52_v1(data) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
-        syst.load(self, mode = systMode)
+        syst.load(self, mode = self.systMode)

@@ -16,8 +16,9 @@ vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlo
         "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExtra", "mcStatError", "fixedParameters"]
 
 class data(object) :
-    def __init__(self, requireFullImplementation = True) :
+    def __init__(self, requireFullImplementation = True, systMode = 1) :
         self.requireFullImplementation = requireFullImplementation
+        self.systMode = systMode
         self._fill()
         self._checkVars()
         self._checkLengths()
