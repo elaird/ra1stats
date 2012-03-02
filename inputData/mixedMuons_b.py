@@ -1,4 +1,4 @@
-import utils
+import utils,syst
 from data import data,scaled,excl,trig
 
 class data_55_v1(data) :
@@ -29,7 +29,6 @@ class data_55_v1(data) :
             "mcMumu":  4650.,
             }
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
-        self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
         self._observations = {
             "nHadBulk":scaled(( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad": (784.0, 370.0, 274.0, 91.0, 31.0, 13.0, 4.0, 2.0), 
@@ -101,7 +100,7 @@ class data_55_v1(data) :
         self._mcStatError = {
             "mcMuonErr": (15.88, 11.03,10.16, 7.38, 5.10, 3.30, 2.22, 2.14),
             "mcTtwErr":  (15.90, 11.24, 4.76, 3.00, 1.65, 1.25, 0.42, 0.49),
-            "mcGjetsErr":( None,  None, 8   ,    5,    3,    2,    2,  0.7),
+            "mcGjetsErr": (None,  None,   10,    7,    5,    3,    2,    2),
             "mcZinvErr": (2.40,  1.51, 1.27, 0.82, 0.47, 0.30, 0.18, 0.13),
             "mcMumuErr":(2.07,  1.54, 2.63, 1.59, 1.07, 0.83, 0.64, 0.79),
             }
@@ -114,18 +113,4 @@ class data_55_v1(data) :
         self._mcExtra = {}
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         
-        self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.40,
-            "sigmaMuonW": 0.30,
-            "sigmaMumuZ": 0.20,
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-
-            #"k_qcd_nom"     : 3.30e-2,
-            #"k_qcd_unc_inp" : 0.66e-2,
-
-            #"k_qcd_nom"     : 2.89e-2,
-            #"k_qcd_unc_inp" : 0.01e-2,
-            }
+        syst.load(self, mode = self.systMode)

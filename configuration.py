@@ -1,15 +1,15 @@
 import collections,socket
 
 def locations() :
-    s = "/vols/cms02/elaird1/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
+    s = "/vols/cms02/samr/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
     return {"eff": "%s/20_yieldHistograms/2011/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
-            "nToys": 500,
+            "nToys": 2000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic"][1],
+            "calculatorType": ["frequentist", "asymptotic"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
@@ -18,8 +18,15 @@ def method() :
 def signal() :
     overwriteInput = collections.defaultdict(list)
     overwriteOutput = collections.defaultdict(list)
-    overwriteOutput.update({"T1": [(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
-                            "T2tt": [(22, 2, 1), (31, 17, 1), (9, 2, 1), (36, 23, 1)],
+    overwriteOutput.update({"T1": [(12, 4, 1), (13, 5, 1), (14, 3, 1), (24, 11, 1),
+                                   (30, 6, 1), (32, 24, 1), (37, 25, 1), (38, 18, 1),
+                                   (40, 20, 1), (40, 21, 1), (35, 17, 1), ( 9, 1, 1),
+                                   #(12,  7, 1), (20, 15, 1), 
+                                   ],
+                            "T2": [(16, 5, 1), (28, 9, 1), (29, 21, 1),
+                                   (32, 22, 1), (34, 25, 1), (44, 28, 1)
+                                   ],
+                            "T2tt": [(43, 28, 1)],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
@@ -30,6 +37,7 @@ def signal() :
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2tt":lambda iX,x,iY,y,iZ,z:True,
+                           "T2bb":lambda iX,x,iY,y,iZ,z:True,
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
                            },
             "nEventsIn":{""       :(9900., 10100.),
@@ -44,7 +52,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][4],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
             }
 
 def points() :
@@ -81,16 +89,16 @@ def checkAndAdjust(d) :
     d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     d["extraSigEffUncSources"] = []
 
-    d["fIni"] = 1.0
+    d["fIniFactor"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
     if d["isSms"] :
-        d["fIni"] = 0.1
+        d["fIniFactor"] = 0.1
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
         d["nIterationsMax"] = 10
         if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
         d["plSeedForCLs"] = True
-        d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
+        #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
     else :

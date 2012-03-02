@@ -29,7 +29,6 @@ class data_55_v1(data) :
             "mcZmumu": 4650.,
             }
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
-        self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
         self._observations = {
             "nHadBulk":scaled(( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
 
@@ -78,8 +77,8 @@ class data_55_v1(data) :
         
         self._fixedParameters = {
             "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.40,
-            "sigmaMuonW": 0.30,
+            "sigmaPhotZ": 0.20,
+            "sigmaMuonW": 0.20,
             "sigmaMumuZ": 0.20,
 
             "k_qcd_nom"     : 2.89e-2,

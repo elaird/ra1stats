@@ -12,12 +12,13 @@ def excl(counts, isExclusive) :
         out.append(count if (isExcl or count==None) else (count-counts[i+1]))
     return tuple(out)
 
-vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans",
+vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
         "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExtra", "mcStatError", "fixedParameters"]
 
 class data(object) :
-    def __init__(self, requireFullImplementation = True) :
+    def __init__(self, requireFullImplementation = True, systMode = 1) :
         self.requireFullImplementation = requireFullImplementation
+        self.systMode = systMode
         self._fill()
         self._checkVars()
         self._checkLengths()
@@ -37,9 +38,15 @@ class data(object) :
         if not self._mergeBins :
             assert len(self._constantMcRatioAfterHere)==l
             
-        for item in ["observations", "mcExpectations", "mcExtra", "mcStatError"] :
+        for item in ["observations", "mcExpectations", "mcExtra", "mcStatError", "systBins"] :
             for key,value in getattr(self,"_%s"%item).iteritems() :
                 assert len(value)==l,"%s: %s"%(item, key)
+
+        for key,value in self._systBins.iteritems() :
+            assert min(value)==0, "%s_%s"%(str(key), str(value))
+            l = 1+max(value)
+            assert key in self._fixedParameters, key
+            assert len(self._fixedParameters[key])==l, key
 
     def _stashInput(self) :
         self._htBinLowerEdgesInput = copy.copy(self._htBinLowerEdges)

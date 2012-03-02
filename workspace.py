@@ -3,11 +3,11 @@ import utils,plotting,calc
 from common import obs,pdf,note,ni,wimport
 import ROOT as r
 
-def modelConfiguration(w, smOnly, qcdSearch) :
+def modelConfiguration(w, smOnly, otherPoi = False) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
     modelConfig.SetObservables(w.set("obs"))
-    if (not smOnly) or qcdSearch :
+    if (not smOnly) or otherPoi :
         modelConfig.SetParametersOfInterest(w.set("poi"))
         modelConfig.SetNuisanceParameters(w.set("nuis"))
     return modelConfig
@@ -75,7 +75,9 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iFirst = N
     elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, name = name, label = label, kLabel = label, i = i))
     else :
         varName = ni(name, label, i)
-        wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
+        iniEwk = max( 1, nHadValue - w.function(ni("qcd",label,i)).getVal() )
+        wimport(w, r.RooRealVar(varName, varName, iniEwk, 0.0, 10.0*max(1, nHadValue)))
+        #wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, label, i)
 
 def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst = None, iLast = None, iniVal = None) :
@@ -97,7 +99,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
-             REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, zeroQcd = None, iniValFZinv = 0.5) :
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, AQcdIni = None) :
 
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -105,30 +107,32 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     terms = []
     out = collections.defaultdict(list)
 
-    assert not qcdSearch
     assert RQcd!="FallingExpA"
 
     #QCD variables
     A_ewk_ini = 1.3e-5
     factor = 0.7
     A = ni("A_qcd", label)
-    wimport(w, r.RooRealVar(A, A, 1.0e-2, 0.0, 100.0))
+    argsA = poi[A] if A in poi else (AQcdIni, 0.0, 100.0)
+    wimport(w, r.RooRealVar(A, A, *argsA))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
-        wimport(w, r.RooRealVar(k, k, 3.0e-2, 0.0, 1.0))
+        argsK = poi[k] if k in poi else (3.0e-2, 0.0, 1.0)
+        wimport(w, r.RooRealVar(k, k, *argsK))
+
         if RQcd=="Zero" :
             w.var(k).setVal(0.0)
             w.var(k).setConstant()
-        else :
+        elif k not in poi :
             out["nuis"].append(k)
             #w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
 
     if RQcd=="Zero" or zeroQcd :
         w.var(A).setVal(0.0)
         w.var(A).setConstant()
-    else :
-        if not qcdSearch : out["nuis"].append(A)
+    elif A not in poi :
+        out["nuis"].append(A)
         #w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
 
     #observed "constants", not depending upon slice
@@ -141,6 +145,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     #more
     iFirst = None
     iLast = len(htMeans)-1
+    systBin = inputData.systBins()["sigmaLumiLike"]
     for i,nHadValue in enumerate(obs["nHad"]) :
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
@@ -150,7 +155,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         qcd = w.function(ni("qcd", label, i))
         
         ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = iniValFZinv)
+        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
 
         wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
         wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
@@ -160,7 +165,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         nHad    = ni("nHad",    label, i)
         hadPois = ni("hadPois", label, i)
         hadExp  = ni("hadExp",  label, i)
-        
         wimport(w, r.RooFormulaVar(hadB, "(@0)+(@1)", r.RooArgList(ewk, qcd)))
         wimport(w, r.RooRealVar(nHad, nHad, nHadValue))
         if smOnly :
@@ -168,7 +172,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         else :
             lumi = ni("hadLumi", label)
             eff = ni("signalEffHad", label, i)
-            rho = ni("rhoSignal", systematicsLabel)
+            rho = ni("rhoSignal", systematicsLabel, systBin[i])
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
@@ -184,41 +188,59 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if REwk!="Constant" : out["nuis"].append(ni("k_ewk", label))
     return out
 
-def simpleOneBinTerm(w = None, inputData = None, label = "", smOnly = None, varDict = {}) :
-    assert not smOnly
-    obs = inputData.observations()
+def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
     terms = []
+    out = collections.defaultdict(list)
 
-    i = len(obs["nHad"])-1
-    nHad = obs["nHad"][i]
+    for i,t in enumerate(zip(inputData.observations()["nSimple"], inputData.mcExpectations()["mcSimple"])) :
+        nValue,bValue = t
+        if nValue==None : continue
 
-    wimport(w, r.RooRealVar("nHad%d"%i, "nHad%d"%i, nHad))
-    wimport(w, r.RooRealVar("hadB%d"%i, "hadB%d"%i, varDict["b"]))
-    wimport(w, r.RooProduct("hadS%d"%i, "hadS%d"%i, r.RooArgSet(w.var("f"), w.var("rhoSignal"), w.var("xs"), w.var("hadLumi"), w.var("signalEffHad%d"%i))))
-    wimport(w, r.RooAddition("hadExp%d"%i, "hadExp%d"%i, r.RooArgSet(w.function("hadB%d"%i), w.function("hadS%d"%i))))
-    wimport(w, r.RooPoisson("hadPois%d"%i, "hadPois%d"%i, w.var("nHad%d"%i), w.function("hadExp%d"%i)))
-    terms.append("hadPois%d"%i)
-    
-    w.factory("PROD::simpleOneBinTerm(%s)"%",".join(terms))
+        b    = ni("bSimple", label, i)
+        s    = ni("sSimple", label, i)
+        n    = ni("nSimple", label, i)
+        pois = ni("pois", label, i)
+        exp  = ni("exp",  label, i)
+        wimport(w, r.RooRealVar(b, b, bValue))
+        wimport(w, r.RooRealVar(n, n, nValue))
+
+        if smOnly :
+            wimport(w, r.RooPoisson(pois, pois, w.var(n), w.var(b)))
+        else :
+            lumi = ni("simpleLumi", label)
+            eff = ni("signalEffSimple", label, i)
+            wimport(w, r.RooProduct(s, s, r.RooArgSet(w.var("f"), w.var("xs"), w.var(lumi), w.var(eff))))
+            wimport(w, r.RooAddition(exp, exp, r.RooArgSet(w.function(b), w.function(s))))
+            wimport(w, r.RooPoisson(pois, pois, w.var(n), w.function(exp)))
+        terms.append(pois)
+
+    termsName = ni("simpleTerms", label)
+    w.factory("PROD::%s(%s)"%(termsName, ",".join(terms)))
+
+    out["terms"].append(termsName)
+    out["multiBinObs"].append(ni("nSimple", label))
+    return out
 
 def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
     terms = []
     out = collections.defaultdict(list)
 
     if label==systematicsLabel :
-        rho = ni("rhoMumuZ", label)
-        one = ni("oneMumuZ", label)
-        sigma = ni("sigmaMumuZ", label)
-        gaus = ni("mumuGaus", label)
-        wimport(w, r.RooRealVar(rho, rho, 1.0, 1.0e-3, 3.0))
-        wimport(w, r.RooRealVar(one, one, 1.0))
-        wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"]))
-        wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
-        out["obs"].append(one)
-        out["nuis"].append(rho)
-        terms.append(gaus)
+        for iPar in set(inputData.systBins()["sigmaMumuZ"]) :
+            rho = ni("rhoMumuZ", label, iPar)
+            one = ni("oneMumuZ", label, iPar)
+            sigma = ni("sigmaMumuZ", label, iPar)
+            gaus = ni("mumuGaus", label, iPar)
+            wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
+            wimport(w, r.RooRealVar(one, one, 1.0))
+            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"][iPar]))
+            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            out["obs"].append(one)
+            out["nuis"].append(rho)
+            terms.append(gaus)
 
     rFinal = None
+    systBin = inputData.systBins()["sigmaMumuZ"]
     for i,nMumuValue,mcMumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
                                                              inputData.observations()["nMumu"],
                                                              inputData.mcExpectations()["mcMumu"],
@@ -230,10 +252,10 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
         nMumu = ni("nMumu", label, i)
         rMumu = ni("rMumu", label, i)
         wimport(w, r.RooRealVar(nMumu, nMumu, nMumuValue))
-        wimport(w, r.RooRealVar(rMumu, rMumu, (mcMumuValue/mcZinvValue if not rFinal else rFinal)))
+        wimport(w, r.RooRealVar(rMumu, rMumu, (mcMumuValue/mcZinvValue if rFinal==None else rFinal)))
 
         mumuExp = ni("mumuExp", label, i)
-        rhoMumuZ = ni("rhoMumuZ", systematicsLabel)
+        rhoMumuZ = ni("rhoMumuZ", systematicsLabel, systBin[i])
         wimport(w, r.RooFormulaVar(mumuExp, "(@0)*(@1)*(@2)",
                                    r.RooArgList(w.var(rhoMumuZ), w.var(rMumu), w.function(ni("zInv", label, i)))
                                    )
@@ -255,19 +277,21 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
 
     terms = []
     if label==systematicsLabel :
-        rho = ni("rhoPhotZ", label)
-        one = ni("onePhotZ", label)
-        sigma = ni("sigmaPhotZ", label)
-        gaus = ni("photGaus", label)
-        wimport(w, r.RooRealVar(rho, rho, 1.0, 1.0e-3, 3.0))
-        wimport(w, r.RooRealVar(one, one, 1.0))
-        wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaPhotZ"]))
-        wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
-        terms.append(gaus)
-        out["obs"].append(one)
-        out["nuis"].append(rho)
+        for iPar in set(inputData.systBins()["sigmaPhotZ"]) :
+            rho = ni("rhoPhotZ", label, iPar)
+            one = ni("onePhotZ", label, iPar)
+            sigma = ni("sigmaPhotZ", label, iPar)
+            gaus = ni("photGaus", label, iPar)
+            wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
+            wimport(w, r.RooRealVar(one, one, 1.0))
+            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaPhotZ"][iPar]))
+            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            terms.append(gaus)
+            out["obs"].append(one)
+            out["nuis"].append(rho)
 
     rFinal = None
+    systBin = inputData.systBins()["sigmaPhotZ"]
     for i,nPhotValue,purity,mcGjetValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
                                                                     inputData.observations()["nPhot"],
                                                                     inputData.purities()["phot"],
@@ -280,9 +304,9 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
         nPhot = ni("nPhot", label, i)
         rPhot = ni("rPhot", label, i)
         wimport(w, r.RooRealVar(nPhot, nPhot, nPhotValue))
-        wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if not rFinal else rFinal)/purity))
+        wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if rFinal==None else rFinal)/purity))
 
-        rho = ni("rhoPhotZ", systematicsLabel)
+        rho = ni("rhoPhotZ", systematicsLabel, systBin[i])
         photExp = ni("photExp", label, i)
         wimport(w, r.RooFormulaVar(photExp, "(@0)*(@1)*(@2)",
                                    r.RooArgList(w.var(rho), w.var(rPhot), w.function(ni("zInv", label, i)))
@@ -305,19 +329,22 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     out = collections.defaultdict(list)
 
     if label==systematicsLabel :
-        rho = ni("rhoMuonW", label)
-        one = ni("oneMuonW", label)
-        sigma = ni("sigmaMuonW", label)
-        gaus = ni("muonGaus", label)
-        wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 2.0))
-        wimport(w, r.RooRealVar(one, one, 1.0))
-        wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMuonW"]))
-        wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
-        terms.append(gaus)
-        out["obs"].append(one)
-        out["nuis"].append(rho)
+        for iPar in set(inputData.systBins()["sigmaMuonW"]) :
+            rho = ni("rhoMuonW", label, iPar)
+            one = ni("oneMuonW", label, iPar)
+            sigma = ni("sigmaMuonW", label, iPar)
+            gaus = ni("muonGaus", label, iPar)
+            wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
+            wimport(w, r.RooRealVar(one, one, 1.0))
+            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMuonW"][iPar]))
+            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            terms.append(gaus)
+            out["obs"].append(one)
+            out["nuis"].append(rho)
 
     rFinal = None
+    systBin = inputData.systBins()["sigmaMuonW"]
+    signalSystBin = inputData.systBins()["sigmaLumiLike"]
     for i,nMuonValue,mcMuonValue,mcTtwValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
                                                             inputData.observations()["nMuon"],
                                                             inputData.mcExpectations()["mcMuon"],
@@ -329,10 +356,10 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
         nMuon = ni("nMuon", label, i)
         rMuon = ni("rMuon", label, i)
         wimport(w, r.RooRealVar(nMuon, nMuon, nMuonValue))
-        wimport(w, r.RooRealVar(rMuon, rMuon, mcMuonValue/mcTtwValue if not rFinal else rFinal))
+        wimport(w, r.RooRealVar(rMuon, rMuon, mcMuonValue/mcTtwValue if rFinal==None else rFinal))
 
         muonB = ni("muonB", label, i)
-        rhoMuonW = ni("rhoMuonW", systematicsLabel)
+        rhoMuonW = ni("rhoMuonW", systematicsLabel, systBin[i])
         wimport(w, r.RooFormulaVar(muonB, "(@0)*(@1)*(@2)",
                                    r.RooArgList(w.var(rhoMuonW), w.var(rMuon), w.function(ni("ttw", label, i)))
                                    )
@@ -346,7 +373,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             muonS = ni("muonS", label, i)
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
-            rhoSignal = ni("rhoSignal", systematicsLabel)
+            rhoSignal = ni("rhoSignal", systematicsLabel, signalSystBin[i])
             wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
@@ -374,7 +401,6 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
     wimport(w, r.RooRealVar(k_qcd_unc_inp, k_qcd_unc_inp, inputData.fixedParameters()["k_qcd_unc_inp"]))
     wimport(w, r.RooGaussian(qcdGaus, qcdGaus, w.var(k_qcd_nom), w.var(k_qcd), w.var(k_qcd_unc_inp)))
-    w.var(A_qcd).setVal(1.0e-2)
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
@@ -383,10 +409,12 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["nuis"].append(k_qcd_unc_inp)
     return out
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, #kQcdLabel,smOnly not used
+def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
                 signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
-
-    for item in ["had", "muon"] :
+    
+    assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
+    for item in ["had", "muon", "simple"] :
+        if item not in inputData.lumi() : continue
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
     
@@ -400,27 +428,29 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
 
     out = collections.defaultdict(list)
     if label==systematicsLabel :
-        deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalDict[item] for item in extraSigEffUncSources])
-        one = ni("oneRhoSignal", label)
-        rho = ni("rhoSignal", label)
-        delta = ni("deltaSignal", label)
-        gaus = ni("signalGaus", label)
+        for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
+            #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalDict[item] for item in extraSigEffUncSources])
+            deltaSignalValue = inputData.fixedParameters()["sigmaLumiLike"][iPar]
+            one = ni("oneRhoSignal", label, iPar)
+            rho = ni("rhoSignal", label, iPar)
+            delta = ni("deltaSignal", label, iPar)
+            gaus = ni("signalGaus", label, iPar)
 
-        wimport(w, r.RooRealVar(one, one, 1.0))
-        wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
-        wimport(w, r.RooRealVar(delta, delta, deltaSignalValue))
-        wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(delta)))
+            wimport(w, r.RooRealVar(one, one, 1.0))
+            wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
+            wimport(w, r.RooRealVar(delta, delta, deltaSignalValue))
+            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(delta)))
 
-        signalTermsName = ni("signalTerms", label)
-        w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
-        out["terms"].append(signalTermsName)
-        out["obs"].append(one)
-        out["nuis"].append(rho)
+            signalTermsName = ni("signalTerms", label, iPar)
+            w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
+            out["terms"].append(signalTermsName)
+            out["obs"].append(one)
+            out["nuis"].append(rho)
     return out
 
 def multi(w, variables, inputData) :
     out = []
-    bins = range(len(inputData.observations()["nHad"]))
+    bins = range(len(inputData.htBinLowerEdges()))
     for item in variables :
         for i in bins :
             name = ni(name = item, i = i)
@@ -442,7 +472,7 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, qcdSearch = None, constrainQcdSlope = None, signalDict = {}, simpleOneBin = {}) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}) :
 
     variables = {"terms": [],
                  "obs": [],
@@ -453,13 +483,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
 
     samples = selection.samplesAndSignalEff.keys()
 
-    if simpleOneBin :
-        assert False
-        simpleOneBinTerm(varDict = simpleOneBin, **args)
-        variables["terms"].append("simpleOneBinTerm")
-        variables["multiBinObs"].append("nHad")
-
-    boxes = ["had", "phot", "muon", "mumu"]
+    boxes = ["had", "phot", "muon", "mumu", "simple"]
     items = [] if smOnly else ["signal"]
     items += boxes
     if constrainQcdSlope : items.append("qcd")
@@ -472,8 +496,10 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
             args[item][x] = eval(x)
 
-    args["had"]["zeroQcd"] = selection.zeroQcd
-    for x in ["REwk", "RQcd", "nFZinv", "qcdSearch"] :
+    for item in ["zeroQcd", "fZinvIni", "AQcdIni"] :
+        args["had"][item] = getattr(selection, item)
+
+    for x in ["REwk", "RQcd", "nFZinv", "poi"] :
         args["had"][x] = eval(x)
 
     if "signal" in args :
@@ -499,23 +525,28 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
-def startLikelihood(w = None, xs = None, fIni = None) :
+def startLikelihood(w = None, xs = None, fIniFactor = None, poi = {}) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
-    wimport(w, r.RooRealVar("f", "f", fIni, 0.0, 2.0))
+    fIni,fMin,fMax = poi["f"]
+    wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
 
-def finishLikelihood(w = None, smOnly = None, qcdSearch = None, terms = [], obs = [], nuis = []) :
+def argSet( w = None, vars = [] ) :
+    out = r.RooArgSet( "out" )
+    for item in vars :
+        out.add( w.var(item) )
+    return out
+
+def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
-    if not smOnly :
-        w.defineSet("poi", "f")
-    elif qcdSearch :
-        w.defineSet("poi", "A_qcd,k_qcd")
+    if (not standard) or (not smOnly) :
+        w.defineSet("poi", ",".join(poiList))
 
-    w.defineSet("obs", ",".join(obs))
-    w.defineSet("nuis", ",".join(nuis))
+    w.defineSet("obs", argSet(w, obs))
+    w.defineSet("nuis",argSet(w, nuis))
 
 class foo(object) :
-    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIni = 1.0,
+    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
                  signal = {}, signalExampleToStack = {}, trace = False) :
                  
         for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
@@ -536,9 +567,8 @@ class foo(object) :
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
             args[item] = getattr(self, item)
 
-        print "fix signal format"
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signal.xs, fIni = fIni)
+            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec["poi"])
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec["selections"] :
@@ -549,10 +579,11 @@ class foo(object) :
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
-        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), qcdSearch = self.likelihoodSpec["qcdSearch"], **total)
+        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), standard = self.likelihoodSpec.standardPoi(),
+                         poiList = self.likelihoodSpec["poi"].keys(), **total)
 
         self.data = dataset(obs(self.wspace))
-        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), self.likelihoodSpec["qcdSearch"])
+        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), otherPoi = not self.likelihoodSpec.standardPoi())
 
         if trace :
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
@@ -564,12 +595,12 @@ class foo(object) :
         assert l["REwk"] in ["", "FallingExp", "Linear", "Constant"]
         assert l["RQcd"] in ["FallingExp", "FallingExpA", "Zero"]
         assert l["nFZinv"] in ["One", "Two", "All"]
-        if l["simpleOneBin"] : 
-            for item in ["hadTerms", "muonTerms", "photTerms", "mumuTerms"] :
-                assert not l[item]
-        if l["qcdSearch"] :
+        assert len(l["poi"])==1, len(l["poi"])
+        if not l.standardPoi() :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
+            assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
+
         if l["constrainQcdSlope"] :
             assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
         if any([sel.universalKQcd for sel in l["selections"]]) :
@@ -610,7 +641,7 @@ class foo(object) :
         #wspace.Print("v")
 
     def profile(self) :
-        calc.profilePlots(self.data, self.modelConfig, self.note(), self.smOnly(), self.likelihoodSpec["qcdSearch"])
+        calc.profilePlots(self.data, self.modelConfig, self.note())
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
                  nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
@@ -632,10 +663,9 @@ class foo(object) :
         return d
     
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
-        if self.likelihoodSpec["qcdSearch"] :
-            return calc.plIntervalQcd(self.data, self.modelConfig, self.wspace, self.note(), cl = cl, makePlots = makePlots)
-        elif method=="profileLikelihood" :
-            return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
+        if method=="profileLikelihood" :
+            return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(),
+                                   cl = cl, poiList = self.likelihoodSpec["poi"].keys(), makePlots = makePlots)
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
@@ -689,7 +719,7 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False) :
+    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         for selection in self.likelihoodSpec["selections"] :
             activeBins = {}
@@ -698,9 +728,9 @@ class foo(object) :
 
             args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
                     "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
-                    "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(),
+                    "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(), "selNote": selection.note,
                     "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
-                    "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "printValues":printValues}
+                    "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "drawComponents":drawComponents, "printValues":printValues}
             for item in ["REwk", "RQcd"] :
                 args[item] = self.likelihoodSpec[item]
 
