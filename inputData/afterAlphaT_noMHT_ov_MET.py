@@ -1,4 +1,4 @@
-import utils
+import syst
 from data import data,scaled,excl,trig
 
 class data_55_v1(data) :
@@ -95,21 +95,7 @@ class data_55_v1(data) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
-        self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.20,
-            "sigmaMuonW": 0.20,
-            "sigmaMumuZ": 0.20,
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-
-            #"k_qcd_nom"     : 3.30e-2,
-            #"k_qcd_unc_inp" : 0.66e-2,
-
-            #"k_qcd_nom"     : 2.89e-2,
-            #"k_qcd_unc_inp" : 0.01e-2,
-            }
+        syst.load(self, mode = self.systMode)
 
 class data_53_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
@@ -198,22 +184,7 @@ class data_53_v1(data) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
-        self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.20,
-            "sigmaMuonW": 0.20,
-            "sigmaMumuZ": 0.20,
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-
-            #"k_qcd_nom"     : 3.30e-2,
-            #"k_qcd_unc_inp" : 0.66e-2,
-
-            #"k_qcd_nom"     : 2.89e-2,
-            #"k_qcd_unc_inp" : 0.01e-2,
-            }
-
+        syst.load(self, mode = self.systMode)
 
 class data_52_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
@@ -301,18 +272,4 @@ class data_52_v1(data) :
         self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
         self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
         
-        self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.20,
-            "sigmaMuonW": 0.20,
-            "sigmaMumuZ": 0.20,
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-
-            #"k_qcd_nom"     : 3.30e-2,
-            #"k_qcd_unc_inp" : 0.66e-2,
-
-            #"k_qcd_nom"     : 2.89e-2,
-            #"k_qcd_unc_inp" : 0.01e-2,
-            }
+        syst.load(self, mode = self.systMode)
