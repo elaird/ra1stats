@@ -50,3 +50,5 @@ class spec(dict) :
             else :
                 self.add( selections.noAlphaT_0btags(systMode) )
             self.add( selections.btags_1_2_gt2(systMode) )
+#        self.add( selections.alphaT_slices_noMHTovMET(systMode) )
+
