@@ -553,7 +553,7 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True, plotsDir = "pl
     utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
     utils.cyclePlot(d = oHistos, canvas = canvas, psFileName = psFileName)
-    utils.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
+    #utils.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
         
     canvas.Print(psFileName+"]")        
     utils.ps2pdf(psFileName, sameDir = True)
