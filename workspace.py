@@ -75,7 +75,9 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iFirst = N
     elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, name = name, label = label, kLabel = label, i = i))
     else :
         varName = ni(name, label, i)
-        wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
+        iniEwk = max( 1, nHadValue - w.function(ni("qcd",label,i)).getVal() )
+        wimport(w, r.RooRealVar(varName, varName, iniEwk, 0.0, 10.0*max(1, nHadValue)))
+        #wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, label, i)
 
 def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst = None, iLast = None, iniVal = None) :
