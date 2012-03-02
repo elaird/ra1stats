@@ -90,6 +90,10 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     graph.SetMarkerStyle(20)
     graph.SetTitle(";toy number;p-value")
     graph.Draw("ap")
+    Tl = r.TLatex() ;
+    Tl.SetNDC(True);
+    Tl.SetTextSize(0.05);
+    Tl.DrawLatex(0.9, 0.9, str(pValue));
     canvas.Print(ps)
     
     totalList = lMaxs+[lMaxData]
