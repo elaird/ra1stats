@@ -704,16 +704,24 @@ class foo(object) :
         out = calc.ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
         if out :
             results,i = out
-            args = {"wspace": self.wspace, "results": results, "lumi": self.inputData.lumi(),
-                    "htBinLowerEdges": self.inputData.htBinLowerEdges(), "htMaxForPlot": self.inputData.htMaxForPlot(),
-                    "smOnly": self.smOnly(), "note": self.note()+"_toy%d"%i, "signalExampleToStack": self.signalExampleToStack,
-                    "printPages": False, "toyNumber":i}
 
-            for item in ["REwk", "RQcd"] : args[item] = self.likelihoodSpec[item]
-                    
-            plotter = plotting.validationPlotter(args)
-            plotter.inputData = self.inputData
-            plotter.go()
+            for selection in self.likelihoodSpec["selections"] :
+                activeBins = {}
+                for key,value in selection.data.observations().iteritems() :
+                    activeBins[key] = map(lambda x:x!=None, value)
+
+                args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
+                        "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
+                        "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note()+"_toy%d"%i, "selNote": selection.note,
+                        "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
+                        "printPages": False, "toyNumber":i, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True}
+
+                for item in ["REwk", "RQcd"] :
+                    args[item] = self.likelihoodSpec[item]
+
+                plotter = plotting.validationPlotter(args)
+                plotter.inputData = selection.data
+                plotter.go()
 
     def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
