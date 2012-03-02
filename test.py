@@ -147,7 +147,7 @@ def signal(i) :
 
     out  = [p_33_53,  p_33_53b, p_181_29]
     out += [t2tt_875, t2tt_500]
-    out += [p_181_19, p_181_41, p_61_61, t2tt, lm6, t1_600_100, t2_39_7, simple]
+    out += [p_181_19, p_181_41, p_61_61, t2tt_875, lm6, t1_600_100, t2_39_7, simple]
     return out[i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
