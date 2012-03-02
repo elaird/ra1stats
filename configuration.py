@@ -39,10 +39,12 @@ def signal() :
                            "T2tt":lambda iX,x,iY,y,iZ,z:True,
                            "T2bb":lambda iX,x,iY,y,iZ,z:True,
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
+                           "T1bbbb":lambda iX,x,iY,y,iZ,z:True,
                            },
             "nEventsIn":{""       :(9900., 10100.),
                          "T2tt"   :(1, None),
                          "T5zz"   :(5.0e3, None),
+                         "T1bbbb"   :(1, None),
                          "TGQ_0p0":(1, None),
                          "TGQ_0p2":(1, None),
                          "TGQ_0p4":(1, None),
@@ -52,7 +54,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz","T1bbbb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
             }
 
 def points() :
