@@ -133,8 +133,6 @@ class DataSlice( object ) :
 #        except KeyError :
 #            print "hadBulk/Htmeans histogram not defined"
 
-        self._sigEffCorr =  (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
-
         for objName in histo_dict.keys() :
             objKeys = histo_dict[objName].keys()
 

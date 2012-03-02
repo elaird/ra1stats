@@ -2,7 +2,7 @@ import syst
 from data import data,scaled,excl,trig
 
 class data_55_0btag(data) :
-    """muons and mumu have no alt cut for highest six bins"""
+    """muons and mumu have alt in all bins"""
     
     def _fill(self) :
         isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
@@ -29,7 +29,6 @@ class data_55_0btag(data) :
             "mcMumu":  4650.,
             }
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
-        self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
 
         self._observations = {
             "nHadBulk":scaled(( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
