@@ -455,7 +455,7 @@ def multi(w, variables, inputData) :
         for i in bins :
             name = ni(name = item, i = i)
             if not w.var(name) :
-                print "multi:",name
+                #print "multi:",name
                 continue
             out.append(name)
     return out
