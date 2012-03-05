@@ -36,19 +36,29 @@ class spec(dict) :
         b = False
         multib = True
 
-        aT0b = True
+
+        # multib suboptions
+        aT0b = True # use aT cut in 0b slice
+        gt0_only  = True # only use gt0b selection on top of =0 selection
+                         # when false: use 1,2,gt2
 
         assert sum([slices,b,multib]) == 1
         
         if slices :
             self.add( selections.alphaT_slices(systMode) )
+
         if b :
-            self.add( selections.btag(systMode) )
+            self.add( selections.noAlphaT_gt0b(systMode) )
+
         if multib :
             if aT0b :
                 self.add( selections.alphaT_0btags(systMode) )
             else :
                 self.add( selections.noAlphaT_0btags(systMode) )
-            self.add( selections.btags_1_2_gt2(systMode) )
-#        self.add( selections.alphaT_slices_noMHTovMET(systMode) )
 
+            if gt0_only :
+                self.add( selections.noAlphaT_gt0b(systMode) )
+            else :
+                self.add( selections.btags_1_2_gt2(systMode) )
+
+#        self.add( selections.alphaT_slices_noMHTovMET(systMode) )

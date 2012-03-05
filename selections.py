@@ -65,7 +65,7 @@ def alphaT_slices(systMode = 1) :
         ),
     ]
  
-def btag(systMode = 1) :
+def noAlphaT_gt0b(systMode = 1) :
     return [ selection(name = "55b_mixed",
                        note = "#geq1 b-tag",
                        alphaTMinMax = ("55", None),
