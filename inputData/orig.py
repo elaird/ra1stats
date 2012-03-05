@@ -31,7 +31,6 @@ class data2011_55_v6(data) :
         print "the 2jet numbers are old"
         print "the mumu purities are old"
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
-        self._sigEffCorr =    (       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0,       1.0)
         self._observations = {
             "nHadBulk":scaled(( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad":           ( 3.703e+03, 1.536e+03, 1.043e+03, 3.460e+02, 1.220e+02, 4.400e+01, 1.400e+01, 6.000e+00),
@@ -128,7 +127,7 @@ class data2011_5(data) :
             }
 
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02)
-        self._sigEffCorr =    (  9.88e-01,  9.84e-01,  9.96e-01,  9.71e-01,  9.60e-01,  9.58e-01,  9.52e-01,  9.35e-01)
+        self._sigEffCorr =    (  9.88e-01,  9.84e-01,  9.96e-01,  9.71e-01,  9.60e-01,  9.58e-01,  9.52e-01,  9.35e-01); print "sigEffCorr ignored"
         self._observations = {
             "nHadBulk":scaled(( 2.724e+08, 1.174e+08, 8.163e+07, 2.526e+07, 8.642e+06, 3.536e+06, 1.480e+06, 1.314e+06), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad":           ( 3.534e+03, 1.426e+03, 9.440e+02, 3.090e+02, 1.080e+02, 3.200e+01, 1.300e+01, 6.000e+00),
@@ -242,7 +241,7 @@ class data2011_4(data) :
             }
 
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02)
-        self._sigEffCorr =    (  9.88e-01,  9.84e-01,  9.96e-01,  9.71e-01,  9.60e-01,  9.58e-01,  9.52e-01,  9.35e-01)
+        self._sigEffCorr =    (  9.88e-01,  9.84e-01,  9.96e-01,  9.71e-01,  9.60e-01,  9.58e-01,  9.52e-01,  9.35e-01); print "sigEffCorr ignored"
         self._observations = {
             "nHadBulk":scaled(( 5.733e+07, 2.358e+07, 1.619e+07, 5.116e+06, 1.777e+06, 6.888e+05, 2.900e+05, 2.599e+05), self.lumi()["had"]/self.lumi()["hadBulk"]),
             "nHad":           ( 7.820e+02, 3.210e+02, 1.960e+02, 6.200e+01, 2.100e+01, 6.000e+00, 3.000e+00, 1.000e+00),
@@ -446,7 +445,6 @@ class data2010(data) :
             "mcZinv":  35.0,
             }
         self._htMeans             = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
-        self._sigEffCorr          = (   1.0,    1.0,    1.0,    1.0)
         self._triggerEfficiencies = {
             "had": (  1.0, 1.0, 1.0, 1.0)
             }

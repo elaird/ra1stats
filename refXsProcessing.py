@@ -4,13 +4,15 @@ from configuration import locations
 
 def histoSpec(model) :
     base = locations()["xs"]
-    tgqFile = "%s/TGQ_xSec.root"%base
+    tgqFile = "%s/v1/TGQ_xSec.root"%base
     tgqHisto = "clone"
     tgqFactor = 1.0
-    d = {"T1":        {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
-         "T2":        {"histo": "squark", "factor": 0.8, "file": "%s/reference_xSec.root"%base},
-         "T2tt":      {"histo": "stop",   "factor": 1.0, "file": "%s/reference_xSec_stop.root"%base},
-         "T5zz":      {"histo": "gluino", "factor": 1.0, "file": "%s/reference_xSec.root"%base},
+    d = {"T1":        {"histo": "gluino", "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
+         "T2":        {"histo": "squark", "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
+         "T2tt":      {"histo": "stop",   "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
+         "T2bb":      {"histo": "squark", "factor": 0.25, "file": "%s/v2/reference_xSecs.root"%base},
+         "T5zz":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
+         "T1bbbb":    {"histo": "gluino", "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
          "TGQ_0p0":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          "TGQ_0p2":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          "TGQ_0p4":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
@@ -41,12 +43,19 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
 
     return out
         
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False) :
+def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False, timesTen = False) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
-           ]
+           ] if not timesTen else [
+        {"factor": 10.0 , "label": "#sigma^{prod} = 10 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
+        {"factor": 30.0 , "label": "#sigma^{prod} = 30 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},]
+           
     if not noOneThird :
-        out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
+        if not timesTen :
+            out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
+        else :
+            out.append({"factor": 10/3., "label": "#sigma^{prod} = 10/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
+            
     for d in out :
         d["graph"] = excludedGraph(h, d["factor"], model, interBin)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])

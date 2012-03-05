@@ -1,90 +1,62 @@
-from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b
-
-class selection(object) :
-    '''Each key appearing in samplesAndSignalEff is used in the likelihood;
-    the corresponding value determines whether signal efficiency is considered for that sample.'''
-
-    def __init__(self, name = "", samplesAndSignalEff = {}, data = None, alphaTMinMax = (None, None), bTag = False,
-                 universalSystematics = False, universalKQcd = False, zeroQcd = False) :
-        for item in ["name", "samplesAndSignalEff", "data", "alphaTMinMax", "bTag",
-                     "universalSystematics", "universalKQcd", "zeroQcd"] :
-            setattr(self, item, eval(item))
+import selections
 
 class spec(dict) :
-    def __init__(self, simpleOneBin = False, qcdSearch = False) :
+    def __init__(self) :
         self._selections = []
         self.load()
 
         #for compatibility; to be rewritten
         d = self
 
-        if simpleOneBin :
-            assert False
-            d["simpleOneBin"] = {"b":3.0}
-            key = max(d["alphaT"].keys())
-            d["alphaT"] = {key: {"samples": [("had", True)]} }
-        else :
-            d["simpleOneBin"] = {}
-    
+        #{"var": initialValue, min, max)
+        d["poi"] = [{"f": (1.0, 0.0, 1.0)},
+                    {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
+                    {"k_qcd_55": (3.0e-2, 0.01, 0.04)},
+                    ][0]
+        
         d["selections"] = self.selections()
         d["REwk"] = ["", "Linear", "FallingExp", "Constant"][0]
         d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
         d["nFZinv"] = ["All", "One", "Two"][2]
-        d["qcdSearch"] = qcdSearch
         d["constrainQcdSlope"] = True
     
     def selections(self) :
         return self._selections
 
-    def add(self, sel = None) :
-        self._selections.append(sel)
+    def standardPoi(self) :
+        return self["poi"].keys()==["f"]
+
+    def add(self, sel = []) :
+        self._selections += sel
 
     def load(self) :
         slices = False
-        b = True
+        b = False
+        multib = True
 
-        assert slices^b
+
+        # multib suboptions
+        aT0b = True # use aT cut in 0b slice
+        gt0_only  = True # only use gt0b selection on top of =0 selection
+                         # when false: use 1,2,gt2
+
+        assert sum([slices,b,multib]) == 1
         
         if slices :
-            self.add(selection(name = "55",
-                               alphaTMinMax = ("55", None),
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               data = afterAlphaT.data_55_v1(),
-                               universalSystematics = True,
-                               universalKQcd = True,
-                               )
-                     )
-            self.add(selection(name = "53",
-                               alphaTMinMax = ("53", "55"),
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               data = afterAlphaT.data_53_v1(),
-                               )
-                     )
-            self.add(selection(name = "52",
-                               alphaTMinMax = ("52", "53"),
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               data = afterAlphaT.data_52_v1(),
-                               )
-                     )
+            self.add( selections.alphaT_slices(systMode) )
 
         if b :
-            self.add(selection(name = "55b_mixed",
-                               alphaTMinMax = ("55", None),
-                               bTag = True,
-                               samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                               data = mixedMuons_b.data_55_v1(),
-                               )
-                     )
+            self.add( selections.noAlphaT_gt0b(systMode) )
 
-        #self.add(selection(name = "55b_after",
-        #                   alphaTMinMax = ("55", None),
-        #                   bTag = True,
-        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-        #                   data = afterAlphaT_b.data_55_v1(),
-        #                   )
-        #         )
-        #self.add(selection(name = "2010",
-        #                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
-        #                   data = inputData.data2010(),
-        #                   )
-        #         )
+        if multib :
+            if aT0b :
+                self.add( selections.alphaT_0btags(systMode) )
+            else :
+                self.add( selections.noAlphaT_0btags(systMode) )
+
+            if gt0_only :
+                self.add( selections.noAlphaT_gt0b(systMode, universalSystematics = False, universalKQcd = False) )
+            else :
+                self.add( selections.btags_1_2_gt2(systMode) )
+
+#        self.add( selections.alphaT_slices_noMHTovMET(systMode) )

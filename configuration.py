@@ -1,15 +1,15 @@
 import collections,socket
 
 def locations() :
-    s = "/vols/cms02/elaird1/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
+    s = "/vols/cms02/samr/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
     return {"eff": "%s/20_yieldHistograms/2011/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
-            "nToys": 500,
+            "nToys": 2000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic"][1],
+            "calculatorType": ["frequentist", "asymptotic"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
@@ -18,8 +18,15 @@ def method() :
 def signal() :
     overwriteInput = collections.defaultdict(list)
     overwriteOutput = collections.defaultdict(list)
-    overwriteOutput.update({"T1": [(22, 4, 1), (26, 5, 1), (34, 16, 1), (40, 10, 1)],
-                            "T2tt": [(22, 2, 1), (31, 17, 1), (9, 2, 1), (36, 23, 1)],
+    overwriteOutput.update({"T1": [(12, 4, 1), (13, 5, 1), (14, 3, 1), (24, 11, 1),
+                                   (30, 6, 1), (32, 24, 1), (37, 25, 1), (38, 18, 1),
+                                   (40, 20, 1), (40, 21, 1), (35, 17, 1), ( 9, 1, 1),
+                                   #(12,  7, 1), (20, 15, 1), 
+                                   ],
+                            "T2": [(16, 5, 1), (28, 9, 1), (29, 21, 1),
+                                   (32, 22, 1), (34, 25, 1), (44, 28, 1)
+                                   ],
+                            "T2tt": [(43, 28, 1)],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
@@ -30,11 +37,14 @@ def signal() :
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2tt":lambda iX,x,iY,y,iZ,z:True,
+                           "T2bb":lambda iX,x,iY,y,iZ,z:True,
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
+                           "T1bbbb":lambda iX,x,iY,y,iZ,z:True,
                            },
             "nEventsIn":{""       :(9900., 10100.),
                          "T2tt"   :(1, None),
                          "T5zz"   :(5.0e3, None),
+                         "T1bbbb"   :(1, None),
                          "TGQ_0p0":(1, None),
                          "TGQ_0p2":(1, None),
                          "TGQ_0p4":(1, None),
@@ -44,14 +54,14 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz","T1bbbb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
             }
 
 def points() :
     return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
-            #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (33, 53, 1)][-1:]
+            #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (181, 41, 1), (33, 53, 1), (61, 61, 1)][4:5]
             "listOfTestPoints": [],
-            #"listOfTestPoints": [(32, 8, 1), (42, 2, 1)][-1:],
+            #"listOfTestPoints": [(32, 8, 1), (17, 2, 1)][-1:],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
@@ -81,16 +91,16 @@ def checkAndAdjust(d) :
     d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     d["extraSigEffUncSources"] = []
 
-    d["fIni"] = 1.0
+    d["fIniFactor"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
     if d["isSms"] :
-        d["fIni"] = 0.1
+        d["fIniFactor"] = 0.1
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
         d["nIterationsMax"] = 10
         if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
         d["plSeedForCLs"] = True
-        d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
+        #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
     else :
@@ -126,13 +136,13 @@ def strings(xBin, yBin, zBin) :
 def benchmarkPoints() :
     out = {}
     fields =                       [  "m0",  "m12",  "A0", "tanBeta", "sgn(mu)"]
-    out["LM0" ] = dict(zip(fields, [   200,    160,  -400,        10,         1]))
-    out["LM1" ] = dict(zip(fields, [    60,    250,     0,        10,         1]))
+    #out["LM0" ] = dict(zip(fields, [   200,    160,  -400,        10,         1]))
+    #out["LM1" ] = dict(zip(fields, [    60,    250,     0,        10,         1]))
     out["LM2" ] = dict(zip(fields, [   185,    350,     0,        35,         1]))
     out["LM3" ] = dict(zip(fields, [   330,    240,     0,        20,         1]))
-    out["LM4" ] = dict(zip(fields, [   210,    285,     0,        10,         1]))
-    out["LM5" ] = dict(zip(fields, [   230,    360,     0,        10,         1]))
-    out["LM6" ] = dict(zip(fields, [    85,    400,     0,        10,         1]))
+    #out["LM4" ] = dict(zip(fields, [   210,    285,     0,        10,         1]))
+    #out["LM5" ] = dict(zip(fields, [   230,    360,     0,        10,         1]))
+    #out["LM6" ] = dict(zip(fields, [    85,    400,     0,        10,         1]))
     out["LM7" ] = dict(zip(fields, [  3000,    230,     0,        10,         1]))
     out["LM8" ] = dict(zip(fields, [   500,    300,  -300,        10,         1]))
     out["LM9" ] = dict(zip(fields, [  1450,    175,     0,        50,         1]))
@@ -141,10 +151,13 @@ def benchmarkPoints() :
     out["LM12"] = dict(zip(fields, [  2545,    247,  -866,        48,         1]))
     out["LM13"] = dict(zip(fields, [   270,    218,  -553,        40,         1]))
     
-    out["IM1" ] = dict(zip(fields, [   100,    510,     0,        10,         1]))
-    out["IM2" ] = dict(zip(fields, [   180,    510,     0,        10,         1]))
-    out["IM3" ] = dict(zip(fields, [   260,    450,     0,        10,         1]))
+    #out["IM1" ] = dict(zip(fields, [   100,    510,     0,        10,         1]))
+    #out["IM2" ] = dict(zip(fields, [   180,    510,     0,        10,         1]))
+    #out["IM3" ] = dict(zip(fields, [   260,    450,     0,        10,         1]))
     out["IM4" ] = dict(zip(fields, [   820,    390,     0,        10,         1]))
+
+    out["RM1" ] = dict(zip(fields, [   320,    520,     0,        10,         1]))
+    out["RM2" ] = dict(zip(fields, [  1800,    280,     0,        10,         1]))
     return out
 
 def scanParameters() :
