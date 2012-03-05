@@ -30,6 +30,8 @@ class spec(dict) :
         self._selections += sel
 
     def load(self) :
+        systMode = 3
+        
         slices = False
         b = False
         multib = True
