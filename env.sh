@@ -6,10 +6,10 @@ GCCVER="4.3.2"
 PYVER="2.6.5"
 if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
     BASEDIR=/vols/cms02/elaird1/18_root_from_afs/lcg/
-    ROOTVER="5.32.00"
+    ROOTVER="5.32.01"
 else
     BASEDIR=/afs/cern.ch/sw/lcg/
-    ROOTVER="5.32.00/${TAG}"
+    ROOTVER="5.32.01/${TAG}"
 fi
 
 source ${BASEDIR}/contrib/gcc/${GCCVER}/${TAG}/setup.sh ${BASEDIR}/contrib
