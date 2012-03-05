@@ -57,7 +57,7 @@ class spec(dict) :
                 self.add( selections.noAlphaT_0btags(systMode) )
 
             if gt0_only :
-                self.add( selections.noAlphaT_gt0b(systMode) )
+                self.add( selections.noAlphaT_gt0b(systMode, universalSystematics = False, universalKQcd = False) )
             else :
                 self.add( selections.btags_1_2_gt2(systMode) )
 
