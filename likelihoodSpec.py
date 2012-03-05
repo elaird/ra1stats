@@ -31,7 +31,7 @@ class spec(dict) :
 
     def load(self) :
         systMode = 3
-        
+
         slices = False
         b = False
         multib = True
