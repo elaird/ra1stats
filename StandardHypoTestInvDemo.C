@@ -567,7 +567,7 @@ RooStats::HypoTestInvTool::RunInverter(RooWorkspace * w,
          RooAbsPdf * constrPdf = RooStats::MakeNuisancePdf(*sbModel,"nuisanceConstraintPdf_sbmodel");
          if (constrPdf) { 
             Warning("StandardHypoTestInvDemo","Model %s has nuisance parameters but no global observables associated",sbModel->GetName());
-            Warning("StandardHypoTestInvDemo","\tThe effect of the nuisance parameters will not be treated correctly ",sbModel->GetName());
+            Warning("StandardHypoTestInvDemo","\tThe effect of the nuisance parameters will not be treated correctly ");
          }
       }
    }
