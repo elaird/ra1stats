@@ -65,15 +65,15 @@ def alphaT_slices(systMode = 1) :
         ),
     ]
  
-def noAlphaT_gt0b(systMode = 1) :
+def noAlphaT_gt0b(systMode = 1, universalSystematics = True, universalKQcd = True) :
     return [ selection(name = "55b_mixed",
                        note = "#geq1 b-tag",
                        alphaTMinMax = ("55", None),
                        samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                        data = mixedMuons_b.data_55_v1( systMode = systMode ),
                        bTagLower = "0",
-                       universalSystematics = True,
-                       universalKQcd = True,
+                       universalSystematics = universalSystematics,
+                       universalKQcd = universalKQcd,
                        )]
 
 def alphaT_0btags(systMode = 1) :
