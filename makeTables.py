@@ -217,13 +217,15 @@ def ensembleSplit(d, group = "had") :
             tokens = name.split("_")
             seg_id = tokens[-2]
             sbin = tokens[-1]
+            if current_seg is None : current_seg = seg_id
+            previous_seg = current_seg
             current_seg = seg_id
             if current_seg != previous_seg and previous_seg is not None :
                 out.append(seg_out)
                 seg_out = []
-                seg_out.append("%s(%s)" % (group,current_seg)
+                seg_out.append("%s(%s)" % (group,current_seg))
             seg_out.append("%s" % vals )
-   for o in out :
+    for o in out :
        print o
 
 def ensemblesResultsFromDict( d ) :
@@ -235,7 +237,8 @@ def ensemblesResultsFromDict( d ) :
                  ensembleSplit(d, group = "mumu"),
                  ensembleSplit(d, group = "phot"),
                  endDocument() ] :
-        out += blob
+        print blob
+        #out += blob
     print out
 
 
