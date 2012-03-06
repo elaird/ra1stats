@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import math,os
+from collections import defaultdict
 from inputData import mixedMuons_b_sets
 
 print "=================================================================="
@@ -237,18 +238,41 @@ def ensembleRow( data, indices, d ) :
     return [ d[index] for index in indices ]
 
 def ensembleResultsFromDict( d, data ) :
-    out = {}
+    mc_out = {}
+    data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]
-    titles  = [ "SM hadonric", "SM $\mu$+jets", 
-                "SM $\mu\mu$+jets", "SM $\gamma$+jets"]
 
-    for sample,title in zip(samples,titles) :
-        out[title] = ensembleSplit(d, group = sample )
+    mc_titles  = [ "SM hadonric", "SM $\mu$+jets", 
+                   "SM $\mu\mu$+jets", "SM $\gamma$+jets"]
+
+    data_titles  = [ "Data hadonric", "Data $\mu$+jets", 
+                     "Data $\mu\mu$+jets", "Data $\gamma$+jets"]
+
+    titles  = [ "SM hadonric", "Data hadonric",
+                "SM $\mu$+jets", "Data $\mu$+jets",
+                "SM $\mu\mu$+jets", "Data $\mu\mu$+jets",
+                "SM $\gamma$+jets", "Data $\gamma$+jets" ]
+
+    # fill out MC values
+    for sample,title in zip(samples,mc_titles) :
+        mc_out[title] = ensembleSplit(d, group = sample )
         if sample == "phot" :
-            for selection, values in out[title].iteritems() :
-                out[title][selection] = ["--", "--" ] + values
+            for selection, values in mc_out[title].iteritems() :
+                mc_out[title][selection] = ["--", "--" ] + values
 
-    selections = sorted(out[titles[0]].keys())
+    selections = sorted(mc_out[mc_titles[0]].keys())
+
+    # fill out data values
+    for datum, selection in zip(data, selections) :
+        for data_title, sample in zip(data_titles, samples) :
+            obs = datum.observations()[ "n%s" % (sample.capitalize()) ]
+            data_out[data_title][selection] = [ "$%s$" % str(x) if x is not None else "--" for x in obs ]
+
+    # arrange into our final dictionary
+    out = {}
+    for mc_key, data_key in zip( sorted(mc_out.keys()), sorted(data_out.keys()) ) :
+        out[mc_key] = mc_out[mc_key]
+        out[data_key] = data_out[data_key]
 
     doc = beginDocument()
     for s,selection in enumerate(selections) :
@@ -260,10 +284,8 @@ def ensembleResultsFromDict( d, data ) :
                          rows = [ {"label": title, "entryFunc":ensembleRow, "args": [out[title][selection]]} for title in titles ]
                        )
     doc += endDocument()
-    f = open("ensemble_test.tex", "w")
-    f.write( doc )
-    f.close()
-    os.system("pdflatex ensemble_test.tex")
+
+    write( doc, "ensemble_test.tex" )
 
 
 def document() :
