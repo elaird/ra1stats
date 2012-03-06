@@ -171,7 +171,7 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #f.bestFit(printPages = True)
 #f.qcdPlot()
 #f.pValue(nToys = 300)
-f.ensemble(nToys = 1000)
+f.ensemble(nToys = 10)
 #print f.clsCustom(nToys = 500, testStatType = 1)
 #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
 #f.debug()
