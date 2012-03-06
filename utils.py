@@ -217,8 +217,10 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
 
     if "latexTable" in args : 
         # keep the import minimal as this only gets called once
-        from makeTables import ensemblesResultsFromDict as ltxResults
-        ltxResults( args["latexTable"] )
+        from makeTables import ensembleResultsFromDict as ltxResults
+        import likelihoodSpec
+        ltxResults( args["latexTable"], [ x.data for x in likelihoodSpec.spec()["selections"] ] )
+
     if needPrint :
         canvas.cd(0)
         canvas.Print(psFileName)
