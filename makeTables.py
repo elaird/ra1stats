@@ -53,17 +53,17 @@ def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 30, hline =
     if hline[1] : s += "\n\hline"
     return s
 
-def oneTable(data, caption = "", label = "", rows = []) :
-    s = beginTable(data, caption = caption, label = label)
+def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider = "|") :
+    s = beginTable(data, caption = caption, label = label, coldivisor = coldivisor, divider = divider)
 
     fullBins = list(data.htBinLowerEdges()) + ["$\infty$"]
     for subTable in range(2) :
-        start = 0 + subTable*len(fullBins)/2
-        stop = 1 + (1+subTable)*len(fullBins)/2
-        indices = range(start,stop-1)[:len(fullBins)/2]
+        start = 0 + subTable*len(fullBins)/coldivisor
+        stop = 1 + (1+subTable)*len(fullBins)/coldivisor
+        indices = range(start,stop-1)[:len(fullBins)/coldivisor]
         bins = fullBins[start:stop]
         s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))) for l,u in zip(bins[:-1], bins[1:])],
-                    hline = (True,True), extra = "[0.5ex]")
+                    hline = (True,True), extra = "[%dex]" % ( 1./coldivisor) )
         for row in rows :
             s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()),
                         entryWidth = row["entryWidth"] if "entryWidth" in row else 30)
@@ -207,14 +207,6 @@ def fitResults(data, fileName = "") :
                             {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
 
-def ensembleTable(d, selection ) :
-    out = beginTable(data = mixedMuons_b_sets.data_55_0btag(), coldivisor = 1, divider = " ")
-    for group in sorted(d.keys()) :
-        selectiondict = d[group]
-        out += oneRow(label = group, labelWidth = 23, entryList = selectiondict[selection], entryWidth = 30, hline = (False,True), extra = "")
-    out += endTable()
-    print out
-
 def ensembleSplit(d, group = "had") :
     out = {}
     current_selection = None
@@ -239,11 +231,40 @@ def ensembleSplit(d, group = "had") :
     out[previous_selection] = selection_out
     return out
 
-def ensemblesResultsFromDict( d ) :
+def ensembleRow( data, indices, d ) :
+    if indices[-1] >= len(d) : 
+        return d
+    return [ d[index] for index in indices ]
+
+def ensembleResultsFromDict( d, data ) :
     out = {}
-    for g in [ "had", "muon", "mumu", "phot" ] :
-        out[g] = ensembleSplit(d, group = g )
-    ensembleTable(out,"0b")
+    samples = [ "had", "muon", "mumu", "phot" ]
+    titles  = [ "SM hadonric", "SM $\mu$+jets", 
+                "SM $\mu\mu$+jets", "SM $\gamma$+jets"]
+
+    for sample,title in zip(samples,titles) :
+        out[title] = ensembleSplit(d, group = sample )
+        if sample == "phot" :
+            for selection, values in out[title].iteritems() :
+                out[title][selection] = ["--", "--" ] + values
+
+    selections = sorted(out[titles[0]].keys())
+
+    doc = beginDocument()
+    for s,selection in enumerate(selections) :
+        doc += oneTable( data = data[s],
+                         caption = selection,
+                         label = "ensemble-%s" % selection,
+                         coldivisor = 1,
+                         divider = "",
+                         rows = [ {"label": title, "entryFunc":ensembleRow, "args": [out[title][selection]]} for title in titles ]
+                       )
+    doc += endDocument()
+    f = open("ensemble_test.tex", "w")
+    f.write( doc )
+    f.close()
+    os.system("pdflatex ensemble_test.tex")
+
 
 def document() :
     data = data2011()
