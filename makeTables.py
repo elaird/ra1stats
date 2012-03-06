@@ -303,7 +303,7 @@ def document() :
 def write(doc, fileName = "") :
     assert fileName
     f = open(fileName, "w")
-    f .write(doc)
+    f.write(doc)
     f.close()
     os.system("pdflatex %s"%fileName)
 
