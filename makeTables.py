@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 import math,os
-from inputData import data2011
+#from inputData import data2011
+
+print "=================================================================="
+print "*** makePlots.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
+print "=================================================================="
 
 def beginDocument(comment = r"\currenttime\ \today") :
     return r'''
@@ -202,6 +206,49 @@ def fitResults(data, fileName = "") :
                             {"label": r'''Total Background''',        "entryFunc":floatResultFromTxt,  "args":("hadB",)},
                             {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
+def ensembleSplit(d, group = "had") :
+    out = []
+    for t in d : # expect t to be a tuple
+        name,vals = t # expand the tuple
+        if group in name :
+            print name, vals
+            seg_id = name.split("_")[2]
+               # ok so we have :
+               #  hadB_55_0b_[0..7]
+               #  hadB_55_1b_[0..7], etc.
+               # we need to iterate over those that share "0b" or "1b" and print them
+
+
+def ensembleMuon(d) :
+    for t in d : # expect t to be a tuple
+        name,vals = t # expand the tuple
+        if "muon" in name :
+            print name, vals
+
+def ensembleDiMuon(d) :
+    for t in d : # expect t to be a tuple
+        name,vals = t # expand the tuple
+        if "mumu" in name :
+            print name, vals
+
+def ensemblePhoton(d) :
+    for t in d : # expect t to be a tuple
+        name,vals = t # expand the tuple
+        if "phot" in name :
+            print name, vals
+    
+def ensemblesResultsFromDict( d ) :
+    #print d
+    out = ""
+    for blob in [beginDocument(),
+                 ensembleHad(d),
+                 ensembleMuon(d),
+                 ensembleDiMuon(d),
+                 ensemblePhoton(d),
+                 endDocument() ] :
+        out += blob
+    print out
+
 
 def document() :
     data = data2011()
@@ -218,10 +265,10 @@ def document() :
 def write(doc, fileName = "") :
     assert fileName
     f = open(fileName, "w")
-    f.write(doc)
+    f .write(doc)
     f.close()
     os.system("pdflatex %s"%fileName)
 
-write(document(), fileName = "tables.tex")
+#write(document(), fileName = "tables.tex")
 
 
