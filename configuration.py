@@ -10,7 +10,7 @@ def method() :
             "nToys": 2000,
             "testStatistic": 3,
             "calculatorType": ["frequentist", "asymptotic"][0],
-            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][1],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -54,14 +54,14 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz","T1bbbb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz","T1bbbb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][4],
             }
 
 def points() :
     return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
             #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (181, 41, 1), (33, 53, 1), (61, 61, 1)][4:5]
             "listOfTestPoints": [],
-            #"listOfTestPoints": [(32, 8, 1), (17, 2, 1)][-1:],
+            "listOfTestPoints": [(32, 8, 1), (17, 2, 1)][-1:],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
@@ -97,8 +97,8 @@ def checkAndAdjust(d) :
         d["fIniFactor"] = 0.1
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
-        d["nIterationsMax"] = 10
-        if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
+        if d["method"]!="profileLikelihood": # if PL and nIterations>1, then limit is suspect (range for f may not include 0)
+            d["nIterationsMax"] = 10
         d["plSeedForCLs"] = True
         #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
