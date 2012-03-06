@@ -206,8 +206,9 @@ def fitResults(data, fileName = "") :
                             {"label": r'''Total Background''',        "entryFunc":floatResultFromTxt,  "args":("hadB",)},
                             {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
+
 def ensembleSplit(d, group = "had") :
-    out = []
+    out = {}
     current_seg = None
     previous_seg = None
     seg_out = []
@@ -217,30 +218,27 @@ def ensembleSplit(d, group = "had") :
             tokens = name.split("_")
             seg_id = tokens[-2]
             sbin = tokens[-1]
-            if current_seg is None : current_seg = seg_id
+            # fix for first instance
+            if current_seg is None :
+                current_seg = seg_id
             previous_seg = current_seg
             current_seg = seg_id
             if current_seg != previous_seg and previous_seg is not None :
-                out.append(seg_out)
+                out[previous_seg] = seg_out
                 seg_out = []
-                seg_out.append("%s(%s)" % (group,current_seg))
-            seg_out.append("%s" % vals )
-    for o in out :
-       print o
+            seg_out.append(vals)
+    # get last one
+    out[previous_seg] = seg_out
+    return out
 
 def ensemblesResultsFromDict( d ) :
     #print d
-    out = ""
-    for blob in [beginDocument(),
-                 ensembleSplit(d, group = "had"),
-                 ensembleSplit(d, group = "muon"),
-                 ensembleSplit(d, group = "mumu"),
-                 ensembleSplit(d, group = "phot"),
-                 endDocument() ] :
-        print blob
-        #out += blob
-    print out
-
+    out = {}
+    for g in [ "had", "muon", "mumu", "phot" ] :
+        out[g] = ensembleSplit(d, group = g )
+    for group, selectiondict in out.iteritems() :
+        for selection in sorted(selectiondict.keys()) :
+            print group, selection, selectiondict[selection]
 
 def document() :
     data = data2011()
