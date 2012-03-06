@@ -10,7 +10,7 @@ def method() :
             "nToys": 2000,
             "testStatistic": 3,
             "calculatorType": ["frequentist", "asymptotic"][0],
-            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][1],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -26,7 +26,7 @@ def signal() :
                             "T2": [(16, 5, 1), (28, 9, 1), (29, 21, 1),
                                    (32, 22, 1), (34, 25, 1), (44, 28, 1)
                                    ],
-                            "T2tt": [(43, 28, 1)],
+                            "T2tt": [],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
@@ -36,7 +36,7 @@ def signal() :
             "overwriteOutput": overwriteOutput,
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:True,
+                           "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2bb":lambda iX,x,iY,y,iZ,z:True,
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
                            "T1bbbb":lambda iX,x,iY,y,iZ,z:True,
@@ -54,7 +54,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz","T1bbbb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][0],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz","T1bbbb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][4],
             }
 
 def points() :
@@ -97,8 +97,8 @@ def checkAndAdjust(d) :
         d["fIniFactor"] = 0.1
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
-        d["nIterationsMax"] = 10
-        if d["method"]=="profileLikelihood" : print "WARNING: nIterationsMax=%d; PL limit is suspect"%d["nIterationsMax"]
+        if d["method"]!="profileLikelihood": # if PL and nIterations>1, then limit is suspect (range for f may not include 0)
+            d["nIterationsMax"] = 10
         d["plSeedForCLs"] = True
         #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
