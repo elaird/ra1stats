@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import math,os
-#from inputData import data2011
+from inputData import mixedMuons_b_sets
 
 print "=================================================================="
 print "*** makePlots.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
@@ -29,13 +29,13 @@ def toString(item) :
     if type(item) is float : return str(int(item))
     else : return str(item)
 
-def beginTable(data, caption = "", label = "") :
+def beginTable(data, caption = "", label = "", coldivisor = 2, divider = "|") :
     s  = r'''\begin{table}[ht!]'''
     s += "\n\caption{%s}"%caption
     s += "\n\label{tab:%s}"%label
     s += "\n\centering"
     #s += "\n"+r'''\footnotesize'''
-    s += "\n\\begin{tabular}{ %s }"%("c".join(["|"]*(2+len(data.htBinLowerEdges())/2)))
+    s += "\n\\begin{tabular}{ %s }"%("c".join([divider]*(2+len(data.htBinLowerEdges())/coldivisor)))
     return s
 
 def endTable() :
@@ -207,6 +207,17 @@ def fitResults(data, fileName = "") :
                             {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
 
+def ensembleTable(d, selection ) :
+    out = beginTable(data = mixedMuons_b_sets.data_55_0btag(), coldivisor = 1, divider = " ")
+    for group in sorted(d.keys()) :
+        selectiondict = d[group]
+        for sel in sorted(selectiondict.keys()) :
+            if sel == selection :
+                out += oneRow(label = group, labelWidth = 23, entryList = sel, entryWidth = 30, hline = (False,True), extra = "")
+                #print group, selection, selectiondict[selection]
+    out += endTable()
+    print out
+
 def ensembleSplit(d, group = "had") :
     out = {}
     current_selection = None
@@ -232,13 +243,10 @@ def ensembleSplit(d, group = "had") :
     return out
 
 def ensemblesResultsFromDict( d ) :
-    #print d
     out = {}
     for g in [ "had", "muon", "mumu", "phot" ] :
         out[g] = ensembleSplit(d, group = g )
-    for group, selectiondict in out.iteritems() :
-        for selection in sorted(selectiondict.keys()) :
-            print group, selection, selectiondict[selection]
+    ensembleTable(out,"0b")
 
 def document() :
     data = data2011()
