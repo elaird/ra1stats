@@ -26,7 +26,7 @@ def signal() :
                             "T2": [(16, 5, 1), (28, 9, 1), (29, 21, 1),
                                    (32, 22, 1), (34, 25, 1), (44, 28, 1)
                                    ],
-                            "T2tt": [(43, 28, 1)],
+                            "T2tt": [],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
@@ -36,7 +36,7 @@ def signal() :
             "overwriteOutput": overwriteOutput,
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:True,
+                           "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2bb":lambda iX,x,iY,y,iZ,z:True,
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
                            "T1bbbb":lambda iX,x,iY,y,iZ,z:True,
@@ -61,7 +61,7 @@ def points() :
     return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
             #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (181, 41, 1), (33, 53, 1), (61, 61, 1)][4:5]
             "listOfTestPoints": [],
-            "listOfTestPoints": [(32, 8, 1), (17, 2, 1)][-1:],
+            #"listOfTestPoints": [(32, 8, 1), (17, 2, 1)][-1:],
             #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
             #"xWhiteList": [ [29, 181], [16, 32]],
             }
