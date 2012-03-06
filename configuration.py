@@ -37,7 +37,7 @@ def signal() :
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2bb":lambda iX,x,iY,y,iZ,z:True,
+                           "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
                            "T1bbbb":lambda iX,x,iY,y,iZ,z:True,
                            },
@@ -94,7 +94,7 @@ def checkAndAdjust(d) :
     d["fIniFactor"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
     if d["isSms"] :
-        d["fIniFactor"] = 0.1
+        d["fIniFactor"] = 0.05
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
         if d["method"]!="profileLikelihood": # if PL and nIterations>1, then limit is suspect (range for f may not include 0)
