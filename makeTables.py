@@ -208,43 +208,32 @@ def fitResults(data, fileName = "") :
                             ])
 def ensembleSplit(d, group = "had") :
     out = []
+    current_seg = None
+    previous_seg = None
+    seg_out = []
     for t in d : # expect t to be a tuple
         name,vals = t # expand the tuple
         if group in name :
-            print name, vals
-            seg_id = name.split("_")[2]
-               # ok so we have :
-               #  hadB_55_0b_[0..7]
-               #  hadB_55_1b_[0..7], etc.
-               # we need to iterate over those that share "0b" or "1b" and print them
+            tokens = name.split("_")
+            seg_id = tokens[-2]
+            sbin = tokens[-1]
+            current_seg = seg_id
+            if current_seg != previous_seg and previous_seg is not None :
+                out.append(seg_out)
+                seg_out = []
+                seg_out.append("%s(%s)" % (group,current_seg)
+            seg_out.append("%s" % vals )
+   for o in out :
+       print o
 
-
-def ensembleMuon(d) :
-    for t in d : # expect t to be a tuple
-        name,vals = t # expand the tuple
-        if "muon" in name :
-            print name, vals
-
-def ensembleDiMuon(d) :
-    for t in d : # expect t to be a tuple
-        name,vals = t # expand the tuple
-        if "mumu" in name :
-            print name, vals
-
-def ensemblePhoton(d) :
-    for t in d : # expect t to be a tuple
-        name,vals = t # expand the tuple
-        if "phot" in name :
-            print name, vals
-    
 def ensemblesResultsFromDict( d ) :
     #print d
     out = ""
     for blob in [beginDocument(),
-                 ensembleHad(d),
-                 ensembleMuon(d),
-                 ensembleDiMuon(d),
-                 ensemblePhoton(d),
+                 ensembleSplit(d, group = "had"),
+                 ensembleSplit(d, group = "muon"),
+                 ensembleSplit(d, group = "mumu"),
+                 ensembleSplit(d, group = "phot"),
                  endDocument() ] :
         out += blob
     print out
