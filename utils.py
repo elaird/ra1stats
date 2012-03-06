@@ -215,6 +215,10 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
             canvas.Print(psFileName)
             needPrint = False
 
+    if "latexTable" in args : 
+        # keep the import minimal as this only gets called once
+        from makeTables import ensemblesResultsFromDict as ltxResults
+        ltxResults( args["latexTable"] )
     if needPrint :
         canvas.cd(0)
         canvas.Print(psFileName)
