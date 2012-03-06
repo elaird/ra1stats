@@ -211,10 +211,7 @@ def ensembleTable(d, selection ) :
     out = beginTable(data = mixedMuons_b_sets.data_55_0btag(), coldivisor = 1, divider = " ")
     for group in sorted(d.keys()) :
         selectiondict = d[group]
-        for sel in sorted(selectiondict.keys()) :
-            if sel == selection :
-                out += oneRow(label = group, labelWidth = 23, entryList = sel, entryWidth = 30, hline = (False,True), extra = "")
-                #print group, selection, selectiondict[selection]
+        out += oneRow(label = group, labelWidth = 23, entryList = selectiondict[selection], entryWidth = 30, hline = (False,True), extra = "")
     out += endTable()
     print out
 
