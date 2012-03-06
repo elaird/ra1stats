@@ -209,26 +209,26 @@ def fitResults(data, fileName = "") :
 
 def ensembleSplit(d, group = "had") :
     out = {}
-    current_seg = None
-    previous_seg = None
-    seg_out = []
+    current_selection = None
+    previous_selection = None
+    selection_out = []
     for t in d : # expect t to be a tuple
         name,vals = t # expand the tuple
         if group in name :
             tokens = name.split("_")
-            seg_id = tokens[-2]
+            selection_id = tokens[-2]
             sbin = tokens[-1]
             # fix for first instance
-            if current_seg is None :
-                current_seg = seg_id
-            previous_seg = current_seg
-            current_seg = seg_id
-            if current_seg != previous_seg and previous_seg is not None :
-                out[previous_seg] = seg_out
-                seg_out = []
-            seg_out.append(vals)
+            if current_selection is None :
+                current_selection = selection_id
+            previous_selection = current_selection
+            current_selection = selection_id
+            if current_selection != previous_selection and previous_selection is not None :
+                out[previous_selection] = selection_out
+                selection_out = []
+            selection_out.append(vals)
     # get last one
-    out[previous_seg] = seg_out
+    out[previous_selection] = selection_out
     return out
 
 def ensemblesResultsFromDict( d ) :
