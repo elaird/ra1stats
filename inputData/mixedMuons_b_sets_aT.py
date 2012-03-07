@@ -46,7 +46,7 @@ class data_55_0btag(data) :
             "mumu":          (     0.727,     0.869,     0.950,     0.950,     0.950,     0.950,     0.950,     0.950),
             }
 
-	self._mcExpectations = {
+	self._mcExpectationsBeforeTrigger = {
             "mcGjets": excl((  None,    None, 2.00e+3 - 2.3e2, 7.1e+2 - 82, 2.7e+2 - 35,  92-15,   34-6,  14-3), isExcl), #>=0 b-tag minus >=1 b-tag
             "mcTtw"              :   ( 1620.0, 601.5, 375.3, 128.7, 44.36, 17.35, 5.84, 4.109, ) ,
             "mcZinv"             :   ( 1515.0, 635.8, 475.6, 165.3, 63.21, 21.3, 9.142, 6.196, ) ,
@@ -66,7 +66,7 @@ class data_55_0btag(data) :
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
             }
 
-        self._mcExtra = {}
-        self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
+        self._mcExtraBeforeTrigger = {}
+        self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
 
         syst.load(self, mode = self.systMode)

@@ -44,20 +44,14 @@ class data_55_v1(data) :
             "muon":          (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
             }
 
-        self._mcExpectations = {
-            "mcMuon":     trig(     scaled((1690.37, 771.57,  525.06,  181.64,  70.84,  22.64,   7.53,   5.19), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcTtw":      trig(     scaled((2244.21, 874.85,  571.91,  206.83,  70.18,  31.07,   8.48,   6.14), self.lumi()["muon"]/self.lumi()["mcTtw"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcGjets":         excl(scaled((  None,    None, 2.00e+3,  7.1e+2, 2.7e+2,     92,     34,     14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-            "mcZinv01":   trig(            (1706.7,  718.03,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0),
-                                    self._triggerEfficiencies["had"]),
-            "mcZinv27":   trig(excl(scaled((    0.0,    0.0,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
-                                    self._triggerEfficiencies["had"]),                                   
-            "mcMumu":     trig(     scaled((133.43,   77.45,   46.82,   17.74,   9.43,   3.03,   0.13,   1.91), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
-                                    self._triggerEfficiencies["had"]),
-
-            "mcZinv"          : trig(  ( 1.888e+03, 778.2, 565.0, 194.6, 73.72, 24.79, 10.24, 7.041, ),self._triggerEfficiencies["had"] ),
+        self._mcExpectationsBeforeTrigger = {
+            "mcMuon":          scaled((1690.37, 771.57,  525.06,  181.64,  70.84,  22.64,   7.53,   5.19), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcTtw":           scaled((2244.21, 874.85,  571.91,  206.83,  70.18,  31.07,   8.48,   6.14), self.lumi()["muon"]/self.lumi()["mcTtw"]),
+            "mcGjets":    excl(scaled((  None,    None, 2.00e+3,  7.1e+2, 2.7e+2,     92,     34,     14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcZinv01":               (1706.7,  718.03,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0),
+            "mcZinv27":   excl(scaled((    0.0,    0.0,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
+            "mcMumu":          scaled((133.43,   77.45,   46.82,   17.74,   9.43,   3.03,   0.13,   1.91), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
+            "mcZinv"          :        ( 1.888e+03, 778.2, 565.0, 194.6, 73.72, 24.79, 10.24, 7.041, ),self._triggerEfficiencies["had"],
             }
 
         for item in ["mcTtw"] :
@@ -73,7 +67,7 @@ class data_55_v1(data) :
             }.iteritems() :
                 for i in range(len(total)) :
                     total[i] += value[i]
-            self._mcExpectations[item] = trig(total, self._triggerEfficiencies["had"])
+            self._mcExpectationsBeforeTrigger[item] = total
 
 
         self._mcStatError = {
@@ -91,9 +85,9 @@ class data_55_v1(data) :
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
             }
 
-        self._mcExtra = {}
-        self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-        self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
+        self._mcExtraBeforeTrigger = {}
+        self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
+        self._mcExtraBeforeTrigger["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectationsBeforeTrigger["mcGjets"], self._purities["phot"])])
         
         syst.load(self, mode = self.systMode)
 
@@ -140,16 +134,12 @@ class data_53_v1(data) :
             "muon":          (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
             }
 
-        self._mcExpectations = {
-            "mcMuon":     trig(     scaled((   None,   None,    None,    None,   46.64,  17.35,   6.12,   4.85), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcTtw":      trig(     scaled((   None,   None,    None,    None,   65.31,  30.30,  11.55,   8.47), self.lumi()["muon"]/self.lumi()["mcTtw"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcGjets":         excl(scaled((   None,   None,    None,    None,    68.0,   26.0,   13.0,    7.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-
-            "mcMumu":    trig(     scaled((   None,   None,    None,    None,     3.1,    0.7,    0.0,    0.4), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcZinv":    trig( ( None, None, None, None, 39.77, 12.92, 6.197, 5.867, ) , self._triggerEfficiencies["had"]),
+        self._mcExpectationsBeforeTrigger = {
+            "mcMuon":         scaled((   None,   None,    None,    None,   46.64,  17.35,   6.12,   4.85), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcTtw":          scaled((   None,   None,    None,    None,   65.31,  30.30,  11.55,   8.47), self.lumi()["muon"]/self.lumi()["mcTtw"]),
+            "mcGjets":   excl(scaled((   None,   None,    None,    None,    68.0,   26.0,   13.0,    7.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcMumu":        scaled((   None,   None,    None,    None,     3.1,    0.7,    0.0,    0.4), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
+            "mcZinv":    ( None, None, None, None, 39.77, 12.92, 6.197, 5.867, )
             }
 
         for item in ["mcTtw"] :
@@ -165,7 +155,7 @@ class data_53_v1(data) :
             }.iteritems() :
                 for i in range(len(total)) :
                     total[i] += value[i]
-            self._mcExpectations[item] = trig(total, self._triggerEfficiencies["had"])
+            self._mcExpectationsBeforeTrigger[item] = total
 
         self._mcStatError = {
             "mcMuonErr":                   (  None,    None,    None,   None,    2.4,    1.3,    0.8,   0.7),
@@ -180,9 +170,9 @@ class data_53_v1(data) :
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
             }
 
-        self._mcExtra = {}
-        self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-        self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
+        self._mcExtraBeforeTrigger = {}
+        self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
+        self._mcExtraBeforeTrigger["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectationsBeforeTrigger["mcGjets"], self._purities["phot"])])
         
         syst.load(self, mode = self.systMode)
 
@@ -229,15 +219,12 @@ class data_52_v1(data) :
             "muon":          (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
             }
 
-        self._mcExpectations = {
-            "mcMuon":     trig(     scaled((   None,   None,    None,    None,    None,   None,   10.1,    7.2), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcTtw":      trig(     scaled((   None,   None,    None,    None,    None,   None,   18.9,   12.3), self.lumi()["muon"]/self.lumi()["mcTtw"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcGjets":         excl(scaled((   None,   None,    None,    None,    None,   None,    4.0,    2.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-            "mcMumu":     trig(     scaled((   None,   None,    None,    None,    None,   None,    0.0,    0.4), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcZinv":  trig( ( None, None, None, None, None, None, 8.789, 8.168, ) , self._triggerEfficiencies["had"] ),
+        self._mcExpectationsBeforeTrigger = {
+            "mcMuon":         scaled((   None,   None,    None,    None,    None,   None,   10.1,    7.2), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcTtw":          scaled((   None,   None,    None,    None,    None,   None,   18.9,   12.3), self.lumi()["muon"]/self.lumi()["mcTtw"]),
+            "mcGjets":   excl(scaled((   None,   None,    None,    None,    None,   None,    4.0,    2.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcMumu":         scaled((   None,   None,    None,    None,    None,   None,    0.0,    0.4), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
+            "mcZinv":   ( None, None, None, None, None, None, 8.789, 8.168, ) ,
             }
 
         for item in ["mcTtw"] :
@@ -253,7 +240,7 @@ class data_52_v1(data) :
             }.iteritems() :
                 for i in range(len(total)) :
                     total[i] += value[i]
-            self._mcExpectations[item] = trig(total, self._triggerEfficiencies["had"])
+            self._mcExpectationsBeforeTrigger[item] = total
 
         self._mcStatError = {
             "mcMuonErr":                   (  None,    None,    None,   None,   None,   None,    1.1,   0.9),
@@ -268,8 +255,8 @@ class data_52_v1(data) :
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
             }
 
-        self._mcExtra = {}
-        self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-        self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
+        self._mcExtraBeforeTrigger = {}
+        self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
+        self._mcExtraBeforeTrigger["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectationsBeforeTrigger["mcGjets"], self._purities["phot"])])
         
         syst.load(self, mode = self.systMode)

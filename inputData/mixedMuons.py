@@ -46,20 +46,15 @@ class data_55_v1(data) :
             "mumu":          (     0.727,     0.869,     0.950,     0.950,     0.950,     0.950,     0.950,     0.950),
             }
 
-        self._mcExpectations = {
-            "mcMuon":     trig(     scaled((1690.37, 771.57, 2773.48, 1313.90, 590.73, 273.98, 128.62, 151.03), self.lumi()["muon"]/self.lumi()["mcMuon"]),
-                                    self._triggerEfficiencies["muon"]),
-            "mcTtw":      trig(     scaled((2244.21, 874.85,  571.91,  206.83,  70.18,  31.07,   8.48,   6.14), self.lumi()["muon"]/self.lumi()["mcTtw"]),
-                                    self._triggerEfficiencies["had"]),
-            "mcGjets":         excl(scaled((  None,    None, 2.00e+3,  7.1e+2, 2.7e+2,     92,     34,     14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-            "mcZinv01":   trig(            (1706.7,  718.03,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0),
-                                    self._triggerEfficiencies["had"]),
-            "mcZinv27":   trig(excl(scaled((    0.0,    0.0,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
-                                    self._triggerEfficiencies["had"]),                                   
-            "mcZmumu":    trig(     scaled((133.431,  77.45,  294.54,  137.61,  63.58,  28.83,  14.55,  12.95), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
-                                    self._triggerEfficiencies["mumu"]),
+        self._mcExpectationsBeforeTrigger = {
+            "mcMuon":          scaled((1690.37, 771.57, 2773.48, 1313.90, 590.73, 273.98, 128.62, 151.03), self.lumi()["muon"]/self.lumi()["mcMuon"]),
+            "mcTtw":           scaled((2244.21, 874.85,  571.91,  206.83,  70.18,  31.07,   8.48,   6.14), self.lumi()["muon"]/self.lumi()["mcTtw"]),
+            "mcGjets":    excl(scaled((  None,    None, 2.00e+3,  7.1e+2, 2.7e+2,     92,     34,     14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
+            "mcZinv01":               (1706.7,  718.03,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0),
+            "mcZinv27":   excl(scaled((    0.0,    0.0,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
+            "mcZmumu":         scaled((133.431,  77.45,  294.54,  137.61,  63.58,  28.83,  14.55,  12.95), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
             }
-        self._mcExpectations["mcZinv"] = [a+b for a,b in zip(self._mcExpectations["mcZinv01"], self._mcExpectations["mcZinv27"])]
+        self._mcExpectationsBeforeTrigger["mcZinv"] = [a+b for a,b in zip(self._mcExpectationsBeforeTrigger["mcZinv01"], self._mcExpectationsBeforeTrigger["mcZinv27"])]
 
         self._mcStatError = {
             "mcMuonErr":                   (  59.5,    40.4,    16.2,   11.4,    7.7,    5.2,    3.3,   3.6),
@@ -78,10 +73,10 @@ class data_55_v1(data) :
             "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),#old
             }
 
-        self._mcExtra = {}
-        self._mcExtra["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectations["mcTtw"], self._mcExpectations["mcZinv"])])
-        self._mcExtra["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectations["mcGjets"], self._purities["phot"])])
-        self._mcExtra["mcMumu"] = tuple([(zMumu/purity if (zMumu and purity) else None) for zMumu,purity in zip(self._mcExpectations["mcZmumu"], self._purities["mumu"])])
+        self._mcExtraBeforeTrigger = {}
+        self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
+        self._mcExtraBeforeTrigger["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectationsBeforeTrigger["mcGjets"], self._purities["phot"])])
+        self._mcExtraBeforeTrigger["mcMumu"] = tuple([(zMumu/purity if (zMumu and purity) else None) for zMumu,purity in zip(self._mcExpectationsBeforeTrigger["mcZmumu"], self._purities["mumu"])])
         
         self._fixedParameters = {
             "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
