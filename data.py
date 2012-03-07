@@ -3,14 +3,29 @@ import math,copy
 def scaled(t, factor) :
     return tuple([factor*a if a!=None else None for a in t])
 
-def trig(t, eff) :
-    return tuple([a*b if a!=None else None for a,b in zip(t,eff)])
-
 def excl(counts, isExclusive) :
     out = []
     for i,count,isExcl in zip(range(len(counts)), counts, isExclusive) :
         out.append(count if (isExcl or count==None) else (count-counts[i+1]))
     return tuple(out)
+
+def itMult(l1 = [], l2 = []) :
+    return tuple([a*b if a!=None else None for a,b in zip(l1,l2)])
+
+def _trigKey(sample = "") :
+    d = {"mcTtw":"had", "mcZinv":"had", "mcHad": "had",
+         "mcMumu":"mumu", "mcMuon":"muon",
+         "mcGjets":"phot", "mcPhot":"phot",
+         "mcSimple":"simple", # legacy for simple
+         "mcZmumu":"mumu" # legacy for orig
+         }
+    if sample not in d :
+        for key,value in d.iteritems() :
+            if sample[:len(key)] == key :
+                print "WARNING: using %s trigger efficiency for %s" % ( value, sample )
+                return value
+    return d[sample]
+
 
 vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
         "observations", "triggerEfficiencies", "purities", "mcStatError", "fixedParameters"]
@@ -52,25 +67,11 @@ class data(object) :
     def _stashInput(self) :
         self._htBinLowerEdgesInput = copy.copy(self._htBinLowerEdges)
 
-    def _trigKey(self, sample = "" ) :
-        d = {"mcTtw":"had", "mcZinv":"had", "mcHad": "had",
-             "mcMumu":"mumu", "mcMuon":"muon",
-             "mcGjets":"phot", "mcPhot":"phot",
-             "mcSimple":"simple", # legacy for simple
-             "mcZmumu":"mumu" # legacy for orig
-             }
-        if sample not in d :
-            for key,value in d.iteritems() :
-                if sample[:len(key)] == key :
-                    print "WARNING: using %s trigger efficiency for %s" % ( value, sample )
-                    return value
-        return d[sample]
-
     def _applyTrigger(self) :
         for s in ["mcExpectations", "mcExtra"] :
             setattr(self, "_%s"%s, {})
             for sample,t in getattr(self, "_%sBeforeTrigger"%s).iteritems() :
-                getattr(self, "_%s"%s)[sample] = trig(t, self._triggerEfficiencies[self._trigKey(sample)])
+                getattr(self, "_%s"%s)[sample] = itMult(t, self._triggerEfficiencies[_trigKey(sample)])
         
     def _doBinMerge(self) :
         if self._mergeBins is None : return
