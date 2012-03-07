@@ -52,16 +52,25 @@ class data(object) :
     def _stashInput(self) :
         self._htBinLowerEdgesInput = copy.copy(self._htBinLowerEdges)
 
-    def _applyTrigger(self) :
+    def _trigKey(self, sample = "" ) :
         d = {"mcTtw":"had", "mcZinv":"had", "mcHad": "had",
              "mcMumu":"mumu", "mcMuon":"muon",
              "mcGjets":"phot", "mcPhot":"phot",
-             "mcSimple":"simple"}
+             "mcSimple":"simple", # legacy for simple
+             "mcZmumu":"mumu" # legacy for orig
+             }
+        if sample not in d :
+            for key,value in d.iteritems() :
+                if sample[:len(key)] == key :
+                    print "WARNING: using %s trigger efficiency for %s" % ( value, sample )
+                    return value
+        return d[sample]
 
+    def _applyTrigger(self) :
         for s in ["mcExpectations", "mcExtra"] :
             setattr(self, "_%s"%s, {})
-            for key,t in getattr(self, "_%sBeforeTrigger"%s).iteritems() :
-                getattr(self, "_%s"%s)[key] = trig(t, self._triggerEfficiencies[d[key]])
+            for sample,t in getattr(self, "_%sBeforeTrigger"%s).iteritems() :
+                getattr(self, "_%s"%s)[sample] = trig(t, self._triggerEfficiencies[self._trigKey(sample)])
         
     def _doBinMerge(self) :
         if self._mergeBins is None : return
