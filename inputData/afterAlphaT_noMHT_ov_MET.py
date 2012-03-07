@@ -51,7 +51,7 @@ class data_55_v1(data) :
             "mcZinv01":               (1706.7,  718.03,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0),
             "mcZinv27":   excl(scaled((    0.0,    0.0,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
             "mcMumu":          scaled((133.43,   77.45,   46.82,   17.74,   9.43,   3.03,   0.13,   1.91), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
-            "mcZinv"          :        ( 1.888e+03, 778.2, 565.0, 194.6, 73.72, 24.79, 10.24, 7.041, ),self._triggerEfficiencies["had"],
+            "mcZinv"          :        ( 1.888e+03, 778.2, 565.0, 194.6, 73.72, 24.79, 10.24, 7.041, )
             }
 
         for item in ["mcTtw"] :
