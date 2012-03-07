@@ -50,9 +50,14 @@ class data_55_v1(data) :
             "mcMuon":               scaled((1690.37, 771.57,  525.06,  181.64,  70.84,  22.64,   7.53,   5.19), self.lumi()["muon"]/self.lumi()["mcMuon"]),
             "mcTtw":                scaled((2244.21, 874.85,  571.91,  206.83,  70.18,  31.07,   8.48,   6.14), self.lumi()["muon"]/self.lumi()["mcTtw"]),
             "mcGjets":         excl(scaled((  None,    None, 2.00e+3,  7.1e+2, 2.7e+2,     92,     34,     14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
-            "mcZinv":        excl(scaled((1706.7,  718.03,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
             "mcMumu":               scaled((133.43,   77.45,   46.82,   17.74,   9.43,   3.03,   0.13,   1.91), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
             }
+        
+        self._mcExpectationsBeforeTrigger["mcZinv"] = tuple([a+b for a,b in zip((1706.7,  718.03,  0.0, 0,0, 0.0, 0.0, 0.0, 0.0),
+                                                                                excl(scaled((0.0,  0.0, 8.9e+2, 3.3e+2, 121, 44, 17, 7),
+                                                                                            self.lumi()["had"] /self.lumi()["mcZinv"]),
+                                                                                     isExcl))
+                                                             ])
 
         self._mcStatError = {
             "mcMuonErr":                   (  59.5,    40.4,     7.0,    4.1,    2.7,    1.4,    0.7,   0.6),
@@ -125,9 +130,12 @@ class data_53_v1(data) :
             "mcMuon"             : ( 0.0, 0.0, 0.0, 0.0, 35.67, 14.08, 5.375, 4.364, ),
             "mcTtw"              : ( 0.0, 0.0, 0.0, 0.0, 52.73, 24.21, 8.981, 7.198, ),
             "mcZinv"             : ( 0.0, 0.0, 0.0, 0.0, 27.65, 10.29, 4.737, 4.541, ),
-            "mcMumu"             : ( 0.0, 0.0, 0.0, 0.0, 2.068, 0.283, 0.0,   0.012, ),
+            "mcMumu"             : ( 0.0, 0.0, 0.0, 0.0, 2.068, 0.2834,0.0, 0.01233, ),
+            #"mcMumu"             : ( 0.0, 0.0, 0.0, 0.0, 2.068, 0.283, 0.0,   0.012, ),
             "mcGjets": excl(scaled((   None,   None,    None,    None,    68.0,   26.0,   13.0,    7.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             }
+
+        print "check sensitivity to mumu"
 
         self._mcStatError = {
             "mcMuonErr"          :   ( 0.0, 0.0, 0.0, 0.0, 2.202, 1.266, 0.7977, 0.775, ) ,
