@@ -13,7 +13,7 @@ def excl(counts, isExclusive) :
     return tuple(out)
 
 vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
-        "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExtra", "mcStatError", "fixedParameters"]
+        "observations", "triggerEfficiencies", "purities", "mcExpectations", "mcExpectationsBeforeTrigger", "mcExtra", "mcStatError", "fixedParameters"]
 
 class data(object) :
     def __init__(self, requireFullImplementation = True, systMode = 1) :
@@ -38,7 +38,7 @@ class data(object) :
         if not self._mergeBins :
             assert len(self._constantMcRatioAfterHere)==l
             
-        for item in ["observations", "mcExpectations", "mcExtra", "mcStatError", "systBins"] :
+        for item in ["observations", "mcExpectationsBeforeTrigger", "mcExtra", "mcStatError", "systBins"] :
             for key,value in getattr(self,"_%s"%item).iteritems() :
                 assert len(value)==l,"%s: %s"%(item, key)
 
@@ -51,6 +51,9 @@ class data(object) :
     def _stashInput(self) :
         self._htBinLowerEdgesInput = copy.copy(self._htBinLowerEdges)
 
+    def _applyTrigger(self) :
+        
+        
     def _doBinMerge(self) :
         if self._mergeBins is None : return
         assert len(self._mergeBins)==len(self._htBinLowerEdges)
@@ -80,7 +83,7 @@ class data(object) :
         self._htBinLowerEdges = tuple(newBins)
 
         #adjust count dictionaries
-        for item in ["observations", "mcExpectations", "mcExtra"] :
+        for item in ["observations", "mcExpectationsBeforeTrigger", "mcExpectations", "mcExtra"] :
             d = {}
             for key,t in getattr(self, "_%s"%item).iteritems() :
                 d[key] = [0]*len(l)
