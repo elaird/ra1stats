@@ -160,7 +160,7 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
 cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
-#            calculatorType = ["frequentist", "asymptotic"][1],
+#            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
 #            testStatType = 3, nToys = 20, nWorkers = 1); print out
 #f.profile()
 f.bestFit(printValues = True)
