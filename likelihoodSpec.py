@@ -39,7 +39,7 @@ class spec(dict) :
 
         # multib suboptions
         aT0b = True # use aT cut in 0b slice
-        gt0_only  = True # only use gt0b selection on top of =0 selection
+        gt0_only  = False # only use gt0b selection on top of =0 selection
                          # when false: use 1,2,gt2
 
         assert sum([slices,b,multib]) == 1

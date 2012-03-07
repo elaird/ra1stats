@@ -551,7 +551,7 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True, plotsDir = "pl
     utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
     utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
-                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
+                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True, "latexTable": []})
     utils.cyclePlot(d = oHistos, canvas = canvas, psFileName = psFileName)
     #utils.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
         

@@ -63,6 +63,11 @@ def histoLines(args = {}, key = None, histo = None) :
     if error!=None : out.append(errorLine.DrawLine(best - error, max/2.0, best + error, max/2.0))
 
     if "print" in args and args["print"] : print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
+    if "latexTable" in args and type(args["latexTable"]) is list : 
+        if best >= 100 :
+            args["latexTable"].append( (histo.GetName(), "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) )) ) 
+        else :
+            args["latexTable"].append( (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] )) ) 
     return out
         
 def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", plotsDir = "plots") :
