@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import data,os
+import data,os,sys
 
 for fileName in os.listdir("inputData/") :
     if len(fileName)<3 or fileName[-3:]!=".py" : continue
@@ -15,4 +15,5 @@ for fileName in os.listdir("inputData/") :
             a = obj()
         except:
             print module,item
-
+            sys.excepthook(*sys.exc_info())
+            print
