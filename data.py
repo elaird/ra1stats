@@ -55,7 +55,8 @@ class data(object) :
     def _applyTrigger(self) :
         d = {"mcTtw":"had", "mcZinv":"had", "mcHad": "had",
              "mcMumu":"mumu", "mcMuon":"muon",
-             "mcGjets":"phot", "mcPhot":"phot"}
+             "mcGjets":"phot", "mcPhot":"phot",
+             "mcSimple":"simple"}
 
         for s in ["mcExpectations", "mcExtra"] :
             setattr(self, "_%s"%s, {})
