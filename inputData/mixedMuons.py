@@ -1,5 +1,5 @@
 import utils
-from data import data,scaled,excl,trig
+from data import data,scaled,excl
 
 class data_55_v1(data) :
     """muons and mumu have no alt cut for highest six bins"""

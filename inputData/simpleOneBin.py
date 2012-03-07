@@ -1,5 +1,5 @@
 import syst
-from data import data,scaled,excl,trig
+from data import data,scaled,excl
 
 class data_simple(data) :
     """one bin test data"""

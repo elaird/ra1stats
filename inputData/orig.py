@@ -1,5 +1,5 @@
 import utils
-from data import data,scaled,excl,trig
+from data import data,scaled,excl
 
 class data2011_55_v6(data) :
     """no odd-muon-veto"""

@@ -1,5 +1,5 @@
 import syst
-from data import data,scaled,excl,trig
+from data import data,scaled,excl
 
 class data_55_v1(data) :
     """all samples have an alphaT cut applied in all bins"""
