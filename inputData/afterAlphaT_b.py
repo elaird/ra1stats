@@ -1,4 +1,4 @@
-import utils
+import syst
 from data import data,scaled,excl
 
 class data_55_v1(data) :
@@ -26,7 +26,7 @@ class data_55_v1(data) :
             "mcZinv":  4529.,
 
             "mumu":    4650.,
-            "mcZmumu": 4650.,
+            "mcMumu":  4650.,
             }
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._observations = {
@@ -42,6 +42,8 @@ class data_55_v1(data) :
             "hadBulk":       (     0.878,     0.906,     0.957,     1.000,     1.000,     1.000,     1.000,     1.000),
             "had":           (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
             "muon":          (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "mumu":          (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
+            "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
             }
 
         self._mcExpectationsBeforeTrigger = {
@@ -49,7 +51,7 @@ class data_55_v1(data) :
             "mcTtw":           scaled(( 391.76, 163.16,  133.24,   52.21,  16.98,   8.90,   1.10,   1.49), self.lumi()["muon"]/self.lumi()["mcTtw"]),
             "mcGjets":    excl(scaled((  None,    None,      91,      34,     15,      7,      4,    0.7), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             "mcZinv":                 (  86.75,  35.80,   25.30,   10.69,    3.5,    1.4,    0.5,    0.2),
-            "mcZmumu":         scaled((  13.55,   6.17,    2.13,    2.64,    0.1,    0.6,    0.1,    1.0), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
+            "mcMumu":         scaled((  13.55,   6.17,    2.13,    2.64,    0.1,    0.6,    0.1,    1.0), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
             }
 
         self._mcStatError = {
@@ -57,32 +59,15 @@ class data_55_v1(data) :
             "mcTtwErr":  (15.90, 11.24, 4.76, 3.00, 1.65, 1.25, 0.42, 0.49),
             "mcGjetsErr":( None,  None, 8   ,    5,    3,    2,    2,  0.7),
             "mcZinvErr": (2.40,  1.51, 1.27, 0.82, 0.47, 0.30, 0.18, 0.13),
-            "mcZmumuErr":(2.07,  1.54, 0.81, 0.93, 0.01, 0.49, 0.16, 0.53),
+            "mcMumuErr":(2.07,  1.54, 0.81, 0.93, 0.01, 0.49, 0.16, 0.53),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
 
-        print "the mumu purities are old"
         self._purities = {
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
-            "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),#old
             }
 
         self._mcExtraBeforeTrigger = {}
         self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
-        self._mcExtraBeforeTrigger["mcMumu"] = tuple([(zMumu/purity if (zMumu and purity) else None) for zMumu,purity in zip(self._mcExpectationsBeforeTrigger["mcZmumu"], self._purities["mumu"])])
         
-        self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.20,
-            "sigmaMuonW": 0.20,
-            "sigmaMumuZ": 0.20,
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-
-            #"k_qcd_nom"     : 3.30e-2,
-            #"k_qcd_unc_inp" : 0.66e-2,
-
-            #"k_qcd_nom"     : 2.89e-2,
-            #"k_qcd_unc_inp" : 0.01e-2,
-            }
+        syst.load(self, mode = self.systMode)

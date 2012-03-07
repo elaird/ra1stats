@@ -1,4 +1,4 @@
-import utils
+import syst
 from data import data,scaled,excl
 
 class data_55_v1(data) :
@@ -26,7 +26,7 @@ class data_55_v1(data) :
             "mcZinv":  4529.,
 
             "mumu":    4650.,
-            "mcZmumu": 4650.,
+            "mcMumu":  4650.,
             }
         self._htMeans =       ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
         self._observations = {
@@ -52,9 +52,11 @@ class data_55_v1(data) :
             "mcGjets":    excl(scaled((  None,    None, 2.00e+3,  7.1e+2, 2.7e+2,     92,     34,     14), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             "mcZinv01":               (1706.7,  718.03,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0),
             "mcZinv27":   excl(scaled((    0.0,    0.0,  8.9e+2,  3.3e+2,    121,     44,     17,      7), self.lumi()["had"] /self.lumi()["mcZinv"]), isExcl),
-            "mcZmumu":         scaled((133.431,  77.45,  294.54,  137.61,  63.58,  28.83,  14.55,  12.95), self.lumi()["mumu"]/self.lumi()["mcZmumu"]),
+            "mcMumu":          scaled((133.431,  77.45,  294.54,  137.61,  63.58,  28.83,  14.55,  12.95), self.lumi()["mumu"]/self.lumi()["mcMumu"]),
             }
         self._mcExpectationsBeforeTrigger["mcZinv"] = [a+b for a,b in zip(self._mcExpectationsBeforeTrigger["mcZinv01"], self._mcExpectationsBeforeTrigger["mcZinv27"])]
+        del self._mcExpectationsBeforeTrigger["mcZinv27"]
+        del self._mcExpectationsBeforeTrigger["mcZinv01"]
 
         self._mcStatError = {
             "mcMuonErr":                   (  59.5,    40.4,    16.2,   11.4,    7.7,    5.2,    3.3,   3.6),
@@ -62,34 +64,17 @@ class data_55_v1(data) :
             "mcGjetsErr":           scaled((  None,    None, 0.04e+3, 0.2e+2, 0.1e+2,      8,      5,     3), self.lumi()["phot"]/self.lumi()["mcGjets"]),
             "mcZinvErrTM":          scaled(( 10.39,    6.71,  0.2e+2, 0.1e+2,      6,      4,      2,     1), self.lumi()["had"] /self.lumi()["mcZinv"]),
             "mcZinvErrDB":                 ( 10.59,    6.79,     5.8,    3.4,    2.1,    1.2,    0.8,   0.6),
-            "mcZmumuErr":                  (  7.09,    5.48,    10.6,    7.2,    4.9,    3.3,    2.3,   2.1),
+            "mcMumuErr":                   (  7.09,    5.48,    10.6,    7.2,    4.9,    3.3,    2.3,   2.1),
             }
         self._mcStatError["mcZinvErr"] = self._mcStatError["mcZinvErrDB"]
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
 
-        print "the mumu purities are old"
         self._purities = {
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
-            "mumu":                  (  0.89,    0.94,    0.97,   0.97,   0.97,   0.97,   0.97, 0.97),#old
             }
 
         self._mcExtraBeforeTrigger = {}
         self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
         self._mcExtraBeforeTrigger["mcPhot"] = tuple([(gJet/purity if (gJet and purity) else None) for gJet,purity in zip(self._mcExpectationsBeforeTrigger["mcGjets"], self._purities["phot"])])
-        self._mcExtraBeforeTrigger["mcMumu"] = tuple([(zMumu/purity if (zMumu and purity) else None) for zMumu,purity in zip(self._mcExpectationsBeforeTrigger["mcZmumu"], self._purities["mumu"])])
         
-        self._fixedParameters = {
-            "sigmaLumiLike": utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values()),
-            "sigmaPhotZ": 0.40,
-            "sigmaMuonW": 0.30,
-            "sigmaMumuZ": 0.20,
-
-            "k_qcd_nom"     : 2.89e-2,
-            "k_qcd_unc_inp" : 0.76e-2,
-
-            #"k_qcd_nom"     : 3.30e-2,
-            #"k_qcd_unc_inp" : 0.66e-2,
-
-            #"k_qcd_nom"     : 2.89e-2,
-            #"k_qcd_unc_inp" : 0.01e-2,
-            }
+        syst.load(self, mode = self.systMode)
