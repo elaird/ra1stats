@@ -60,6 +60,14 @@ def epsToPdf(epsFileName, removeEps = True, sameDir = False) :
 def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
     return pdf.fitTo(data, *options)
 #####################################
+def checkResults(results) :
+    status = results.status()
+    covQual = results.covQual()
+    numIN = results.numInvalidNLL()
+    if status : print "WARNING: status = %d"%status
+    if numIN : print "WARNING: num invalid NLL = %d"%numIN
+    #if covQual : print "WARNING: covQual = %d"%covQual
+#####################################
 def compile(sourceFile) :
     r.gSystem.SetAclicMode(r.TSystem.kDebug)
     r.gROOT.LoadMacro("%s+"%sourceFile)
