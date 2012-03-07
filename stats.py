@@ -116,7 +116,7 @@ def mkdirs() :
 ############################################
 def compile() :
     import ROOT as r
-    r.gROOT.LoadMacro("StandardHypoTestInvDemo.C+")
+    r.gROOT.LoadMacro("StandardHypoTestInvDemo.cxx+")
 ############################################
 options = opts()
 
