@@ -53,13 +53,12 @@ class data_55_v1(data) :
             "mcGjets": excl(       (  None,    None,     2.3e2,    82,     35,     15,      6,    3  ), isExcl),
 	    }
         
-        print "put in new stat errors"
         self._mcStatError = {
-            "mcMuonErr": (15.88, 11.03,10.16, 7.38, 5.10, 3.30, 2.22, 2.14),
-            "mcTtwErr":  (15.90, 11.24, 4.76, 3.00, 1.65, 1.25, 0.42, 0.49),
+            "mcTtwErr"           :   ( 24.2, 17.76, 5.575, 3.53, 1.968, 1.523, 0.5682, 0.5169, ) ,
+            "mcZinvErr"          :   ( 3.554, 2.298, 1.902, 1.237, 0.7597, 0.4445, 0.26, 0.2323, ) ,
+            "mcMuonErr"          :   ( 21.8, 13.58, 11.87, 8.575, 5.971, 3.895, 2.568, 2.603, ) ,
+            "mcMumuErr"          :   ( 2.759, 2.112, 3.556, 2.387, 1.842, 1.12, 0.6277, 0.826, ) ,
             "mcGjetsErr": (None,  None,   10,    7,    5,    3,    2,    2),
-            "mcZinvErr": (2.40,  1.51, 1.27, 0.82, 0.47, 0.30, 0.18, 0.13),
-            "mcMumuErr":(2.07,  1.54, 2.63, 1.59, 1.07, 0.83, 0.64, 0.79),
             }
         #self._mcStatError["mcHadErr"] = tuple([utils.quadSum([ttwErr, zinvErr]) for ttwErr,zinvErr in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
 
