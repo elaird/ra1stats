@@ -30,13 +30,13 @@ def toString(item) :
     if type(item) is float : return str(int(item))
     else : return str(item)
 
-def beginTable(data, caption = "", label = "", coldivisor = 2, divider = "|") :
+def beginTable(data, caption = "", label = "", coldivisor = 2, divider = "|", alignment = "c") :
     s  = r'''\begin{table}[ht!]'''
     s += "\n\caption{%s}"%caption
     s += "\n\label{tab:%s}"%label
     s += "\n\centering"
     #s += "\n"+r'''\footnotesize'''
-    s += "\n\\begin{tabular}{ %s }"%("c".join([divider]*(2+len(data.htBinLowerEdges())/coldivisor)))
+    s += "\n\\begin{tabular}{ %s }"%(alignment.join([divider]*(2+len(data.htBinLowerEdges())/coldivisor)))
     return s
 
 def endTable() :
@@ -54,11 +54,11 @@ def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 30, hline =
     if hline[1] : s += "\n\hline"
     return s
 
-def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider = "|") :
-    s = beginTable(data, caption = caption, label = label, coldivisor = coldivisor, divider = divider)
+def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider = "|", alignment = "c") :
+    s = beginTable(data, caption = caption, label = label, coldivisor = coldivisor, divider = divider, alignment = alignment)
 
     fullBins = list(data.htBinLowerEdges()) + ["$\infty$"]
-    for subTable in range(2) :
+    for subTable in range(coldivisor) :
         start = 0 + subTable*len(fullBins)/coldivisor
         stop = 1 + (1+subTable)*len(fullBins)/coldivisor
         indices = range(start,stop-1)[:len(fullBins)/coldivisor]
@@ -67,7 +67,7 @@ def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider 
                     hline = (True,True), extra = "[%dex]" % ( 1./coldivisor) )
         for row in rows :
             s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()),
-                        entryWidth = row["entryWidth"] if "entryWidth" in row else 30)
+                        entryWidth = row["entryWidth"] if "entryWidth" in row else 30, hline = row["hline"] if "hline" in row else (False,False))
     s += endTable()
     return s
 
@@ -266,7 +266,7 @@ def ensembleResultsFromDict( d, data ) :
     for datum, selection in zip(data, selections) :
         for data_title, sample in zip(data_titles, samples) :
             obs = datum.observations()[ "n%s" % (sample.capitalize()) ]
-            data_out[data_title][selection] = [ "$%s$" % str(x) if x is not None else "--" for x in obs ]
+            data_out[data_title][selection] = [ "$%d$" % int(x) if x is not None else "--" for x in obs ]
 
     # arrange into our final dictionary
     out = {}
@@ -281,7 +281,9 @@ def ensembleResultsFromDict( d, data ) :
                          label = "ensemble-%s" % selection,
                          coldivisor = 1,
                          divider = "",
-                         rows = [ {"label": title, "entryFunc":ensembleRow, "args": [out[title][selection]]} for title in titles ]
+                         alignment = "l",
+                         rows = [ {"label": title, "entryFunc":ensembleRow, "args": [out[title][selection]], 
+                                   "hline": (False,True) if "Data" in title else (False,False)} for title in titles ]
                        )
     doc += endDocument()
 
