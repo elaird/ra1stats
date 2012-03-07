@@ -33,8 +33,18 @@ def print_unpack( item, level = 0, ending_comma = False ) :
             print_unpack( value, 0, True )
         print "\t"*level,"}"
 
+mMuon_b = { "~/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_More_Than_Zero.root" :
+            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+            },
+          }
+
 btag0 = {
-            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Zero_Btags.root" :
+            "~/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Zero_Btags.root" :
             { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
@@ -45,7 +55,7 @@ btag0 = {
         }
 
 btag1 = {
-            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_One_Btags.root" :
+            "~/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_One_Btags.root" :
             { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
@@ -56,7 +66,7 @@ btag1 = {
         }
 
 btag2 = {
-            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Two_Btags.root" :
+            "~/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Two_Btags.root" :
             { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
@@ -67,7 +77,7 @@ btag2 = {
         }
 
 btag_gt2 = {
-            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_More_Than_Two.root" :
+            "~/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_More_Than_Two.root" :
             { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
                  "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
@@ -78,7 +88,7 @@ btag_gt2 = {
         }
 
 btag0_aT = { 
-            "/home/hep/sr505/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Zero_Btags_with_AlphaT.root" :
+            "~/public_html/03_RA1/07_numbers_from_darren/01_moriond_btag/RA1_Stats_Zero_Btags_with_AlphaT.root" :
             { 
                 "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
                          "DY", "tt", "obs", "WZ" ],
@@ -107,12 +117,14 @@ r.gROOT.SetBatch(1)
 #dsf_b1  = DF.DataSliceFactory( btag1 )
 #dsf_b2  = DF.DataSliceFactory( btag2 )
 #dsf_bgt2  = DF.DataSliceFactory( btag_gt2 )
+#mMuon = DF.DataSliceFactory( mMuon_b )
 #ds_b0 = dsf_b0.makeSlice("x",55.5,55.6)
 #ds_b1 = dsf_b1.makeSlice("x",55.5,55.6)
 #ds_b2 = dsf_b2.makeSlice("x",55.5,55.6)
 #ds_bgt2 = dsf_bgt2.makeSlice("x",55.5,55.6)
 #dsf_b0_aT  = DF.DataSliceFactory( btag0_aT )
 #ds_b0_aT = dsf_b0_aT.makeSlice("x",55.5,55.6)
+#ds_mMuon = mMuon.makeSlice("x",55.5,55.6)
 dsf_bgt0  = DF.DataSliceFactory( btag_gt0 )
 ds_bgt0 = dsf_bgt0.makeSlice("x",55.5,55.6)
 
@@ -122,6 +134,7 @@ slices = {
          #"btag2" : ds_b2,
          #"btag_gt2" : ds_bgt2,
          #"btag0 w/aT" : ds_b0_aT,
+         #"mixedMuons_b" : ds_mMuon,
          "btag >=1" : ds_bgt0,
          }
 

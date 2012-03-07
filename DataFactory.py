@@ -95,6 +95,9 @@ class DataSliceFactory( object ) :
         return DataSlice( h, h_suffix )
         
 
+######
+DEBUG = False
+######
 class DataSlice( object ) :
     # this class *checks* that everything souhld be a TH1D as otherwise makes no
     # sense for it
@@ -193,3 +196,8 @@ class DataSlice( object ) :
                 self._mcExpectations[ "mcTtw" ]  = tuple([ total_ttw.GetBinContent(xbin)  for xbin in xbins ])
                 self._mcStatError[ "mcZinvErr" ] = tuple([ total_zinv.GetBinError(xbin)   for xbin in xbins ])
                 self._mcStatError[ "mcTtwErr" ]  = tuple([ total_ttw.GetBinError(xbin)    for xbin in xbins ])
+            if DEBUG :
+                for key,value in histo_dict.iteritems() :
+                    print
+                    for sample, histo in value.iteritems() :
+                        print key, sample, tuple([ histo.GetBinContent(xbin) for xbin in xbins ])
