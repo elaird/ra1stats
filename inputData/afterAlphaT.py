@@ -131,11 +131,9 @@ class data_53_v1(data) :
             "mcTtw"              : ( 0.0, 0.0, 0.0, 0.0, 52.73, 24.21, 8.981, 7.198, ),
             "mcZinv"             : ( 0.0, 0.0, 0.0, 0.0, 27.65, 10.29, 4.737, 4.541, ),
             "mcMumu"             : ( 0.0, 0.0, 0.0, 0.0, 2.068, 0.2834,0.0, 0.01233, ),
-            #"mcMumu"             : ( 0.0, 0.0, 0.0, 0.0, 2.068, 0.283, 0.0,   0.012, ),
+            #"mcMumu"             : ( 0.0, 0.0, 0.0, 0.0, 2.068, 0.283, 0.0,   0.012, ), #useful for stability check
             "mcGjets": excl(scaled((   None,   None,    None,    None,    68.0,   26.0,   13.0,    7.0), self.lumi()["phot"]/self.lumi()["mcGjets"]), isExcl),
             }
-
-        print "check sensitivity to mumu"
 
         self._mcStatError = {
             "mcMuonErr"          :   ( 0.0, 0.0, 0.0, 0.0, 2.202, 1.266, 0.7977, 0.775, ) ,

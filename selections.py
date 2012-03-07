@@ -50,6 +50,7 @@ def alphaT_slices(systMode = 1) :
                   data = afterAlphaT.data_55_v1( systMode = systMode ),
                   universalSystematics = True,
                   universalKQcd = True,
+                  AQcdIni = 0.5e-2,
         ),
         selection(name = "53",
                   note = "0.53<#alpha_{T}<0.55",

@@ -729,6 +729,7 @@ class foo(object) :
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
+        utils.checkResults(results)
         for selection in self.likelihoodSpec["selections"] :
             activeBins = {}
             for key,value in selection.data.observations().iteritems() :
