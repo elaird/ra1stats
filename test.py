@@ -165,13 +165,13 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #            calculatorType = ["frequentist", "asymptotic"][1],
 #            testStatType = 3, nToys = 20, nWorkers = 1); print out
 #f.profile()
-#f.bestFit(printValues = True)
+f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = False)
 #f.bestFit(drawMc = False, printValues = False, drawComponents = False)
 #f.bestFit(printPages = True)
 #f.qcdPlot()
 #f.pValue(nToys = 300)
-f.ensemble(nToys = 1000)
+#f.ensemble(nToys = 1000)
 #print f.clsCustom(nToys = 500, testStatType = 1)
 #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
 #f.debug()
