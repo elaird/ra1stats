@@ -2,11 +2,10 @@
 
 import math,os
 from collections import defaultdict
-from inputData import mixedMuons_b_sets
 
-print "=================================================================="
-print "*** makePlots.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
-print "=================================================================="
+print "==================================================================="
+print "*** makeTables.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
+print "==================================================================="
 
 def beginDocument(comment = r"\currenttime\ \today") :
     return r'''
@@ -64,7 +63,7 @@ def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider 
         indices = range(start,stop-1)[:len(fullBins)/coldivisor]
         bins = fullBins[start:stop]
         s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))) for l,u in zip(bins[:-1], bins[1:])],
-                    hline = (True,True), extra = "[%dex]" % ( 1./coldivisor) )
+                    hline = (True,True), extra = "[%fex]" % ( 1./coldivisor) )
         for row in rows :
             s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()),
                         entryWidth = row["entryWidth"] if "entryWidth" in row else 30, hline = row["hline"] if "hline" in row else (False,False))
@@ -310,5 +309,4 @@ def write(doc, fileName = "") :
     os.system("pdflatex %s"%fileName)
 
 #write(document(), fileName = "tables.tex")
-
 
