@@ -3,7 +3,7 @@
 import histogramProcessing as hP
 
 import utils
-from data import data,scaled,excl,trig
+from data import data,scaled,excl
 
 from math import sqrt
 from collections import defaultdict

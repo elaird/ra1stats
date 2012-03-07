@@ -1,5 +1,5 @@
 import syst
-from data import data,scaled,excl,trig
+from data import data,scaled,excl
 
 class data_simple(data) :
     """one bin test data"""
@@ -23,11 +23,11 @@ class data_simple(data) :
             "simple" : (1.0,),
             }
 
-        self._mcExpectations = {
+        self._mcExpectationsBeforeTrigger = {
             "mcSimple": (4.0,),
             }
 
-        for item in ["mcStatError", "purities", "mcExtra"] :
+        for item in ["mcStatError", "purities", "mcExtraBeforeTrigger"] :
             setattr(self, "_%s"%item, {})
 
         self._systBins = {

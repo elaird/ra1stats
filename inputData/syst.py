@@ -1,10 +1,27 @@
 import utils
 
-def load(data = None, mode = None) :
+def load(data = None, mode = None, nHtBins = 8) :
     lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
 
+    if mode==-1 :
+        systBins = tuple([0]*nHtBins)
+        nSyst = 1+max(systBins)
+        data._systBins = {
+            "sigmaLumiLike": systBins,
+            "sigmaPhotZ": systBins,
+            "sigmaMuonW": systBins,
+            "sigmaMumuZ": systBins,
+            }
+
+        data._fixedParameters = {
+            "sigmaLumiLike": tuple([lumiLikeValue]*nSyst),
+            "sigmaPhotZ": tuple([0.40]*nSyst),
+            "sigmaMuonW": tuple([0.30]*nSyst),
+            "sigmaMumuZ": tuple([0.20]*nSyst),
+            }
+
     if mode==1 :
-        systBins = tuple([0]*8)
+        systBins = tuple([0]*nHtBins)
         nSyst = 1+max(systBins)
         data._systBins = {
             "sigmaLumiLike": systBins,
