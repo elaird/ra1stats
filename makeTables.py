@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 import math,os
-from inputData import data2011
+from collections import defaultdict
+
+print "==================================================================="
+print "*** makeTables.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
+print "==================================================================="
 
 def beginDocument(comment = r"\currenttime\ \today") :
     return r'''
@@ -25,13 +29,13 @@ def toString(item) :
     if type(item) is float : return str(int(item))
     else : return str(item)
 
-def beginTable(data, caption = "", label = "") :
+def beginTable(data, caption = "", label = "", coldivisor = 2, divider = "|", alignment = "c") :
     s  = r'''\begin{table}[ht!]'''
     s += "\n\caption{%s}"%caption
     s += "\n\label{tab:%s}"%label
     s += "\n\centering"
     #s += "\n"+r'''\footnotesize'''
-    s += "\n\\begin{tabular}{ %s }"%("c".join(["|"]*(2+len(data.htBinLowerEdges())/2)))
+    s += "\n\\begin{tabular}{ %s }"%(alignment.join([divider]*(2+len(data.htBinLowerEdges())/coldivisor)))
     return s
 
 def endTable() :
@@ -49,20 +53,20 @@ def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 30, hline =
     if hline[1] : s += "\n\hline"
     return s
 
-def oneTable(data, caption = "", label = "", rows = []) :
-    s = beginTable(data, caption = caption, label = label)
+def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider = "|", alignment = "c") :
+    s = beginTable(data, caption = caption, label = label, coldivisor = coldivisor, divider = divider, alignment = alignment)
 
     fullBins = list(data.htBinLowerEdges()) + ["$\infty$"]
-    for subTable in range(2) :
-        start = 0 + subTable*len(fullBins)/2
-        stop = 1 + (1+subTable)*len(fullBins)/2
-        indices = range(start,stop-1)[:len(fullBins)/2]
+    for subTable in range(coldivisor) :
+        start = 0 + subTable*len(fullBins)/coldivisor
+        stop = 1 + (1+subTable)*len(fullBins)/coldivisor
+        indices = range(start,stop-1)[:len(fullBins)/coldivisor]
         bins = fullBins[start:stop]
         s += oneRow(label = "\scalht Bin (GeV)", entryList = [("%s--%s"%(toString(l), toString(u))) for l,u in zip(bins[:-1], bins[1:])],
-                    hline = (True,True), extra = "[0.5ex]")
+                    hline = (True,True), extra = "[%fex]" % ( 1./coldivisor) )
         for row in rows :
             s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()),
-                        entryWidth = row["entryWidth"] if "entryWidth" in row else 30)
+                        entryWidth = row["entryWidth"] if "entryWidth" in row else 30, hline = row["hline"] if "hline" in row else (False,False))
     s += endTable()
     return s
 
@@ -203,6 +207,88 @@ def fitResults(data, fileName = "") :
                             {"label": r'''Data''',                    "entryFunc":intResultFromTxt,  "args":("nHad",)},
                             ])
 
+def ensembleSplit(d, group = "had") :
+    out = {}
+    current_selection = None
+    previous_selection = None
+    selection_out = []
+    for t in d : # expect t to be a tuple
+        name,vals = t # expand the tuple
+        if group in name :
+            tokens = name.split("_")
+            selection_id = tokens[-2]
+            sbin = tokens[-1]
+            # fix for first instance
+            if current_selection is None :
+                current_selection = selection_id
+            previous_selection = current_selection
+            current_selection = selection_id
+            if current_selection != previous_selection and previous_selection is not None :
+                out[previous_selection] = selection_out
+                selection_out = []
+            selection_out.append(vals)
+    # get last one
+    out[previous_selection] = selection_out
+    return out
+
+def ensembleRow( data, indices, d ) :
+    if indices[-1] >= len(d) : 
+        return d
+    return [ d[index] for index in indices ]
+
+def ensembleResultsFromDict( d, data ) :
+    mc_out = {}
+    data_out = defaultdict(dict)
+    samples = [ "had", "muon", "mumu", "phot" ]
+
+    mc_titles  = [ "SM hadonric", "SM $\mu$+jets", 
+                   "SM $\mu\mu$+jets", "SM $\gamma$+jets"]
+
+    data_titles  = [ "Data hadonric", "Data $\mu$+jets", 
+                     "Data $\mu\mu$+jets", "Data $\gamma$+jets"]
+
+    titles  = [ "SM hadonric", "Data hadonric",
+                "SM $\mu$+jets", "Data $\mu$+jets",
+                "SM $\mu\mu$+jets", "Data $\mu\mu$+jets",
+                "SM $\gamma$+jets", "Data $\gamma$+jets" ]
+
+    # fill out MC values
+    for sample,title in zip(samples,mc_titles) :
+        mc_out[title] = ensembleSplit(d, group = sample )
+        if sample == "phot" :
+            for selection, values in mc_out[title].iteritems() :
+                mc_out[title][selection] = ["--", "--" ] + values
+
+    selections = sorted(mc_out[mc_titles[0]].keys())
+
+    # fill out data values
+    for datum, selection in zip(data, selections) :
+        for data_title, sample in zip(data_titles, samples) :
+            obs = datum.observations()[ "n%s" % (sample.capitalize()) ]
+            data_out[data_title][selection] = [ "$%d$" % int(x) if x is not None else "--" for x in obs ]
+
+    # arrange into our final dictionary
+    out = {}
+    for mc_key, data_key in zip( sorted(mc_out.keys()), sorted(data_out.keys()) ) :
+        out[mc_key] = mc_out[mc_key]
+        out[data_key] = data_out[data_key]
+
+    doc = beginDocument()
+    for s,selection in enumerate(selections) :
+        doc += oneTable( data = data[s],
+                         caption = selection,
+                         label = "ensemble-%s" % selection,
+                         coldivisor = 1,
+                         divider = "",
+                         alignment = "l",
+                         rows = [ {"label": title, "entryFunc":ensembleRow, "args": [out[title][selection]], 
+                                   "hline": (False,True) if "Data" in title else (False,False)} for title in titles ]
+                       )
+    doc += endDocument()
+
+    write( doc, "ensemble_test.tex" )
+
+
 def document() :
     data = data2011()
     out = ""
@@ -222,6 +308,5 @@ def write(doc, fileName = "") :
     f.close()
     os.system("pdflatex %s"%fileName)
 
-write(document(), fileName = "tables.tex")
-
+#write(document(), fileName = "tables.tex")
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from inputData import afterAlphaT,mixedMuons_b
-data = afterAlphaT.data_55_v1()
-#data = mixedMuons_b.data_55_v1()
+#data = afterAlphaT.data_55_v1()
+data = mixedMuons_b.data_55_v1()
 
 for func in ["observations", "mcExpectations", "purities", "mcExtra", "mcStatError"] :
     print func
