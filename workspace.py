@@ -3,33 +3,24 @@ import utils,plotting,calc
 from common import obs,pdf,note,ni,wimport
 import ROOT as r
 
-def nuisanceParameters() :
-    pass
-#  // parameters
-#   //   if (!GetParametersOfInterest()) {
-#   //      SetParametersOfInterest(RooArgSet());
-#   //   }
-#   if (!GetNuisanceParameters()) {
-#      RooArgSet p(*GetPdf()->getParameters(data));
-#      p.remove(*GetParametersOfInterest());
-#      RemoveConstantParameters(&p);
-#      if(p.getSize()>0)
-#      SetNuisanceParameters(p);
-#}
+def classifyParameters(w = None, modelConfig = None, paramsFuncs = []) :
+    for setName,funcName in paramsFuncs :
+        s = w.set(setName)
+        if s.getSize() :
+            getattr(modelConfig, funcName)(s)
 
 def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
     modelConfig.SetObservables(w.set("obs"))
 
-    sets = {"systObs": "SetGlobalObservables",
-            "poi": "SetParametersOfInterest",
-            "nuis": "SetNuisanceParameters",
-            }
-    for setName,funcName in sets.iteritems() :
-        s = w.set(setName)
-        if s.getSize() :
-            getattr(modelConfig, funcName)(s)
+    classifyParameters(w, modelConfig, [("systObs", "SetGlobalObservables"),
+                                        ("poi", "SetParametersOfInterest")])
+
+    nuis = pdf(w).getParameters(modelConfig.GetParametersOfInterest())
+    r.RooStats.RemoveConstantParameters(nuis)
+    w.defineSet("nuis", nuis)
+    classifyParameters(w, modelConfig, [("nuis", "SetNuisanceParameters")])
     return modelConfig
 
 def q0q1(inputData, factor, A_ewk_ini) :
@@ -144,16 +135,10 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if RQcd=="Zero" :
             w.var(k).setVal(0.0)
             w.var(k).setConstant()
-        elif k not in poi :
-            out["nuis"].append(k)
-            #w.var(k).setVal( initialkQcd(inputData, factor, A_ewk_ini) )
 
     if RQcd=="Zero" or zeroQcd :
         w.var(A).setVal(0.0)
         w.var(A).setConstant()
-    elif A not in poi :
-        out["nuis"].append(A)
-        #w.var(A).setVal( initialAQcd(inputData, factor, A_ewk_ini, w.var(k).getVal()) )
 
     #observed "constants", not depending upon slice
     for i,htMeanValue,nHadBulkValue,hadTrgEff, hadBulkTrgEff in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"], trg["hadBulk"]) :
@@ -203,9 +188,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
 
     out["terms"].append(hadTermsName)
     out["multiBinObs"].append(ni("nHad", label))
-    if REwk :
-        out["nuis"].append(ni("A_ewk", label))
-        if REwk!="Constant" : out["nuis"].append(ni("k_ewk", label))
     return out
 
 def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
@@ -256,7 +238,6 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"][iPar]))
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
             out["systObs"].append(one)
-            out["nuis"].append(rho)
             terms.append(gaus)
 
     rFinal = None
@@ -308,7 +289,6 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
             terms.append(gaus)
             out["systObs"].append(one)
-            out["nuis"].append(rho)
 
     rFinal = None
     systBin = inputData.systBins()["sigmaPhotZ"]
@@ -360,7 +340,6 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
             terms.append(gaus)
             out["systObs"].append(one)
-            out["nuis"].append(rho)
 
     rFinal = None
     systBin = inputData.systBins()["sigmaMuonW"]
@@ -426,7 +405,6 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
 
     out["terms"].append(qcdTerms)
     out["systObs"].append(k_qcd_nom)
-    out["nuis"].append(k_qcd_unc_inp)
     return out
 
 def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
@@ -465,7 +443,6 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
             w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
             out["terms"].append(signalTermsName)
             out["systObs"].append(one)
-            out["nuis"].append(rho)
     return out
 
 def multi(w, variables, inputData) :
@@ -496,9 +473,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
 
     variables = {"terms": [],
                  "systObs": [],
-                 "nuis": [],
                  "multiBinObs": [],
-                 "multiBinNuis": [],
                  }
 
     samples = selection.samplesAndSignalEff.keys()
@@ -526,11 +501,6 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for x in ["signalDict", "extraSigEffUncSources", "rhoSignalMin"] :
             args["signal"][x] = eval(x)
 
-    for item in ["muon", "phot", "mumu"] :
-        if item in samples :
-            variables["multiBinNuis"] += [ni("fZinv", args[item]["label"])]
-            break
-
     for item in items :
         if (item in boxes) and (item not in selection.data.lumi()) : continue
         func = eval("%sTerms"%item)
@@ -543,9 +513,6 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["terms"] = variables["terms"]
     out["obs"] += multi(w, variables["multiBinObs"], selection.data)
     out["systObs" if separateSystObs else "obs"] += variables["systObs"]
-
-    for item in ["nuis"] : out[item] = variables[item]
-    out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
 def startLikelihood(w = None, xs = None, fIniFactor = None, poi = {}) :
@@ -559,7 +526,7 @@ def argSet( w = None, vars = [] ) :
         out.add( w.var(item) )
     return out
 
-def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], systObs = [], nuis = []) :
+def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], systObs = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if (not standard) or (not smOnly) :
@@ -567,7 +534,6 @@ def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], ter
 
     w.defineSet("obs", argSet(w, obs))
     w.defineSet("systObs", argSet(w, systObs))
-    w.defineSet("nuis",argSet(w, nuis))
 
 class foo(object) :
     def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
@@ -690,7 +656,7 @@ class foo(object) :
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
         if method=="profileLikelihood" :
             return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(),
-                                   cl = cl, poiList = self.likelihoodSpec["poi"].keys(), makePlots = makePlots)
+                                   cl = cl, poiList = self.likelihoodSpec.poi().keys(), makePlots = makePlots)
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
@@ -730,7 +696,7 @@ class foo(object) :
         if out :
             results,i = out
 
-            for selection in self.likelihoodSpec["selections"] :
+            for selection in self.likelihoodSpec.selections() :
                 activeBins = {}
                 for key,value in selection.data.observations().iteritems() :
                     activeBins[key] = map(lambda x:x!=None, value)
@@ -742,7 +708,7 @@ class foo(object) :
                         "printPages": False, "toyNumber":i, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True}
 
                 for item in ["REwk", "RQcd"] :
-                    args[item] = self.likelihoodSpec[item]
+                    args[item] = getattr(self.likelihoodSpec, item)()
 
                 plotter = plotting.validationPlotter(args)
                 plotter.inputData = selection.data
@@ -755,7 +721,7 @@ class foo(object) :
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        for selection in self.likelihoodSpec["selections"] :
+        for selection in self.likelihoodSpec.selections() :
             activeBins = {}
             for key,value in selection.data.observations().iteritems() :
                 activeBins[key] = map(lambda x:x!=None, value)
@@ -766,7 +732,7 @@ class foo(object) :
                     "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
                     "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "drawComponents":drawComponents, "printValues":printValues}
             for item in ["REwk", "RQcd"] :
-                args[item] = self.likelihoodSpec[item]
+                args[item] = getattr(self.likelihoodSpec, item)()
 
             plotter = plotting.validationPlotter(args)
             plotter.inputData = selection.data #temporary
