@@ -3,7 +3,7 @@ import selections
 class spec(object) :
     _selections = []
 
-    def includeSystObsInObs(self) : return False
+    def separateSystObs(self) : return False
     def poi(self) : return [{"f": (1.0, 0.0, 20.0)}, {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)}, {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0] #{"var": initialValue, min, max)
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][0]
