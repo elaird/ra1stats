@@ -6,7 +6,7 @@ import ROOT as r
 def classifyParameters(w = None, modelConfig = None, paramsFuncs = []) :
     for setName,funcName in paramsFuncs :
         s = w.set(setName)
-        if s.getSize() :
+        if s and s.getSize() :
             getattr(modelConfig, funcName)(s)
 
 def modelConfiguration(w) :
