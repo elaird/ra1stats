@@ -17,7 +17,7 @@ def signal(i) :
     lm6.insert("55", {
             "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
             "effMuon":scaled((0.045, 0.045, 0.1568, 0.245, 0.3254, 0.3481, 0.2836, 0.3618), 1.0e-2)})
-    lm6.insert("2010", { #mocked up from 2011
+    lm6.insert("2010_55", { #mocked up from 2011
             "effHad": (0.0,     0.0,     0.005,   0.012 + 0.019 + 0.022 + 0.018 + 0.029),
             "effMuon":scaled((0.045, 0.045, 0.1568, 0.245 + 0.3254 + 0.3481 + 0.2836 + 0.3618), 1.0e-2)})
     
@@ -150,7 +150,7 @@ def signal(i) :
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signal = signal(0),
-                  signalExampleToStack = signal(1),
+                  signalExampleToStack = signal(-4),
                   #trace = True
                   #rhoSignalMin = 0.1,
                   #fIniFactor = 0.1,
