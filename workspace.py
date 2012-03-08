@@ -177,6 +177,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         else :
             lumi = ni("hadLumi", label)
             eff = ni("signalEffHad", label, i)
+            assert w.var(eff),eff
             rho = ni("rhoSignal", systematicsLabel, systBin[i])
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
