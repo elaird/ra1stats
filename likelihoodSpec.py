@@ -4,22 +4,18 @@ class spec(dict) :
     def __init__(self) :
         self._selections = []
         self.load()
+        self.legacy() #to be removed
 
-        #for compatibility; to be rewritten
-        d = self
+    def poi(self) : return [{"f": (1.0, 0.0, 1.0)}, {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)}, {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0] #{"var": initialValue, min, max)
+    def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
+    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
+    def nFZinv(self) : return ["All", "One", "Two"][2]
+    def constrainQcdSlope(self) : return True
 
-        #{"var": initialValue, min, max)
-        d["poi"] = [{"f": (1.0, 0.0, 1.0)},
-                    {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
-                    {"k_qcd_55": (3.0e-2, 0.01, 0.04)},
-                    ][0]
-        
-        d["selections"] = self.selections()
-        d["REwk"] = ["", "Linear", "FallingExp", "Constant"][0]
-        d["RQcd"] = ["Zero", "FallingExp", "FallingExpA"][1]
-        d["nFZinv"] = ["All", "One", "Two"][2]
-        d["constrainQcdSlope"] = True
-    
+    def legacy(self) :
+        for item in ["constrainQcdSlope", "selections", "REwk", "RQcd", "nFZinv", "poi"] :
+            self[item] = getattr(self, item)()
+
     def selections(self) :
         return self._selections
 
