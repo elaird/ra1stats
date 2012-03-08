@@ -472,7 +472,7 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}, includeSystObsInObs = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -522,7 +522,8 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out = {"obs":[]}
     out["terms"] = variables["terms"]
     out["obs"] += multi(w, variables["multiBinObs"], selection.data)
-    out["obs"] += variables["systObs"]
+    if includeSystObsInObs :
+        out["obs"] += variables["systObs"]
 
     for item in ["nuis"] : out[item] = variables[item]
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
@@ -564,17 +565,18 @@ class foo(object) :
         args = {}
         args["w"] = self.wspace
         args["smOnly"] = self.smOnly()
-        args.update(self.likelihoodSpec)
-        del args["selections"]#pass only local slice info
+
+        for item in ["includeSystObsInObs", "poi", "REwk", "RQcd", "nFZinv", "constrainQcdSlope"] :
+            args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec["poi"])
+            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
         total = collections.defaultdict(list)
-        for sel in self.likelihoodSpec["selections"] :
+        for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
             args["signalDict"] = self.signal[sel.name] if sel.name in self.signal else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
@@ -583,7 +585,7 @@ class foo(object) :
             for key,value in d.iteritems() :
                 total[key] += value
         finishLikelihood(w = self.wspace, smOnly = self.smOnly(), standard = self.likelihoodSpec.standardPoi(),
-                         poiList = self.likelihoodSpec["poi"].keys(), **total)
+                         poiList = self.likelihoodSpec.poi().keys(), **total)
 
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), otherPoi = not self.likelihoodSpec.standardPoi())
@@ -595,20 +597,20 @@ class foo(object) :
 
     def checkInputs(self) :
         l = self.likelihoodSpec
-        assert l["REwk"] in ["", "FallingExp", "Linear", "Constant"]
-        assert l["RQcd"] in ["FallingExp", "FallingExpA", "Zero"]
-        assert l["nFZinv"] in ["One", "Two", "All"]
-        assert len(l["poi"])==1, len(l["poi"])
+        assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
+        assert l.RQcd() in ["FallingExp", "FallingExpA", "Zero"]
+        assert l.nFZinv() in ["One", "Two", "All"]
+        assert len(l.poi())==1, len(l.poi())
         if not l.standardPoi() :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
             assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
 
-        if l["constrainQcdSlope"] :
-            assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
-        if any([sel.universalKQcd for sel in l["selections"]]) :
+        if l.constrainQcdSlope() :
+            assert l.RQcd() == "FallingExp","%s!=FallingExp"%l["RQcd"]
+        if any([sel.universalKQcd for sel in l.selections()]) :
             assert "FallingExp" in l["RQcd"]
-        for sel in l["selections"] :
+        for sel in l.selections() :
             assert sel.samplesAndSignalEff,sel.name
             bins = sel.data.htBinLowerEdges()
             for dct in [self.signal, self.signalExampleToStack] :
@@ -620,14 +622,14 @@ class foo(object) :
         return not self.signal
 
     def systematicsLabel(self, name) :
-        selections = self.likelihoodSpec["selections"]
+        selections = self.likelihoodSpec.selections()
         syst = [s.universalSystematics for s in selections]
         assert sum(syst)<2
         if any(syst) : assert not syst.index(True)
         return name if sum(syst)!=1 else selections[syst.index(True)].name
 
     def kQcdLabel(self, name) :
-        selections = self.likelihoodSpec["selections"]
+        selections = self.likelihoodSpec.selections()
         k = [s.universalKQcd for s in selections]
         assert sum(k)<2
         if any(k) : assert not k.index(True)
