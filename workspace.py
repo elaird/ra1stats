@@ -572,7 +572,7 @@ class foo(object) :
             for key,value in d.iteritems() :
                 total[key] += value
         finishLikelihood(w = self.wspace, smOnly = self.smOnly(), standard = self.likelihoodSpec.standardPoi(),
-                         poiList = self.likelihoodSpec.poi().keys(), **total)
+                         poiList = self.likelihoodSpec.poiList(), **total)
 
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace)
@@ -657,7 +657,7 @@ class foo(object) :
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
         if method=="profileLikelihood" :
             return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(),
-                                   cl = cl, poiList = self.likelihoodSpec.poi().keys(), makePlots = makePlots)
+                                   cl = cl, poiList = self.likelihoodSpec.poiList(), makePlots = makePlots)
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
