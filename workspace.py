@@ -3,13 +3,33 @@ import utils,plotting,calc
 from common import obs,pdf,note,ni,wimport
 import ROOT as r
 
-def modelConfiguration(w, smOnly, otherPoi = False) :
+def nuisanceParameters() :
+    pass
+#  // parameters
+#   //   if (!GetParametersOfInterest()) {
+#   //      SetParametersOfInterest(RooArgSet());
+#   //   }
+#   if (!GetNuisanceParameters()) {
+#      RooArgSet p(*GetPdf()->getParameters(data));
+#      p.remove(*GetParametersOfInterest());
+#      RemoveConstantParameters(&p);
+#      if(p.getSize()>0)
+#      SetNuisanceParameters(p);
+#}
+
+def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
     modelConfig.SetObservables(w.set("obs"))
-    if (not smOnly) or otherPoi :
-        modelConfig.SetParametersOfInterest(w.set("poi"))
-        modelConfig.SetNuisanceParameters(w.set("nuis"))
+
+    sets = {"systObs": "SetGlobalObservables",
+            "poi": "SetParametersOfInterest",
+            "nuis": "SetNuisanceParameters",
+            }
+    for setName,funcName in sets.iteritems() :
+        s = w.set(setName)
+        if s.getSize() :
+            getattr(modelConfig, funcName)(s)
     return modelConfig
 
 def q0q1(inputData, factor, A_ewk_ini) :
@@ -519,11 +539,13 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for key in variables : #include terms, obs, etc. in likelihood
             variables[key] += d[key]
 
-    out = {"obs":[]}
+    out = {"obs":[], "systObs":[]}
     out["terms"] = variables["terms"]
     out["obs"] += multi(w, variables["multiBinObs"], selection.data)
     if includeSystObsInObs :
         out["obs"] += variables["systObs"]
+    else :
+        out["systObs"] += variables["systObs"]
 
     for item in ["nuis"] : out[item] = variables[item]
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
@@ -540,13 +562,14 @@ def argSet( w = None, vars = [] ) :
         out.add( w.var(item) )
     return out
 
-def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], nuis = []) :
+def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], systObs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if (not standard) or (not smOnly) :
         w.defineSet("poi", ",".join(poiList))
 
     w.defineSet("obs", argSet(w, obs))
+    w.defineSet("systObs", argSet(w, systObs))
     w.defineSet("nuis",argSet(w, nuis))
 
 class foo(object) :
@@ -588,7 +611,7 @@ class foo(object) :
                          poiList = self.likelihoodSpec.poi().keys(), **total)
 
         self.data = dataset(obs(self.wspace))
-        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), otherPoi = not self.likelihoodSpec.standardPoi())
+        self.modelConfig = modelConfiguration(self.wspace)
 
         if trace :
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
