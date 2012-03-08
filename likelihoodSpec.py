@@ -4,11 +4,11 @@ class spec(object) :
     _selections = []
 
     def separateSystObs(self) : return False
-    def poi(self) : return [{"f": (1.0, 0.0, 20.0)}, {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)}, {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0] #{"var": initialValue, min, max)
+    def poi(self) : return [{"f": (1.0, 0.0, 1.0)}, {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)}, {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0] #{"var": initialValue, min, max)
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
-    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][0]
+    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return False
+    def constrainQcdSlope(self) : return True
 
     def selections(self) :
         return self._selections
@@ -20,9 +20,6 @@ class spec(object) :
         self._selections += sel
 
     def __init__(self) :
-        self.add( selections.twentyTen() )
-
-    def __init2__(self) :
         systMode = 3
 
         slices = False
@@ -55,3 +52,5 @@ class spec(object) :
                 self.add( selections.btags_1_2_gt2(systMode) )
 
 #        self.add( selections.alphaT_slices_noMHTovMET(systMode) )
+#        self.add( selections.twentyTen() )
+
