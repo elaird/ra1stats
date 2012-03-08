@@ -86,7 +86,7 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
     latex.DrawLatex(x, y, text)
     return latex
 
-def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False) :
+def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False) :
     s = conf.switches()
     if not s["isSms"] : return
     
@@ -95,7 +95,16 @@ def makeTopologyXsLimitPlots(logZ = False, name = "UpperLimit", drawGraphs = Tru
     fileName = inFile.replace(".root","_xsLimit.eps")
 
     c = squareCanvas()
-    h2 = threeToTwo(f.Get(name))
+    h2 = None
+    for iName,name in enumerate(names) :
+        h3 = f.Get(name)
+        if not h3 : continue
+        h2 = threeToTwo(h3)
+        if iName :
+            print "WARNING: used name %d (%s)"%(iName, name)
+        break
+
+    assert h2,names
     modifyHisto(h2, s)
     
     assert len(s["CL"])==1
