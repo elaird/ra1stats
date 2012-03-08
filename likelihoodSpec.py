@@ -12,8 +12,11 @@ class spec(object) :
     def selections(self) :
         return self._selections
 
+    def poiList(self) :
+        return self.poi().keys()
+
     def standardPoi(self) :
-        return self.poi().keys()==["f"]
+        return self.poiList()==["f"]
 
     def add(self, sel = []) :
         self._selections += sel
