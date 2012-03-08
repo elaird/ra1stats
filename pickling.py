@@ -19,7 +19,7 @@ def readNumbers(fileName) :
 ##number collection
 def effHistos(nloToLoRatios = False) :
     out = {}
-    for sel in likelihoodSpec.spec()["selections"] :
+    for sel in likelihoodSpec.spec().selections() :
         assert sel.data.htBinLowerEdgesInput()==sel.data.htBinLowerEdges(), "merging bins is not yet supported"
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
