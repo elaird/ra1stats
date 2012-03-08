@@ -492,7 +492,7 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}, includeSystObsInObs = None) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}, separateSystObs = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -542,10 +542,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out = {"obs":[], "systObs":[]}
     out["terms"] = variables["terms"]
     out["obs"] += multi(w, variables["multiBinObs"], selection.data)
-    if includeSystObsInObs :
-        out["obs"] += variables["systObs"]
-    else :
-        out["systObs"] += variables["systObs"]
+    out["systObs" if separateSystObs else "obs"] += variables["systObs"]
 
     for item in ["nuis"] : out[item] = variables[item]
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
@@ -589,7 +586,7 @@ class foo(object) :
         args["w"] = self.wspace
         args["smOnly"] = self.smOnly()
 
-        for item in ["includeSystObsInObs", "poi", "REwk", "RQcd", "nFZinv", "constrainQcdSlope"] :
+        for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv", "constrainQcdSlope"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
