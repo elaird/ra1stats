@@ -319,6 +319,7 @@ class data2010(data) :
             }
         self._htMeans             = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
         self._triggerEfficiencies = {
+            "hadBulk":(1.0, 1.0, 1.0, 1.0),
             "had":  (  1.0, 1.0, 1.0, 1.0),
             "phot": (  1.0, 1.0, 1.0, 1.0),
             "muon": (  1.0, 1.0, 1.0, 1.0),
