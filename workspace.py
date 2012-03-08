@@ -235,7 +235,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(one, one, 1.0))
             wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"][iPar]))
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
             terms.append(gaus)
 
@@ -287,7 +287,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaPhotZ"][iPar]))
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
             terms.append(gaus)
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
 
     rFinal = None
@@ -339,7 +339,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMuonW"][iPar]))
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
             terms.append(gaus)
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
 
     rFinal = None
@@ -405,7 +405,7 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
     out["terms"].append(qcdTerms)
-    out["obs"].append(k_qcd_nom)
+    out["systObs"].append(k_qcd_nom)
     out["nuis"].append(k_qcd_unc_inp)
     return out
 
@@ -444,7 +444,7 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
             signalTermsName = ni("signalTerms", label, iPar)
             w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
             out["terms"].append(signalTermsName)
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
     return out
 
@@ -475,7 +475,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
                     REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}) :
 
     variables = {"terms": [],
-                 "obs": [],
+                 "systObs": [],
                  "nuis": [],
                  "multiBinObs": [],
                  "multiBinNuis": [],
@@ -519,9 +519,12 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for key in variables : #include terms, obs, etc. in likelihood
             variables[key] += d[key]
 
-    out = {}
-    for item in ["terms", "obs", "nuis"] : out[item] = variables[item]
-    out["obs"]  += multi(w, variables["multiBinObs"], selection.data)
+    out = {"obs":[]}
+    out["terms"] = variables["terms"]
+    out["obs"] += multi(w, variables["multiBinObs"], selection.data)
+    out["obs"] += variables["systObs"]
+
+    for item in ["nuis"] : out[item] = variables[item]
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
