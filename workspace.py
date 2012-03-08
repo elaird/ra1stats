@@ -12,9 +12,9 @@ def classifyParameters(w = None, modelConfig = None, paramsFuncs = []) :
 def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
-    modelConfig.SetObservables(w.set("obs"))
 
-    classifyParameters(w, modelConfig, [("systObs", "SetGlobalObservables"),
+    classifyParameters(w, modelConfig, [("obs", "SetObservables"),
+                                        ("systObs", "SetGlobalObservables"),
                                         ("poi", "SetParametersOfInterest")])
 
     nuis = pdf(w).getParameters(modelConfig.GetParametersOfInterest())
