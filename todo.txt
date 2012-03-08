@@ -10,7 +10,6 @@ physics
 - check signal efficiency merging
 - separate eff unc. for hadrons and muons
 - restore extraSigEffSources
-- consider floating ewk as nuisance
 - mcStatErr before trigger
 
 hard-coded
