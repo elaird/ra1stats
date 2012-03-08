@@ -589,13 +589,13 @@ class foo(object) :
         assert len(l.poi())==1, len(l.poi())
         if not l.standardPoi() :
             assert self.smOnly()
-            assert "FallingExp" in l["RQcd"]
+            assert "FallingExp" in l.RQcd()
             assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
 
         if l.constrainQcdSlope() :
-            assert l.RQcd() == "FallingExp","%s!=FallingExp"%l["RQcd"]
+            assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()
         if any([sel.universalKQcd for sel in l.selections()]) :
-            assert "FallingExp" in l["RQcd"]
+            assert "FallingExp" in l.RQcd()
         for sel in l.selections() :
             assert sel.samplesAndSignalEff,sel.name
             bins = sel.data.htBinLowerEdges()
