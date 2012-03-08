@@ -17,7 +17,7 @@ def signal(i) :
     lm6.insert("55", {
             "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
             "effMuon":scaled((0.045, 0.045, 0.1568, 0.245, 0.3254, 0.3481, 0.2836, 0.3618), 1.0e-2)})
-    lm6.insert("2010", { #mocked up from 2011
+    lm6.insert("2010_55", { #mocked up from 2011
             "effHad": (0.0,     0.0,     0.005,   0.012 + 0.019 + 0.022 + 0.018 + 0.029),
             "effMuon":scaled((0.045, 0.045, 0.1568, 0.245 + 0.3254 + 0.3481 + 0.2836 + 0.3618), 1.0e-2)})
     
@@ -149,8 +149,8 @@ def signal(i) :
     return out[i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signal = signal(0),
-                  signalExampleToStack = signal(1),
+                  signal = signal(-4),
+                  #signalExampleToStack = signal(-4),
                   #trace = True
                   #rhoSignalMin = 0.1,
                   #fIniFactor = 0.1,
@@ -160,8 +160,8 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
 cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
-#            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
-#            testStatType = 3, nToys = 20, nWorkers = 1); print out
+#            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][0],
+#            testStatType = 3, nToys = 50, nWorkers = 1); print out
 #f.profile()
 f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = False)

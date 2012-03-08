@@ -1,36 +1,33 @@
 import selections
 
-class spec(dict) :
-    def __init__(self) :
-        self._selections = []
-        self.load()
-        self.legacy() #to be removed
+class spec(object) :
+    _selections = []
 
-    def poi(self) : return [{"f": (1.0, 0.0, 1.0)}, {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)}, {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0] #{"var": initialValue, min, max)
+    def separateSystObs(self) : return False
+    def poi(self) : return [{"f": (1.0, 0.0, 20.0)}, {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)}, {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0] #{"var": initialValue, min, max)
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
-    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
+    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][0]
     def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return True
-
-    def legacy(self) :
-        for item in ["constrainQcdSlope", "selections", "REwk", "RQcd", "nFZinv", "poi"] :
-            self[item] = getattr(self, item)()
+    def constrainQcdSlope(self) : return False
 
     def selections(self) :
         return self._selections
 
     def standardPoi(self) :
-        return self["poi"].keys()==["f"]
+        return self.poi().keys()==["f"]
 
     def add(self, sel = []) :
         self._selections += sel
 
-    def load(self) :
+    def __init__(self) :
+        self.add( selections.twentyTen() )
+
+    def __init2__(self) :
         systMode = 3
 
         slices = False
-        b = False
-        multib = True
+        b = True
+        multib = False
 
 
         # multib suboptions

@@ -137,3 +137,10 @@ def simple() :
                       samplesAndSignalEff = {"simple": True},
                       data = simpleOneBin.data_simple(),
                       )]
+
+def twentyTen() :
+    return [selection(name = "2010_55",
+                      note = "#alpha_{T}>0.55",
+                      samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
+                      data = orig.data2010(systMode = -1),
+                      )]

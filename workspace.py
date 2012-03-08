@@ -3,13 +3,33 @@ import utils,plotting,calc
 from common import obs,pdf,note,ni,wimport
 import ROOT as r
 
-def modelConfiguration(w, smOnly, otherPoi = False) :
+def nuisanceParameters() :
+    pass
+#  // parameters
+#   //   if (!GetParametersOfInterest()) {
+#   //      SetParametersOfInterest(RooArgSet());
+#   //   }
+#   if (!GetNuisanceParameters()) {
+#      RooArgSet p(*GetPdf()->getParameters(data));
+#      p.remove(*GetParametersOfInterest());
+#      RemoveConstantParameters(&p);
+#      if(p.getSize()>0)
+#      SetNuisanceParameters(p);
+#}
+
+def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
     modelConfig.SetPdf(pdf(w))
     modelConfig.SetObservables(w.set("obs"))
-    if (not smOnly) or otherPoi :
-        modelConfig.SetParametersOfInterest(w.set("poi"))
-        modelConfig.SetNuisanceParameters(w.set("nuis"))
+
+    sets = {"systObs": "SetGlobalObservables",
+            "poi": "SetParametersOfInterest",
+            "nuis": "SetNuisanceParameters",
+            }
+    for setName,funcName in sets.iteritems() :
+        s = w.set(setName)
+        if s.getSize() :
+            getattr(modelConfig, funcName)(s)
     return modelConfig
 
 def q0q1(inputData, factor, A_ewk_ini) :
@@ -235,7 +255,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(one, one, 1.0))
             wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"][iPar]))
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
             terms.append(gaus)
 
@@ -287,7 +307,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaPhotZ"][iPar]))
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
             terms.append(gaus)
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
 
     rFinal = None
@@ -339,7 +359,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMuonW"][iPar]))
             wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
             terms.append(gaus)
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
 
     rFinal = None
@@ -405,7 +425,7 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
     out["terms"].append(qcdTerms)
-    out["obs"].append(k_qcd_nom)
+    out["systObs"].append(k_qcd_nom)
     out["nuis"].append(k_qcd_unc_inp)
     return out
 
@@ -444,7 +464,7 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
             signalTermsName = ni("signalTerms", label, iPar)
             w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
             out["terms"].append(signalTermsName)
-            out["obs"].append(one)
+            out["systObs"].append(one)
             out["nuis"].append(rho)
     return out
 
@@ -472,10 +492,10 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}, separateSystObs = None) :
 
     variables = {"terms": [],
-                 "obs": [],
+                 "systObs": [],
                  "nuis": [],
                  "multiBinObs": [],
                  "multiBinNuis": [],
@@ -519,9 +539,12 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         for key in variables : #include terms, obs, etc. in likelihood
             variables[key] += d[key]
 
-    out = {}
-    for item in ["terms", "obs", "nuis"] : out[item] = variables[item]
-    out["obs"]  += multi(w, variables["multiBinObs"], selection.data)
+    out = {"obs":[], "systObs":[]}
+    out["terms"] = variables["terms"]
+    out["obs"] += multi(w, variables["multiBinObs"], selection.data)
+    out["systObs" if separateSystObs else "obs"] += variables["systObs"]
+
+    for item in ["nuis"] : out[item] = variables[item]
     out["nuis"] += multi(w, variables["multiBinNuis"], selection.data)
     return out
 
@@ -536,13 +559,14 @@ def argSet( w = None, vars = [] ) :
         out.add( w.var(item) )
     return out
 
-def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], nuis = []) :
+def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], systObs = [], nuis = []) :
     w.factory("PROD::model(%s)"%",".join(terms))
 
     if (not standard) or (not smOnly) :
         w.defineSet("poi", ",".join(poiList))
 
     w.defineSet("obs", argSet(w, obs))
+    w.defineSet("systObs", argSet(w, systObs))
     w.defineSet("nuis",argSet(w, nuis))
 
 class foo(object) :
@@ -561,17 +585,18 @@ class foo(object) :
         args = {}
         args["w"] = self.wspace
         args["smOnly"] = self.smOnly()
-        args.update(self.likelihoodSpec)
-        del args["selections"]#pass only local slice info
+
+        for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv", "constrainQcdSlope"] :
+            args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec["poi"])
+            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
         total = collections.defaultdict(list)
-        for sel in self.likelihoodSpec["selections"] :
+        for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
             args["signalDict"] = self.signal[sel.name] if sel.name in self.signal else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
@@ -580,10 +605,10 @@ class foo(object) :
             for key,value in d.iteritems() :
                 total[key] += value
         finishLikelihood(w = self.wspace, smOnly = self.smOnly(), standard = self.likelihoodSpec.standardPoi(),
-                         poiList = self.likelihoodSpec["poi"].keys(), **total)
+                         poiList = self.likelihoodSpec.poi().keys(), **total)
 
         self.data = dataset(obs(self.wspace))
-        self.modelConfig = modelConfiguration(self.wspace, self.smOnly(), otherPoi = not self.likelihoodSpec.standardPoi())
+        self.modelConfig = modelConfiguration(self.wspace)
 
         if trace :
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
@@ -592,20 +617,20 @@ class foo(object) :
 
     def checkInputs(self) :
         l = self.likelihoodSpec
-        assert l["REwk"] in ["", "FallingExp", "Linear", "Constant"]
-        assert l["RQcd"] in ["FallingExp", "FallingExpA", "Zero"]
-        assert l["nFZinv"] in ["One", "Two", "All"]
-        assert len(l["poi"])==1, len(l["poi"])
+        assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
+        assert l.RQcd() in ["FallingExp", "FallingExpA", "Zero"]
+        assert l.nFZinv() in ["One", "Two", "All"]
+        assert len(l.poi())==1, len(l.poi())
         if not l.standardPoi() :
             assert self.smOnly()
             assert "FallingExp" in l["RQcd"]
             assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
 
-        if l["constrainQcdSlope"] :
-            assert l["RQcd"] == "FallingExp","%s!=FallingExp"%l["RQcd"]
-        if any([sel.universalKQcd for sel in l["selections"]]) :
+        if l.constrainQcdSlope() :
+            assert l.RQcd() == "FallingExp","%s!=FallingExp"%l["RQcd"]
+        if any([sel.universalKQcd for sel in l.selections()]) :
             assert "FallingExp" in l["RQcd"]
-        for sel in l["selections"] :
+        for sel in l.selections() :
             assert sel.samplesAndSignalEff,sel.name
             bins = sel.data.htBinLowerEdges()
             for dct in [self.signal, self.signalExampleToStack] :
@@ -617,14 +642,14 @@ class foo(object) :
         return not self.signal
 
     def systematicsLabel(self, name) :
-        selections = self.likelihoodSpec["selections"]
+        selections = self.likelihoodSpec.selections()
         syst = [s.universalSystematics for s in selections]
         assert sum(syst)<2
         if any(syst) : assert not syst.index(True)
         return name if sum(syst)!=1 else selections[syst.index(True)].name
 
     def kQcdLabel(self, name) :
-        selections = self.likelihoodSpec["selections"]
+        selections = self.likelihoodSpec.selections()
         k = [s.universalKQcd for s in selections]
         assert sum(k)<2
         if any(k) : assert not k.index(True)

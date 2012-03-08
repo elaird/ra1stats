@@ -11,6 +11,7 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
 
+    assert wspace.var(poiList[0]), "%s not in workspace"%poiList[0]
     out["lowerLimit"] = lInt.LowerLimit(wspace.var(poiList[0]))
     out["upperLimit"] = lInt.UpperLimit(wspace.var(poiList[0]))
 
