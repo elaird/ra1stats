@@ -69,7 +69,7 @@ def points() :
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
-            "subCmd": "qsub -q hep%s.q"%(["short", "medium", "long"][0]),
+            "subCmd": "qsub -o /dev/null -e /dev/null -q hep%s.q"%(["short", "medium", "long"][0]),
             "envScript": "env.sh",
             "nJobsMax": 2000}
 
