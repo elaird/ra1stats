@@ -9,8 +9,8 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 2000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
-            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
             }
@@ -70,7 +70,7 @@ def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
             "subCmd": "qsub -q hep%s.q"%(["short", "medium", "long"][0]),
-            "envScript": ["icJob.sh", "env.sh"][1],
+            "envScript": "env.sh",
             "nJobsMax": 2000}
 
 def switches() :
