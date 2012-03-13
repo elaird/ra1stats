@@ -1,8 +1,47 @@
-physics
+hard-coded
+----------
+- remove hard-coded HT thresholds in histoSpec(), xsHisto(), nEventsInHisto()
+- consider hard-coded CLb_2 in plottingGrid.clsValidation()
+- 0.95 in StandardHypoTestInvDemo.C
+
+specify
 -------
+- b-tag efficiency
+- procedure for error determination
+- rho vs. HT
+- 4x2 bins test
+- remove syst. encouragement
+
+zero
+----
+- one mu only for gt2b
+- constant MC ratio in final bins
+- increase range for T1bbbb
+- example T2tt points
+- latex table
+- best-fit plots
+- T1 slice test
+
+one
+---
+- treatment of global observables
+- range for par f
+- CMSSM error bands
+- debug page 3 of cls plot
+- slope of excl. curve for low LSP mass
+- run T1,T2,CMSSM
+- check SMS xs files
+
+two
+---
+- upper limit tests toys old/toys new/asympt
 - error propagation in plots
 - improve mc ratio
 - mc stats as systematic
+- errors on translation factors
+
+three
+-----
 - bin-by-bin systematics on signal eff.
 - nlo scale variations
 - upgrade dirac delta
@@ -11,25 +50,20 @@ physics
 - separate eff unc. for hadrons and muons
 - restore extraSigEffSources
 - mcStatErr before trigger
+- investigate failed strip
+- parHistos 2D ensemble
 
-hard-coded
-----------
-- remove hard-coded HT thresholds in histoSpec(), xsHisto(), nEventsInHisto()
-- consider hard-coded CLb_2 in plottingGrid.clsValidation()
-- 0.95 in StandardHypoTestInvDemo.C
-
-technical
----------
-- configurability of initial values
+four
+----
+- TGraphs in file
+- automatic N_bins, N_nuisance
+- store workspace / profile wrapper
 - fix leaks in pValue() and expectedLimit()
 - query fit status for toys (improve 0 cut)
-
-2D
----
-- pickling.stuffVars
-- more histos in check
-- all sms function in histogramSpecs and histogramProcessing
-- trigger efficiency uncertainty
-- consider seed
-- consider removing PROD
+- (2D) pickling.stuffVars
+- (2D) more histos in check
+- (2D) all sms function in histogramSpecs and histogramProcessing
+- (2D) trigger efficiency uncertainty
+- (2D) consider seed
+- (2D) consider removing PROD
 
