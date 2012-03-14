@@ -6,11 +6,11 @@ class selection(object) :
 
     def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
                  alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
-                 fZinvIni = 0.5, AQcdIni = 1.0e-2, zeroQcd = False,
+                 fZinvIni = 0.5, AQcdIni = 1.0e-2, zeroQcd = False, muonForFullEwk = False,
                  universalSystematics = False, universalKQcd = False) :
         for item in ["name", "note", "samplesAndSignalEff", "data",
                      "alphaTMinMax","nbTag", "bTagLower",
-                     "fZinvIni", "AQcdIni", "zeroQcd",
+                     "fZinvIni", "AQcdIni", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
@@ -70,9 +70,11 @@ def noAlphaT_gt0b(systMode = 1, universalSystematics = True, universalKQcd = Tru
     return [ selection(name = "55b_mixed",
                        note = "#geq1 b-tag",
                        alphaTMinMax = ("55", None),
-                       samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                       #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                       samplesAndSignalEff = {"had":True, "muon":True},
                        data = mixedMuons_b.data_55_v1( systMode = systMode ),
                        bTagLower = "0",
+                       muonForFullEwk = True,
                        universalSystematics = universalSystematics,
                        universalKQcd = universalKQcd,
                        )]
