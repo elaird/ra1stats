@@ -18,15 +18,20 @@ def method() :
 def signal() :
     overwriteInput = collections.defaultdict(list)
     overwriteOutput = collections.defaultdict(list)
-    overwriteOutput.update({"T1": [(12, 4, 1), (13, 5, 1), (14, 3, 1), (24, 11, 1),
-                                   (30, 6, 1), (32, 24, 1), (37, 25, 1), (38, 18, 1),
-                                   (40, 20, 1), (40, 21, 1), (35, 17, 1), ( 9, 1, 1),
-                                   #(12,  7, 1), (20, 15, 1), 
-                                   ],
-                            "T2": [(16, 5, 1), (28, 9, 1), (29, 21, 1),
-                                   (32, 22, 1), (34, 25, 1), (44, 28, 1)
-                                   ],
+    overwriteOutput.update({"T1": [],
+                            "T2": [ (34, 15, 1), (38, 9, 1), (29, 7, 1), ( 35, 11, 1) ],
                             "T2tt": [],
+                            "T2bb": [ (10, 2, 1),  (11, 4, 1),  (12, 3, 1),
+                                      (16, 1, 1),  (19, 13, 1), (21, 6, 1),
+                                      (21, 13, 1), (22, 16, 1), (23, 1, 1),
+                                      (23, 14, 1), (24, 4, 1),  (24, 15, 1),
+                                      (25, 18, 1), (26, 5, 1),  (27, 1, 1),
+                                      (28, 7, 1),  (28, 12, 1), (11, 5, 1) ],
+                            "T1bbbb": [(36, 29, 1)],
+                            "T1tttt": [(21, 2, 1), (21, 3, 1), (35, 12, 1),
+                                       (36, 4, 1), (37, 2, 1), (37, 3, 1),
+                                       (37, 4, 1), (37, 5, 1), (37, 6, 1),
+                                       (37, 7, 1), (39, 12, 1), (44, 6, 1), ],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
@@ -39,12 +44,14 @@ def signal() :
                            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
-                           "T1bbbb":lambda iX,x,iY,y,iZ,z:True,
+                           "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+                           "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            },
             "nEventsIn":{""       :(9900., 10100.),
                          "T2tt"   :(1, None),
                          "T5zz"   :(5.0e3, None),
                          "T1bbbb"   :(1, None),
+                         "T1tttt"   :(1, None),
                          "TGQ_0p0":(1, None),
                          "TGQ_0p2":(1, None),
                          "TGQ_0p4":(1, None),
@@ -54,7 +61,9 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb", "T5zz","T1bbbb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"][4],
+            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb",
+                            "T5zz","T1bbbb", "T1tttt", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
+                            "TGQ_0p8"][8],
             }
 
 def points() :

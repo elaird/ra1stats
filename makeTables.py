@@ -7,20 +7,23 @@ print "==================================================================="
 print "*** makeTables.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
 print "==================================================================="
 
+
+#\usepackage{datetime}
 def beginDocument(comment = r"\currenttime\ \today") :
     return r'''
 \documentclass[8pt]{article}
 \usepackage[landscape]{geometry}
 \usepackage{xspace}
-\usepackage{datetime}
 \newcommand{\alt}{\ensuremath{\alpha_{\rm{T}}}\xspace}
 \newcommand{\RaT}{\ensuremath{R_{\alt}}\xspace}
 \def\scalht{\mbox{$H_{\rm{T}}$}\xspace}
 \newcommand{\ra}{\ensuremath{\rightarrow}}
 \newcommand{\znunu}{\ensuremath{{\rm Z} \ra \nu\bar{\nu}}}
 \newcommand{\ttNew}{\ensuremath{\rm{t}\bar{\rm{t}}}\xspace}
+\newcommand\T{\rule{0pt}{2.6ex}}
+\newcommand\B{\rule[-1.2ex]{0pt}{0pt}}
 \begin{document}
-'''+comment
+'''#+comment
 
 def endDocument() :
     return r'''\end{document}'''
@@ -241,16 +244,16 @@ def ensembleResultsFromDict( d, data ) :
     data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]
 
-    mc_titles  = [ "SM hadonric", "SM $\mu$+jets", 
+    mc_titles  = [ "SM hadronic", "SM $\mu$+jets",
                    "SM $\mu\mu$+jets", "SM $\gamma$+jets"]
 
-    data_titles  = [ "Data hadonric", "Data $\mu$+jets", 
+    data_titles  = [ "Data hadronic", "Data $\mu$+jets",
                      "Data $\mu\mu$+jets", "Data $\gamma$+jets"]
 
-    titles  = [ "SM hadonric", "Data hadonric",
-                "SM $\mu$+jets", "Data $\mu$+jets",
-                "SM $\mu\mu$+jets", "Data $\mu\mu$+jets",
-                "SM $\gamma$+jets", "Data $\gamma$+jets" ]
+    titles  = [ "SM hadronic\T", "Data hadronic\B",
+                "SM $\mu$+jets\T", "Data $\mu$+jets\B",
+                "SM $\mu\mu$+jets\T", "Data $\mu\mu$+jets\B",
+                "SM $\gamma$+jets\T", "Data $\gamma$+jets\B" ]
 
     # fill out MC values
     for sample,title in zip(samples,mc_titles) :
