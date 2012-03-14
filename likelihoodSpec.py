@@ -25,9 +25,9 @@ class spec(object) :
         self._selections = []
         systMode = 3
 
-        slices = True
+        slices = False
         b = False
-        multib = False
+        multib = True
 
 
         # multib suboptions

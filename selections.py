@@ -6,11 +6,11 @@ class selection(object) :
 
     def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
                  alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
-                 fZinvIni = 0.5, AQcdIni = 1.0e-2, zeroQcd = False,
+                 fZinvIni = 0.5, AQcdIni = 1.0e-2, zeroQcd = False, muonForFullEwk = False,
                  universalSystematics = False, universalKQcd = False) :
         for item in ["name", "note", "samplesAndSignalEff", "data",
                      "alphaTMinMax","nbTag", "bTagLower",
-                     "fZinvIni", "AQcdIni", "zeroQcd",
+                     "fZinvIni", "AQcdIni", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
@@ -114,6 +114,8 @@ def btags_1_2_gt2(systMode = 1) :
                   note = "2 b-tags",
                   alphaTMinMax = ("55", None),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                  #samplesAndSignalEff = {"had":True, "muon":True},
+                  #muonForFullEwk = True,
                   data = mixedMuons_b_sets.data_55_2btag( systMode = systMode ),
                   nbTag = "2",
                   fZinvIni = 0.1,
@@ -122,7 +124,8 @@ def btags_1_2_gt2(systMode = 1) :
         selection(name = "55_gt2b",
                   note = "#geq3 b-tags",
                   alphaTMinMax = ("55", None),
-                  samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                  samplesAndSignalEff = {"had":True, "muon":True},
+                  muonForFullEwk = True,
                   data = mixedMuons_b_sets.data_55_gt2btag( systMode = systMode ),
                   bTagLower = "2",
                   fZinvIni = 0.1,

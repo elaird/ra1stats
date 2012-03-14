@@ -109,7 +109,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
-def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
+def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
              REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, AQcdIni = None) :
 
     obs = inputData.observations()
@@ -158,12 +158,12 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
         else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
         qcd = w.function(ni("qcd", label, i))
-        
-        ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
 
-        wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
-        wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
+        ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
+        if not muonForFullEwk :
+            fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
+            wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
+            wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
         hadB    = ni("hadB",    label, i)
         hadS    = ni("hadS",    label, i)
@@ -191,7 +191,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["multiBinObs"].append(ni("nHad", label))
     return out
 
-def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -224,7 +224,7 @@ def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
     out["multiBinObs"].append(ni("nSimple", label))
     return out
 
-def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -274,7 +274,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     out["multiBinObs"].append(ni("nMumu", label))
     return out
 
-def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     out = collections.defaultdict(list)
 
     terms = []
@@ -325,7 +325,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     out["multiBinObs"].append(ni("nPhot", label))
     return out
 
-def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -345,23 +345,34 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     rFinal = None
     systBin = inputData.systBins()["sigmaMuonW"]
     signalSystBin = inputData.systBins()["sigmaLumiLike"]
-    for i,nMuonValue,mcMuonValue,mcTtwValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
-                                                            inputData.observations()["nMuon"],
-                                                            inputData.mcExpectations()["mcMuon"],
-                                                            inputData.mcExpectations()["mcTtw"],
-                                                            inputData.constantMcRatioAfterHere(),
-                                                            ) :
+    for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
+                                                                        inputData.observations()["nMuon"],
+                                                                        inputData.mcExpectations()["mcMuon"],
+                                                                        inputData.mcExpectations()["mcTtw"],
+                                                                        inputData.mcExpectations()["mcZinv"],
+                                                                        inputData.constantMcRatioAfterHere(),
+                                                                        ) :
         if nMuonValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/sum(inputData.mcExpectations()["mcTtw"][i:])
+        if stopHere :
+            denom = sum(inputData.mcExpectations()["mcTtw"][i:])
+            if muonForFullEwk : denom += sum(inputData.mcExpectations()["mcZinv"][i:])
+            rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/denom
+
         nMuon = ni("nMuon", label, i)
         rMuon = ni("rMuon", label, i)
         wimport(w, r.RooRealVar(nMuon, nMuon, nMuonValue))
-        wimport(w, r.RooRealVar(rMuon, rMuon, mcMuonValue/mcTtwValue if rFinal==None else rFinal))
+        if rFinal!=None :
+            rValue = rFinal
+        else :
+            denom = mcTtwValue
+            if muonForFullEwk : denom += mcZinvValue
+            rValue = mcMuonValue/denom
+        wimport(w, r.RooRealVar(rMuon, rMuon, rValue))
 
         muonB = ni("muonB", label, i)
         rhoMuonW = ni("rhoMuonW", systematicsLabel, systBin[i])
         wimport(w, r.RooFormulaVar(muonB, "(@0)*(@1)*(@2)",
-                                   r.RooArgList(w.var(rhoMuonW), w.var(rMuon), w.function(ni("ttw", label, i)))
+                                   r.RooArgList(w.var(rhoMuonW), w.var(rMuon), varOrFunc(w, "ewk" if muonForFullEwk else "ttw", label, i))
                                    )
                 )
 
@@ -386,7 +397,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     out["multiBinObs"].append(ni("nMuon", label))
     return out
 
-def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     out = collections.defaultdict(list)
 
     if label!=kQcdLabel : return out
@@ -408,7 +419,7 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["systObs"].append(k_qcd_nom)
     return out
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
+def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
                 signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
     
     assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
@@ -489,6 +500,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         args[item] = {}
         args[item]["inputData"] = selection.data
         args[item]["label"] = selection.name
+        args[item]["muonForFullEwk"] = selection.muonForFullEwk
         for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
             args[item][x] = eval(x)
 
@@ -504,6 +516,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
 
     for item in items :
         if (item in boxes) and (item not in selection.data.lumi()) : continue
+        if selection.muonForFullEwk and (item in ["phot", "mumu"]) : continue
         func = eval("%sTerms"%item)
         d = func(**(args[item]))
         if (item in boxes) and (item not in samples) : continue
@@ -599,6 +612,9 @@ class foo(object) :
             assert "FallingExp" in l.RQcd()
         for sel in l.selections() :
             assert sel.samplesAndSignalEff,sel.name
+            if sel.muonForFullEwk :
+                for box in ["phot", "mumu"] :
+                    assert box not in sel.samplesAndSignalEff,box
             bins = sel.data.htBinLowerEdges()
             for dct in [self.signal, self.signalExampleToStack] :
                 if sel.name not in dct : continue
@@ -728,15 +744,20 @@ class foo(object) :
                 activeBins[key] = map(lambda x:x!=None, value)
 
             args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
-                    "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
-                    "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(), "selNote": selection.note,
-                    "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
+                    "activeBins": activeBins, "smOnly": self.smOnly(), "note": self.note(),
+                    "signalExampleToStack": self.signalExampleToStack, "systematicsLabel":self.systematicsLabel(selection.name),
                     "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "drawComponents":drawComponents, "printValues":printValues}
+
+            for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk": "muonForFullEwk"}.iteritems() :
+                args[arg] = getattr(selection, member)
+
+            for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
+                args[item] = getattr(selection.data, item)()
+
             for item in ["REwk", "RQcd"] :
                 args[item] = getattr(self.likelihoodSpec, item)()
 
             plotter = plotting.validationPlotter(args)
-            plotter.inputData = selection.data #temporary
             plotter.go()
 
     def qcdPlot(self) :
