@@ -1,6 +1,6 @@
 import collections,math
 import utils,plotting,calc
-from common import obs,pdf,note,ni,wimport
+from common import obs,pdf,note,ni,wimport,floatingVars
 import ROOT as r
 
 def classifyParameters(w = None, modelConfig = None, paramsFuncs = []) :
@@ -647,6 +647,27 @@ class foo(object) :
         #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
+
+    def writeMlTable(self, fileName = "mlTable.tex") :
+        def pars() :
+            utils.rooFitResults(pdf(self.wspace), self.data)
+            return floatingVars(self.wspace)
+
+        import makeTables as mt
+        s = ""
+        s += mt.beginDocument()
+        s += "\n".join([r'\begin{table}[ht!]\centering',
+                        r'\caption{SM-only maximum-likelihood parameter values.}',
+                        r'\label{tab:mlParameterValues}',
+                        r'\begin{tabular}{lcc}',
+                        ])
+        s += r'name & value & error \\ \hline'
+        for d in pars() :
+            s += r'\verb@%s@ & %9.2e & %8.1e \\'%(d["name"], d["value"], d["error"])
+
+	s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
+        s += mt.endDocument()
+        mt.write(s, fileName)
 
     def profile(self) :
         calc.profilePlots(self.data, self.modelConfig, self.note())
