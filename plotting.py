@@ -405,7 +405,7 @@ class validationPlotter(object) :
         else :
             self.plot(note = "ewk scale factor (result of fit)", legend0 = (0.5, 0.8), yLabel = "",
                       otherVars = [ {"var":"ewk", "type":("function" if self.REwk else "var"), "dens":["mcHad"], "denTypes":[None], "desc":"ML EWK / MC EWK",
-                                     "stack":None, "color":r.kRed, "goptions": "hist"}])
+                                     "stack":None, "color":r.kRed, "suppress":["min","max"], "goptions": "hist"}])
 
     def mcFactorPlots(self) :
         if "muon" in self.lumi :
@@ -455,7 +455,7 @@ class validationPlotter(object) :
             self.plot(note = "muon to ewk", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2,
                       obs = {"var":"nMuon", "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "desc":"nMuon * (MC ewk / MC mu) / nHadBulk"},
                       otherVars = [{"var":"ewk", "type":("function" if self.REwk else "var"), "dens":["nHadBulk"], "denTypes":["data"],
-                                    "desc":"ML ewk / nHadBulk", "color":r.kGreen}])
+                                    "desc":"ML ewk / nHadBulk", "suppress":["min","max"], "color":r.kGreen}])
 
             #self.plot(note = "``naive prediction''", legend0 = (0.12, 0.7), legend1 = (0.82, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6,#customMaxFactor = [1.5]*2,
             #          otherVars = [
