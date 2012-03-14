@@ -163,7 +163,8 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
 #            testStatType = 3, nToys = 50, nWorkers = 1); print out
 #f.profile()
-f.bestFit(printValues = True)
+f.writeMlTable()
+#f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = False)
 #f.bestFit(drawMc = False, printValues = False, drawComponents = False)
 #f.bestFit(printPages = True)
