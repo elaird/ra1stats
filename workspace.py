@@ -158,12 +158,12 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
         else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
         qcd = w.function(ni("qcd", label, i))
-        
-        ewk   = importEwk(  w = w, REwk   = REwk,   name = "ewk",   label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
 
-        wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
-        wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
+        ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
+        if not muonForFullEwk :
+            fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
+            wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
+            wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
         hadB    = ni("hadB",    label, i)
         hadS    = ni("hadS",    label, i)
@@ -345,23 +345,34 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     rFinal = None
     systBin = inputData.systBins()["sigmaMuonW"]
     signalSystBin = inputData.systBins()["sigmaLumiLike"]
-    for i,nMuonValue,mcMuonValue,mcTtwValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
-                                                            inputData.observations()["nMuon"],
-                                                            inputData.mcExpectations()["mcMuon"],
-                                                            inputData.mcExpectations()["mcTtw"],
-                                                            inputData.constantMcRatioAfterHere(),
-                                                            ) :
+    for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
+                                                                        inputData.observations()["nMuon"],
+                                                                        inputData.mcExpectations()["mcMuon"],
+                                                                        inputData.mcExpectations()["mcTtw"],
+                                                                        inputData.mcExpectations()["mcZinv"],
+                                                                        inputData.constantMcRatioAfterHere(),
+                                                                        ) :
         if nMuonValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/sum(inputData.mcExpectations()["mcTtw"][i:])
+        if stopHere :
+            denom = sum(inputData.mcExpectations()["mcTtw"][i:])
+            if muonForFullEwk : denom += sum(inputData.mcExpectations()["mcZinv"][i:])
+            rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/denom
+
         nMuon = ni("nMuon", label, i)
         rMuon = ni("rMuon", label, i)
         wimport(w, r.RooRealVar(nMuon, nMuon, nMuonValue))
-        wimport(w, r.RooRealVar(rMuon, rMuon, mcMuonValue/mcTtwValue if rFinal==None else rFinal))
+        if rFinal!=None :
+            rValue = rFinal
+        else :
+            denom = mcTtwValue
+            if muonForFullEwk : denom += mcZinvValue
+            rValue = mcMuonValue/denom
+        wimport(w, r.RooRealVar(rMuon, rMuon, rValue))
 
         muonB = ni("muonB", label, i)
         rhoMuonW = ni("rhoMuonW", systematicsLabel, systBin[i])
         wimport(w, r.RooFormulaVar(muonB, "(@0)*(@1)*(@2)",
-                                   r.RooArgList(w.var(rhoMuonW), w.var(rMuon), w.function(ni("ttw", label, i)))
+                                   r.RooArgList(w.var(rhoMuonW), w.var(rMuon), varOrFunc(w, "ewk" if muonForFullEwk else "ttw", label, i))
                                    )
                 )
 
@@ -505,6 +516,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
 
     for item in items :
         if (item in boxes) and (item not in selection.data.lumi()) : continue
+        if selection.muonForFullEwk and (item in ["phot", "mumu"]) : continue
         func = eval("%sTerms"%item)
         d = func(**(args[item]))
         if (item in boxes) and (item not in samples) : continue
