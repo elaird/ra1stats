@@ -41,13 +41,15 @@ def beginTable(data, caption = "", label = "", coldivisor = 2, divider = "|", al
     s += "\n\\begin{tabular}{ %s }"%(alignment.join([divider]*(2+len(data.htBinLowerEdges())/coldivisor)))
     return s
 
-def endTable() :
-    return r'''
+def endTable( lastLine = True ) :
+    et = ""
+    if lastLine : et +="\hline"
+    et += r'''
 
-\hline
 \end{tabular}
 \end{table}
 '''
+    return et
 
 def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 30, hline = (False,False), extra = "") :
     s = ""
@@ -56,7 +58,7 @@ def oneRow(label = "", labelWidth = 23, entryList = [], entryWidth = 30, hline =
     if hline[1] : s += "\n\hline"
     return s
 
-def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider = "|", alignment = "c") :
+def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider = "|", alignment = "c", lastLine = True) :
     s = beginTable(data, caption = caption, label = label, coldivisor = coldivisor, divider = divider, alignment = alignment)
 
     fullBins = list(data.htBinLowerEdges()) + ["$\infty$"]
@@ -70,7 +72,7 @@ def oneTable(data, caption = "", label = "", rows = [], coldivisor = 2, divider 
         for row in rows :
             s += oneRow(label = row["label"], entryList = row["entryFunc"](data, indices, *row["args"] if "args" in row else ()),
                         entryWidth = row["entryWidth"] if "entryWidth" in row else 30, hline = row["hline"] if "hline" in row else (False,False))
-    s += endTable()
+    s += endTable( lastLine )
     return s
 
 #alphaT ratio
@@ -244,16 +246,15 @@ def ensembleResultsFromDict( d, data ) :
     data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]
 
-    mc_titles  = [ "SM hadronic", "SM $\mu$+jets",
-                   "SM $\mu\mu$+jets", "SM $\gamma$+jets"]
+    mc_titles  = [ "SM hadronic\T", "SM $\mu$+jets\T",
+                   "SM $\mu\mu$+jets\T", "SM $\gamma$+jets\T"]
 
-    data_titles  = [ "Data hadronic", "Data $\mu$+jets",
-                     "Data $\mu\mu$+jets", "Data $\gamma$+jets"]
-
-    titles  = [ "SM hadronic\T", "Data hadronic\B",
-                "SM $\mu$+jets\T", "Data $\mu$+jets\B",
-                "SM $\mu\mu$+jets\T", "Data $\mu\mu$+jets\B",
-                "SM $\gamma$+jets\T", "Data $\gamma$+jets\B" ]
+    data_titles  = [ "Data hadronic\B", "Data $\mu$+jets\B",
+                     "Data $\mu\mu$+jets\B", "Data $\gamma$+jets\B"]
+    titles = []
+    for dt, mct in zip(data_titles, mc_titles) :
+        titles.append(mct+"")
+        titles.append(dt+"")
 
     # fill out MC values
     for sample,title in zip(samples,mc_titles) :
@@ -285,7 +286,8 @@ def ensembleResultsFromDict( d, data ) :
                          divider = "",
                          alignment = "l",
                          rows = [ {"label": title, "entryFunc":ensembleRow, "args": [out[title][selection]], 
-                                   "hline": (False,True) if "Data" in title else (False,False)} for title in titles ]
+                                   "hline": (False,True) if "Data" in title else (False,False)} for title in titles if out[title].get(selection,False) ],
+                         lastLine = False,
                        )
     doc += endDocument()
 
