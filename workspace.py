@@ -744,15 +744,20 @@ class foo(object) :
                 activeBins[key] = map(lambda x:x!=None, value)
 
             args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
-                    "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
-                    "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note(), "selNote": selection.note,
-                    "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
+                    "activeBins": activeBins, "smOnly": self.smOnly(), "note": self.note(),
+                    "signalExampleToStack": self.signalExampleToStack, "systematicsLabel":self.systematicsLabel(selection.name),
                     "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "drawComponents":drawComponents, "printValues":printValues}
+
+            for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk": "muonForFullEwk"}.iteritems() :
+                args[arg] = getattr(selection, member)
+
+            for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
+                args[item] = getattr(selection.data, item)()
+
             for item in ["REwk", "RQcd"] :
                 args[item] = getattr(self.likelihoodSpec, item)()
 
             plotter = plotting.validationPlotter(args)
-            plotter.inputData = selection.data #temporary
             plotter.go()
 
     def qcdPlot(self) :
