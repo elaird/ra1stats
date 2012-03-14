@@ -7,12 +7,13 @@ print "==================================================================="
 print "*** makeTables.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
 print "==================================================================="
 
+
+#\usepackage{datetime}
 def beginDocument(comment = r"\currenttime\ \today") :
     return r'''
 \documentclass[8pt]{article}
 \usepackage[landscape]{geometry}
 \usepackage{xspace}
-\usepackage{datetime}
 \newcommand{\alt}{\ensuremath{\alpha_{\rm{T}}}\xspace}
 \newcommand{\RaT}{\ensuremath{R_{\alt}}\xspace}
 \def\scalht{\mbox{$H_{\rm{T}}$}\xspace}
@@ -20,7 +21,7 @@ def beginDocument(comment = r"\currenttime\ \today") :
 \newcommand{\znunu}{\ensuremath{{\rm Z} \ra \nu\bar{\nu}}}
 \newcommand{\ttNew}{\ensuremath{\rm{t}\bar{\rm{t}}}\xspace}
 \begin{document}
-'''+comment
+'''#+comment
 
 def endDocument() :
     return r'''\end{document}'''
