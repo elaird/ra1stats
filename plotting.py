@@ -402,7 +402,7 @@ class validationPlotter(object) :
     def mcFactorPlots(self) :
         if "muon" in self.lumi :
             self.plot(note = "muon translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 2.0,
-                      otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC ttW", "stack":None}],
+                      otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC %s"%("ewk" if self.muonForFullEwk else "ttW"), "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["muon"])
         if "phot" in self.lumi :
             self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 4.0,
