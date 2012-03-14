@@ -109,7 +109,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
-def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
+def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
              REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, AQcdIni = None) :
 
     obs = inputData.observations()
@@ -191,7 +191,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["multiBinObs"].append(ni("nHad", label))
     return out
 
-def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -224,7 +224,7 @@ def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
     out["multiBinObs"].append(ni("nSimple", label))
     return out
 
-def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -274,7 +274,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     out["multiBinObs"].append(ni("nMumu", label))
     return out
 
-def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     out = collections.defaultdict(list)
 
     terms = []
@@ -325,7 +325,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     out["multiBinObs"].append(ni("nPhot", label))
     return out
 
-def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
     out = collections.defaultdict(list)
 
@@ -386,7 +386,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     out["multiBinObs"].append(ni("nMuon", label))
     return out
 
-def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None) :
+def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     out = collections.defaultdict(list)
 
     if label!=kQcdLabel : return out
@@ -408,7 +408,7 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["systObs"].append(k_qcd_nom)
     return out
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None,
+def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
                 signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
     
     assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
@@ -489,6 +489,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         args[item] = {}
         args[item]["inputData"] = selection.data
         args[item]["label"] = selection.name
+        args[item]["muonForFullEwk"] = selection.muonForFullEwk
         for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
             args[item][x] = eval(x)
 
@@ -599,6 +600,9 @@ class foo(object) :
             assert "FallingExp" in l.RQcd()
         for sel in l.selections() :
             assert sel.samplesAndSignalEff,sel.name
+            if sel.muonForFullEwk :
+                for box in ["phot", "mumu"] :
+                    assert box not in sel.samplesAndSignalEff,box
             bins = sel.data.htBinLowerEdges()
             for dct in [self.signal, self.signalExampleToStack] :
                 if sel.name not in dct : continue
