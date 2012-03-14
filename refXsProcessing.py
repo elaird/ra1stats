@@ -13,6 +13,7 @@ def histoSpec(model) :
          "T2bb":      {"histo": "squark", "factor": 0.25, "file": "%s/v2/reference_xSecs.root"%base},
          "T5zz":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
          "T1bbbb":    {"histo": "gluino", "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
+         "T1tttt":    {"histo": "gluino", "factor": 1.0,  "file": "%s/v2/reference_xSecs.root"%base},
          "TGQ_0p0":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          "TGQ_0p2":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          "TGQ_0p4":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
