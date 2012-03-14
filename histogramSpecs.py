@@ -80,6 +80,7 @@ def histoTitle(model = "") :
          "T2bb"    : ";m_{sbottom} (GeV);m_{LSP} (GeV)",
          "T5zz"    : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T1bbbb"  : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T1tttt"  : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "TGQ_0p0" : ";m_{gluino} (GeV);m_{squark} (GeV)",
          "TGQ_0p2" : ";m_{gluino} (GeV);m_{squark} (GeV)",
          "TGQ_0p4" : ";m_{gluino} (GeV);m_{squark} (GeV)",
