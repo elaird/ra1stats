@@ -56,7 +56,7 @@ def signal() :
 
             "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb",
                             "T5zz","T1bbbb", "T1tttt", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
-                            "TGQ_0p8"][8],
+                            "TGQ_0p8"][5],
             }
 
 def points() :
