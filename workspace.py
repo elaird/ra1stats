@@ -648,7 +648,7 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def writeMlTable(self, fileName = "mlTable.tex") :
+    def writeMlTable(self, fileName = "mlTables.tex") :
         def pars() :
             utils.rooFitResults(pdf(self.wspace), self.data)
             return floatingVars(self.wspace)
@@ -681,22 +681,23 @@ class foo(object) :
                         r'\begin{document}'])
 
         for cat in ["common"]+categories :
-            s += "\n".join([r'\begin{table}[ht!]\centering',
+            s += "\n".join(['', '',
+                            r'\begin{table}\centering',
                             r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat,
                             r'\label{tab:mlParameterValues%s}'%cat,
                             r'\begin{tabular}{lcc}',
                             ])
-            s += r'name & value & error \\ \hline'
+            s += r'name & value & error \\ \hline'+'\n'
             for d in sorted(p, key = lambda d:d["name"]) :
                 if category(d["name"])!=cat : continue
                 cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
                 if "rho" in d["name"] or "fZinv" in d["name"] :
                     cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
-                spec = ' & '.join(['%s']+cols)+r'\\'
+                spec = ' & '.join(['%s']+cols)+r'\\'+'\n'
                 s += spec%(renamed(d["name"]), d["value"], d["error"])
             s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
 
-        s += "\n".join([r'\end{document}'])
+        s += "\n".join(['',r'\end{document}'])
         import makeTables as mt
         mt.write(s, fileName)
 
