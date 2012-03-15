@@ -689,7 +689,11 @@ class foo(object) :
             s += r'name & value & error \\ \hline'
             for d in sorted(p, key = lambda d:d["name"]) :
                 if category(d["name"])!=cat : continue
-                s += r'%s & \verb@%9.2e@ & \verb@%8.1e@ \\'%(renamed(d["name"]), d["value"], d["error"])
+                cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
+                if "rho" in d["name"] or "fZinv" in d["name"] :
+                    cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
+                spec = ' & '.join(['%s']+cols)+r'\\'
+                s += spec%(renamed(d["name"]), d["value"], d["error"])
             s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
 
         s += "\n".join([r'\end{document}'])
