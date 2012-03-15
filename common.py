@@ -14,6 +14,24 @@ def wimport(w, item) :
     getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG) #re-enable all messages
 
+def floatingVars(w) :
+    out = []
+    vars = w.allVars()
+    it = vars.createIterator()
+    while it.Next() :
+        if it.getMax()==r.RooNumber.infinity() : continue
+        if it.getMin()==-r.RooNumber.infinity() : continue
+        if not it.hasError() : continue
+
+        d = {}
+        d["name"] = it.GetName()
+        d["value"] = it.getVal()
+        d["error"] = it.getError()
+        d["min"] = it.getMin()
+        d["max"] = it.getMax()
+        out.append(d)
+    return out
+
 def obs(w) :
     return w.set("obs")
 

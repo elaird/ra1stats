@@ -1,5 +1,5 @@
 import os,array,math,copy,collections
-from common import ni
+from common import ni,floatingVars
 import utils
 import ROOT as r
 
@@ -517,8 +517,8 @@ class validationPlotter(object) :
             y -= slope
             return y
 
-        def close(it, factor = 2.0) :
-            return (it.getVal() + factor*it.getError() > it.getMax()) or (it.getVal() - factor*it.getError() < it.getMin())
+        def close(name = "", value = None, error = None, min = None, max = None, factor = 2.0) :
+            return (value + factor*error > max) or (value - factor*error < min)
         
         text = r.TText()
         text.SetNDC()
@@ -528,23 +528,17 @@ class validationPlotter(object) :
         y = y0 = 0.95
         slope = 0.02
         nLines = 40
-        i = 0
         
         self.canvas.Clear()
-        vars = self.wspace.allVars()
-        it = vars.createIterator()
-        while it.Next() :
-            if it.getMax()==r.RooNumber.infinity() : continue
-            if it.getMin()==-r.RooNumber.infinity() : continue
-            if not it.hasError() : continue
 
+        for i,d in enumerate(floatingVars(self.wspace)) :
             if not (i%nLines) :
                 x += 0.5
                 y = y0
                 y = ini(x, y)
 
-            s = "%20s: %9.2e +/-%8.1e  [%7.1e - %7.1e]"%(it.GetName(), it.getVal(), it.getError(), it.getMin(), it.getMax())
-            y = printText(x, y, s, color = r.kRed if close(it) else r.kBlack)
+            s = "%20s: %9.2e +/-%8.1e  [%7.1e - %7.1e]"%(d["name"], d["value"], d["error"], d["min"], d["max"])
+            y = printText(x, y, s, color = r.kRed if close(**d) else r.kBlack)
             i += 1
 
         self.canvas.Print(self.psFileName)

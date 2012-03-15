@@ -1,6 +1,6 @@
 import collections,math
 import utils,plotting,calc
-from common import obs,pdf,note,ni,wimport
+from common import obs,pdf,note,ni,wimport,floatingVars
 import ROOT as r
 
 def classifyParameters(w = None, modelConfig = None, paramsFuncs = []) :
@@ -647,6 +647,59 @@ class foo(object) :
         #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
+
+    def writeMlTable(self, fileName = "mlTables.tex") :
+        def pars() :
+            utils.rooFitResults(pdf(self.wspace), self.data)
+            return floatingVars(self.wspace)
+
+        def category(v = "") :
+            if "k_qcd" in v : return "common"
+            if "rho" in v : return "common"
+            for item in ["gt2b", "2b", "1b", "0b"] :
+                if item in v : return item
+            assert False,v
+
+        def renamed(v) :
+            out = v
+            for item in ["55"]+categories :
+                out = out.replace("_%s"%item,"")
+            for i in range(9) :
+                out = out.replace("_%d"%i, "^%d"%i)
+            out = out.replace("ewk", r'\mathrm{EWK}')
+            out = out.replace("qcd", r'\mathrm{QCD}')
+            out = out.replace("rho", r'\rho_')
+            out = out.replace("MumuZ", r'{\mu\mu Z}')
+            out = out.replace("MuonW", r'{\mu W}')
+            out = out.replace("PhotZ", r'{\gamma Z}')
+            out = out.replace("Zinv", r'_\mathrm{Zinv}')
+            return r'$%s$'%out
+
+        p = pars()
+        categories = ["0b", "1b", "2b", "gt2b"]
+        s  = "\n".join([r'\documentclass{article}',
+                        r'\begin{document}'])
+
+        for cat in ["common"]+categories :
+            s += "\n".join(['', '',
+                            r'\begin{table}\centering',
+                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat,
+                            r'\label{tab:mlParameterValues%s}'%cat,
+                            r'\begin{tabular}{lcc}',
+                            ])
+            s += r'name & value & error \\ \hline'+'\n'
+            for d in sorted(p, key = lambda d:d["name"]) :
+                if category(d["name"])!=cat : continue
+                cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
+                if "rho" in d["name"] or "fZinv" in d["name"] :
+                    cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
+                spec = ' & '.join(['%s']+cols)+r'\\'+'\n'
+                s += spec%(renamed(d["name"]), d["value"], d["error"])
+            s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
+
+        s += "\n".join(['',r'\end{document}'])
+        import makeTables as mt
+        mt.write(s, fileName)
 
     def profile(self) :
         calc.profilePlots(self.data, self.modelConfig, self.note())
