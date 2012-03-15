@@ -9,18 +9,19 @@ specify
 - b-tag efficiency
 - procedure for error determination
 - rho vs. HT
-- 4x2 bins test
+
+tests
+-----
+- 4x2 syst. bins
 - remove syst. encouragement
 
 zero
 ----
-- one mu only for gt2b
-- constant MC ratio in final bins
 - increase range for T1bbbb
-- example T2tt points
-- latex table
-- best-fit plots
 - T1 slice test
+- example T2tt points
+- update best-fit plots
+- update limits
 
 one
 ---
