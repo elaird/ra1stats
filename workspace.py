@@ -787,7 +787,7 @@ class foo(object) :
         args["legendXSub"] = 0.35 if "55" not in selection.name else 0.0
         args["systematicsLabel"] = self.systematicsLabel(selection.name)
 
-        for item in ["smOnly", "injectSignal", "note"] :
+        for item in ["smOnly", "note"] :
             args[item] = getattr(self, item)()
 
         for item in ["wspace", "signalExampleToStack"] :
@@ -809,9 +809,9 @@ class foo(object) :
             results,i = out
             for selection in self.likelihoodSpec.selections() :
                 args = self.plotterArgs(selection)
-                args.update({"results": results, "note": self.note()+"_toy%d"%i, "toyNumber":i, "printPages": False,
-                             "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True}
-                            )
+                args.update({"results": results, "note": self.note()+"_toy%d"%i, "obsLabel":"Toy %d"%i,
+                             "printPages": False, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True
+                             })
                 plotter = plotting.validationPlotter(args)
                 plotter.inputData = selection.data
                 plotter.go()
@@ -825,9 +825,11 @@ class foo(object) :
         utils.checkResults(results)
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
-            args.update({"results": results, "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
-                         "drawComponents":drawComponents, "printValues":printValues}
-                        )
+            args.update({"results": results, "note": self.note()+"_SIGNALINJECTED",
+                         "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
+                         "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
+                         "drawComponents":drawComponents, "printValues":printValues
+                         })
             plotter = plotting.validationPlotter(args)
             plotter.go()
 

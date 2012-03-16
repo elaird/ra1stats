@@ -234,7 +234,6 @@ class validationPlotter(object) :
             
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
-        self.obsLabel = "Data" if not hasattr(self, "toyNumber") else "Toy %d"%self.toyNumber
 
         self.plotsDir = "plots"
         utils.getCommandOutput("mkdir %s"%self.plotsDir)
@@ -255,7 +254,6 @@ class validationPlotter(object) :
         self.canvas = utils.numberedCanvas()
         fields = ["%s/bestFit"%self.plotsDir, self.note, "sel%s"%self.label]
         if self.smOnly : fields.append("smOnly")
-        if self.injectSignal : fields.append("SIGNAL_INJECTED")
         self.psFileName = "_".join(fields)+".pdf"
         self.canvas.Print(self.psFileName+"[")
 
