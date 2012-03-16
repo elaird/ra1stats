@@ -500,33 +500,38 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     items += boxes
     if constrainQcdSlope : items.append("qcd")
 
-    args = {}
-    for item in items :
-        args[item] = {}
-        args[item]["inputData"] = selection.data
-        args[item]["label"] = selection.name
-        args[item]["muonForFullEwk"] = selection.muonForFullEwk
-        for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
-            args[item][x] = eval(x)
+    commonArgs = {}
+    commonArgs["inputData"] = selection.data
+    commonArgs["label"] = selection.name
+    commonArgs["muonForFullEwk"] = selection.muonForFullEwk
+    for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
+        commonArgs[x] = eval(x)
 
+    moreArgs = {}
+    moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "AQcdIni"] :
-        args["had"][item] = getattr(selection, item)
+        moreArgs["had"][item] = getattr(selection, item)
+    for item in ["REwk", "RQcd", "nFZinv", "poi"] :
+        moreArgs["had"][item] = eval(item)
 
-    for x in ["REwk", "RQcd", "nFZinv", "poi"] :
-        args["had"][x] = eval(x)
+    moreArgs["signal"] = {}
+    for item in ["signalToTest", "extraSigEffUncSources", "rhoSignalMin"] :
+        moreArgs["signal"][item] = eval(item)
 
-    if "signal" in args :
-        for x in ["signalToTest", "extraSigEffUncSources", "rhoSignalMin"] :
-            args["signal"][x] = eval(x)
-
+    args = tuple([commonArgs[item] for item in ["w", "inputData", "label"]])
+    signalEffVariables(*args, signalDict = signalToInject)
     if (not smOnly) or injectSignal :
-        lumiVariables(w, selection.data, selection.name) #rewrite this
+        lumiVariables(*args)
 
     for item in items :
         if (item in boxes) and (item not in selection.data.lumi()) : continue
         if selection.muonForFullEwk and (item in ["phot", "mumu"]) : continue
         func = eval("%sTerms"%item)
-        d = func(**(args[item]))
+        args = {}
+        args.update(commonArgs)
+        if item in moreArgs :
+            args.update(moreArgs[item])
+        d = func(**args)
         if (item in boxes) and (item not in samples) : continue
         for key in variables : #include terms, obs, etc. in likelihood
             variables[key] += d[key]
