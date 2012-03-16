@@ -419,9 +419,13 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["systObs"].append(k_qcd_nom)
     return out
 
+#def signalVariables(w = None, inputData = None, label = "") :
+#    pass
+
 def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-                signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
+                signalToTest = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
     
+    signalDict = signalToTest
     assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
     for item in ["had", "muon", "simple"] :
         if item not in inputData.lumi() : continue
@@ -435,6 +439,9 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
         for iBin,signalEff,trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]) :
             name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
             wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
+
+
+    #signalVariables(w, inputData, label)
 
     out = collections.defaultdict(list)
     if label==systematicsLabel :
@@ -481,7 +488,7 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}, separateSystObs = None) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalToTest = {}, signalToInject = {}, separateSystObs = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -511,7 +518,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         args["had"][x] = eval(x)
 
     if "signal" in args :
-        for x in ["signalDict", "extraSigEffUncSources", "rhoSignalMin"] :
+        for x in ["signalToTest", "extraSigEffUncSources", "rhoSignalMin"] :
             args["signal"][x] = eval(x)
 
     for item in items :
@@ -551,9 +558,10 @@ def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], ter
 
 class foo(object) :
     def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
-                 signal = {}, signalExampleToStack = {}, trace = False) :
+                 signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
                  
-        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
+        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin",
+                     "signalToTest", "signalExampleToStack", "signalToInject"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -573,12 +581,13 @@ class foo(object) :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
+            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
-            args["signalDict"] = self.signal[sel.name] if sel.name in self.signal else {}
+            args["signalToTest"] = self.signalToTest[sel.name] if sel.name in self.signalToTest else {}
+            #args["signalToInject"] = self.signal[sel.name] if sel.name in self.signal else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
             d = setupLikelihood(**args)
@@ -616,13 +625,13 @@ class foo(object) :
                 for box in ["phot", "mumu"] :
                     assert box not in sel.samplesAndSignalEff,box
             bins = sel.data.htBinLowerEdges()
-            for dct in [self.signal, self.signalExampleToStack] :
+            for dct in [self.signalToTest, self.signalExampleToStack, self.signalToInject] :
                 if sel.name not in dct : continue
                 for key,value in dct[sel.name].iteritems() :
                     if type(value) is list : assert len(value)==len(bins)
             
     def smOnly(self) :
-        return not self.signal
+        return not self.signalToTest
 
     def systematicsLabel(self, name) :
         selections = self.likelihoodSpec.selections()
