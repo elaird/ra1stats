@@ -775,25 +775,43 @@ class foo(object) :
     def pValue(self, nToys = 200) :
         calc.pValue(self.wspace, self.data, nToys = nToys, note = self.note())
 
+    def plotterArgs(self, selection) :
+        def activeBins(selection) :
+            out = {}
+            for key,value in selection.data.observations().iteritems() :
+                out[key] = map(lambda x:x!=None, value)
+            return out
+
+        args = {}
+        args["activeBins"] = activeBins(selection)
+        args["legendXSub"] = 0.35 if "55" not in selection.name else 0.0
+        args["systematicsLabel"] = self.systematicsLabel(selection.name)
+
+        for item in ["smOnly", "injectSignal", "note"] :
+            args[item] = getattr(self, item)()
+
+        for item in ["wspace", "signalExampleToStack"] :
+            args[item] = getattr(self, item)
+
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
+            args[arg] = getattr(selection, member)
+
+        for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
+            args[item] = getattr(selection.data, item)()
+
+        for item in ["REwk", "RQcd"] :
+            args[item] = getattr(self.likelihoodSpec, item)()
+        return args
+
     def ensemble(self, nToys = 200) :
         out = calc.ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
         if out :
             results,i = out
-
             for selection in self.likelihoodSpec.selections() :
-                activeBins = {}
-                for key,value in selection.data.observations().iteritems() :
-                    activeBins[key] = map(lambda x:x!=None, value)
-
-                args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
-                        "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
-                        "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note()+"_toy%d"%i, "selNote": selection.note,
-                        "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
-                        "printPages": False, "toyNumber":i, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True}
-
-                for item in ["REwk", "RQcd"] :
-                    args[item] = getattr(self.likelihoodSpec, item)()
-
+                args = self.plotterArgs(selection)
+                args.update({"results": results, "note": self.note()+"_toy%d"%i, "toyNumber":i, "printPages": False,
+                             "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True}
+                            )
                 plotter = plotting.validationPlotter(args)
                 plotter.inputData = selection.data
                 plotter.go()
@@ -806,29 +824,10 @@ class foo(object) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
         for selection in self.likelihoodSpec.selections() :
-            activeBins = {}
-            for key,value in selection.data.observations().iteritems() :
-                activeBins[key] = map(lambda x:x!=None, value)
-
-            args = {"results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
-                    "activeBins": activeBins, "systematicsLabel":self.systematicsLabel(selection.name),
-                    "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "drawComponents":drawComponents, "printValues":printValues}
-
-            for item in ["smOnly", "injectSignal", "note"] :
-                args[item] = getattr(self, item)()
-
-            for item in ["wspace", "signalExampleToStack"] :
-                args[item] = getattr(self, item)
-
-            for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
-                args[arg] = getattr(selection, member)
-
-            for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
-                args[item] = getattr(selection.data, item)()
-
-            for item in ["REwk", "RQcd"] :
-                args[item] = getattr(self.likelihoodSpec, item)()
-
+            args = self.plotterArgs(selection)
+            args.update({"results": results, "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
+                         "drawComponents":drawComponents, "printValues":printValues}
+                        )
             plotter = plotting.validationPlotter(args)
             plotter.go()
 
