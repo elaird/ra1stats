@@ -253,8 +253,11 @@ class validationPlotter(object) :
         
     def go(self) :
         self.canvas = utils.numberedCanvas()
-        self.psFileName = "%s/bestFit_%s_sel%s%s.pdf"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
-        self.canvas.Print(self.psFileName+"[")        
+        fields = ["%s/bestFit"%self.plotsDir, self.note, "sel%s"%self.label]
+        if self.smOnly : fields.append("smOnly")
+        if self.injectSignal : fields.append("SIGNAL_INJECTED")
+        self.psFileName = "_".join(fields)+".pdf"
+        self.canvas.Print(self.psFileName+"[")
 
         self.simplePlots()
         self.hadPlots()
