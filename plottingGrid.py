@@ -336,8 +336,8 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     f = r.TFile(inFile)
     r.gROOT.cd()
     
-    fileName = inFile.replace(".root","_%s.ps"%tag)
-    rootFileName = fileName.replace(".ps", ".root")
+    fileName = inFile.replace(".root","_%s.pdf"%tag)
+    rootFileName = fileName.replace(".pdf", ".root")
     
     canvas = utils.numberedCanvas()
     canvas.SetRightMargin(0.15)
@@ -383,8 +383,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     
     canvas.Print(fileName+"]")
 
-    utils.ps2pdf(fileName, sameDir = True)
-    print "%s has been written."%fileName.replace(".ps", ".pdf")
+    print "%s has been written."%fileName
 
 def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, lineHeight = 0.5, divide = (4,3), whiteList = [], stampTitle = True) :
     def allHistos(fileName = "") :
@@ -448,9 +447,9 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
                 plLimLine.SetLineColor(r.kGreen)
                 graphs[name].append(plLimLine)
 
-    fileName = mergedFile().replace(".root","_%s_%s.ps"%(tag, str(cl).replace("0.","")))
+    fileName = mergedFile().replace(".root","_%s_%s.pdf"%(tag, str(cl).replace("0.","")))
     if whiteList :
-        fileName = fileName.replace(".ps", ".eps")
+        fileName = fileName.replace(".pdf", ".eps")
         canvas = r.TCanvas("canvas", "", 500*divide[0], 500*divide[1])
     else :
         canvas = utils.numberedCanvas()
@@ -468,8 +467,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         print "%s has been written."%fileName.replace(".eps", ".pdf")
     else :
         canvas.Print(fileName+"]")
-        utils.ps2pdf(fileName, sameDir = True)
-        print "%s has been written."%fileName.replace(".ps", ".pdf")
+        print "%s has been written."%fileName
     
 def makePlots() :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
