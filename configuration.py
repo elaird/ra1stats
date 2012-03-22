@@ -61,7 +61,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T1tttt"]
+            "signalModel": dict(zip(models, models))["T1bbbb"]
             }
 
 def listOfTestPoints() :
@@ -69,7 +69,7 @@ def listOfTestPoints() :
     #out = [(33, 53, 1)]
     #out = [(61, 61, 1)]
     #out = [(32, 8, 1)]
-    out = [(20, 5, 1)]
+    out = [(37, 19, 1)]
     #out = []
     return out
 
