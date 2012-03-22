@@ -86,7 +86,7 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
     latex.DrawLatex(x, y, text)
     return latex
 
-def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False) :
+def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False) :
     s = conf.switches()
     if not s["isSms"] : return
     
@@ -122,7 +122,7 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     setRange("smsYRange", ranges, h2, "Y")
     
     h2.Draw("colz")
-    graphs = rxs.graphs(h2, s["signalModel"], "LowEdge")
+    graphs = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
 
     if simpleExcl :
         ps = fileName.replace(".eps","_simpleExcl.ps")
