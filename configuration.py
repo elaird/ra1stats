@@ -69,8 +69,8 @@ def listOfTestPoints() :
     #out = [(33, 53, 1)]
     #out = [(61, 61, 1)]
     #out = [(32, 8, 1)]
-    out = [(37, 19, 1)]
-    #out = []
+    #out = [(37, 19, 1)]
+    out = []
     return out
 
 def xWhiteList() :
