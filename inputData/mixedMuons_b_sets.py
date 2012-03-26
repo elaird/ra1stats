@@ -280,6 +280,7 @@ class data_55_gt2btag(data) :
 
         self._mcExtraBeforeTrigger = {}
         self._mcExtraBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
+        self._mcStatError["mcHadErr"] = self._mcStatError["mcTtwErr"] #slight hack
         
         syst.load(self, mode = self.systMode)
 
