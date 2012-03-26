@@ -234,7 +234,6 @@ class validationPlotter(object) :
             
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
-        self.obsLabel = "Data" if not hasattr(self, "toyNumber") else "Toy %d"%self.toyNumber
 
         self.plotsDir = "plots"
         utils.getCommandOutput("mkdir %s"%self.plotsDir)
@@ -253,8 +252,10 @@ class validationPlotter(object) :
         
     def go(self) :
         self.canvas = utils.numberedCanvas()
-        self.psFileName = "%s/bestFit_%s_sel%s%s.pdf"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
-        self.canvas.Print(self.psFileName+"[")        
+        fields = ["%s/bestFit"%self.plotsDir, self.note, "sel%s"%self.label]
+        if self.smOnly : fields.append("smOnly")
+        self.psFileName = "_".join(fields)+".pdf"
+        self.canvas.Print(self.psFileName+"[")
 
         self.simplePlots()
         self.hadPlots()
