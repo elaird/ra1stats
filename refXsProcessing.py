@@ -44,7 +44,7 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
 
     return out
         
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False, timesTen = False) :
+def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False, timesTen = False, printXs = False) :
     out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
            {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
            ] if not timesTen else [
@@ -58,7 +58,7 @@ def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None
             out.append({"factor": 10/3., "label": "#sigma^{prod} = 10/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
             
     for d in out :
-        d["graph"] = excludedGraph(h, d["factor"], model, interBin)
+        d["graph"] = excludedGraph(h, d["factor"], model, interBin, printXs = printXs)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
         d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin)
     return out
@@ -81,7 +81,7 @@ def content(h, *coords) :
     return h.GetBinContent(h.FindBin(*args))
     
 
-def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", prune = False) :
+def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", prune = False, printXs = False) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
@@ -92,9 +92,10 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
-            xs = factor*content(refHisto, x, y)
-            if not xs : continue
-            
+            c = content(refHisto, x, y)
+            if not c : continue
+            if printXs : print "x=%g, y=%g, xs*1.0 = %g"%(x,y,c)
+            xs = factor*c
             xsLimit     = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)

@@ -933,7 +933,7 @@ class validationPlotter(object) :
 
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
-        if logY : obsHisto.SetMinimum(0.5)
+        if logY : obsHisto.SetMinimum(0.1)
         if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], inDict(obs, "legSpec", "lpe"))
         stuff += [obs]
 

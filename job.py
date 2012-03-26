@@ -23,7 +23,8 @@ def printDict(d, space = "") :
         elif type(value)!=tuple and type(value)!=list :
             out+=str(value)
         else :
-            out += "[%s]"%(", ".join(["%s"%str(item) for item in value]))
+            form = "%8.6f" if key[:3]=="eff" else "%f"
+            out += "[%s]"%(", ".join([form%item for item in value]))
         print out+","
     print "%s}"%space
 
