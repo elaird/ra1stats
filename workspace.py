@@ -830,7 +830,8 @@ class foo(object) :
         utils.checkResults(results)
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
-            args.update({"results": results, "note": self.note()+"_SIGNALINJECTED",
+            args.update({"results": results,
+                         "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
                          "drawComponents":drawComponents, "printValues":printValues
