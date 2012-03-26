@@ -1,4 +1,4 @@
-from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets,mixedMuons_b_sets_aT,simpleOneBin,afterAlphaT_noMHT_ov_MET
+from inputData import orig,mixedMuons,afterAlphaT,afterAlphaT_b,mixedMuons_b,mixedMuons_b_sets,mixedMuons_b_sets_aT,simpleOneBin,afterAlphaT_noMHT_ov_MET,newBtag
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -133,6 +133,61 @@ def btags_1_2_gt2(systMode = 1) :
         )
     ]
 
+    return selections
+
+def newBtag_gt0( systMode = 1 ) :
+    return [ selection(name = "55_gt0b",
+                       note = "#geq1 b-tags",
+                       alphaTMinMax = ("55", None),
+                       samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                       data = newBtag.data_55_gt0btag( systMode = systMode ),
+                       bTagLower = "0",
+                       fZinvIni = 0.1,
+                       AQcdIni = 0.0, 
+           ]
+                                      
+def newBtag_4selections( systMode = 1  ) :
+    selections = [                    
+        selection(name = "55_0b",     
+                  note = "0 b-tags (w / #alpha_{T})",
+                  alphaTMinMax = ("55 ", None),
+                  samplesAndSignalEff  = {"had":True, "muon":True, "phot":False, "mumu":False},
+                  data = newBtag.data_55_0btag( systMode = systMode ),
+                  nbTag = "0",
+                  universalSystematics = True,
+                  universalKQcd = True,
+        ),
+        selection(name = "55_1b",
+                  note = "1 b-tag",
+                  alphaTMinMax = ("55", None),
+                  samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                  data = newBtag.data_55_1btag( systMode = systMode ),
+                  nbTag = "1",
+                  fZinvIni = 0.25,
+                  AQcdIni = 0.0,
+        ),
+        selection(name = "55_2b",
+                  note = "2 b-tags",
+                  alphaTMinMax = ("55", None),
+                  samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                  #samplesAndSignalEff = {"had":True, "muon":True},
+                  #muonForFullEwk = True,
+                  data = newBtag.data_55_2btag( systMode = systMode ),
+                  nbTag = "2",
+                  fZinvIni = 0.1,
+                  AQcdIni = 0.0,
+        ),
+        selection(name = "55_gt2b",
+                  note = "#geq3 b-tags",
+                  alphaTMinMax = ("55", None),
+                  samplesAndSignalEff = {"had":True, "muon":True},
+                  muonForFullEwk = True,
+                  data = newBtag.data_55_gt2btag( systMode = systMode ),
+                  bTagLower = "2",
+                  fZinvIni = 0.1,
+                  AQcdIni = 0.0,
+        )
+    ]
     return selections
 
 def simple() :
