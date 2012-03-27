@@ -135,6 +135,16 @@ def btags_1_2_gt2(systMode = 1) :
                   fZinvIni = 0.1,
                   AQcdIni = 0.0,
         )
+        #selection(name = "55_gt2b", #v2!!
+        #          note = "#geq3 b-tags",
+        #          alphaTMinMax = ("55", None),
+        #          samplesAndSignalEff = {"had":True, "muon":True},
+        #          muonForFullEwk = True,
+        #          data = mixedMuons_b_sets.data_55_gt2btag_v2( systMode = systMode ),
+        #          bTagLower = "2",
+        #          fZinvIni = 0.1,
+        #          AQcdIni = 0.0,
+        #)
     ]
 
     return selections

@@ -302,6 +302,8 @@ class validationPlotter(object) :
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
+            {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
+             "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
         if self.drawComponents :
             vars +=[
