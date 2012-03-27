@@ -94,7 +94,7 @@ def noAlphaT_gt0b(systMode = 1, universalSystematics = True, universalKQcd = Tru
                        universalKQcd = universalKQcd,
                        )]
 
-def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3 = False) :
+def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False) :
     module = mixedMuons_b_sets_reweighted if reweighted else mixedMuons_b_sets
 
     out = [
@@ -120,7 +120,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3 = False) :
         ),
         ]
 
-    if not predictedGe3 :
+    if not predictedGe3b :
         out.append(
             selection(name = "55_gt2b",
                       note = "#geq3 b-tags",
