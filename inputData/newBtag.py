@@ -2,7 +2,7 @@ import syst
 from data import data,scaled,excl
 
 class data_55_0btag(data) :
-    """muons and mumu have alt in all bins"""
+    """muons and mumu have no alt cut for highest six bins"""
     
     def _fill(self) :
         isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
@@ -11,7 +11,7 @@ class data_55_0btag(data) :
         self._htMaxForPlot = 975.0
         
         self._mergeBins = None
-        self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     1,     0)
+        self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
         
         self._lumi = {
             "had":     4650.,
