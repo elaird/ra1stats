@@ -102,7 +102,7 @@ class DataSlice( object ) :
     # this class *checks* that everything souhld be a TH1D as otherwise makes no
     # sense for it
     def __init__( self, histo_dict, suffix = "" ) :
-        for obj in [ "_mcExpectations", "_mcStatError", "_observations",
+        for obj in [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations",
             "_purities", "_atTriggerEff", "_HtTriggerEff", "_lumi", "_mcExtra",
             "_fixedParameters", "_htMeans" ] :
             setattr(self, obj, {} )
@@ -140,7 +140,7 @@ class DataSlice( object ) :
             objKeys = histo_dict[objName].keys()
 
             if objName+"MC" in objKeys :
-                self._mcExpectations[ "mc"+objName.capitalize() ] = \
+                self._mcExpectationsBeforeTrigger[ "mc"+objName.capitalize() ] = \
                     tuple( [ histo_dict[objName][objName+"MC"].GetBinContent(xbin)      for xbin in xbins ] )
                 self._mcStatError[ "mc"+objName.capitalize()+"Err" ] = \
                     tuple( [ histo_dict[objName][objName+"MC"].GetBinError(xbin)        for xbin in xbins ] )
@@ -173,7 +173,7 @@ class DataSlice( object ) :
                         total.Reset()
                     if MC in objKeys : 
                         total.Add( histo_dict[objName][MC] )
-                self._mcExpectations[ mcstr ]    = tuple([ total.GetBinContent(xbin) for xbin in xbins ])
+                self._mcExpectationsBeforeTrigger[ mcstr ]    = tuple([ total.GetBinContent(xbin) for xbin in xbins ])
                 self._mcStatError[ mcstr+"Err" ] = tuple([ total.GetBinError(xbin)   for xbin in xbins ])
             else :
                 total_zinv = None
@@ -192,10 +192,13 @@ class DataSlice( object ) :
                     if MC in objKeys : 
                         total_ttw.Add( histo_dict[objName][MC] )
 
-                self._mcExpectations[ "mcZinv" ] = tuple([ total_zinv.GetBinContent(xbin) for xbin in xbins ])
-                self._mcExpectations[ "mcTtw" ]  = tuple([ total_ttw.GetBinContent(xbin)  for xbin in xbins ])
+                self._mcExpectationsBeforeTrigger[ "mcZinv" ] = tuple([ total_zinv.GetBinContent(xbin) for xbin in xbins ])
+                self._mcExpectationsBeforeTrigger[ "mcTtw" ]  = tuple([ total_ttw.GetBinContent(xbin)  for xbin in xbins ])
+                self._mcExpectationsBeforeTrigger["mcHad"]  = tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
+
                 self._mcStatError[ "mcZinvErr" ] = tuple([ total_zinv.GetBinError(xbin)   for xbin in xbins ])
                 self._mcStatError[ "mcTtwErr" ]  = tuple([ total_ttw.GetBinError(xbin)    for xbin in xbins ])
+                self._mcStatError[ "mcHadErr" ] = tuple([ utils.quadSum([x,y]) for x,y in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"]) ])
             if DEBUG :
                 for key,value in histo_dict.iteritems() :
                     print
