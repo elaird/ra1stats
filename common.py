@@ -1,5 +1,19 @@
 import ROOT as r
 
+class selection(object) :
+    '''Each key appearing in samplesAndSignalEff is used in the likelihood;
+    the corresponding value determines whether signal efficiency is considered for that sample.'''
+
+    def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
+                 alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
+                 fZinvIni = 0.5, AQcdIni = 1.0e-2, zeroQcd = False, muonForFullEwk = False,
+                 universalSystematics = False, universalKQcd = False) :
+        for item in ["name", "note", "samplesAndSignalEff", "data",
+                     "alphaTMinMax","nbTag", "bTagLower",
+                     "fZinvIni", "AQcdIni", "zeroQcd", "muonForFullEwk",
+                     "universalSystematics", "universalKQcd"] :
+            setattr(self, item, eval(item))
+
 class signal(dict) :
     def __init__(self, xs = None, label = "") :
         for item in ["xs", "label"] :
