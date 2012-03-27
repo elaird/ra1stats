@@ -234,7 +234,6 @@ class validationPlotter(object) :
             
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
-        self.obsLabel = "Data" if not hasattr(self, "toyNumber") else "Toy %d"%self.toyNumber
 
         self.plotsDir = "plots"
         utils.getCommandOutput("mkdir %s"%self.plotsDir)
@@ -253,8 +252,10 @@ class validationPlotter(object) :
         
     def go(self) :
         self.canvas = utils.numberedCanvas()
-        self.psFileName = "%s/bestFit_%s_sel%s%s.pdf"%(self.plotsDir, self.note, self.label, "_smOnly" if self.smOnly else "")
-        self.canvas.Print(self.psFileName+"[")        
+        fields = ["%s/bestFit"%self.plotsDir, self.note, "sel%s"%self.label]
+        if self.smOnly : fields.append("smOnly")
+        self.psFileName = "_".join(fields)+".pdf"
+        self.canvas.Print(self.psFileName+"[")
 
         self.simplePlots()
         self.hadPlots()
@@ -301,6 +302,8 @@ class validationPlotter(object) :
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
+            {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
+             "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
         if self.drawComponents :
             vars +=[
@@ -932,7 +935,7 @@ class validationPlotter(object) :
 
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
-        if logY : obsHisto.SetMinimum(0.5)
+        if logY : obsHisto.SetMinimum(0.1)
         if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], inDict(obs, "legSpec", "lpe"))
         stuff += [obs]
 
