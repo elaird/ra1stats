@@ -419,15 +419,13 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out["systObs"].append(k_qcd_nom)
     return out
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-                signalDict = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
-    
-    assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
+def lumiVariables(w = None, inputData = None, label = "") :
     for item in ["had", "muon", "simple"] :
         if item not in inputData.lumi() : continue
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
-    
+
+def signalEffVariables(w = None, inputData = None, label = "", signalDict = {}) :
     for key,value in signalDict.iteritems() :
         if "eff"!=key[:3] : continue
         box = key.replace("eff", "").lower()
@@ -436,10 +434,16 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
             name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
             wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
 
+def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
+                signalToTest = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
+
+    assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
+    signalEffVariables(w, inputData, label, signalToTest)
+
     out = collections.defaultdict(list)
     if label==systematicsLabel :
         for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
-            #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalDict[item] for item in extraSigEffUncSources])
+            #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalToTest[item] for item in extraSigEffUncSources])
             deltaSignalValue = inputData.fixedParameters()["sigmaLumiLike"][iPar]
             one = ni("oneRhoSignal", label, iPar)
             rho = ni("rhoSignal", label, iPar)
@@ -480,8 +484,9 @@ def dataset(obsSet) :
     #out.Print("v")
     return out
 
-def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, extraSigEffUncSources = [], rhoSignalMin = 0.0,
-                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, signalDict = {}, separateSystObs = None) :
+def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
+                    extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, separateSystObs = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -495,30 +500,38 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     items += boxes
     if constrainQcdSlope : items.append("qcd")
 
-    args = {}
-    for item in items :
-        args[item] = {}
-        args[item]["inputData"] = selection.data
-        args[item]["label"] = selection.name
-        args[item]["muonForFullEwk"] = selection.muonForFullEwk
-        for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
-            args[item][x] = eval(x)
+    commonArgs = {}
+    commonArgs["inputData"] = selection.data
+    commonArgs["label"] = selection.name
+    commonArgs["muonForFullEwk"] = selection.muonForFullEwk
+    for x in ["w", "systematicsLabel", "kQcdLabel", "smOnly"] :
+        commonArgs[x] = eval(x)
 
+    moreArgs = {}
+    moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "AQcdIni"] :
-        args["had"][item] = getattr(selection, item)
+        moreArgs["had"][item] = getattr(selection, item)
+    for item in ["REwk", "RQcd", "nFZinv", "poi"] :
+        moreArgs["had"][item] = eval(item)
 
-    for x in ["REwk", "RQcd", "nFZinv", "poi"] :
-        args["had"][x] = eval(x)
+    moreArgs["signal"] = {}
+    for item in ["signalToTest", "extraSigEffUncSources", "rhoSignalMin"] :
+        moreArgs["signal"][item] = eval(item)
 
-    if "signal" in args :
-        for x in ["signalDict", "extraSigEffUncSources", "rhoSignalMin"] :
-            args["signal"][x] = eval(x)
+    args = tuple([commonArgs[item] for item in ["w", "inputData", "label"]])
+    signalEffVariables(*args, signalDict = signalToInject)
+    if (not smOnly) or injectSignal :
+        lumiVariables(*args)
 
     for item in items :
         if (item in boxes) and (item not in selection.data.lumi()) : continue
         if selection.muonForFullEwk and (item in ["phot", "mumu"]) : continue
         func = eval("%sTerms"%item)
-        d = func(**(args[item]))
+        args = {}
+        args.update(commonArgs)
+        if item in moreArgs :
+            args.update(moreArgs[item])
+        d = func(**args)
         if (item in boxes) and (item not in samples) : continue
         for key in variables : #include terms, obs, etc. in likelihood
             variables[key] += d[key]
@@ -551,9 +564,10 @@ def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], ter
 
 class foo(object) :
     def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
-                 signal = {}, signalExampleToStack = {}, trace = False) :
+                 signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
                  
-        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin", "signal", "signalExampleToStack"] :
+        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin",
+                     "signalToTest", "signalExampleToStack", "signalToInject"] :
             setattr(self, item, eval(item))
 
         self.checkInputs()
@@ -565,6 +579,7 @@ class foo(object) :
         args = {}
         args["w"] = self.wspace
         args["smOnly"] = self.smOnly()
+        args["injectSignal"] = self.injectSignal()
 
         for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv", "constrainQcdSlope"] :
             args[item] = getattr(self.likelihoodSpec, item)()
@@ -573,12 +588,13 @@ class foo(object) :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signal.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
+            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
-            args["signalDict"] = self.signal[sel.name] if sel.name in self.signal else {}
+            args["signalToTest"] = self.signalToTest[sel.name] if sel.name in self.signalToTest else {}
+            args["signalToInject"] = self.signalToInject[sel.name] if sel.name in self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
             d = setupLikelihood(**args)
@@ -616,13 +632,16 @@ class foo(object) :
                 for box in ["phot", "mumu"] :
                     assert box not in sel.samplesAndSignalEff,box
             bins = sel.data.htBinLowerEdges()
-            for dct in [self.signal, self.signalExampleToStack] :
+            for dct in [self.signalToTest, self.signalExampleToStack, self.signalToInject] :
                 if sel.name not in dct : continue
                 for key,value in dct[sel.name].iteritems() :
                     if type(value) is list : assert len(value)==len(bins)
             
     def smOnly(self) :
-        return not self.signal
+        return not self.signalToTest
+
+    def injectSignal(self) :
+        return bool(self.signalToInject)
 
     def systematicsLabel(self, name) :
         selections = self.likelihoodSpec.selections()
@@ -761,25 +780,43 @@ class foo(object) :
     def pValue(self, nToys = 200) :
         calc.pValue(self.wspace, self.data, nToys = nToys, note = self.note())
 
+    def plotterArgs(self, selection) :
+        def activeBins(selection) :
+            out = {}
+            for key,value in selection.data.observations().iteritems() :
+                out[key] = map(lambda x:x!=None, value)
+            return out
+
+        args = {}
+        args["activeBins"] = activeBins(selection)
+        args["legendXSub"] = 0.35 if "55" not in selection.name else 0.0
+        args["systematicsLabel"] = self.systematicsLabel(selection.name)
+
+        for item in ["smOnly", "note"] :
+            args[item] = getattr(self, item)()
+
+        for item in ["wspace", "signalExampleToStack"] :
+            args[item] = getattr(self, item)
+
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
+            args[arg] = getattr(selection, member)
+
+        for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
+            args[item] = getattr(selection.data, item)()
+
+        for item in ["REwk", "RQcd"] :
+            args[item] = getattr(self.likelihoodSpec, item)()
+        return args
+
     def ensemble(self, nToys = 200) :
         out = calc.ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
         if out :
             results,i = out
-
             for selection in self.likelihoodSpec.selections() :
-                activeBins = {}
-                for key,value in selection.data.observations().iteritems() :
-                    activeBins[key] = map(lambda x:x!=None, value)
-
-                args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
-                        "lumi": selection.data.lumi(), "htBinLowerEdges": selection.data.htBinLowerEdges(), "activeBins": activeBins,
-                        "htMaxForPlot": selection.data.htMaxForPlot(), "smOnly": self.smOnly(), "note": self.note()+"_toy%d"%i, "selNote": selection.note,
-                        "signalExampleToStack": self.signalExampleToStack, "label":selection.name, "systematicsLabel":self.systematicsLabel(selection.name),
-                        "printPages": False, "toyNumber":i, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True}
-
-                for item in ["REwk", "RQcd"] :
-                    args[item] = getattr(self.likelihoodSpec, item)()
-
+                args = self.plotterArgs(selection)
+                args.update({"results": results, "note": self.note()+"_toy%d"%i, "obsLabel":"Toy %d"%i,
+                             "printPages": False, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True
+                             })
                 plotter = plotting.validationPlotter(args)
                 plotter.inputData = selection.data
                 plotter.go()
@@ -792,24 +829,13 @@ class foo(object) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
         for selection in self.likelihoodSpec.selections() :
-            activeBins = {}
-            for key,value in selection.data.observations().iteritems() :
-                activeBins[key] = map(lambda x:x!=None, value)
-
-            args = {"wspace": self.wspace, "results": results, "legendXSub": 0.35 if "55" not in selection.name else 0.0,
-                    "activeBins": activeBins, "smOnly": self.smOnly(), "note": self.note(),
-                    "signalExampleToStack": self.signalExampleToStack, "systematicsLabel":self.systematicsLabel(selection.name),
-                    "printPages": printPages, "drawMc": drawMc, "printNom":printNom, "drawComponents":drawComponents, "printValues":printValues}
-
-            for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk": "muonForFullEwk"}.iteritems() :
-                args[arg] = getattr(selection, member)
-
-            for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
-                args[item] = getattr(selection.data, item)()
-
-            for item in ["REwk", "RQcd"] :
-                args[item] = getattr(self.likelihoodSpec, item)()
-
+            args = self.plotterArgs(selection)
+            args.update({"results": results,
+                         "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
+                         "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
+                         "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
+                         "drawComponents":drawComponents, "printValues":printValues
+                         })
             plotter = plotting.validationPlotter(args)
             plotter.go()
 

@@ -28,6 +28,8 @@ def signal() :
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
     
+    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
+
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
             "overwriteInput": overwriteInput,
@@ -54,19 +56,21 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": ["tanBeta10", "tanBeta40", "T1", "T2", "T2tt", "T2bb",
-                            "T5zz","T1bbbb", "T1tttt", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
-                            "TGQ_0p8"][5],
+            "signalModel": dict(zip(models, models))["T2bb"]
             }
 
-def points() :
-    return {#"listOfTestPoints": [[(29, 55, 1)], [(29, 25, 1)], [(181, 19, 1)], [(21, 1, 1)], [(39, 7, 1)], [(10, 3, 1), (10, 7, 1)], [(12, 3, 1), (12, 4, 1), (22, 5, 1)]][0],
-            #"listOfTestPoints": [(29, 55, 1), (29, 25, 1), (181, 19, 1), (181, 29, 1), (181, 41, 1), (33, 53, 1), (61, 61, 1)][4:5]
-            "listOfTestPoints": [],
-            #"listOfTestPoints": [(32, 8, 1), (17, 2, 1)][-1:],
-            #"listOfTestPoints": [(21, 61, 1), (51, 51, 1), (101, 33, 1), (181, 21, 1)],
-            #"xWhiteList": [ [29, 181], [16, 32]],
-            }
+def listOfTestPoints() :
+    #out = [(181, 29, 1)]
+    #out = [(33, 53, 1)]
+    #out = [(61, 61, 1)]
+    #out = [(13, 1, 1)]
+    out = [(17, 5, 1)]
+    #out = [(37, 19, 1)]
+    #out = []
+    return out
+
+def xWhiteList() :
+    return []
 
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
@@ -77,10 +81,12 @@ def other() :
 
 def switches() :
     out = {}
-    dicts = [method(), signal(), points(), other()]
-    keys = sum([d.keys() for d in dicts], [])
+    lst = [method(), signal(), other()]
+    for func in ["xWhiteList", "listOfTestPoints"] :
+        lst.append( {func: eval(func)()} )
+    keys = sum([dct.keys() for dct in lst], [])
     assert len(keys)==len(set(keys))
-    for d in dicts : out.update(d)
+    for dct in lst : out.update(dct)
     checkAndAdjust(out)
     return out
 

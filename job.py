@@ -23,7 +23,8 @@ def printDict(d, space = "") :
         elif type(value)!=tuple and type(value)!=list :
             out+=str(value)
         else :
-            out += "[%s]"%(", ".join(["%s"%str(item) for item in value]))
+            form = "%8.6f" if key[:3]=="eff" else "%f"
+            out += "[%s]"%(", ".join([form%item for item in value]))
         print out+","
     print "%s}"%space
 
@@ -49,7 +50,7 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
     out = {}
     for cl in switches["CL"] :
         cl2 = 100*cl
-        f = workspace.foo(signal = signal, likelihoodSpec = likelihoodSpec, extraSigEffUncSources = switches["extraSigEffUncSources"],
+        f = workspace.foo(signalToTest = signal, likelihoodSpec = likelihoodSpec, extraSigEffUncSources = switches["extraSigEffUncSources"],
                           rhoSignalMin = switches["rhoSignalMin"], fIniFactor = switches["fIniFactor"])
 
         if switches["method"]=="CLs" :
