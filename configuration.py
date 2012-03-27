@@ -56,7 +56,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2bb"]
+            "signalModel": dict(zip(models, models))["T1bbbb"]
             }
 
 def listOfTestPoints() :
@@ -64,9 +64,9 @@ def listOfTestPoints() :
     #out = [(33, 53, 1)]
     #out = [(61, 61, 1)]
     #out = [(13, 1, 1)]
-    out = [(17, 5, 1)]
+    #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
-    #out = []
+    out = []
     return out
 
 def xWhiteList() :
