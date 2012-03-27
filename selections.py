@@ -2,7 +2,8 @@ from common import selection
 
 for item in ["orig", "simpleOneBin",
              "afterAlphaT", "afterAlphaT_b", "afterAlphaT_noMHT_ov_MET",
-             "mixedMuons", "mixedMuons_b", "mixedMuons_b_sets_aT",
+             "mixedMuons", "mixedMuons_b",
+             "mixedMuons_b_sets_aT", "mixedMuons_b_sets_aT_reweighted",
              "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted"] :
     exec("from inputData import %s"%item)
 
@@ -75,7 +76,7 @@ def alphaT_0btags(systMode = 1, reweighted = False) :
                        note = "0 b-tags (w/ #alpha_{T})",
                        alphaTMinMax = ("55", None),
                        samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                       data = mixedMuons_b_sets_aT.data_55_0btag( systMode = systMode ),
+                       data = module.data_55_0btag( systMode = systMode ),
                        nbTag = "0",
                        universalSystematics = True,
                        universalKQcd = True,
