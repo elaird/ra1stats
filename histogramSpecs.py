@@ -33,7 +33,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     sms = {"T1":      {"had": "v5"},
            "T2":      {"had": "v5"},
            "T2tt":    {"had": "v8", "muon": "v8"},
-           "T2bb":    {"had": "v2", "muon": "v2"},
+           "T2bb":    {"had": "v3", "muon": "v3"},
            "T5zz":    {"had": "v1", "muon": "v1"},
            "T1bbbb":  {"had": "v1", "muon": "v1"},
            "T1tttt":  {"had": "v2", "muon": "v2"},
