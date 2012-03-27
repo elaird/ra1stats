@@ -115,11 +115,25 @@ def signal(i) :
             "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
             })
 
-    return [simple, lm6, p_33_53,  p_181_29, t1bbbb, t2tt, t2bb][i]
+    t1 = common.signal(xs = 0.0651, label = "T1 m_{gluino} = 800 GeV; m_{LSP} = 200 GeV (xs = 65 fb)")
+    t1.insert("55_0b", {
+        "effHad": [0.000200, 0.001200, 0.005500, 0.013000, 0.028600, 0.040800, 0.035300, 0.040400],
+        })
+    t1.insert("55_1b", {
+        "effHad": [0.000000, 0.000000, 0.000200, 0.000800, 0.001000, 0.001900, 0.002200, 0.002700],
+        })
+    t1.insert("55_2b", {
+        "effHad": [0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000300],
+        })
+    t1.insert("55_gt2b", {
+        "effHad": [0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000100, 0.000000, 0.000000],
+        })
+
+    return [simple, lm6, p_33_53,  p_181_29, t1bbbb, t2tt, t2bb, t1][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signalToTest = signal(-1),
-                  signalExampleToStack = signal(-3),
+                  signalExampleToStack = signal(-1),
                   #signalToInject = signal(-1),
 
                   #trace = True
