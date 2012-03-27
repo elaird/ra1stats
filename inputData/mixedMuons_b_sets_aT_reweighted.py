@@ -68,4 +68,5 @@ class data_55_0btag(data) :
             "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
             }
 
+        self._mcExtraBeforeTrigger = {}
         syst.load(self, mode = self.systMode)
