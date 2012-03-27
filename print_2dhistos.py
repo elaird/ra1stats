@@ -33,60 +33,37 @@ def print_unpack( item, level = 0, ending_comma = False ) :
             print_unpack( value, 0, True )
         print "\t"*level,"}"
 
+std_selections = { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                   "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                   "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
+                         "DY", "tt", "obs", "WZ" ],
+                 }
+
 btag0 = {
             "~/public_html/03_RA1/07_numbers_from_darren/02_23_03_2012/RA1_Stats_Zero_Btags.root" :
-            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-            },
+                std_selections,
         }
 
 btag1 = {
             "~/public_html/03_RA1/07_numbers_from_darren/02_23_03_2012/RA1_Stats_One_Btags.root" :
-            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-            },
+                std_selections,
         }
 
 btag2 = {
             "~/public_html/03_RA1/07_numbers_from_darren/02_23_03_2012/RA1_Stats_Two_Btags.root" :
-            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-            },
+                std_selections,
         }
 
 btag_gt2 = {
             "~/public_html/03_RA1/07_numbers_from_darren/02_23_03_2012/RA1_Stats_More_Than_Two.root" :
-            { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                 "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-            },
+                std_selections,
         }
 
 btag_gt0 = { 
             "~/public_html/03_RA1/07_numbers_from_darren/02_23_03_2012/RA1_Stats_More_Than_Zero.root":
-            { 
-                "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-            },
+                std_selections,
         }
 
 r.gROOT.SetBatch(1)
