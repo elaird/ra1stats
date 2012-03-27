@@ -23,7 +23,10 @@ class spec(object) :
 
     def __init__(self) :
         self._selections = []
-        systMode = 3
+
+        args = {}
+        args["systMode"] = 3
+        args["reweighted"] = predictedGe3b = True
 
         slices = False
         b = False
@@ -38,21 +41,21 @@ class spec(object) :
         assert sum([slices,b,multib]) == 1
         
         if slices :
-            self.add( selections.alphaT_slices(systMode) )
+            self.add( selections.alphaT_slices(**args) )
 
         if b :
-            self.add( selections.noAlphaT_gt0b(systMode) )
+            self.add( selections.noAlphaT_gt0b(**args) )
 
         if multib :
             if aT0b :
-                self.add( selections.alphaT_0btags(systMode) )
+                self.add( selections.alphaT_0btags(**args) )
             else :
-                self.add( selections.noAlphaT_0btags(systMode) )
+                self.add( selections.noAlphaT_0btags(**args) )
 
             if gt0_only :
-                self.add( selections.noAlphaT_gt0b(systMode, universalSystematics = False, universalKQcd = False) )
+                self.add( selections.noAlphaT_gt0b(universalSystematics = False, universalKQcd = False, **args) )
             else :
-                self.add( selections.btags_1_2_gt2(systMode) )
+                self.add( selections.btags_1_2_gt2(predictedGe3b = predictedGe3b, **args) )
 
 #        self.add( selections.alphaT_slices_noMHTovMET(systMode) )
 #        self.add( selections.twentyTen() )
