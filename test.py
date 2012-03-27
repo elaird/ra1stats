@@ -119,7 +119,7 @@ def signal(i) :
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signalToTest = signal(-1),
-                  signalExampleToStack = signal(-1),
+                  signalExampleToStack = signal(-3),
                   #signalToInject = signal(-1),
 
                   #trace = True
