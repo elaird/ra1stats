@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from inputData import mixedMuons_b_sets_reweighted
+from inputData import mixedMuons_b_sets_reweighted,mixedMuons_b_sets_aT_reweighted
 
+#data = mixedMuons_b_sets_aT_reweighted.data_55_0btag()
 data = mixedMuons_b_sets_reweighted.data_55_1btag()
 
 for func in ["observations", "mcExpectations", "purities", "mcExtra", "mcStatError"] :
