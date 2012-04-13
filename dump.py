@@ -3,7 +3,9 @@
 from inputData import mixedMuons_b_sets_reweighted,mixedMuons_b_sets_aT_reweighted
 
 #data = mixedMuons_b_sets_aT_reweighted.data_55_0btag()
-data = mixedMuons_b_sets_reweighted.data_55_1btag()
+#data = mixedMuons_b_sets_reweighted.data_55_1btag()
+#data = mixedMuons_b_sets_reweighted.data_55_2btag()
+data = mixedMuons_b_sets_reweighted.data_55_gt2btag()
 
 for func in ["observations", "mcExpectations", "purities", "mcExtra", "mcStatError"] :
     print func
