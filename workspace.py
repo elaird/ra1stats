@@ -620,7 +620,7 @@ class foo(object) :
         if not l.standardPoi() :
             assert self.smOnly()
             assert "FallingExp" in l.RQcd()
-            assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
+            #assert len(l.selections())==1,"%d!=1"%len(l.selections())
 
         if l.constrainQcdSlope() :
             assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()
