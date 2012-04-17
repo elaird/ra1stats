@@ -56,9 +56,8 @@ class thstackMulti(object) :
                 if key in inDict(spec, "suppress", []) : continue
                 histos2[key] = value
 
-            options = goptions + ("" if "stackOptions" not in spec else spec["stackOptions"])
             self.DrawOne(histos2,
-                         goptions = "same"+options,
+                         goptions = goptions + ("" if "stackOptions" not in spec else spec["stackOptions"]),
                          noErrors = ("type" in spec) and spec["type"]=="function" and not self.errorsFromToys,
                          errorBand = inDict(spec, "errorBand", False),
                          bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
