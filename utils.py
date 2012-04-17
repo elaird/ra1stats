@@ -189,7 +189,7 @@ def shiftUnderAndOverflows(dimension, histos, dontShiftList = []) :
         combineBinContentAndError(histo, binToContainCombo = bins, binToBeKilled = bins+1)
         histo.SetEntries(entries)
 ##############################
-def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFileName = None, divide = (2,2), goptions = "", ticks = True) :
+def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, fileName = None, divide = (2,2), goptions = "", ticks = True) :
     if optStat!=None :
         oldOptStat = r.gStyle.GetOptStat()
         r.gStyle.SetOptStat(optStat)
@@ -227,7 +227,7 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
 
         if j==(n-1) :
             canvas.cd(0)                
-            canvas.Print(psFileName)
+            canvas.Print(fileName)
             needPrint = False
 
     if "latexTable" in args : 
@@ -238,7 +238,7 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
 
     if needPrint :
         canvas.cd(0)
-        canvas.Print(psFileName)
+        canvas.Print(fileName)
     if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
     return
 ##############################

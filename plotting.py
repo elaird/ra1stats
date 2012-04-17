@@ -676,11 +676,11 @@ class validationPlotter(object) :
                      funcBestFit = None, funcLinPropError = None,
                      parBestFit = None, parError = None) :
         
-        utils.cyclePlot(d = parHistos1D, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
+        utils.cyclePlot(d = parHistos1D, f = histoLines, canvas = self.canvas, fileName = self.psFileName,
                         args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":parBestFit, "errorDict":parError, "errorColor":r.kGreen})
         
-        utils.cyclePlot(d = parHistos2D, canvas = self.canvas, psFileName = self.psFileName)
-        utils.cyclePlot(d = funcHistos, f = histoLines, canvas = self.canvas, psFileName = self.psFileName,
+        utils.cyclePlot(d = parHistos2D, canvas = self.canvas, fileName = self.psFileName)
+        utils.cyclePlot(d = funcHistos, f = histoLines, canvas = self.canvas, fileName = self.psFileName,
                         args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":funcBestFit, "errorDict":funcLinPropError, "errorColor":r.kCyan})
                                
         return

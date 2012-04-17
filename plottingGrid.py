@@ -460,7 +460,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         canvas.Clear()
 
     canvas.SetRightMargin(0.15)
-    utils.cyclePlot(d = graphs, f = None, args = {}, optStat = 1110, canvas = canvas, psFileName = fileName, divide = divide, goptions = "alp")
+    utils.cyclePlot(d = graphs, f = None, args = {}, optStat = 1110, canvas = canvas, fileName = fileName, divide = divide, goptions = "alp")
 
     if whiteList :
         utils.epsToPdf(fileName, sameDir = True)
