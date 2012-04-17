@@ -103,9 +103,9 @@ def latex(quantiles = {}, bestDict = {}, stdout = False) :
     for key,q in quantiles.iteritems() :
         best = bestDict[key]
         if best >= 100 :
-            src[key] = (key, "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) ))
+            src[key] = "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) )
         else :
-            src[key] = (key, "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] ))
+            src[key] = "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] )
 
         lst.append("%20s: %g + %g - %g"%(key, best, q[2]-best, best-q[0]))
 
@@ -115,7 +115,7 @@ def latex(quantiles = {}, bestDict = {}, stdout = False) :
 
     from makeTables import ensembleResultsFromDict as ltxResults
     import likelihoodSpec
-    ltxResults( src.values(), [ x.data for x in likelihoodSpec.spec().selections() ] )
+    ltxResults( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
 
 def rootFileName(note = "") :
     return "ensemble_%s.root"%note
