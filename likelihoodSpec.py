@@ -3,7 +3,11 @@ import selections
 class spec(object) :
 
     def separateSystObs(self) : return True
-    def poi(self) : return [{"f": (1.0, 0.0, 1.0)}, {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)}, {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0] #{"var": initialValue, min, max)
+    def poi(self) :
+        return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
+                {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
+                {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
+                {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0]
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
@@ -59,4 +63,3 @@ class spec(object) :
 
 #        self.add( selections.alphaT_slices_noMHTovMET(systMode) )
 #        self.add( selections.twentyTen() )
-

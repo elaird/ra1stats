@@ -404,7 +404,7 @@ class validationPlotter(object) :
         
             self.plot(note = "fraction of EWK background which is Zinv (result of fit)" if not self.printPages else "",
                       fileName = "fZinv_fit", legend0 = (0.2, 0.8), legend1 = (0.55, 0.85), minimum = 0.0, maximum = 1.0, yLabel = "",
-                      otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z#rightarrow#nu#bar{#nu} / fit EWK", "stack":None}])
+                      otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z#rightarrow#nu#bar{#nu} / EWK", "stack":None}])
         else :
             self.plot(note = "ewk scale factor (result of fit)", legend0 = (0.5, 0.8), yLabel = "",
                       otherVars = [ {"var":"ewk", "type":("function" if self.REwk else "var"), "dens":["mcHad"], "denTypes":[None], "desc":"ML EWK / MC EWK",

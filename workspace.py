@@ -91,26 +91,26 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iFirst = N
         #wimport(w, r.RooRealVar(varName, varName, max(1, nHadValue), 0.0, 10.0*max(1, nHadValue)))
     return varOrFunc(w, name, label, i)
 
-def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst = None, iLast = None, iniVal = None) :
+def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst = None, iLast = None, iniVal = None, minMax = None) :
     def mean(j) : return ni("htMean", label, j)
     def fz(j) : return ni(name, label, j)
     
     if nFZinv=="All" :
-        wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, 0.2, 0.8))
+        wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, *minMax))
     elif nFZinv=="One" :
-        if i==iFirst : wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, 0.0, 1.0))
+        if i==iFirst : wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, *minMax))
         else         : wimport(w, r.RooFormulaVar(fz(i), "(@0)", r.RooArgList(w.var(fz(iFirst)))))
     elif nFZinv=="Two" :
         if i==iFirst :
-            wimport(w, r.RooRealVar(fz(i),     fz(i),     iniVal, 0.0, 1.0))
-            wimport(w, r.RooRealVar(fz(iLast), fz(iLast), iniVal, 0.0, 1.0))
+            wimport(w, r.RooRealVar(fz(i),     fz(i),     iniVal, *minMax))
+            wimport(w, r.RooRealVar(fz(iLast), fz(iLast), iniVal, *minMax))
         elif i!=iLast :
             argList = r.RooArgList(w.var(fz(iFirst)), w.var(fz(iLast)), w.var(mean(i)), w.var(mean(iFirst)), w.var(mean(iLast)))
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, AQcdIni = None) :
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None) :
 
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -161,7 +161,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
 
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
         if not muonForFullEwk :
-            fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni)
+            fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni, minMax = fZinvRange)
             wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
             wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
@@ -509,7 +509,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
 
     moreArgs = {}
     moreArgs["had"] = {}
-    for item in ["zeroQcd", "fZinvIni", "AQcdIni"] :
+    for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni"] :
         moreArgs["had"][item] = getattr(selection, item)
     for item in ["REwk", "RQcd", "nFZinv", "poi"] :
         moreArgs["had"][item] = eval(item)
@@ -620,7 +620,7 @@ class foo(object) :
         if not l.standardPoi() :
             assert self.smOnly()
             assert "FallingExp" in l.RQcd()
-            assert len(l["selections"])==1,"%d!=1"%len(l["selections"])
+            #assert len(l.selections())==1,"%d!=1"%len(l.selections())
 
         if l.constrainQcdSlope() :
             assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()
