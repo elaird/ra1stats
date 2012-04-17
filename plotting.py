@@ -48,7 +48,7 @@ def histoLines(args = {}, key = None, histo = None) :
     bestLine = r.TLine(); bestLine.SetLineColor(args["bestColor"])
     errorLine = r.TLine(); errorLine.SetLineColor(args["errorColor"])
 
-    q = utils.quantiles(histo, sigmaList = [-1.0, 0.0, 1.0])
+    q = args["quantileDict"][key]
     min  = histo.GetMinimum()
     max  = histo.GetMaximum()
 
@@ -148,9 +148,14 @@ def ensemblePlotsAndTables(note = "", plotsDir = "", stdout = False) :
     canvas.Print(fileName+"[")
 
     utils.cyclePlot(d = pHistos, f = histoLines, canvas = canvas, fileName = fileName,
-                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
+                    args = {"bestDict":obs["parBestFit"], "bestColor":r.kGreen,
+                            "quantileDict": pQuantiles, "quantileColor":r.kRed,
+                            "errorDict":obs["parError"], "errorColor":r.kGreen,
+                            })
     utils.cyclePlot(d = fHistos, f = histoLines, canvas = canvas, fileName = fileName,
-                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen})
+                    args = {"bestDict":obs["funcBestFit"], "bestColor":r.kGreen,
+                            "quantileDict": fQuantiles, "quantileColor":r.kRed,
+                            "errorColor":r.kGreen})
     utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
     #utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
     canvas.Print(fileName+"]")
