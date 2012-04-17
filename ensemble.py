@@ -97,16 +97,15 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def latex(histos = {}, quantiles = {}, bestDict = {}, stdout = False) :
+def latex(quantiles = {}, bestDict = {}, stdout = False) :
     src = {}
     lst = []
-    for key,histo in histos.iteritems() :
-        q = quantiles[key]
+    for key,q in quantiles.iteritems() :
         best = bestDict[key]
         if best >= 100 :
-            src[key] = (histo.GetName(), "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) ))
+            src[key] = (key, "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) ))
         else :
-            src[key] = (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] ))
+            src[key] = (key, "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] ))
 
         lst.append("%20s: %g + %g - %g"%(key, best, q[2]-best, best-q[0]))
 
@@ -117,7 +116,6 @@ def latex(histos = {}, quantiles = {}, bestDict = {}, stdout = False) :
     from makeTables import ensembleResultsFromDict as ltxResults
     import likelihoodSpec
     ltxResults( src.values(), [ x.data for x in likelihoodSpec.spec().selections() ] )
-    print "my output is broken"
 
 def rootFileName(note = "") :
     return "ensemble_%s.root"%note
