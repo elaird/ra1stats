@@ -288,6 +288,7 @@ class validationPlotter(object) :
         self.width2 = 3
 
         self.sm = r.kAzure+6
+        self.smError = r.kAzure
         self.sig = r.kPink+7
         self.ewk = r.kBlue+1
         self.qcd = r.kGreen+3
@@ -343,7 +344,7 @@ class validationPlotter(object) :
         if "had" not in self.lumi : return
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total"},
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError},
             {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -387,7 +388,7 @@ class validationPlotter(object) :
     def muonPlots(self) :
         if "muon" not in self.lumi : return
         vars = [
-            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"SM", "stack":"total"},
+            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"SM", "stack":"total", "errorBand":self.smError},
             {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -415,7 +416,7 @@ class validationPlotter(object) :
                       obs = {"var":"nPhot", "desc": obsString(self.obsLabel, "photon sample", self.lumi["phot"])},otherVars = [
                 {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
-                {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2, "desc":"SM", "stack":None},
+                {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2, "desc":"SM", "stack":None, "errorBand":self.smError},
                 ])
 
     def mumuPlots(self) :
@@ -429,7 +430,7 @@ class validationPlotter(object) :
                       obs = {"var":"nMumu", "desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])}, logY = logY, otherVars = [
                 {"var":"mcMumu", "type":None, "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
-                {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"expected SM yield", "stack":None},
+                {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"expected SM yield", "stack":None, "errorBand":self.smError},
                 ])
 
     def ewkPlots(self) :
@@ -816,6 +817,10 @@ class validationPlotter(object) :
 	    for item in ["min", "max"] :
 	        d[item] = d["value"].Clone(d["value"].GetName()+item)
 
+        if self.errorsFromToys :
+	    for item in ["errorLo", "errorHi"] :
+	        d[item] = d["value"].Clone(d["value"].GetName()+item)
+
         #style
         for key,histo in d.iteritems() :
             histo.SetLineColor(color)
@@ -854,6 +859,10 @@ class validationPlotter(object) :
 	                x = getattr(var, "get%s"%item.capitalize())()
 	                if abs(x)==1.0e30 : continue
 	                d[item].SetBinContent(i+1, x)
+                elif self.errorsFromToys :
+                    q = self.quantiles[ni(varName, self.label, i)]
+                    d["errorLo"].SetBinContent(i+1, q[0])
+                    d["errorHi"].SetBinContent(i+1, q[2])
                 elif errorsFrom :
                     noI = ni(errorsFrom, label)
                     errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, label, i))
@@ -915,7 +924,7 @@ class validationPlotter(object) :
         histoList = []
 	legEntries = []
 
-	for d in specs :
+	for iSpec,d in enumerate(specs) :
             extraName = "%s%s"%(extraName, "_".join(d["dens"]) if "dens" in d else "")
             
 	    if "example" not in d :
@@ -932,24 +941,14 @@ class validationPlotter(object) :
                     for den,denType in zip(d["dens"], d["denTypes"]) :
                         h.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
             
-            hist = histos["value"]
-	    legEntries.append( (hist, "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
-	    if inDict(d, "stack", False) :
-	        if d["stack"] not in stacks :
-	            stacks[d["stack"]] = utils.thstack(name = d["stack"])
-	        stacks[d["stack"]].Add(hist, inDict(d, "stackOptions", ""))
-	    else :
-	        hist.Scale(scale)
-                histoList.append(hist)
-	        histoList += drawOne(hist = hist,
-                                     goptions = "%ssame"%inDict(d, "goptions", ""),
-                                     errorBand = inDict(d, "errorBand", False),
-                                     bandFillStyle = inDict(d, "bandStyle", [1001,3004][0]))
-                for key,h in histos.iteritems() :
-                    if key in ["value"]+inDict(d, "suppress", []) : continue
-	            h.Draw("same")
-                    histoList.append(h)
-        return stacks,legEntries,histoList
+	    legEntries.append( (histos["value"], "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
+
+            stack = inDict(d, "stack", "")
+            if not stack : stack = "_".join(["%03d"%iSpec]+[d["var"]]*3) #hacky default stack name
+
+            if stack not in stacks : stacks[stack] = utils.thstackMulti(name = stack, errorsFromToys = self.errorsFromToys)
+            stacks[stack].Add(histos, d)
+        return stacks,legEntries
 
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
              selNoteCoords = (0.13, 0.85),
@@ -987,13 +986,13 @@ class validationPlotter(object) :
         for item in ["extraName", "lumiString", "scale"] :
             args[item] = eval(item)
 
-        stackDict,legEntries,histoList = self.stacks(otherVars, **args)
+        stackDict,legEntries = self.stacks(otherVars, **args)
 
-        maxes = [utils.histoMax(h) for h in histoList+[obsHisto]]+[s.Maximum() for s in stackDict.values()]
+        maxes = [utils.histoMax(h) for h in [obsHisto]]+[s.Maximum() for s in stackDict.values()]
         if maxes and not maximum :
             obsHisto.SetMaximum(customMaxFactor[logY]*max(maxes))
             
-        stuff += [stackDict, histoList]
+        stuff += stackDict
 
 	for stack in stackDict.values() :
 	    stack.Draw(goptions = "histsame", reverse = True)
