@@ -138,7 +138,7 @@ def ListFromTGraph(graph = None) :
     y = r.Double()
     for i in range(graph.GetN()) :
         graph.GetPoint(i, x, y)
-        ys.append(y)
+        ys.append(float(y))
     return ys
 #####################################
 def TGraphFromList(lst = [], name = "") :
