@@ -1,6 +1,6 @@
 import ROOT as r
 import math
-import utils,plotting
+import utils,plotting,pickling
 from common import pdf,pseudoData
 
 def collect(wspace, results, extraStructure = False) :
@@ -97,30 +97,37 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def latex(histos = {}, bestDict = {}) :
-    out = []
+def latex(histos = {}, quantiles = {}, bestDict = {}) :
+    src = []
     for key,histo in histos.iteritems() :
-        q = utils.quantiles(histo, sigmaList = [-1.0, 0.0, 1.0])
+        q = quantiles[key]
         best = bestDict[key]
         if best >= 100 :
-            out.append( (histo.GetName(), "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) )) )
+            src.append( (histo.GetName(), "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) )) )
         else :
-            out.append( (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] )) )
-    return out
+            src.append( (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] )) )
 
-def fileName(note = "") :
+    from makeTables import ensembleResultsFromDict as ltxResults
+    import likelihoodSpec
+    ltxResults( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
+
+def rootFileName(note = "") :
     return "ensemble_%s.root"%note
+
+def pickledFileName(note = "") :
+    return rootFileName(note).replace(".root", ".obs")
 
 def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
-    
+    pickling.writeNumbers(pickledFileName(note), d = obs)
+
     graphs = pValueGraphs(obs, toys)
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
     fHistos  = histos1D(obs = obs, toys = toys, vars = utils.funcCollect(wspace)[0].keys())
     oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
-    tfile = r.TFile(fileName(note), "RECREATE")
+    tfile = r.TFile(rootFileName(note), "RECREATE")
     for dir,dct in [("graphs", graphs),
                     ("pars",   pHistos),
                     ("funcs",  fHistos),
@@ -133,7 +140,17 @@ def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     tfile.Close()
 
 def plotsAndTables(note = "", plotsDir = "") :
-    tfile = r.TFile(fileName(note))
+    #open results
+    obs = pickling.readNumbers(pickledFileName(note))
+    tfile = r.TFile(rootFileName(note))
+
+    #collect function histos and quantiles
+    fHistos = {}
+    fQuantiles = {}
+    for tkey in tfile.Get("funcs").GetListOfKeys() :
+        key = tkey.GetName()
+        fHistos[key] = tfile.Get("/funcs/%s"%key)
+        fQuantiles[key] = utils.quantiles(fHistos[key], sigmaList = [-1.0, 0.0, 1.0])
 
     #p-value plots
     kargs = {}
@@ -141,24 +158,22 @@ def plotsAndTables(note = "", plotsDir = "") :
         kargs[item] = tfile.Get("/graphs/%s"%item)
     for item in ["note", "plotsDir"] :
         kargs[item] = eval(item)
-    
-    print kargs
     plotting.pValuePlots(**kargs)
 
-#    #latex yield tables
-#    print latex(histos = fHistos, bestDict = obs["funcBestFit"])
-#    
-#    ##ensemble plots
-#    #canvas = utils.numberedCanvas()
-#    #fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
-#    #canvas.Print(fileName+"[")
-#    #
-#    #utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-#    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
-#    #utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-#    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
-#    #utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
-#    ##utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
-#    #canvas.Print(fileName+"]")
+    #latex yield tables
+    latex(histos = fHistos, quantiles = fQuantiles, bestDict = obs["funcBestFit"])
+    
+    ##ensemble plots
+    #canvas = utils.numberedCanvas()
+    #fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
+    #canvas.Print(fileName+"[")
+    #
+    #utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
+    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
+    #utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
+    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
+    #utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
+    ##utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
+    #canvas.Print(fileName+"]")
 
     tfile.Close()
