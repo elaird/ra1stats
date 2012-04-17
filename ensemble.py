@@ -98,7 +98,18 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def plots(wspace, data, nToys = None, note = "", plots = True, plotsDir = "plots") :
+def latex(histos = {}, bestDict = {}) :
+    out = []
+    for key,histo in histos.iteritems() :
+        q = utils.quantiles(histo, sigmaList = [-1.0, 0.0, 1.0])
+        best = bestDict[key]
+        if best >= 100 :
+            out.append( (histo.GetName(), "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) )) )
+        else :
+            out.append( (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] )) )
+    return out
+
+def plotsAndTables(wspace, data, nToys = None, note = "", plotsDir = "plots") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
@@ -106,21 +117,22 @@ def plots(wspace, data, nToys = None, note = "", plots = True, plotsDir = "plots
     oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
+    #p-value plots
     pValueArgs = pValuePlotArgs(obs, toys)
-    
-    if plots :
-        #p-value plots
-        plotting.pValuePlots(note = note, **pValueArgs)
+    plotting.pValuePlots(note = note, **pValueArgs)
 
-        #ensemble plots
-        canvas = utils.numberedCanvas()
-        fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
-        canvas.Print(fileName+"[")
-        
-        utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
-        utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True, "latexTable": []})
-        utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
-        #utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
-        canvas.Print(fileName+"]")
+    #latex yield tables
+    print latex(histos = fHistos, bestDict = obs["funcBestFit"])
+    
+    ##ensemble plots
+    #canvas = utils.numberedCanvas()
+    #fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
+    #canvas.Print(fileName+"[")
+    #
+    #utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
+    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
+    #utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
+    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
+    #utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
+    ##utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
+    #canvas.Print(fileName+"]")
