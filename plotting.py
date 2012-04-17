@@ -942,7 +942,7 @@ class validationPlotter(object) :
 	    legEntries.append( (histos["value"], "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
 
             stack = inDict(d, "stack", "")
-            if not stack : stack = "_".join(["%03d"%iSpec]+[d["var"]]*3) #hacky default stack name
+            if not stack : stack = "_".join(["NONE","%03d"%iSpec]+[d["var"]]*3) #hacky default stack name
 
             if stack not in stacks : stacks[stack] = utils.thstackMulti(name = stack, errorsFromToys = self.errorsFromToys)
             stacks[stack].Add(histos, d)
@@ -992,8 +992,8 @@ class validationPlotter(object) :
             
         stuff += stackDict
 
-	for stack in stackDict.values() :
-	    stack.Draw(goptions = "histsame", reverse = True)
+	for key,stack in stackDict.iteritems() :
+	    stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = True)
 
         obsHisto.Draw("psame") #redraw data
 
