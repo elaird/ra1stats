@@ -1,6 +1,6 @@
 import ROOT as r
 import math
-import utils,plotting,pickling
+import utils,pickling
 from common import pdf,pseudoData
 
 def collect(wspace, results, extraStructure = False) :
@@ -162,38 +162,7 @@ def functionQuantiles(note = "") :
     tfile.Close()
     return fQuantiles
 
-def plotsAndTables(note = "", plotsDir = "", stdout = False) :
-    #open results
+def results(note = "") :
     obs = pickling.readNumbers(pickledFileName(note))
     tfile = r.TFile(rootFileName(note))
-
-    #collect histos and quantiles
-    fHistos,fQuantiles = histosAndQuantiles(tfile, "funcs")
-    pHistos,pQuantiles = histosAndQuantiles(tfile, "pars")
-    oHistos,oQuantiles = histosAndQuantiles(tfile, "other")
-
-    #p-value plots
-    kargs = {}
-    for item in ["pValue", "lMaxData", "lMaxs"] :
-        kargs[item] = tfile.Get("/graphs/%s"%item)
-    for item in ["note", "plotsDir", "stdout"] :
-        kargs[item] = eval(item)
-    plotting.pValuePlots(**kargs)
-
-    #latex yield tables
-    latex(histos = fHistos, quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout)
-    
-    #ensemble plots
-    canvas = utils.numberedCanvas()
-    fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
-    canvas.Print(fileName+"[")
-
-    utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
-    utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen})
-    utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
-    #utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
-    canvas.Print(fileName+"]")
-
-    tfile.Close()
+    return obs,tfile
