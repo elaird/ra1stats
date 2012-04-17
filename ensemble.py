@@ -176,7 +176,7 @@ def plotsAndTables(note = "", plotsDir = "", stdout = False) :
     kargs = {}
     for item in ["pValue", "lMaxData", "lMaxs"] :
         kargs[item] = tfile.Get("/graphs/%s"%item)
-    for item in ["note", "plotsDir"] :
+    for item in ["note", "plotsDir", "stdout"] :
         kargs[item] = eval(item)
     plotting.pValuePlots(**kargs)
 

@@ -76,9 +76,9 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", 
     canvas.Print(ps+"]")
     utils.ps2pdf(ps, sameDir = True)
 
-def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDir = "") :
+def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDir = "", stdout = False) :
     finalPValue = utils.ListFromTGraph(pValue)[-1]
-    print "pValue =",finalPValue
+    if stdout : print "pValue =",finalPValue
 
     fileName = "%s/pValue_%s.pdf"%(plotsDir, note)
     canvas = r.TCanvas("canvas")
