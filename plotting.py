@@ -1,5 +1,6 @@
 import os,array,math,copy,collections
 from common import ni,floatingVars
+from utils import inDict
 import utils,ensemble
 import ROOT as r
 
@@ -218,9 +219,6 @@ def pretty(l) :
         out += ("%6.2f"%item) if item else "%6s"%""
         if i!=len(l)-1 : out += ", "
     return out+")"
-
-def inDict(d, key, default) :
-    return d[key] if key in d else default
 
 def drawOne(hist = None, goptions = "", errorBand = False, bandFillStyle = 1001) :
     if not errorBand :
