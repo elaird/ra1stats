@@ -805,8 +805,8 @@ class foo(object) :
             args[item] = getattr(self.likelihoodSpec, item)()
         return args
 
-    def ensemblePlots(self, nToys = 200) :
-        ensemble.plots(self.wspace, self.data, nToys = nToys, note = self.note())
+    def ensemble(self, nToys = 200) :
+        ensemble.plotsAndTables(self.wspace, self.data, nToys = nToys, note = self.note())
 
     def bestFitToy(self, nToys = 200) :
         #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
