@@ -57,7 +57,7 @@ class thstackMulti(object) :
                 histos2[key] = value
 
             self.DrawOne(histos2,
-                         goptions = goptions + ("" if "stackOptions" not in spec else spec["stackOptions"]),
+                         goptions = goptions + ("" if "goptions" not in spec else spec["goptions"]),
                          noErrors = ("type" in spec) and spec["type"]=="function" and not self.errorsFromToys,
                          errorBand = inDict(spec, "errorBand", False),
                          bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
@@ -69,6 +69,9 @@ class thstackMulti(object) :
     def DrawOne(self, histos = None, goptions = "", noErrors = None, errorBand = False, bandFillStyle = 1001) :
         if (not errorBand) or noErrors :
             histos["value"].Draw(goptions)
+            for key,h in histos.iteritems() :
+                if key=="value" : continue
+                h.Draw(goptions)
         else :
             band = "errorLo" in histos and "errorHi" in histos
             goptions = "he2"+goptions
