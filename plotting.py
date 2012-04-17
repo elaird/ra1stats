@@ -290,6 +290,7 @@ class validationPlotter(object) :
         self.sig = r.kPink+7
         self.ewk = r.kBlue+1
         self.qcd = r.kGreen+3
+        self.qcdError = r.kGreen-3
         
     def go(self) :
         self.canvas = utils.numberedCanvas()
@@ -470,19 +471,19 @@ class validationPlotter(object) :
     def alphaTRatioPlots(self) :
         if "had" not in self.lumi : return
 
-        ewk = {"var":"ewk", "type":self.ewkType, "dens":["nHadBulk"], "denTypes":["var"], "desc":"EWK", "suppress":["min","max"],
-               "color":self.ewk, "width":self.width1, "markerStyle":1, "legSpec":"lp"+("" if self.ewkType=="function" else "f"), "errorBand":self.ewk-6} #"errorsFrom":"A_ewk"}
-               
-        qcd = {"var":"qcd", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"QCD",
-               "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lp", "errorBand":self.qcd, "bandStyle":3005} #"errorsFrom":"A_qcd"}
-        
-        qcd2 = copy.deepcopy(qcd)
-        qcd2["legend"] = False
-
-        specs = [qcd, ewk, #qcd2,
-                 {"var":"hadB",  "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"SM (QCD + EWK)",
-                  "color":self.sm, "width":self.width2, "errorBand":self.sm, "markerStyle":1, "legSpec":"l", "stack":"total"},
-                 ]
+        specs = [
+            {"var":"hadB",  "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError,
+             "dens":["nHadBulk"], "denTypes":["var"]},
+            ]
+        if self.drawComponents :
+            specs +=[
+                {"var":"ewk", "type":self.ewkType, "desc":"EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
+                 "color":self.ewk, "style":2, "width":self.width1, "stack":"background", "suppress":["min","max"],
+                 "dens":["nHadBulk"], "denTypes":["var"]},
+                {"var":"qcd", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":"QCD",
+                 "color":self.qcd, "width":self.width1, "markerStyle":1, "legSpec":"lp", "errorBand":self.qcdError},
+                ]
 
         if not self.smOnly :
             specs += [{"var":"hadS", "type":"function", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalDesc+" "+self.signalDesc2,
@@ -493,7 +494,7 @@ class validationPlotter(object) :
 
         self.plot(fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
                   obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},
-                  otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2, reverseLegend = True)
+                  otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2)
 
         if self.muonForFullEwk :
             self.plot(note = "muon to ewk", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2,
