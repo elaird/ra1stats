@@ -1,6 +1,6 @@
 import os,array,math,copy,collections
 from common import ni,floatingVars
-import utils
+import utils,ensemble
 import ROOT as r
 
 def rootSetup() :
@@ -122,6 +122,41 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDi
 
     canvas.Print(fileName+"]")
 
+def ensemblePlotsAndTables(note = "", plotsDir = "", stdout = False) :
+    #open results
+    obs,tfile = ensemble.results(note)
+
+    #collect histos and quantiles
+    fHistos,fQuantiles = ensemble.histosAndQuantiles(tfile, "funcs")
+    pHistos,pQuantiles = ensemble.histosAndQuantiles(tfile, "pars")
+    oHistos,oQuantiles = ensemble.histosAndQuantiles(tfile, "other")
+
+    #p-value plots
+    kargs = {}
+    for item in ["pValue", "lMaxData", "lMaxs"] :
+        kargs[item] = tfile.Get("/graphs/%s"%item)
+    for item in ["note", "plotsDir", "stdout"] :
+        kargs[item] = eval(item)
+    pValuePlots(**kargs)
+
+    #latex yield tables
+    ensemble.latex(histos = fHistos, quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout)
+
+    #ensemble plots
+    canvas = utils.numberedCanvas()
+    fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
+    canvas.Print(fileName+"[")
+
+    utils.cyclePlot(d = pHistos, f = histoLines, canvas = canvas, fileName = fileName,
+                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
+    utils.cyclePlot(d = fHistos, f = histoLines, canvas = canvas, fileName = fileName,
+                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen})
+    utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
+    #utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
+    canvas.Print(fileName+"]")
+
+    tfile.Close()
+
 def clsCustomPlots(obs = None, valuesDict = {}, note = "", plotsDir = "plots") :
     ps = "%s/clsCustom_%s.ps"%(plotsDir, note)
 
@@ -228,6 +263,11 @@ class validationPlotter(object) :
         if self.printPages :
             print "printing individual pages; drawMc = False"
             self.drawMc = False
+
+        self.quantiles = {}
+        if self.errorsFromToys :
+            print "drawing error bands from previously generated toys"
+            self.quantiles = ensemble.functionQuantiles(self.note)
             
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
@@ -254,7 +294,6 @@ class validationPlotter(object) :
         self.psFileName = "_".join(fields)+".pdf"
         self.canvas.Print(self.psFileName+"[")
 
-        print "errorsFromToys=",self.errorsFromToys
         self.simplePlots()
         self.hadPlots()
         #self.hadDataMcPlots()
