@@ -132,8 +132,18 @@ def indexFraction(item, l) :
     i2 = len(totalList)-totalList.index(item)-1
     return (i1+i2)/2.0/len(l)
 #####################################
-def tgraph(lst = []) :
+def ListFromTGraph(graph = None) :
+    ys = []
+    x = r.Double()
+    y = r.Double()
+    for i in range(graph.GetN()) :
+        graph.GetPoint(i, x, y)
+        ys.append(y)
+    return ys
+#####################################
+def TGraphFromList(lst = [], name = "") :
     out = r.TGraph()
+    if name : out.SetName(name)
     for i,item in enumerate(lst) :
         out.SetPoint(i, i, item)
     return out
