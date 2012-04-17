@@ -9,3 +9,6 @@ output*
 *.root
 *.pdf
 points/
+*.log
+*.aux
+*.tex
