@@ -34,6 +34,61 @@ class thstack(object) :
         if not len(self.histos) : return None
         return max([histoMax(h[0]) for h in self.histos])
 #####################################
+def inDict(d, key, default) :
+    return d[key] if key in d else default
+#####################################
+class thstackMulti(object) :
+    def __init__(self, name = "") :
+        self.name = name
+        self.histos = []
+        self.refs = []
+
+    def Add(self, histos = {}, spec = {}) :
+        self.histos.append( (histos, spec) )
+        if len(self.histos)>1 :
+            self.histos[-1][0]["value"].Add(self.histos[-2][0]["value"])
+
+    def Draw(self, goptions, reverse = False) :
+        for histos,spec in self.histos if not reverse else reversed(self.histos) :
+            histos2 = {}
+            for key,value in histos.iteritems() :
+                if key in inDict(spec, "suppress", []) : continue
+                histos2[key] = value
+
+            options = goptions + ("" if "stackOptions" not in spec else spec["stackOptions"])
+            self.drawOne(histos2,
+                      "same"+options,
+                      errorBand = inDict(spec, "errorBand", False),
+                      bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
+
+    def Maximum(self) :
+        if not len(self.histos) : return None
+        return max([histoMax(h[0]["value"]) for h in self.histos])
+
+    def drawOne(self, histos = None, goptions = "", errorBand = False, bandFillStyle = 1001) :
+        if not errorBand :
+            histos["value"].Draw(goptions)
+        else :
+            band = "errorLo" in histos and "errorHi" in histos
+            goptions = "he2"+goptions
+            errors   = histos["value"].Clone(histos["value"].GetName()+"_errors")
+            noerrors = histos["value"].Clone(histos["value"].GetName()+"_noerrors")
+            for i in range(1, 1+noerrors.GetNbinsX()) :
+                noerrors.SetBinError(i, 0.0)
+                if band :
+                    lo = histos["errorLo"].GetBinContent(i)
+                    hi = histos["errorHi"].GetBinContent(i)
+                    errors.SetBinContent(i, (hi+lo)/2.0)
+                    errors.SetBinError(i, (hi-lo)/2.0)
+
+            errors.SetFillColor(errorBand)
+            errors.SetMarkerColor(errorBand)
+            errors.SetMarkerStyle(1)
+            errors.SetFillStyle(bandFillStyle)
+            errors.Draw("e2same")
+            noerrors.Draw("h"+goptions)
+            self.refs += [errors, noerrors]
+#####################################
 class numberedCanvas(r.TCanvas) :
     page = 0
     text = r.TText()
