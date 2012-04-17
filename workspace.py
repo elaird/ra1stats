@@ -807,7 +807,7 @@ class foo(object) :
 
     def ensemble(self, nToys = 200, stdout = False) :
         ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
-        ensemble.plotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
+        plotting.ensemblePlotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
 
     def bestFitToy(self, nToys = 200) :
         #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
