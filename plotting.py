@@ -78,28 +78,33 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", 
     canvas.Print(ps+"]")
     utils.ps2pdf(ps, sameDir = True)
 
-def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note = "", plotsDir = "plots") :
-    print "pValue =",pValue
+def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDir = "") :
+    finalPValue = utils.ListFromTGraph(pValue)[-1]
+    print "pValue =",finalPValue
 
-    ps = "%s/pValue_%s.ps"%(plotsDir, note)
+    fileName = "%s/pValue_%s.pdf"%(plotsDir, note)
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
     canvas.SetTicky()
-    canvas.Print(ps+"[")
+    canvas.Print(fileName+"[")
 
-    graph.SetMarkerStyle(20)
-    graph.SetTitle(";toy number;p-value")
-    graph.Draw("ap")
+    pValue.SetMarkerStyle(20)
+    pValue.SetTitle(";toy number;p-value")
+    pValue.Draw("ap")
     Tl = r.TLatex()
     Tl.SetNDC(True)
     Tl.SetTextSize(0.05)
-    Tl.DrawLatex(0.9, 0.9, str(pValue))
-    canvas.Print(ps)
+    Tl.DrawLatex(0.9, 0.9, str(finalPValue))
+    canvas.Print(fileName)
     
-    totalList = lMaxs+[lMaxData]
-    histo = r.TH1D("lMaxHisto",";log(L_{max});pseudo experiments / bin", 100, 0.0, max(totalList)*1.1)
-    for item in lMaxs :
-        histo.Fill(item)
+    lMaxDataList = utils.ListFromTGraph(lMaxData)
+    assert len(lMaxDataList)==1,len(lMaxDataList)
+    lMaxDataValue = lMaxDataList[0]
+    toyValues = utils.ListFromTGraph(lMaxs)
+
+    histo = r.TH1D("lMaxHisto",";log(L_{max});pseudo experiments / bin", 100, 0.0, max(toyValues + lMaxDataList)*1.1)
+    for value in toyValues :
+        histo.Fill(value)
     histo.SetStats(False)
     histo.SetMinimum(0.0)
     histo.Draw()
@@ -107,7 +112,7 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     line = r.TLine()
     line.SetLineColor(r.kBlue)
     line.SetLineWidth(2)
-    line = line.DrawLine(lMaxData, histo.GetMinimum(), lMaxData, histo.GetMaximum())
+    line = line.DrawLine(lMaxDataValue, histo.GetMinimum(), lMaxDataValue, histo.GetMaximum())
     
     legend = r.TLegend(0.1, 0.7, 0.5, 0.9)
     legend.SetFillStyle(0)
@@ -115,10 +120,9 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, graph = None, note
     legend.AddEntry(histo, "log(L_{max}) in pseudo-experiments", "l")
     legend.AddEntry(line, "log(L_{max}) observed", "l")
     legend.Draw()
-    
-    canvas.Print(ps)
-    canvas.Print(ps+"]")
-    utils.ps2pdf(ps, sameDir = True)
+    canvas.Print(fileName)
+
+    canvas.Print(fileName+"]")
 
 def clsCustomPlots(obs = None, valuesDict = {}, note = "", plotsDir = "plots") :
     ps = "%s/clsCustom_%s.ps"%(plotsDir, note)
