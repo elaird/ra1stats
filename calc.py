@@ -2,7 +2,7 @@ import math,array,copy,collections
 import utils
 import plotting
 import ROOT as r
-from common import obs,pdf,wimport
+from common import obs,pdf,wimport,pseudoData
 
 def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True, poiList = []) :
     assert poiList
@@ -154,7 +154,7 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
     for label in ["b", "sb"] :
         for toy in toys[label] : 
             values[label].append(ts(data = toy, **args))
-        out["CL%s"%label] = 1.0-indexFraction(obs, values[label])
+        out["CL%s"%label] = 1.0-utils.indexFraction(obs, values[label])
     if plots : plotting.clsCustomPlots(obs = obs, valuesDict = values, note = "TS%d_%s"%(testStatType, note))
 
     out["CLs"] = out["CLsb"]/out["CLb"] if out["CLb"] else 9.9
@@ -345,17 +345,6 @@ def profilePlots(dataset, modelconfig, note) :
     canvas.Print(psFile+"]")
     #utils.ps2pdf(psFile)
 
-def pseudoData(wspace, nToys) :
-    out = []
-    #make pseudo experiments with current parameter values
-    dataset = pdf(wspace).generate(obs(wspace), nToys)
-    for i in range(int(dataset.sumEntries())) :
-        argSet = dataset.get(i)
-        data = r.RooDataSet("pseudoData%d"%i, "title", argSet)
-        data.add(argSet)
-        out.append(data)
-    return out
-
 def limits(wspace, snapName, modelConfig, smOnly, cl, datasets, makePlots = False, poi = ["f"]) :
     out = []
     for i,dataset in enumerate(datasets) :
@@ -426,141 +415,3 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
-
-def indexFraction(item, l) :
-    totalList = sorted(l+[item])
-    i1 = totalList.index(item)
-    totalList.reverse()
-    i2 = len(totalList)-totalList.index(item)-1
-    return (i1+i2)/2.0/len(l)
-
-def collect(wspace, results, extraStructure = False) :
-    def lMax(results) :
-        #return math.exp(-results.minNll())
-        return -results.minNll()
-
-    out = {}
-    out["lMax"] = lMax(results)
-    funcBestFit,funcLinPropError = utils.funcCollect(wspace)
-    parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
-
-    if extraStructure :
-        out["funcBestFit"] = funcBestFit
-        out["parBestFit"] = parBestFit
-        out["parError"] = parError
-        return out
-    
-    assert set(funcBestFit.keys()).isdisjoint(set(parBestFit.keys()))
-    for d in [funcBestFit, parBestFit] :
-        for key,value in d.iteritems() :
-            out[key] = value
-    return out
-
-def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None ) :
-    results = utils.rooFitResults(pdf(wspace), data)
-    wspace.saveSnapshot("snap", wspace.allVars())
-
-    obs = collect(wspace, results, extraStructure = True)
-
-    toys = []
-    for i,dataSet in enumerate(pseudoData(wspace, nToys)) :
-        wspace.loadSnapshot("snap")
-        #dataSet.Print("v")
-        results = utils.rooFitResults(pdf(wspace), dataSet)
-
-        if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
-            wspace.allVars().assignValueOnly(dataSet.get())
-            wspace.saveSnapshot("snapA", wspace.allVars())
-            return obs,results,i
-        
-        toys.append( collect(wspace, results) )
-        utils.delete(results)
-    return obs,toys
-
-def pValue(wspace, data, nToys = 100, note = "", plots = True) :
-    graph = r.TGraph()
-    lMaxs = []
-
-    obs,toys = ntupleOfFitToys(wspace, data, nToys)
-    lMaxData = obs["lMax"]
-    for i,toy in enumerate(toys) :
-        lMaxs.append(toy["lMax"])
-        graph.SetPoint(i, i, indexFraction(lMaxData, lMaxs))
-    
-    out = indexFraction(lMaxData, lMaxs)
-    if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
-    return out
-
-def ensemble(wspace, data, nToys = None, note = "", plots = True, plotsDir = "plots") :
-    def parHistos(pars = None, shift = True) :
-        histos = {}
-        factor = 2.0
-        for par in pars :
-            mean  = obs["parBestFit"][par]
-            error = obs["parError"][par]
-            h = histos[par] = r.TH1D(par, par, 100, mean - factor*error, mean + factor*error)
-            h.Sumw2()
-            for toy in toys : h.Fill(toy[par])
-        if shift : utils.shiftUnderAndOverflows(1, histos.values())
-        return histos
-    
-    def funcHistos(funcs = None, shift = True) :
-        histos = {}
-        factor = 3.0
-        for func in funcs :
-            mean  = obs["funcBestFit"][func]
-            error = math.sqrt(mean)
-            h = histos[func] = r.TH1D(func, func, 100, mean - factor*error, mean + factor*error)
-            h.Sumw2()
-            for toy in toys : h.Fill(toy[func])
-        if shift : utils.shiftUnderAndOverflows(1, histos.values())
-        return histos
-
-    def otherHistos(keys = [], shift = True) :
-        histos = {}
-        for key in keys :
-            h = histos[key] = r.TH1D(key, key, 100, 1.0, -1.0)
-            h.Sumw2()
-            for toy in toys : h.Fill(toy[key])
-        if shift : utils.shiftUnderAndOverflows(1, histos.values())
-        return histos
-
-    def parHistos2D(pairs = [], suffix = "") :
-        histos = {}
-
-        for pair in pairs :
-            name = "_".join(pair)
-            name += suffix
-            title = ";".join([""]+list(pair))
-            h = histos[name] = r.TH2D(name, title, 100, 1.0, -1.0, 100, 1.0, -1.0)
-            h.Sumw2()
-            h.SetStats(False)
-            h.SetTitleOffset(1.3)
-            for toy in toys :
-                if (pair[0] not in toy) or (pair[1] not in toy) : continue
-                h.Fill(toy[pair[0]], toy[pair[1]])
-        return histos
-
-    #obs,toys,i = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
-    #obs,toys,i = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "rhoPhotZ"), cutFunc = lambda x:x>2.0); return toys,i
-    obs,toys = ntupleOfFitToys(wspace, data, nToys)
-    
-    pHistos = parHistos(pars = utils.parCollect(wspace)[0].keys())
-    fHistos = funcHistos(funcs = utils.funcCollect(wspace)[0].keys())
-    oHistos = otherHistos(keys = ["lMax"])
-    pHistos2 = parHistos2D(pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
-
-    canvas = utils.numberedCanvas()
-    psFileName = "%s/ensemble_%s.ps"%(plotsDir, note)
-    canvas.Print(psFileName+"[")
-
-    utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
-                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
-    utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
-                       args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True, "latexTable": []})
-    utils.cyclePlot(d = oHistos, canvas = canvas, psFileName = psFileName)
-    #utils.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
-        
-    canvas.Print(psFileName+"]")        
-    utils.ps2pdf(psFileName, sameDir = True)
-    
