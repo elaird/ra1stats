@@ -805,18 +805,20 @@ class foo(object) :
             args[item] = getattr(self.likelihoodSpec, item)()
         return args
 
-    def ensemble(self, nToys = 200) :
-        out = ensemble.ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
-        if out :
-            results,i = out
-            for selection in self.likelihoodSpec.selections() :
-                args = self.plotterArgs(selection)
-                args.update({"results": results, "note": self.note()+"_toy%d"%i, "obsLabel":"Toy %d"%i,
-                             "printPages": False, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True
-                             })
-                plotter = plotting.validationPlotter(args)
-                plotter.inputData = selection.data
-                plotter.go()
+    def ensemblePlots(self, nToys = 200) :
+        ensemble.plots(self.wspace, self.data, nToys = nToys, note = self.note())
+
+    def bestFitToy(self, nToys = 200) :
+        #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
+        #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "rhoPhotZ"), cutFunc = lambda x:x>2.0); return toys,i
+        for selection in self.likelihoodSpec.selections() :
+            args = self.plotterArgs(selection)
+            args.update({"results": results, "note": self.note()+"_toy%d"%i, "obsLabel":"Toy %d"%i,
+                         "printPages": False, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True
+                         })
+            plotter = plotting.validationPlotter(args)
+            plotter.inputData = selection.data
+            plotter.go()
 
     def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
