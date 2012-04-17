@@ -121,7 +121,13 @@ def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
     tfile = r.TFile(fileName(note), "RECREATE")
-    for dct in [graphs, pHistos, fHistos, oHistos, pHistos2] :
+    for dir,dct in [("graphs", graphs),
+                    ("pars",   pHistos),
+                    ("funcs",  fHistos),
+                    ("other",  oHistos),
+                    ("pars2D", pHistos2), ] :
+        tfile.mkdir(dir)
+        tfile.cd("/%s"%dir)
         for key,obj in dct.iteritems() :
             obj.Write()
     tfile.Close()
@@ -132,7 +138,7 @@ def plotsAndTables(note = "", plotsDir = "") :
     #p-value plots
     kargs = {}
     for item in ["pValue", "lMaxData", "lMaxs"] :
-        kargs[item] = tfile.Get(item)
+        kargs[item] = tfile.Get("/graphs/%s"%item)
     for item in ["note", "plotsDir"] :
         kargs[item] = eval(item)
     
