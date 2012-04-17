@@ -110,16 +110,15 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True, plotsDir = "pl
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
     canvas = utils.numberedCanvas()
-    psFileName = "%s/ensemble_%s.ps"%(plotsDir, note)
-    canvas.Print(psFileName+"[")
+    fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
+    canvas.Print(fileName+"[")
 
-    utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
+    utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
-    utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, psFileName = psFileName,
+    utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
                        args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True, "latexTable": []})
-    utils.cyclePlot(d = oHistos, canvas = canvas, psFileName = psFileName)
-    #utils.cyclePlot(d = pHistos2, canvas = canvas, psFileName = psFileName)
+    utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
+    #utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
         
-    canvas.Print(psFileName+"]")        
-    utils.ps2pdf(psFileName, sameDir = True)
+    canvas.Print(fileName+"]")
     
