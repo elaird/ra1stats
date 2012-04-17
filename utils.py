@@ -38,8 +38,9 @@ def inDict(d, key, default) :
     return d[key] if key in d else default
 #####################################
 class thstackMulti(object) :
-    def __init__(self, name = "") :
+    def __init__(self, name = "", errorsFromToys = False) :
         self.name = name
+        self.errorsFromToys = errorsFromToys
         self.histos = []
         self.refs = []
 
@@ -56,17 +57,18 @@ class thstackMulti(object) :
                 histos2[key] = value
 
             options = goptions + ("" if "stackOptions" not in spec else spec["stackOptions"])
-            self.drawOne(histos2,
-                      "same"+options,
-                      errorBand = inDict(spec, "errorBand", False),
-                      bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
+            self.DrawOne(histos2,
+                         goptions = "same"+options,
+                         noErrors = ("type" in spec) and spec["type"]=="function" and not self.errorsFromToys,
+                         errorBand = inDict(spec, "errorBand", False),
+                         bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
 
     def Maximum(self) :
         if not len(self.histos) : return None
         return max([histoMax(h[0]["value"]) for h in self.histos])
 
-    def drawOne(self, histos = None, goptions = "", errorBand = False, bandFillStyle = 1001) :
-        if not errorBand :
+    def DrawOne(self, histos = None, goptions = "", noErrors = None, errorBand = False, bandFillStyle = 1001) :
+        if (not errorBand) or noErrors :
             histos["value"].Draw(goptions)
         else :
             band = "errorLo" in histos and "errorHi" in histos
