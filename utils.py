@@ -132,6 +132,12 @@ def indexFraction(item, l) :
     i2 = len(totalList)-totalList.index(item)-1
     return (i1+i2)/2.0/len(l)
 #####################################
+def tgraph(lst = []) :
+    out = r.TGraph()
+    for i,item in enumerate(lst) :
+        out.SetPoint(i, i, item)
+    return out
+#####################################
 def funcCollect(wspace, results = None) :
     funcs = wspace.allFunctions()
     func = funcs.createIterator()
