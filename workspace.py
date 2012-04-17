@@ -1,5 +1,5 @@
 import collections,math
-import utils,plotting,calc
+import utils,plotting,calc,ensemble
 from common import obs,pdf,note,ni,wimport,floatingVars
 import ROOT as r
 
@@ -809,7 +809,7 @@ class foo(object) :
         return args
 
     def ensemble(self, nToys = 200) :
-        out = calc.ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
+        out = ensemble.ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
         if out :
             results,i = out
             for selection in self.likelihoodSpec.selections() :
