@@ -110,6 +110,7 @@ def latex(histos = {}, quantiles = {}, bestDict = {}) :
     from makeTables import ensembleResultsFromDict as ltxResults
     import likelihoodSpec
     ltxResults( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
+    print "my output is broken"
 
 def rootFileName(note = "") :
     return "ensemble_%s.root"%note
@@ -147,6 +148,12 @@ def histosAndQuantiles(tfile = None, dir = "") :
         histos[key] = tfile.Get("/%s/%s"%(dir, key))
         quantiles[key] = utils.quantiles(histos[key], sigmaList = [-1.0, 0.0, 1.0])
     return histos,quantiles
+
+def functionQuantiles(note = "") :
+    tfile = r.TFile(rootFileName(note))
+    fHistos,fQuantiles = histosAndQuantiles(tfile, "funcs")
+    tfile.Close()
+    return fQuantiles
 
 def plotsAndTables(note = "", plotsDir = "") :
     #open results
