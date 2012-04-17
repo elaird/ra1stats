@@ -777,9 +777,6 @@ class foo(object) :
     def clsCustom(self, nToys = 200, testStatType = 3) :
         return calc.clsCustom(self.wspace, self.data, nToys = nToys, testStatType = testStatType, smOnly = self.smOnly(), note = self.note())
 
-    def pValue(self, nToys = 200) :
-        calc.pValue(self.wspace, self.data, nToys = nToys, note = self.note())
-
     def plotterArgs(self, selection) :
         def activeBins(selection) :
             out = {}
