@@ -54,6 +54,17 @@ def obs(w) :
 def pdf(w) :
     return w.pdf("model")
 
+def pseudoData(wspace, nToys) :
+    out = []
+    #make pseudo experiments with current parameter values
+    dataset = pdf(wspace).generate(obs(wspace), nToys)
+    for i in range(int(dataset.sumEntries())) :
+        argSet = dataset.get(i)
+        data = r.RooDataSet("pseudoData%d"%i, "title", argSet)
+        data.add(argSet)
+        out.append(data)
+    return out
+
 def ni(name = "", label = "", i = None) :
     out = name
     if label : out += "_%s"%label

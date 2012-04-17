@@ -125,6 +125,13 @@ def quantiles(histo = None, sigmaList = []) :
     histo.GetQuantiles(len(probSum), q, probSum)
     return q
 #####################################
+def indexFraction(item, l) :
+    totalList = sorted(l+[item])
+    i1 = totalList.index(item)
+    totalList.reverse()
+    i2 = len(totalList)-totalList.index(item)-1
+    return (i1+i2)/2.0/len(l)
+#####################################
 def funcCollect(wspace, results = None) :
     funcs = wspace.allFunctions()
     func = funcs.createIterator()
