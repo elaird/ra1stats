@@ -236,6 +236,18 @@ def ensembleSplit(d, group = "had") :
     out[previous_selection] = selection_out
     return out
 
+def ensembleSplit2(dct, group = "had") :
+    out = defaultdict(list)
+    for key,latex in dct.iteritems() :
+        sample,aT,nB,iBin = key.split("_")
+        if sample[:len(group)]!=group : continue
+        print sample,aT,nB,iBin
+        out[nB] += [(iBin, latex)]
+
+    for key in out.keys() :
+        out[key] = map(lambda x:x[1],sorted(out[key]))
+    return out
+
 def ensembleRow( data, indices, d ) :
     if indices[-1] >= len(d) : 
         return d
@@ -258,7 +270,7 @@ def ensembleResultsFromDict( d, data ) :
 
     # fill out MC values
     for sample,title in zip(samples,mc_titles) :
-        mc_out[title] = ensembleSplit(d, group = sample )
+        mc_out[title] = ensembleSplit2(d, group = sample )
         if sample == "phot" :
             for selection, values in mc_out[title].iteritems() :
                 mc_out[title][selection] = ["--", "--" ] + values
