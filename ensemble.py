@@ -50,7 +50,7 @@ def pValuePlotArgs(obs = None, toys = None) :
     lMaxData = obs["lMax"]
     lMaxs = []
     ps = []
-    for i,toy in enumerate(toys) :
+    for toy in toys :
         lMaxs.append(toy["lMax"])
         ps.append(utils.indexFraction(lMaxData, lMaxs))
     
@@ -106,9 +106,11 @@ def plots(wspace, data, nToys = None, note = "", plots = True, plotsDir = "plots
     oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
+    pValueArgs = pValuePlotArgs(obs, toys)
+    
     if plots :
         #p-value plots
-        plotting.pValuePlots(note = note, **pValuePlotArgs(obs, toys))
+        plotting.pValuePlots(note = note, **pValueArgs)
 
         #ensemble plots
         canvas = utils.numberedCanvas()
