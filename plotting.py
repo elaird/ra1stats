@@ -349,7 +349,7 @@ class validationPlotter(object) :
         if self.drawComponents :
             vars +=[
             {"var":"ewk",  "type":self.ewkType, "desc":"EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
-             "color":self.ewk, "style":2, "width":self.width1, "stack":"background"},
+             "color":self.ewk, "style":2, "width":self.width1, "stack":"background", "suppress":["min","max"]},
             #{"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcd", "k_qcd", errors = True),
             # "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
             {"var":"zInv", "type":"function", "desc":"Z#rightarrow#nu#bar{#nu}",  "color":r.kOrange+7, "style":2, "width":self.width1, "stack":"ewk"},
@@ -503,7 +503,7 @@ class validationPlotter(object) :
 
             #self.plot(note = "``naive prediction''", legend0 = (0.12, 0.7), legend1 = (0.82, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6,#customMaxFactor = [1.5]*2,
             #          otherVars = [
-            #        {"var":"nMuon", "type":"var",      "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "stack":"pred", "stackOptions":"pe",
+            #        {"var":"nMuon", "type":"var",      "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "stack":"pred", "goptions":"pe",
             #         "desc":"nMuon * (MC ewk / MC mu) / nHadBulk", "markerStyle":20, "color":r.kGreen+3, "legSpec":"lpe"},
             #        {"var":"ewk",   "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML ewk / nHadBulk", "color":r.kGreen},
             #        ])
@@ -524,9 +524,9 @@ class validationPlotter(object) :
         
             self.plot(note = "``naive prediction''", legend0 = (0.12, 0.7), legend1 = (0.82, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 20.0e-6,#customMaxFactor = [1.5]*2,
                       otherVars = [
-                    {"var":"nMuon", "type":"var",      "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "stack":"pred", "stackOptions":"pe",
+                    {"var":"nMuon", "type":"var",      "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "stack":"pred", "goptions":"pe",
                      "desc":"nMuon * (MC ttW / MC mu) / nHadBulk",                       "markerStyle":20, "color":r.kGreen+3, "legSpec":"lpe"},
-                    {"var":"nPhot", "type":"var",      "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "stack":"pred", "stackOptions":"pe",
+                    {"var":"nPhot", "type":"var",      "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "stack":"pred", "goptions":"pe",
                      "desc":" + nPhot * P * (MC Zinv / MC #gamma) / nHadBulk (stacked)", "markerStyle":20, "color":r.kBlue+3,   "legSpec":"lpe"},
                     {"var":"ttw",   "type":"function", "dens":["nHadBulk"],          "denTypes":["data"], "stack":"ml",
                      "desc":"ML ttW / nHadBulk", "color":r.kGreen},
