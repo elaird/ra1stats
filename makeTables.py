@@ -241,7 +241,6 @@ def ensembleSplit2(dct, group = "had") :
     for key,latex in dct.iteritems() :
         sample,aT,nB,iBin = key.split("_")
         if sample[:len(group)]!=group : continue
-        print sample,aT,nB,iBin
         out[nB] += [(iBin, latex)]
 
     for key in out.keys() :
