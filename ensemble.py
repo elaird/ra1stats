@@ -46,7 +46,7 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
         utils.delete(results)
     return obs,toys
 
-def pValuePlotArgs(obs = None, toys = None) :
+def pValueGraphs(obs = None, toys = None) :
     lMaxData = obs["lMax"]
     lMaxs = []
     ps = []
@@ -54,10 +54,9 @@ def pValuePlotArgs(obs = None, toys = None) :
         lMaxs.append(toy["lMax"])
         ps.append(utils.indexFraction(lMaxData, lMaxs))
     
-    return {"lMaxData": lMaxData,
-            "lMaxs": lMaxs,
-            "graph": utils.tgraph(ps),
-            "pValue": ps[-1]}
+    return {"lMaxData": utils.TGraphFromList([lMaxData], name = "lMaxData"),
+            "lMaxs": utils.TGraphFromList(lMaxs, name = "lMaxs"),
+            "pValue": utils.TGraphFromList(ps, name = "pValue")}
 
 def histos1D(obs = None, toys = None, vars = [], shift = True, style = "") :
     out = {}
@@ -109,30 +108,51 @@ def latex(histos = {}, bestDict = {}) :
             out.append( (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] )) )
     return out
 
-def plotsAndTables(wspace, data, nToys = None, note = "", plotsDir = "plots") :
+def fileName(note = "") :
+    return "ensemble_%s.root"%note
+
+def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     
+    graphs = pValueGraphs(obs, toys)
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
     fHistos  = histos1D(obs = obs, toys = toys, vars = utils.funcCollect(wspace)[0].keys())
     oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
-    #p-value plots
-    pValueArgs = pValuePlotArgs(obs, toys)
-    plotting.pValuePlots(note = note, **pValueArgs)
+    tfile = r.TFile(fileName(note), "RECREATE")
+    for dct in [graphs, pHistos, fHistos, oHistos, pHistos2] :
+        for key,obj in dct.iteritems() :
+            obj.Write()
+    tfile.Close()
 
-    #latex yield tables
-    print latex(histos = fHistos, bestDict = obs["funcBestFit"])
+def plotsAndTables(note = "", plotsDir = "") :
+    tfile = r.TFile(fileName(note))
+
+    #p-value plots
+    kargs = {}
+    for item in ["pValue", "lMaxData", "lMaxs"] :
+        kargs[item] = tfile.Get(item)
+    for item in ["note", "plotsDir"] :
+        kargs[item] = eval(item)
     
-    ##ensemble plots
-    #canvas = utils.numberedCanvas()
-    #fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
-    #canvas.Print(fileName+"[")
-    #
-    #utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
-    #utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
-    #utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
-    ##utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
-    #canvas.Print(fileName+"]")
+    print kargs
+    plotting.pValuePlots(**kargs)
+
+#    #latex yield tables
+#    print latex(histos = fHistos, bestDict = obs["funcBestFit"])
+#    
+#    ##ensemble plots
+#    #canvas = utils.numberedCanvas()
+#    #fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
+#    #canvas.Print(fileName+"[")
+#    #
+#    #utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
+#    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
+#    #utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
+#    #                args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
+#    #utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
+#    ##utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
+#    #canvas.Print(fileName+"]")
+
+    tfile.Close()
