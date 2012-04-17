@@ -98,9 +98,7 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def ensemble(wspace, data, nToys = None, note = "", plots = True, plotsDir = "plots") :
-    #obs,toys,i = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
-    #obs,toys,i = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "rhoPhotZ"), cutFunc = lambda x:x>2.0); return toys,i
+def plots(wspace, data, nToys = None, note = "", plots = True, plotsDir = "plots") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
