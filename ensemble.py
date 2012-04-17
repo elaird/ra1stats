@@ -97,19 +97,26 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def latex(histos = {}, quantiles = {}, bestDict = {}) :
-    src = []
+def latex(histos = {}, quantiles = {}, bestDict = {}, stdout = False) :
+    src = {}
+    lst = []
     for key,histo in histos.iteritems() :
         q = quantiles[key]
         best = bestDict[key]
         if best >= 100 :
-            src.append( (histo.GetName(), "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) )) )
+            src[key] = (histo.GetName(), "$%d^{+%d}_{-%d}$" % ( round(best), round(q[2]-best), round(best-q[0]) ))
         else :
-            src.append( (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] )) )
+            src[key] = (histo.GetName(), "$%.1f^{+%.1f}_{-%.1f}$" % ( best, q[2]-best, best-q[0] ))
+
+        lst.append("%20s: %g + %g - %g"%(key, best, q[2]-best, best-q[0]))
+
+    if stdout :
+        for item in sorted(lst) :
+            print item
 
     from makeTables import ensembleResultsFromDict as ltxResults
     import likelihoodSpec
-    ltxResults( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
+    ltxResults( src.values(), [ x.data for x in likelihoodSpec.spec().selections() ] )
     print "my output is broken"
 
 def rootFileName(note = "") :
@@ -155,7 +162,7 @@ def functionQuantiles(note = "") :
     tfile.Close()
     return fQuantiles
 
-def plotsAndTables(note = "", plotsDir = "") :
+def plotsAndTables(note = "", plotsDir = "", stdout = False) :
     #open results
     obs = pickling.readNumbers(pickledFileName(note))
     tfile = r.TFile(rootFileName(note))
@@ -174,7 +181,7 @@ def plotsAndTables(note = "", plotsDir = "") :
     plotting.pValuePlots(**kargs)
 
     #latex yield tables
-    latex(histos = fHistos, quantiles = fQuantiles, bestDict = obs["funcBestFit"])
+    latex(histos = fHistos, quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout)
     
     #ensemble plots
     canvas = utils.numberedCanvas()
@@ -184,7 +191,7 @@ def plotsAndTables(note = "", plotsDir = "") :
     utils.cyclePlot(d = pHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
                     args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["parBestFit"], "errorDict":obs["parError"], "errorColor":r.kGreen})
     utils.cyclePlot(d = fHistos, f = plotting.histoLines, canvas = canvas, fileName = fileName,
-                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen, "print":True})
+                    args = {"bestColor":r.kGreen, "quantileColor":r.kRed, "bestDict":obs["funcBestFit"], "errorColor":r.kGreen})
     utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
     #utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
     canvas.Print(fileName+"]")
