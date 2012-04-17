@@ -61,8 +61,6 @@ def histoLines(args = {}, key = None, histo = None) :
     
     out.append(bestLine.DrawLine(best, min, best, max))
     if error!=None : out.append(errorLine.DrawLine(best - error, max/2.0, best + error, max/2.0))
-
-    if "print" in args and args["print"] : print "%20s: %g + %g - %g"%(histo.GetName(), best, q[2]-best, best-q[0])
     return out
         
 def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", plotsDir = "plots") :
@@ -256,6 +254,7 @@ class validationPlotter(object) :
         self.psFileName = "_".join(fields)+".pdf"
         self.canvas.Print(self.psFileName+"[")
 
+        print "errorsFromToys=",self.errorsFromToys
         self.simplePlots()
         self.hadPlots()
         #self.hadDataMcPlots()
