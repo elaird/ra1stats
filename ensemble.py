@@ -60,38 +60,28 @@ def pValue(wspace, data, nToys = 100, note = "", plots = True) :
     if plots : plotting.pValuePlots(pValue = out, lMaxData = lMaxData, lMaxs = lMaxs, graph = graph, note = note)
     return out
 
-def parHistos(obs = None, toys = None, pars = None, shift = True) :
-    histos = {}
-    factor = 2.0
-    for par in pars :
-        mean  = obs["parBestFit"][par]
-        error = obs["parError"][par]
-        h = histos[par] = r.TH1D(par, par, 100, mean - factor*error, mean + factor*error)
-        h.Sumw2()
-        for toy in toys : h.Fill(toy[par])
-    if shift : utils.shiftUnderAndOverflows(1, histos.values())
-    return histos
+def histos1D(obs = None, toys = None, vars = None, shift = True, style = "") :
+    out = {}
+    for var in vars :
+        if style=="par" :
+            mean  = obs["parBestFit"][var]
+            error = obs["parError"][var]
+            lo = mean - 2.0*error
+            hi = mean + 2.0*error
+        elif style=="func" :
+            mean  = obs["funcBestFit"][func]
+            error = math.sqrt(mean)
+            lo = mean - 3.0*error
+            hi = mean + 3.0*error
+        else : #automatic range
+            lo = 1.0
+            hi = -1.0
 
-def funcHistos(obs = None, toys = None, funcs = None, shift = True) :
-    histos = {}
-    factor = 3.0
-    for func in funcs :
-        mean  = obs["funcBestFit"][func]
-        error = math.sqrt(mean)
-        h = histos[func] = r.TH1D(func, func, 100, mean - factor*error, mean + factor*error)
+        h = out[var] = r.TH1D(var, var, 100, lo, hi)
         h.Sumw2()
-        for toy in toys : h.Fill(toy[func])
-    if shift : utils.shiftUnderAndOverflows(1, histos.values())
-    return histos
-
-def otherHistos(obs = None, toys = None, keys = [], shift = True) :
-    histos = {}
-    for key in keys :
-        h = histos[key] = r.TH1D(key, key, 100, 1.0, -1.0)
-        h.Sumw2()
-        for toy in toys : h.Fill(toy[key])
-    if shift : utils.shiftUnderAndOverflows(1, histos.values())
-    return histos
+        for toy in toys : h.Fill(toy[var])
+    if shift : utils.shiftUnderAndOverflows(1, out.values())
+    return out
 
 def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
     histos = {}
@@ -114,9 +104,9 @@ def ensemble(wspace, data, nToys = None, note = "", plots = True, plotsDir = "pl
     #obs,toys,i = ntupleOfFitToys(wspace, data, nToys, cutVar = ("var", "rhoPhotZ"), cutFunc = lambda x:x>2.0); return toys,i
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     
-    pHistos =    parHistos(obs = obs, toys = toys, pars = utils.parCollect(wspace)[0].keys())
-    fHistos =   funcHistos(obs = obs, toys = toys, funcs = utils.funcCollect(wspace)[0].keys())
-    oHistos =  otherHistos(obs = obs, toys = toys, keys = ["lMax"])
+    pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
+    fHistos  = histos1D(obs = obs, toys = toys, vars = utils.funcCollect(wspace)[0].keys())
+    oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
     canvas = utils.numberedCanvas()
