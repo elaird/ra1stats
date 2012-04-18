@@ -163,6 +163,57 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     printOnce(c, printName)
     printHoles(h2)
     
+def makeEfficiencyPlot(names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False) :
+    s = conf.switches()
+    if not s["isSms"] : return
+    
+    inFile = mergedFile()
+    f = r.TFile(inFile)
+    fileName = inFile.replace(".root","_efficiency.eps")
+
+    c = squareCanvas()
+    h2 = None
+
+    h3 = None
+    for item in f.GetListOfKeys() :
+        h = f.Get(item.GetName())
+        if "effHadSum" not in h.GetName() : continue
+        
+        if not h3 : 
+            h3 = h.Clone("eff")
+            h3.SetDirectory(0)
+        else :
+            h3.Add(h)
+    f.Close()
+
+    h2 = threeToTwo(h3)
+
+    assert h2
+    modifyHisto(h2, s)
+    
+    title = hs.histoTitle(model = s["signalModel"])
+    title += ";A*#epsilon"
+    adjustHisto(h2, title = title)
+
+    #output a root file
+    g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
+    h2.Write()
+    g.Close()
+    
+    ranges = hs.smsRanges(s["signalModel"])
+    setRange("smsXRange", ranges, h2, "X")
+    setRange("smsYRange", ranges, h2, "Y")
+    
+    h2.Draw("colz")
+
+    printName = fileName
+    setRange("smsEffZRange", ranges, h2, "Z")
+
+    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
+    
+    printOnce(c, printName)
+    printHoles(h2)
+    
 def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
     if not s["isSms"] : return
