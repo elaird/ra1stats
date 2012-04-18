@@ -119,7 +119,7 @@ def signal(i) :
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signalToTest = signal(-1),
-                  signalExampleToStack = signal(-3),
+                  signalExampleToStack = signal(-1),
                   #signalToInject = signal(-1),
 
                   #trace = True
@@ -138,7 +138,7 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 f.bestFit(printValues = True)
 #f.bestFit(drawMc = False, printValues = False)
 #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = True)
-#f.bestFit(printPages = True)
+#f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
 #f.qcdPlot()
 #f.ensemble(nToys = 1000, stdout = True)
 #print f.clsCustom(nToys = 500, testStatType = 1)
