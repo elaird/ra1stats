@@ -70,7 +70,7 @@ class thstackMulti(object) :
         if (not errorBand) or noErrors :
             histos["value"].Draw(goptions)
             for key,h in histos.iteritems() :
-                if key=="value" : continue
+                if key in ["value", "errorLo", "errorHi"] : continue
                 h.Draw(goptions)
         else :
             band = "errorLo" in histos and "errorHi" in histos
