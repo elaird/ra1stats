@@ -1,5 +1,5 @@
 import collections,math
-import utils,plotting,calc
+import utils,plotting,calc,ensemble
 from common import obs,pdf,note,ni,wimport,floatingVars
 import ROOT as r
 
@@ -777,9 +777,6 @@ class foo(object) :
     def clsCustom(self, nToys = 200, testStatType = 3) :
         return calc.clsCustom(self.wspace, self.data, nToys = nToys, testStatType = testStatType, smOnly = self.smOnly(), note = self.note())
 
-    def pValue(self, nToys = 200) :
-        calc.pValue(self.wspace, self.data, nToys = nToys, note = self.note())
-
     def plotterArgs(self, selection) :
         def activeBins(selection) :
             out = {}
@@ -808,24 +805,27 @@ class foo(object) :
             args[item] = getattr(self.likelihoodSpec, item)()
         return args
 
-    def ensemble(self, nToys = 200) :
-        out = calc.ensemble(self.wspace, self.data, nToys = nToys, note = self.note())
-        if out :
-            results,i = out
-            for selection in self.likelihoodSpec.selections() :
-                args = self.plotterArgs(selection)
-                args.update({"results": results, "note": self.note()+"_toy%d"%i, "obsLabel":"Toy %d"%i,
-                             "printPages": False, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True
-                             })
-                plotter = plotting.validationPlotter(args)
-                plotter.inputData = selection.data
-                plotter.go()
+    def ensemble(self, nToys = 200, stdout = False) :
+        ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
+        plotting.ensemblePlotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
+
+    def bestFitToy(self, nToys = 200) :
+        #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
+        #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "rhoPhotZ"), cutFunc = lambda x:x>2.0); return toys,i
+        for selection in self.likelihoodSpec.selections() :
+            args = self.plotterArgs(selection)
+            args.update({"results": results, "note": self.note()+"_toy%d"%i, "obsLabel":"Toy %d"%i,
+                         "printPages": False, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True
+                         })
+            plotter = plotting.validationPlotter(args)
+            plotter.inputData = selection.data
+            plotter.go()
 
     def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True) :
+    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True, errorsFromToys = False) :
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
         for selection in self.likelihoodSpec.selections() :
@@ -834,7 +834,7 @@ class foo(object) :
                          "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
-                         "drawComponents":drawComponents, "printValues":printValues
+                         "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()

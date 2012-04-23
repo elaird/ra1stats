@@ -34,6 +34,65 @@ class thstack(object) :
         if not len(self.histos) : return None
         return max([histoMax(h[0]) for h in self.histos])
 #####################################
+def inDict(d, key, default) :
+    return d[key] if key in d else default
+#####################################
+class thstackMulti(object) :
+    def __init__(self, name = "", errorsFromToys = False) :
+        self.name = name
+        self.errorsFromToys = errorsFromToys
+        self.histos = []
+        self.refs = []
+
+    def Add(self, histos = {}, spec = {}) :
+        self.histos.append( (histos, spec) )
+        if len(self.histos)>1 :
+            self.histos[-1][0]["value"].Add(self.histos[-2][0]["value"])
+
+    def Draw(self, goptions, reverse = False) :
+        for histos,spec in self.histos if not reverse else reversed(self.histos) :
+            histos2 = {}
+            for key,value in histos.iteritems() :
+                if key in inDict(spec, "suppress", []) : continue
+                histos2[key] = value
+
+            self.DrawOne(histos2,
+                         goptions = goptions + ("" if "goptions" not in spec else spec["goptions"]),
+                         noErrors = ("type" in spec) and spec["type"]=="function" and not self.errorsFromToys,
+                         errorBand = inDict(spec, "errorBand", False),
+                         bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
+
+    def Maximum(self) :
+        if not len(self.histos) : return None
+        return max([histoMax(h[0]["value"]) for h in self.histos])
+
+    def DrawOne(self, histos = None, goptions = "", noErrors = None, errorBand = False, bandFillStyle = 1001) :
+        if (not errorBand) or noErrors :
+            histos["value"].Draw(goptions)
+            for key,h in histos.iteritems() :
+                if key=="value" : continue
+                h.Draw(goptions)
+        else :
+            band = "errorLo" in histos and "errorHi" in histos
+            goptions = "he2"+goptions
+            errors   = histos["value"].Clone(histos["value"].GetName()+"_errors")
+            noerrors = histos["value"].Clone(histos["value"].GetName()+"_noerrors")
+            for i in range(1, 1+noerrors.GetNbinsX()) :
+                noerrors.SetBinError(i, 0.0)
+                if band :
+                    lo = histos["errorLo"].GetBinContent(i)
+                    hi = histos["errorHi"].GetBinContent(i)
+                    errors.SetBinContent(i, (hi+lo)/2.0)
+                    errors.SetBinError(i, (hi-lo)/2.0)
+
+            errors.SetFillColor(errorBand)
+            errors.SetMarkerColor(errorBand)
+            errors.SetMarkerStyle(1)
+            errors.SetFillStyle(bandFillStyle)
+            errors.Draw("e2same")
+            noerrors.Draw("h"+goptions)
+            self.refs += [errors, noerrors]
+#####################################
 class numberedCanvas(r.TCanvas) :
     page = 0
     text = r.TText()
@@ -125,6 +184,29 @@ def quantiles(histo = None, sigmaList = []) :
     histo.GetQuantiles(len(probSum), q, probSum)
     return q
 #####################################
+def indexFraction(item, l) :
+    totalList = sorted(l+[item])
+    i1 = totalList.index(item)
+    totalList.reverse()
+    i2 = len(totalList)-totalList.index(item)-1
+    return (i1+i2)/2.0/len(l)
+#####################################
+def ListFromTGraph(graph = None) :
+    ys = []
+    x = r.Double()
+    y = r.Double()
+    for i in range(graph.GetN()) :
+        graph.GetPoint(i, x, y)
+        ys.append(float(y))
+    return ys
+#####################################
+def TGraphFromList(lst = [], name = "") :
+    out = r.TGraph()
+    if name : out.SetName(name)
+    for i,item in enumerate(lst) :
+        out.SetPoint(i, i, item)
+    return out
+#####################################
 def funcCollect(wspace, results = None) :
     funcs = wspace.allFunctions()
     func = funcs.createIterator()
@@ -182,7 +264,7 @@ def shiftUnderAndOverflows(dimension, histos, dontShiftList = []) :
         combineBinContentAndError(histo, binToContainCombo = bins, binToBeKilled = bins+1)
         histo.SetEntries(entries)
 ##############################
-def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFileName = None, divide = (2,2), goptions = "", ticks = True) :
+def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, fileName = None, divide = (2,2), goptions = "", ticks = True) :
     if optStat!=None :
         oldOptStat = r.gStyle.GetOptStat()
         r.gStyle.SetOptStat(optStat)
@@ -220,18 +302,12 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, psFile
 
         if j==(n-1) :
             canvas.cd(0)                
-            canvas.Print(psFileName)
+            canvas.Print(fileName)
             needPrint = False
-
-    if "latexTable" in args : 
-        # keep the import minimal as this only gets called once
-        from makeTables import ensembleResultsFromDict as ltxResults
-        import likelihoodSpec
-        ltxResults( args["latexTable"], [ x.data for x in likelihoodSpec.spec().selections() ] )
 
     if needPrint :
         canvas.cd(0)
-        canvas.Print(psFileName)
+        canvas.Print(fileName)
     if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
     return
 ##############################
