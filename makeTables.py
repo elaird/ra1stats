@@ -321,7 +321,7 @@ def ensembleHadSummaryTable( d, data ) :
                          lastLine = False,
                        )
     doc += endDocument()
-    write( doc, "ensemble_summary.tex" )
+    write( doc, "ensemble_bySample.tex" )
 
 
 def ensembleResultsFromDict( d, data ) :
@@ -374,7 +374,7 @@ def ensembleResultsFromDict( d, data ) :
                        )
     doc += endDocument()
 
-    write( doc, "ensemble_test.tex" )
+    write( doc, "ensemble_bySelection.tex" )
 
 
 def document() :
