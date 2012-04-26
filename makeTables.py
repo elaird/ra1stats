@@ -253,69 +253,72 @@ def ensembleRow( data, indices, d ) :
     return [ d[index] for index in indices ]
 
 def ensembleHadSummaryTable( d, data ) :
-    mc_out = {}
-    data_out = defaultdict(dict)
-    sample = "had"
-    mc_title = "SM hadronic\T"
-    data_title = "Data Hadronic\T"
-
-    # fill out MC values
-    mc_out[mc_title] = ensembleSplit2(d, group = sample )
-
-    titles = []
-    selections = sorted(mc_out[mc_title].keys())
-    for s in range( len(selections) ) :
-        titles.append( mc_title+"" )
-        titles.append( data_title+"" )
-
-    # fill out data values
-    for datum, selection in zip(data, selections) :
-        obs = datum.observations()[ "n%s" % (sample.capitalize()) ]
-        data_out[data_title][selection] = [ "$%d$" % int(x) if x is not None else "--" for x in obs ]
-
-    # arrange into our final dictionary
-    out = defaultdict(dict)
-    for mc_key, data_key in zip( sorted(mc_out.keys()), sorted(data_out.keys()) ) :
-        out[mc_key] = mc_out[mc_key]
-        out[data_key] = data_out[data_key]
-
-    # need to invert so we have "selection" : "DATA" : []
-    #                                         "SM"   : []
-    out_2 = defaultdict(dict)
-    for title, sdict in out.iteritems() :
-        for selection, values in sdict.iteritems() :
-            out_2[selection][title] = values
-
-    sel_substitutions = {
-        '0b'   : '0 b-tags',
-        '1b'   : '1 b-tags',
-        '2b'   : '2 b-tags',
-        'gt2b' : '$\geq$ 2 b-tags',
-    }
-
-    sel_key_it = []
-    for key in sorted(out_2.keys()):
-        sel_key_it.append(key)
-        sel_key_it.append(key)
+    samples =  ["had", "mu", "mumu", "phot"]
+    samples_long =  [ "Hadronic\T", "$\mu$+jets\T",
+                      "$\mu\mu$+jets\T", "$\gamma$+jets\T"]
+    mc_titles = [ "SM " + s for s in samples_long ]
+    data_titles = [ "Data " + s for s in samples_long ]
 
     doc = beginDocument()
-    doc += oneTable( data = data[s],
-                     caption = "Fit summary",
-                     label = "ensemble-%s" % "summary",
-                     coldivisor = 1,
-                     divider = "",
-                     alignment = "l",
-                     rows = [ {
-                               "label": "%s %s"  % ( sel_substitutions.get(sel_key,sel_key), title),
-                               "entryFunc":ensembleRow,
-                               "args": [out_2[sel_key][title]],
-                               "hline": (False,True) if "Data" in title else (False,False)
-                              }
-                              for sel_key,title in zip(sel_key_it, titles) if out_2[sel_key].get(title,False) ],
-                     lastLine = False,
-                   )
+    for sample, sample_long, mc_title, data_title in zip( samples, samples_long, mc_titles, data_titles ) :
+        # fill out MC values
+        data_out = defaultdict(dict)
+        mc_out = {}
+        mc_out[mc_title] = ensembleSplit2(d, group = sample )
+
+        titles = []
+        selections = sorted(mc_out[mc_title].keys())
+        for s in range( len(selections) ) :
+            titles.append( mc_title+"" )
+            titles.append( data_title+"" )
+
+        # fill out data values
+        for datum, selection in zip(data, selections) :
+            obs = datum.observations()[ "n%s" % (sample.capitalize()) ]
+            data_out[data_title][selection] = [ "$%d$" % int(x) if x is not None else "--" for x in obs ]
+
+        # arrange into our final dictionary
+        out = defaultdict(dict)
+        for mc_key, data_key in zip( sorted(mc_out.keys()), sorted(data_out.keys()) ) :
+            out[mc_key] = mc_out[mc_key]
+            out[data_key] = data_out[data_key]
+
+        # need to invert so we have "selection" : "DATA" : []
+        #                                         "SM"   : []
+        out_2 = defaultdict(dict)
+        for title, sdict in out.iteritems() :
+            for selection, values in sdict.iteritems() :
+                out_2[selection][title] = values
+
+        sel_substitutions = {
+            '0b'   : '0 b-tags',
+            '1b'   : '1 b-tags',
+            '2b'   : '2 b-tags',
+            'gt2b' : '$\geq$ 2 b-tags',
+        }
+
+        sel_key_it = []
+        for key in sorted(out_2.keys()):
+            sel_key_it.append(key)
+            sel_key_it.append(key)
+
+        doc += oneTable( data = data[s],
+                         caption = "Fit summary (%)" % sample_long,
+                         label = "ensemble-%s" % "summary",
+                         coldivisor = 1,
+                         divider = "",
+                         alignment = "l",
+                         rows = [ {
+                                   "label": "%s %s"  % ( sel_substitutions.get(sel_key,sel_key), title),
+                                   "entryFunc":ensembleRow,
+                                   "args": [out_2[sel_key][title]],
+                                   "hline": (False,True) if "Data" in title else (False,False)
+                                  }
+                                  for sel_key,title in zip(sel_key_it, titles) if out_2[sel_key].get(title,False) ],
+                         lastLine = False,
+                       )
     doc += endDocument()
-    write( doc, "ensemble_test.tex" )
+    write( doc, "ensemble_summary_%s.tex" % (sample) )
 
 
 def ensembleResultsFromDict( d, data ) :
