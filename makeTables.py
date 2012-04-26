@@ -253,11 +253,11 @@ def ensembleRow( data, indices, d ) :
     return [ d[index] for index in indices ]
 
 def ensembleHadSummaryTable( d, data ) :
-    samples =  ["had", "mu", "mumu", "phot"]
-    samples_long =  [ "Hadronic\T", "$\mu$+jets\T",
-                      "$\mu\mu$+jets\T", "$\gamma$+jets\T"]
-    mc_titles = [ "SM " + s for s in samples_long ]
-    data_titles = [ "Data " + s for s in samples_long ]
+    samples =  ["had", "muon", "mumu", "phot"]
+    samples_long =  [ "Hadronic", "$\mu$+jets",
+                      "$\mu\mu$+jets", "$\gamma$+jets"]
+    mc_titles   = [ "SM %s\T" % s for s in samples_long ]
+    data_titles = [ "Data %s\T" % s for s in samples_long ]
 
     doc = beginDocument()
     for sample, sample_long, mc_title, data_title in zip( samples, samples_long, mc_titles, data_titles ) :
@@ -265,6 +265,9 @@ def ensembleHadSummaryTable( d, data ) :
         data_out = defaultdict(dict)
         mc_out = {}
         mc_out[mc_title] = ensembleSplit2(d, group = sample )
+        if sample == "phot" :
+            for selection, values in mc_out[mc_title].iteritems() :
+                mc_out[mc_title][selection] = ["--", "--" ] + values
 
         titles = []
         selections = sorted(mc_out[mc_title].keys())
@@ -303,7 +306,7 @@ def ensembleHadSummaryTable( d, data ) :
             sel_key_it.append(key)
 
         doc += oneTable( data = data[s],
-                         caption = "Fit summary (%)" % sample_long,
+                         caption = "Fit summary (%s)" % sample_long,
                          label = "ensemble-%s" % "summary",
                          coldivisor = 1,
                          divider = "",
@@ -318,7 +321,7 @@ def ensembleHadSummaryTable( d, data ) :
                          lastLine = False,
                        )
     doc += endDocument()
-    write( doc, "ensemble_summary_%s.tex" % (sample) )
+    write( doc, "ensemble_summary.tex" )
 
 
 def ensembleResultsFromDict( d, data ) :
