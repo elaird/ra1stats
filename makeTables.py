@@ -252,7 +252,7 @@ def ensembleRow( data, indices, d ) :
         return d
     return [ d[index] for index in indices ]
 
-def ensembleHadSummaryTable( d, data ) :
+def ensembleResultsBySample( d, data ) :
     samples =  ["had", "muon", "mumu", "phot"]
     samples_long =  [ "Hadronic", "$\mu$+jets",
                       "$\mu\mu$+jets", "$\gamma$+jets"]
@@ -324,7 +324,7 @@ def ensembleHadSummaryTable( d, data ) :
     write( doc, "ensemble_bySample.tex" )
 
 
-def ensembleResultsFromDict( d, data ) :
+def ensembleResultsBySelection( d, data ) :
     mc_out = {}
     data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]

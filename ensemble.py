@@ -113,8 +113,8 @@ def latex(quantiles = {}, bestDict = {}, stdout = False) :
         for item in sorted(lst) :
             print item
 
-    from makeTables import ensembleResultsFromDict as ltxResults
-    from makeTables import ensembleHadSummaryTable as ltxSummary
+    from makeTables import ensembleResultsBySelection as ltxResults
+    from makeTables import ensembleResultsBySample as ltxSummary
     import likelihoodSpec
     ltxResults( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
     ltxSummary( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
