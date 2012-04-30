@@ -415,3 +415,26 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
+
+def pulls(pdf = None) :
+    out = {}
+    className = pdf.ClassName()
+
+    if className=="RooProdPdf" :
+        pdfList = pdf.pdfList()
+        for i in range(pdfList.getSize()) :
+            out.update(pulls(pdfList[i]))
+    elif className=="RooPoisson" :
+        pdf.Print()
+        print dir(pdf)
+        print
+    elif className=="RooGaussian" :
+        #pdf.Print()
+        pass
+    else :
+        assert False,className
+    return out
+
+def pullPlots(pdf) :
+    p = pulls(pdf)
+    print p
