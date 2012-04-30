@@ -416,25 +416,69 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
 
-def pulls(pdf = None) :
+def pulls(pdf = None, dataset = None) :
     out = {}
     className = pdf.ClassName()
+    pdfName = pdf.GetName()
 
     if className=="RooProdPdf" :
         pdfList = pdf.pdfList()
         for i in range(pdfList.getSize()) :
             out.update(pulls(pdfList[i]))
     elif className=="RooPoisson" :
-        pdf.Print()
-        print dir(pdf)
-        print
+        p = r.Poisson(pdf)
+        x = p.x.arg().getVal()
+        mu = p.mean.arg().getVal()
+        assert mu,mu
+        out[("Pois", pdfName)] = (x-mu)/math.sqrt(mu)
     elif className=="RooGaussian" :
-        #pdf.Print()
-        pass
+        out[("Gaus", pdfName)] = 0.0
     else :
         assert False,className
     return out
 
-def pullPlots(pdf) :
-    p = pulls(pdf)
-    print p
+def pullHisto(termType = "", pulls = {}) :
+    if termType=="Pois" :
+        title = "Poisson terms;;(n-#mu)/sqrt(#mu)"
+    elif termType=="Gaus" :
+        title = "Gaussian terms;;(x-#mu)/#sigma"
+    else :
+        assert False,title
+
+    p = {}
+    for key,value in pulls.iteritems() :
+        if key[0]!=termType : continue
+        p[key[1]] = value
+
+    h = r.TH1D("%sPulls"%termType, title, len(p), 0, len(p))
+    for i,key in enumerate(sorted(p.keys())) :
+        h.SetBinContent(1+i, p[key])
+        if termType=="Pois" :
+            try:
+                sample,sel,nB,iBin = key.split("_")
+            except:
+                print key
+                exit()
+            sample = sample.replace(termType,"")
+            nB = nB.replace("gt2","3").replace("b","")
+            label = "%s %s"%(sample,nB)
+            #label = ""
+            #if iBin in ["0","7"] : label = iBin
+            h.GetXaxis().SetBinLabel(1+i, label)
+        elif termType=="Gaus" :
+            h.GetXaxis().SetBinLabel(1+i, key)
+    return h
+
+def pullPlots(pdf, dataset) :
+    r.gROOT.LoadMacro("Poisson.cxx+")
+
+    p = pulls(pdf, dataset)
+    canvas = r.TCanvas()
+    fileName = "pulls.pdf"
+    canvas.Print(fileName+"[")
+    for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
+        h.SetStats(False)
+        h.SetMarkerStyle(20)
+        h.Draw("p")
+        canvas.Print(fileName)
+    canvas.Print(fileName+"]")
