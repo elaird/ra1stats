@@ -470,7 +470,7 @@ def pullHisto(termType = "", pulls = {}) :
     return h
 
 def pullPlots(pdf) :
-    r.gROOT.LoadMacro("Poisson.cxx+")
+    r.gROOT.LoadMacro("cpp/Poisson.cxx+")
 
     p = pulls(pdf)
     canvas = r.TCanvas()
