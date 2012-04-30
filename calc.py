@@ -490,6 +490,9 @@ def pullPlots(pdf, threshold = 2.0) :
 
     line = r.TLine()
     line.SetLineColor(r.kBlue)
+
+    total = r.TH1D("total", ";pull;terms / bin", 100, 1, -1) #auto-range
+
     for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
         h.SetStats(False)
         h.SetMarkerStyle(20)
@@ -500,8 +503,8 @@ def pullPlots(pdf, threshold = 2.0) :
         h2.Reset()
         lines = []
         for iBin in range(1, 1+h.GetNbinsX()) :
-            #h2.GetXaxis().SetBinLabel("")
             content = h.GetBinContent(iBin)
+            total.Fill(content)
             if abs(content)>threshold :
                 h2.SetBinContent(iBin, content)
                 l2 = line.DrawLine(iBin, hMin, iBin, content)
@@ -511,4 +514,7 @@ def pullPlots(pdf, threshold = 2.0) :
         h2.SetMarkerColor(r.kBlue)
         h2.Draw("psame")
         canvas.Print(fileName)
+
+    total.Draw()
+    canvas.Print(fileName)
     canvas.Print(fileName+"]")
