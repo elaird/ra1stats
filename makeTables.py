@@ -3,9 +3,12 @@
 import math,os
 from collections import defaultdict
 
-print "==================================================================="
-print "*** makeTables.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
-print "==================================================================="
+quiet = False
+
+if not quiet :
+    print "==================================================================="
+    print "*** makeTables.py: DATA PRINTING FUNCTIONALITY CURRENTLY BROKEN ***"
+    print "==================================================================="
 
 
 #\usepackage{datetime}
@@ -394,6 +397,8 @@ def write(doc, fileName = "") :
     f = open(fileName, "w")
     f.write(doc)
     f.close()
-    os.system("pdflatex %s"%fileName)
+    cmd = "pdflatex %s"%fileName
+    if quiet : cmd += " >& /dev/null"
+    os.system(cmd)
 
 #write(document(), fileName = "tables.tex")
