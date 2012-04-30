@@ -832,7 +832,7 @@ class foo(object) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        calc.pullPlots(pdf(self.wspace))
+        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)))
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
             args.update({"results": results,
