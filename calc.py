@@ -416,7 +416,7 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
 
-def pulls(pdf = None, dataset = None) :
+def pulls(pdf = None) :
     out = {}
     className = pdf.ClassName()
     pdfName = pdf.GetName()
@@ -469,10 +469,10 @@ def pullHisto(termType = "", pulls = {}) :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf, dataset) :
+def pullPlots(pdf) :
     r.gROOT.LoadMacro("Poisson.cxx+")
 
-    p = pulls(pdf, dataset)
+    p = pulls(pdf)
     canvas = r.TCanvas()
     fileName = "pulls.pdf"
     canvas.Print(fileName+"[")
