@@ -1,5 +1,3 @@
-#include <iostream> 
-
 #include "Poisson.h" 
 #include "RooPoisson.h" 
 
@@ -12,5 +10,4 @@ Poisson::Poisson(const RooPoisson& other, const char* name) :
    _noRounding(other._noRounding),
    _protectNegative(other._protectNegative)
 { 
-   // Copy constructor
 }
