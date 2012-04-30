@@ -475,7 +475,7 @@ def pullHisto(termType = "", pulls = {}) :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf, threshold = 2.0) :
+def pullPlots(pdf = None, nParams = None, threshold = 2.0) :
     r.gROOT.LoadMacro("cpp/Poisson.cxx+")
     r.gROOT.LoadMacro("cpp/Gaussian.cxx+")
 
@@ -492,7 +492,8 @@ def pullPlots(pdf, threshold = 2.0) :
     line.SetLineColor(r.kBlue)
 
     total = r.TH1D("total", ";pull;terms / bin", 100, 1, -1) #auto-range
-
+    chi2 = 0
+    nTerms = 0
     for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
         h.SetStats(False)
         h.SetMarkerStyle(20)
@@ -504,6 +505,8 @@ def pullPlots(pdf, threshold = 2.0) :
         lines = []
         for iBin in range(1, 1+h.GetNbinsX()) :
             content = h.GetBinContent(iBin)
+            chi2 += content*content
+            nTerms += 1
             total.Fill(content)
             if abs(content)>threshold :
                 h2.SetBinContent(iBin, content)
@@ -515,6 +518,12 @@ def pullPlots(pdf, threshold = 2.0) :
         h2.Draw("psame")
         canvas.Print(fileName)
 
+    nDof = nTerms-nParams
+    print "\"chi2\"  =",chi2
+    print "nTerms  =",nTerms
+    print "nParams =",nParams
+    print "nDof    =",nDof
+    print "prob    =",r.TMath.Prob(chi2, nDof)
     total.Draw()
     canvas.Print(fileName)
     canvas.Print(fileName+"]")
