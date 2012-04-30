@@ -432,7 +432,12 @@ def pulls(pdf = None) :
         assert mu,mu
         out[("Pois", pdfName)] = (x-mu)/math.sqrt(mu)
     elif className=="RooGaussian" :
-        out[("Gaus", pdfName)] = 0.0
+        g = r.Gaussian(pdf)
+        x = g.x.arg().getVal()
+        mu = g.mean.arg().getVal()
+        sigma = g.sigma.arg().getVal()
+        assert sigma,sigma
+        out[("Gaus", pdfName)] = (x-mu)/sigma
     else :
         assert False,className
     return out
@@ -471,6 +476,7 @@ def pullHisto(termType = "", pulls = {}) :
 
 def pullPlots(pdf) :
     r.gROOT.LoadMacro("cpp/Poisson.cxx+")
+    r.gROOT.LoadMacro("cpp/Gaussian.cxx+")
 
     p = pulls(pdf)
     canvas = r.TCanvas()
