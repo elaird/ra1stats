@@ -12,3 +12,4 @@ points/
 *.log
 *.aux
 *.tex
+*.obs
