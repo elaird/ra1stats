@@ -805,8 +805,11 @@ class foo(object) :
             args[item] = getattr(self.likelihoodSpec, item)()
         return args
 
-    def ensemble(self, nToys = 200, stdout = False) :
-        ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
+    def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
+        if not reuseResults :
+            ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
+        else :
+            print "WARNING: ensembple plots/tables are being created from previous results."
         plotting.ensemblePlotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
 
     def bestFitToy(self, nToys = 200) :
