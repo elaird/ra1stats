@@ -460,31 +460,48 @@ def pullHisto(termType = "", pulls = {}) :
         h.SetBinContent(1+i, p[key])
         if termType=="Pois" :
             try:
-                sample,sel,nB,iBin = key.split("_")
+                sample,sel,nB,iHt = key.split("_")
             except:
                 print key
                 exit()
             sample = sample.replace(termType,"")
-            nB = nB.replace("gt2","3").replace("b","")
-            label = "%s %s"%(sample,nB)
-            #label = ""
-            #if iBin in ["0","7"] : label = iBin
+            nB = nB.replace("gt2","3")
+            if not int(iHt)%2 :
+                label = "%s  %s  %s"%(sample,nB,iHt)
+            else :
+                label = ""
             h.GetXaxis().SetBinLabel(1+i, label)
         elif termType=="Gaus" :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf) :
+def pullPlots(pdf, threshold = 2.0) :
     r.gROOT.LoadMacro("cpp/Poisson.cxx+")
     r.gROOT.LoadMacro("cpp/Gaussian.cxx+")
 
     p = pulls(pdf)
     canvas = r.TCanvas()
+    canvas.SetTickx()
+    canvas.SetTicky()
+
     fileName = "pulls.pdf"
     canvas.Print(fileName+"[")
+    canvas.SetBottomMargin(0.15)
     for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
         h.SetStats(False)
         h.SetMarkerStyle(20)
         h.Draw("p")
+
+        h2 = h.Clone("%s_outliers")
+        h2.Reset()
+        for iBin in range(1, 1+h.GetNbinsX()) :
+            #h2.GetXaxis().SetBinLabel("")
+            content = h.GetBinContent(iBin)
+            if abs(content)>threshold :
+                h2.SetBinContent(iBin, content)
+            else :
+                h2.SetBinContent(iBin, -9999)
+        h2.SetMarkerColor(r.kBlue)
+        h2.Draw("psame")
         canvas.Print(fileName)
     canvas.Print(fileName+"]")
