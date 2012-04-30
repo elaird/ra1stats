@@ -343,7 +343,7 @@ class validationPlotter(object) :
         if "had" not in self.lumi : return
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError},
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
             {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -387,7 +387,7 @@ class validationPlotter(object) :
     def muonPlots(self) :
         if "muon" not in self.lumi : return
         vars = [
-            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"SM", "stack":"total", "errorBand":self.smError},
+            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"SM", "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
             {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -429,7 +429,7 @@ class validationPlotter(object) :
                       obs = {"var":"nMumu", "desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])}, logY = logY, otherVars = [
                 {"var":"mcMumu", "type":None, "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
-                {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"expected SM yield", "stack":None, "errorBand":self.smError},
+                {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"SM", "stack":None, "errorBand":self.smError},
                 ])
 
     def ewkPlots(self) :
@@ -473,7 +473,7 @@ class validationPlotter(object) :
 
         specs = [
             {"var":"hadB",  "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError,
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True,
              "dens":["nHadBulk"], "denTypes":["var"]},
             ]
         if self.drawComponents :
@@ -994,7 +994,7 @@ class validationPlotter(object) :
         stuff += stackDict
 
 	for key,stack in stackDict.iteritems() :
-	    stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = True)
+	    stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = False)
 
         obsHisto.Draw("psame") #redraw data
 

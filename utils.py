@@ -50,17 +50,26 @@ class thstackMulti(object) :
             self.histos[-1][0]["value"].Add(self.histos[-2][0]["value"])
 
     def Draw(self, goptions, reverse = False) :
+        repeat = []
         for histos,spec in self.histos if not reverse else reversed(self.histos) :
             histos2 = {}
             for key,value in histos.iteritems() :
                 if key in inDict(spec, "suppress", []) : continue
                 histos2[key] = value
 
+            if inDict(spec, "repeatNoBand", False) :
+                repeat.append( (histos2, spec) )
             self.DrawOne(histos2,
                          goptions = goptions + ("" if "goptions" not in spec else spec["goptions"]),
                          noErrors = ("type" in spec) and spec["type"]=="function" and not self.errorsFromToys,
                          errorBand = inDict(spec, "errorBand", False),
                          bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
+
+        for histos,spec in repeat :
+            self.DrawOne(histos,
+                         goptions = goptions + ("" if "goptions" not in spec else spec["goptions"]),
+                         noErrors = True,
+                         )
 
     def Maximum(self) :
         if not len(self.histos) : return None
@@ -70,7 +79,7 @@ class thstackMulti(object) :
         if (not errorBand) or noErrors :
             histos["value"].Draw(goptions)
             for key,h in histos.iteritems() :
-                if key=="value" : continue
+                if key in ["value", "errorLo", "errorHi"] : continue
                 h.Draw(goptions)
         else :
             band = "errorLo" in histos and "errorHi" in histos
