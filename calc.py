@@ -167,7 +167,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
 
-    r.gROOT.LoadMacro("StandardHypoTestInvDemo.cxx+")
+    r.gROOT.LoadMacro("cpp/StandardHypoTestInvDemo.cxx+")
     #from StandardHypoTestInvDemo.C
     opts = {
         "PlotHypoTestResult": False,
