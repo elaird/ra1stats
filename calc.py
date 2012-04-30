@@ -455,7 +455,7 @@ def pullHisto(termType = "", pulls = {}) :
         if key[0]!=termType : continue
         p[key[1]] = value
 
-    h = r.TH1D("%sPulls"%termType, title, len(p), 0, len(p))
+    h = r.TH1D("%sPulls"%termType, title, len(p), 0.5, 0.5+len(p))
     for i,key in enumerate(sorted(p.keys())) :
         h.SetBinContent(1+i, p[key])
         if termType=="Pois" :
@@ -487,18 +487,25 @@ def pullPlots(pdf, threshold = 2.0) :
     fileName = "pulls.pdf"
     canvas.Print(fileName+"[")
     canvas.SetBottomMargin(0.15)
+
+    line = r.TLine()
+    line.SetLineColor(r.kBlue)
     for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
         h.SetStats(False)
         h.SetMarkerStyle(20)
         h.Draw("p")
+        hMin = h.GetMinimum()*1.1
 
         h2 = h.Clone("%s_outliers")
         h2.Reset()
+        lines = []
         for iBin in range(1, 1+h.GetNbinsX()) :
             #h2.GetXaxis().SetBinLabel("")
             content = h.GetBinContent(iBin)
             if abs(content)>threshold :
                 h2.SetBinContent(iBin, content)
+                l2 = line.DrawLine(iBin, hMin, iBin, content)
+                lines.append(l2)
             else :
                 h2.SetBinContent(iBin, -9999)
         h2.SetMarkerColor(r.kBlue)
