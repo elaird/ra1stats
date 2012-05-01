@@ -167,7 +167,6 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
 
-    r.gROOT.LoadMacro("cpp/StandardHypoTestInvDemo.cxx+")
     #from StandardHypoTestInvDemo.C
     opts = {
         "PlotHypoTestResult": False,
@@ -448,7 +447,7 @@ def pullHisto(termType = "", pulls = {}) :
     elif termType=="Gaus" :
         title = "Gaussian terms;;(x-#mu)/#sigma"
     else :
-        assert False,title
+        assert False,termType
 
     p = {}
     for key,value in pulls.iteritems() :
@@ -475,16 +474,13 @@ def pullHisto(termType = "", pulls = {}) :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf = None, nParams = None, threshold = 2.0) :
-    r.gROOT.LoadMacro("cpp/Poisson.cxx+")
-    r.gROOT.LoadMacro("cpp/Gaussian.cxx+")
-
+def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir = "") :
     p = pulls(pdf)
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
 
-    fileName = "pulls.pdf"
+    fileName = "%s/pulls_%s.pdf"%(plotsDir, note)
     canvas.Print(fileName+"[")
     canvas.SetBottomMargin(0.15)
 
