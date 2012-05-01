@@ -3,7 +3,7 @@
 import math,os
 from collections import defaultdict
 
-quiet = True
+quiet = False
 
 if not quiet :
     print "==================================================================="
