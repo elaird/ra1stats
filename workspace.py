@@ -805,8 +805,11 @@ class foo(object) :
             args[item] = getattr(self.likelihoodSpec, item)()
         return args
 
-    def ensemble(self, nToys = 200, stdout = False) :
-        ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
+    def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
+        if not reuseResults :
+            ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
+        else :
+            print "WARNING: ensemble plots/tables are being created from previous results."
         plotting.ensemblePlotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
 
     def bestFitToy(self, nToys = 200) :
@@ -826,8 +829,11 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True, errorsFromToys = False) :
+        #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
+        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)),
+                       note = self.note(), plotsDir = "plots")
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
             args.update({"results": results,

@@ -167,7 +167,6 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
     wimport(wspace, dataset)
     wimport(wspace, modelconfig)
 
-    r.gROOT.LoadMacro("StandardHypoTestInvDemo.cxx+")
     #from StandardHypoTestInvDemo.C
     opts = {
         "PlotHypoTestResult": False,
@@ -415,3 +414,112 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
 
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
+
+def pulls(pdf = None) :
+    out = {}
+    className = pdf.ClassName()
+    pdfName = pdf.GetName()
+
+    if className=="RooProdPdf" :
+        pdfList = pdf.pdfList()
+        for i in range(pdfList.getSize()) :
+            out.update(pulls(pdfList[i]))
+    elif className=="RooPoisson" :
+        p = r.Poisson(pdf)
+        x = p.x.arg().getVal()
+        mu = p.mean.arg().getVal()
+        assert mu,mu
+        out[("Pois", pdfName)] = (x-mu)/math.sqrt(mu)
+    elif className=="RooGaussian" :
+        g = r.Gaussian(pdf)
+        x = g.x.arg().getVal()
+        mu = g.mean.arg().getVal()
+        sigma = g.sigma.arg().getVal()
+        assert sigma,sigma
+        out[("Gaus", pdfName)] = (x-mu)/sigma
+    else :
+        assert False,className
+    return out
+
+def pullHisto(termType = "", pulls = {}) :
+    if termType=="Pois" :
+        title = "Poisson terms;;(n-#mu)/sqrt(#mu)"
+    elif termType=="Gaus" :
+        title = "Gaussian terms;;(x-#mu)/#sigma"
+    else :
+        assert False,termType
+
+    p = {}
+    for key,value in pulls.iteritems() :
+        if key[0]!=termType : continue
+        p[key[1]] = value
+
+    h = r.TH1D("%sPulls"%termType, title, len(p), 0.5, 0.5+len(p))
+    for i,key in enumerate(sorted(p.keys())) :
+        h.SetBinContent(1+i, p[key])
+        if termType=="Pois" :
+            try:
+                sample,sel,nB,iHt = key.split("_")
+            except:
+                print key
+                exit()
+            sample = sample.replace(termType,"")
+            nB = nB.replace("gt2","3")
+            if not int(iHt)%2 :
+                label = "%s  %s  %s"%(sample,nB,iHt)
+            else :
+                label = ""
+            h.GetXaxis().SetBinLabel(1+i, label)
+        elif termType=="Gaus" :
+            h.GetXaxis().SetBinLabel(1+i, key)
+    return h
+
+def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir = "") :
+    p = pulls(pdf)
+    canvas = r.TCanvas()
+    canvas.SetTickx()
+    canvas.SetTicky()
+
+    fileName = "%s/pulls_%s.pdf"%(plotsDir, note)
+    canvas.Print(fileName+"[")
+    canvas.SetBottomMargin(0.15)
+
+    line = r.TLine()
+    line.SetLineColor(r.kBlue)
+
+    total = r.TH1D("total", ";pull;terms / bin", 100, 1, -1) #auto-range
+    chi2 = 0
+    nTerms = 0
+    for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
+        h.SetStats(False)
+        h.SetMarkerStyle(20)
+        h.Draw("p")
+        hMin = h.GetMinimum()*1.1
+
+        h2 = h.Clone("%s_outliers")
+        h2.Reset()
+        lines = []
+        for iBin in range(1, 1+h.GetNbinsX()) :
+            content = h.GetBinContent(iBin)
+            chi2 += content*content
+            nTerms += 1
+            total.Fill(content)
+            if abs(content)>threshold :
+                h2.SetBinContent(iBin, content)
+                l2 = line.DrawLine(iBin, hMin, iBin, content)
+                lines.append(l2)
+            else :
+                h2.SetBinContent(iBin, -9999)
+        h2.SetMarkerColor(r.kBlue)
+        h2.Draw("psame")
+        canvas.Print(fileName)
+
+    nDof = nTerms-nParams
+    print "\"chi2\"  =",chi2
+    print "nTerms  =",nTerms
+    print "nParams =",nParams
+    print "nDof    =",nDof
+    print "prob    =",r.TMath.Prob(chi2, nDof)
+    total.Draw()
+    canvas.Print(fileName)
+    canvas.Print(fileName+"]")
