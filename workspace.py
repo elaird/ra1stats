@@ -809,7 +809,7 @@ class foo(object) :
         if not reuseResults :
             ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
         else :
-            print "WARNING: ensembple plots/tables are being created from previous results."
+            print "WARNING: ensemble plots/tables are being created from previous results."
         plotting.ensemblePlotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
 
     def bestFitToy(self, nToys = 200) :
