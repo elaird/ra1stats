@@ -415,7 +415,28 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
 
-def pulls(pdf = None) :
+def nSigma(quantile = None) :
+    return r.TMath.ErfInverse(2.0*quantile - 1.0)*math.sqrt(2.0)
+
+def poisMedian(mu = None) :
+    assert mu,mu
+    return mu + 1/3.0# - 0.02/mu
+
+def poisPull(n = None, mu = None, useCdf = False, modifyCdf = False) :
+    if useCdf :
+        assert float(int(n))==n,n
+        quantile = r.Math.poisson_cdf(int(n), mu)
+        #quantile = 1.0-r.TMath.Gamma(n+1, mu) #equivalent to previous line
+        if modifyCdf :
+            quantile = r.Math.poisson_cdf(int(n), poisMedian(mu))
+
+        #print "n=%4d, mu=%6.2f, median=%6.2f, q=%g"%(n, mu, poisMedian(mu), quantile)
+        return nSigma(quantile)
+    else :
+        assert mu,mu
+        return (n-mu)/math.sqrt(mu)
+
+def pulls(pdf = None, useCdf = None, modifyCdf = None) :
     out = {}
     className = pdf.ClassName()
     pdfName = pdf.GetName()
@@ -423,13 +444,12 @@ def pulls(pdf = None) :
     if className=="RooProdPdf" :
         pdfList = pdf.pdfList()
         for i in range(pdfList.getSize()) :
-            out.update(pulls(pdfList[i]))
+            out.update(pulls(pdfList[i], useCdf = useCdf, modifyCdf = modifyCdf))
     elif className=="RooPoisson" :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
         mu = p.mean.arg().getVal()
-        assert mu,mu
-        out[("Pois", pdfName)] = (x-mu)/math.sqrt(mu)
+        out[("Pois", pdfName)] = poisPull(x, mu, useCdf = useCdf, modifyCdf = modifyCdf)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
         x = g.x.arg().getVal()
@@ -441,9 +461,16 @@ def pulls(pdf = None) :
         assert False,className
     return out
 
-def pullHisto(termType = "", pulls = {}) :
+def pullHisto(termType = "", pulls = {}, useCdf = None, modifyCdf = None) :
     if termType=="Pois" :
-        title = "Poisson terms;;(n-#mu)/sqrt(#mu)"
+        title = "Poisson terms;;"
+        if useCdf :
+            if modifyCdf :
+                title += 'quantile of n in Pois( k | #mu + 1/3 )   [in "sigma"]'
+            else :
+                title += 'quantile of n in Pois( k | #mu )   [in "sigma"]'
+        else :
+            title += '(n-#mu)/sqrt(#mu)'
     elif termType=="Gaus" :
         title = "Gaussian terms;;(x-#mu)/#sigma"
     else :
@@ -474,11 +501,12 @@ def pullHisto(termType = "", pulls = {}) :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir = "") :
-    p = pulls(pdf)
+def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5, useCdf = False, modifyCdf = False, note = "", plotsDir = "") :
+    p = pulls(pdf, useCdf = useCdf, modifyCdf = modifyCdf)
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
+    canvas.SetGridy()
 
     fileName = "%s/pulls_%s.pdf"%(plotsDir, note)
     canvas.Print(fileName+"[")
@@ -487,14 +515,18 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir =
     line = r.TLine()
     line.SetLineColor(r.kBlue)
 
-    total = r.TH1D("total", ";pull;terms / bin", 100, 1, -1) #auto-range
+    total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
     chi2 = 0
     nTerms = 0
-    for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
+    for h in [pullHisto("Pois", p, useCdf = useCdf, modifyCdf = modifyCdf),
+              pullHisto("Gaus", p)] :
         h.SetStats(False)
         h.SetMarkerStyle(20)
         h.Draw("p")
-        hMin = h.GetMinimum()*1.1
+
+        assert abs(h.GetMinimum())<yMax,h.GetMinimum()
+        assert abs(h.GetMaximum())<yMax,h.GetMaximum()
+        h.GetYaxis().SetRangeUser(-yMax, yMax)
 
         h2 = h.Clone("%s_outliers")
         h2.Reset()
@@ -506,7 +538,7 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir =
             total.Fill(content)
             if abs(content)>threshold :
                 h2.SetBinContent(iBin, content)
-                l2 = line.DrawLine(iBin, hMin, iBin, content)
+                l2 = line.DrawLine(iBin, -yMax, iBin, content)
                 lines.append(l2)
             else :
                 h2.SetBinContent(iBin, -9999)
