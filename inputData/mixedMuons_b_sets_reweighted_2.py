@@ -46,7 +46,7 @@ class data_55_0btag(data) :
             "mumu":          (     0.727,     0.869,     0.950,     0.950,     0.950,     0.950,     0.950,     0.950),
             }
 
-        self._mcExpectationsBeforeTrigger =  	{
+        self._mcExpectationsBeforeTrigger = {
             "mcGjets": excl((  None,    None, 2.00e+3 - 2.3e2, 7.1e+2 - 82, 2.7e+2 - 35,  92-15,   34-6,  14-3), isExcl), #>=0 b-tag minus >=1 b-tag
             "mcTtw"              :   ( 1653.0, 634.6, 396.1, 135.3, 46.53, 16.7, 6.068, 3.879, ) ,
             "mcHad"              :   ( 3185.0, 1300.0, 897.0, 312.2, 114.3, 39.14, 15.51, 10.3, ) ,
