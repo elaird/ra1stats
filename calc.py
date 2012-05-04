@@ -420,23 +420,48 @@ def nSigma(quantile = None) :
 
 def poisMedian(mu = None) :
     assert mu,mu
-    return mu + 1/3.0# - 0.02/mu
+    med = mu + 1/3.0# - 0.02/mu
+    return int(med)
 
-def poisPull(n = None, mu = None, useCdf = False, modifyCdf = False) :
-    if useCdf :
-        assert float(int(n))==n,n
-        quantile = r.Math.poisson_cdf(int(n), mu)
-        #quantile = 1.0-r.TMath.Gamma(n+1, mu) #equivalent to previous line
-        if modifyCdf :
-            quantile = r.Math.poisson_cdf(int(n), poisMedian(mu))
+def poisMode(mu = None) :
+    return int(mu)
 
-        #print "n=%4d, mu=%6.2f, median=%6.2f, q=%g"%(n, mu, poisMedian(mu), quantile)
-        return nSigma(quantile)
+def poisPull(n = None, mu = None) :
+    out = {}
+
+    out["n"] = n
+    out["mu"] = mu
+    out["median"] = poisMedian(mu)
+    out["mode"] = poisMode(mu)
+
+    assert mu,mu
+    out["simple"] = (n-mu)/math.sqrt(mu)
+
+    assert float(int(n))==n,n
+    out["quantile"] = r.Math.poisson_cdf(int(n), mu)
+    out["quantileOfMode"] = r.Math.poisson_cdf(out["mode"], mu)
+
+    out["nSigma"] = nSigma(out["quantile"])
+    out["nSigmaOfMode"] = nSigma(out["quantileOfMode"])
+    out["nSigmaPrime"] = out["nSigma"] - out["nSigmaOfMode"]
+    return out
+
+def printPoisPull(dct = {}) :
+    def n(h, f) :
+        return max(len(h), int(f[1]))
+    headers = ["n",   "mu",    "mode", "simple", "nSigma", "nSigmaPrime", "quantile", "quantileOfMode", "nSigmaOfMode"]
+    formats = ["%4d", "%7.2f", "%5d",  "%6.2f",  "%6.2f",  "%6.2f",       "%4.2f",    "%4.2f",          "%6.2f"       ]
+
+    if not dct :
+        lst = [h.rjust(n(h,f)) for h,f in zip(headers,formats)]
+        s = "  ".join(lst)
+        print s
+        print "-"*len(s)
     else :
-        assert mu,mu
-        return (n-mu)/math.sqrt(mu)
+        lst = [(f%dct[h]).rjust(n(h,f)) for h,f in zip(headers,formats)]
+        print "  ".join(lst)
 
-def pulls(pdf = None, useCdf = None, modifyCdf = None) :
+def pulls(pdf = None) :
     out = {}
     className = pdf.ClassName()
     pdfName = pdf.GetName()
@@ -444,38 +469,36 @@ def pulls(pdf = None, useCdf = None, modifyCdf = None) :
     if className=="RooProdPdf" :
         pdfList = pdf.pdfList()
         for i in range(pdfList.getSize()) :
-            out.update(pulls(pdfList[i], useCdf = useCdf, modifyCdf = modifyCdf))
+            out.update(pulls(pdfList[i]))
     elif className=="RooPoisson" :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
         mu = p.mean.arg().getVal()
-        out[("Pois", pdfName)] = poisPull(x, mu, useCdf = useCdf, modifyCdf = modifyCdf)
+        out[("Pois", pdfName)] = poisPull(x, mu)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
         x = g.x.arg().getVal()
         mu = g.mean.arg().getVal()
         sigma = g.sigma.arg().getVal()
         assert sigma,sigma
-        out[("Gaus", pdfName)] = (x-mu)/sigma
+        out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma}
     else :
         assert False,className
     return out
 
-def pullHisto(termType = "", pulls = {}, useCdf = None, modifyCdf = None) :
+def pullHistoTitle(termType = "", key = "") :
     if termType=="Pois" :
-        title = "Poisson terms;;"
-        if useCdf :
-            if modifyCdf :
-                title += 'quantile of n in Pois( k | #mu + 1/3 )   [in "sigma"]'
-            else :
-                title += 'quantile of n in Pois( k | #mu )   [in "sigma"]'
-        else :
-            title += '(n-#mu)/sqrt(#mu)'
+        dct = {"simple":      '(n-#mu)/sqrt(#mu)',
+               "nSigma":      'quantile of n in Pois( k | #mu )   [in "sigma"]',
+               "nSigmaPrime": 'quantile of n [in "sigma"] - quantile of mode [in "sigma"]',
+               }
+        return "Poisson terms;;"+dct[key]
     elif termType=="Gaus" :
-        title = "Gaussian terms;;(x-#mu)/#sigma"
+        return "Gaussian terms;;(x-#mu)/#sigma"
     else :
         assert False,termType
 
+def pullHisto(termType = "", pulls = {}, title = "") :
     p = {}
     for key,value in pulls.iteritems() :
         if key[0]!=termType : continue
@@ -501,8 +524,28 @@ def pullHisto(termType = "", pulls = {}, useCdf = None, modifyCdf = None) :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5, useCdf = False, modifyCdf = False, note = "", plotsDir = "") :
-    p = pulls(pdf, useCdf = useCdf, modifyCdf = modifyCdf)
+def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
+              poisKey = ["simple", "nSigma", "nSigmaPrime"][2],
+              gausKey = "simple", debug = False,
+              note = "", plotsDir = "") :
+
+    pRaw = pulls(pdf)
+
+    if debug :
+        printPoisPull()
+        for key in sorted(pRaw.keys()) :
+            if key[0]!="Pois" : continue
+            printPoisPull(pRaw[key])
+
+    p = {}
+    for key,value in pRaw.iteritems() :
+        if key[0]=="Pois" :
+            p[key] = value[poisKey]
+        elif key[0]=="Gaus" :
+            p[key] = value[gausKey]
+        else :
+            assert False,key
+
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
@@ -518,8 +561,9 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5, useCdf = 
     total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
     chi2 = 0
     nTerms = 0
-    for h in [pullHisto("Pois", p, useCdf = useCdf, modifyCdf = modifyCdf),
-              pullHisto("Gaus", p)] :
+    for termType in ["Pois", "Gaus"] :
+        h = pullHisto(termType, p)
+        h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
         h.SetStats(False)
         h.SetMarkerStyle(20)
         h.Draw("p")
