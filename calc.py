@@ -415,6 +415,52 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
     if makePlots : plotting.expectedLimitPlots(quantiles = q, hist = hist, obsLimit = obsLimit, note = note)
     return q,nSuccesses
 
+def nSigma(quantile = None) :
+    return r.TMath.ErfInverse(2.0*quantile - 1.0)*math.sqrt(2.0)
+
+def poisMedian(mu = None) :
+    assert mu,mu
+    med = mu + 1/3.0# - 0.02/mu
+    return int(med)
+
+def poisMode(mu = None) :
+    return int(mu)
+
+def poisPull(n = None, mu = None) :
+    out = {}
+
+    out["n"] = n
+    out["mu"] = mu
+    out["median"] = poisMedian(mu)
+    out["mode"] = poisMode(mu)
+
+    assert mu,mu
+    out["simple"] = (n-mu)/math.sqrt(mu)
+
+    assert float(int(n))==n,n
+    out["quantile"] = r.Math.poisson_cdf(int(n), mu)
+    out["quantileOfMode"] = r.Math.poisson_cdf(out["mode"], mu)
+
+    out["nSigma"] = nSigma(out["quantile"])
+    out["nSigmaOfMode"] = nSigma(out["quantileOfMode"])
+    out["nSigmaPrime"] = out["nSigma"] - out["nSigmaOfMode"]
+    return out
+
+def printPoisPull(dct = {}) :
+    def n(h, f) :
+        return max(len(h), int(f[1]))
+    headers = ["n",   "mu",    "mode", "simple", "nSigma", "nSigmaPrime", "quantile", "quantileOfMode", "nSigmaOfMode"]
+    formats = ["%4d", "%7.2f", "%5d",  "%6.2f",  "%6.2f",  "%6.2f",       "%4.2f",    "%4.2f",          "%6.2f"       ]
+
+    if not dct :
+        lst = [h.rjust(n(h,f)) for h,f in zip(headers,formats)]
+        s = "  ".join(lst)
+        print s
+        print "-"*len(s)
+    else :
+        lst = [(f%dct[h]).rjust(n(h,f)) for h,f in zip(headers,formats)]
+        print "  ".join(lst)
+
 def pulls(pdf = None) :
     out = {}
     className = pdf.ClassName()
@@ -428,27 +474,31 @@ def pulls(pdf = None) :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
         mu = p.mean.arg().getVal()
-        assert mu,mu
-        out[("Pois", pdfName)] = (x-mu)/math.sqrt(mu)
+        out[("Pois", pdfName)] = poisPull(x, mu)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
         x = g.x.arg().getVal()
         mu = g.mean.arg().getVal()
         sigma = g.sigma.arg().getVal()
         assert sigma,sigma
-        out[("Gaus", pdfName)] = (x-mu)/sigma
+        out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma}
     else :
         assert False,className
     return out
 
-def pullHisto(termType = "", pulls = {}) :
+def pullHistoTitle(termType = "", key = "") :
     if termType=="Pois" :
-        title = "Poisson terms;;(n-#mu)/sqrt(#mu)"
+        dct = {"simple":      '(n-#mu)/sqrt(#mu)',
+               "nSigma":      'quantile of n in Pois( k | #mu )   [in "sigma"]',
+               "nSigmaPrime": 'quantile of n [in "sigma"] - quantile of mode [in "sigma"]',
+               }
+        return "Poisson terms;;"+dct[key]
     elif termType=="Gaus" :
-        title = "Gaussian terms;;(x-#mu)/#sigma"
+        return "Gaussian terms;;(x-#mu)/#sigma"
     else :
         assert False,termType
 
+def pullHisto(termType = "", pulls = {}, title = "") :
     p = {}
     for key,value in pulls.iteritems() :
         if key[0]!=termType : continue
@@ -474,11 +524,32 @@ def pullHisto(termType = "", pulls = {}) :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir = "") :
-    p = pulls(pdf)
+def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
+              poisKey = ["simple", "nSigma", "nSigmaPrime"][2],
+              gausKey = "simple", debug = False,
+              note = "", plotsDir = "") :
+
+    pRaw = pulls(pdf)
+
+    if debug :
+        printPoisPull()
+        for key in sorted(pRaw.keys()) :
+            if key[0]!="Pois" : continue
+            printPoisPull(pRaw[key])
+
+    p = {}
+    for key,value in pRaw.iteritems() :
+        if key[0]=="Pois" :
+            p[key] = value[poisKey]
+        elif key[0]=="Gaus" :
+            p[key] = value[gausKey]
+        else :
+            assert False,key
+
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
+    canvas.SetGridy()
 
     fileName = "%s/pulls_%s.pdf"%(plotsDir, note)
     canvas.Print(fileName+"[")
@@ -487,14 +558,19 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir =
     line = r.TLine()
     line.SetLineColor(r.kBlue)
 
-    total = r.TH1D("total", ";pull;terms / bin", 100, 1, -1) #auto-range
+    total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
     chi2 = 0
     nTerms = 0
-    for h in [pullHisto("Pois", p), pullHisto("Gaus", p)] :
+    for termType in ["Pois", "Gaus"] :
+        h = pullHisto(termType, p)
+        h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
         h.SetStats(False)
         h.SetMarkerStyle(20)
         h.Draw("p")
-        hMin = h.GetMinimum()*1.1
+
+        assert abs(h.GetMinimum())<yMax,h.GetMinimum()
+        assert abs(h.GetMaximum())<yMax,h.GetMaximum()
+        h.GetYaxis().SetRangeUser(-yMax, yMax)
 
         h2 = h.Clone("%s_outliers")
         h2.Reset()
@@ -506,7 +582,7 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, note = "", plotsDir =
             total.Fill(content)
             if abs(content)>threshold :
                 h2.SetBinContent(iBin, content)
-                l2 = line.DrawLine(iBin, hMin, iBin, content)
+                l2 = line.DrawLine(iBin, -yMax, iBin, content)
                 lines.append(l2)
             else :
                 h2.SetBinContent(iBin, -9999)
