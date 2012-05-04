@@ -52,8 +52,9 @@ may_04_files = ["~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_S
                ]
 names = [ "btag_gt1", "btag_gt2", "btag_gt0", "btag1", "btag2", "btag0" ] 
 
+selections = [ { rfile : std_selections } for rfile in may_04_files ] 
 
-dsfs = [ DF.DataSliceFactory( rfile ) for rfile in may_04_files ]
+dsfs = [ DF.DataSliceFactory( selection ) for selection in selections ]
 dss  = [ dsf.makeSlice("x",55.5,55.6) for dsf in dsfs ]
 
 slices = dict( zip( names, dss ) )
