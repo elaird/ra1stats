@@ -342,7 +342,7 @@ class validationPlotter(object) :
     def hadPlots(self) :
         if "had" not in self.lumi : return
         vars = [
-            {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
+            {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "Standard Model",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
             {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
@@ -367,8 +367,9 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
-            self.plot(fileName = fileName, legend0 = (0.48 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.85),
-                      obs = {"var":"nHad", "desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
+            self.plot(fileName = fileName, legend0 = (0.4 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.88),
+                      obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
+                             "desc": "Data (hadronic sample, %s)"%self.selNote},
                       otherVars = vars, logY = logY, stampParams = True)
             
     def hadDataMcPlots(self) :
@@ -773,6 +774,11 @@ class validationPlotter(object) :
         bins = array.array('d', list(self.htBinLowerEdges)+[self.htMaxForPlot])
         out = r.TH1D(name, "%s;H_{T} (GeV);%s"%(note, yLabel), len(bins)-1, bins)
         out.Sumw2()
+        out.GetXaxis().SetLabelSize(1.5*out.GetXaxis().GetLabelSize())
+        out.GetYaxis().SetLabelSize(1.5*out.GetYaxis().GetLabelSize())
+        out.GetXaxis().SetTitleOffset(0.88*out.GetXaxis().GetTitleOffset())
+        out.GetXaxis().SetTitleSize(1.5*out.GetXaxis().GetTitleSize())
+        out.GetYaxis().SetTitleSize(1.5*out.GetYaxis().GetTitleSize())
         return out
 
     def signalExampleHisto(self, d = {}) :
@@ -952,9 +958,9 @@ class validationPlotter(object) :
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
              selNoteCoords = (0.13, 0.85),
              minimum = 0.0, maximum = None, customMaxFactor = (1.1, 2.0), logY = False, stampParams = False,
-             obs = {"var":"", "desc":""}, otherVars = [], yLabel = "counts / bin", scale = 1.0 ) :
+             obs = {"var":"", "desc":""}, otherVars = [], yLabel = "Events / bin", scale = 1.0 ) :
         
-        leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1])
+        leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV")
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
 
@@ -975,7 +981,7 @@ class validationPlotter(object) :
 
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
-        if logY : obsHisto.SetMinimum(0.1)
+        if logY : obsHisto.SetMinimum(0.3)
         if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], inDict(obs, "legSpec", "lpe"))
         stuff += [obs]
 
@@ -1006,11 +1012,11 @@ class validationPlotter(object) :
 	r.gPad.Update()
 
         if stampParams and not self.printPages : stuff += [self.stampMlParameters()]
-        if selNoteCoords :
-            latex = r.TLatex()
-            latex.SetTextSize(0.7*latex.GetTextSize())
-            latex.SetNDC()
-            latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
+        #if selNoteCoords :
+        #    latex = r.TLatex()
+        #    latex.SetTextSize(0.7*latex.GetTextSize())
+        #    latex.SetNDC()
+        #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
 	if self.printPages and fileName :
 	    #obsHisto.SetTitle("")
