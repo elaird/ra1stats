@@ -31,6 +31,7 @@ class spec(object) :
         args = {}
         args["systMode"] = 3
         args["reweighted"] = predictedGe3b = True
+        args["predictionsEverywhere"] = False
 
         slices = False
         b = False
