@@ -3,8 +3,8 @@ from common import selection
 for item in ["orig", "simpleOneBin",
              "afterAlphaT", "afterAlphaT_b", "afterAlphaT_noMHT_ov_MET",
              "mixedMuons", "mixedMuons_b",
-             "mixedMuons_b_sets_aT", "mixedMuons_b_sets_aT_reweighted",
-             "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted"] :
+             "mixedMuons_b_sets_aT", "mixedMuons_b_sets_aT_reweighted", "mixedMuons_b_sets_aT_reweighted_2",
+             "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted", "mixedMuons_b_sets_reweighted_2"] :
     exec("from inputData import %s"%item)
 
 def alphaT_slices_noMHTovMET(systMode = 1) :
