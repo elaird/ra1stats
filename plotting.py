@@ -388,7 +388,7 @@ class validationPlotter(object) :
     def muonPlots(self) :
         if "muon" not in self.lumi : return
         vars = [
-            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"SM", "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
+            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"Standard Model", "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
             {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -401,8 +401,10 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "muon_control_fit%s"%("_logy" if logY else "")
-            self.plot(fileName = fileName, legend0 = (0.48 - self.legendXSub, 0.70), legend1 = (0.85 - self.legendXSub, 0.85),
-                      obs = {"var":"nMuon", "desc": obsString(self.obsLabel, "muon sample", self.lumi["muon"])},
+            #self.plot(fileName = fileName, legend0 = (0.45 - self.legendXSub, 0.7), legend1 = (0.88 - self.legendXSub, 0.88),
+            self.plot(fileName = fileName, legend0 = (0.12, 0.18), legend1 = (0.6, 0.4),
+                      obs = {"var":"nMuon", #"desc": obsString(self.obsLabel, "muon sample", self.lumi["muon"])},
+                             "desc": "Data (#mu + jets sample, %s)"%self.selNote},
                       otherVars = vars, logY = logY)
 
     def photPlots(self) :
