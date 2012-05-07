@@ -44,6 +44,8 @@ class spec(object) :
                          # when false: use 1,2,gt2
 
         assert sum([slices,b,multib]) == 1
+        if args["predictionsEverywhere"] :
+            assert args["reweighted"]
         
         if slices :
             self.add( selections.alphaT_slices(**args) )
