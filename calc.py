@@ -525,7 +525,7 @@ def pullHisto(termType = "", pulls = {}, title = "") :
     return h
 
 def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
-              poisKey = ["simple", "nSigma", "nSigmaPrime"][2],
+              poisKey = ["simple", "nSigma", "nSigmaPrime"][0],
               gausKey = "simple", debug = False,
               note = "", plotsDir = "") :
 
