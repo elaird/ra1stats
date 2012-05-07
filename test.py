@@ -97,7 +97,8 @@ def signal(i) :
             "effMuon":[0.000072, 0.000000, 0.000072, 0.000036, 0.000000, 0.000000, 0.000000, 0.000000],
             })
 
-    t2bb = common.signal(xs = 0.1015, label = "T2bb m_{sbottom} = 500 GeV; m_{LSP} = 150 GeV (xs = 100 fb)")
+    t2bb = common.signal(xs = 0.1015, label = ["#lower[0.35]{#splitline{SM + SUSY Model D}{m_{sbottom} = 500 GeV, m_{LSP} = 150 GeV}}",
+                                               "T2bb m_{sbottom} = 500 GeV; m_{LSP} = 150 GeV (xs = 100 fb)"][0])
     t2bb.insert("55_0b", {
             "effHad": [0.003300, 0.003700, 0.006500, 0.003600, 0.002400, 0.000800, 0.000600, 0.000200],
             "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
@@ -115,7 +116,8 @@ def signal(i) :
             "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
             })
 
-    t1 = common.signal(xs = 0.0651, label = "T1 m_{gluino} = 800 GeV; m_{LSP} = 200 GeV (xs = 65 fb)")
+    t1 = common.signal(xs = 0.0651, label = ["#lower[0.35]{#splitline{SM + SUSY Model A}{(m_{gluino} = 800 GeV, m_{LSP} = 200 GeV)}}",
+                                             "T1 m_{gluino} = 800 GeV; m_{LSP} = 200 GeV (xs = 65 fb)"][0])
     t1.insert("55_0b", {
         "effHad": [0.000200, 0.001200, 0.005500, 0.013000, 0.028600, 0.040800, 0.035300, 0.040400],
         })
