@@ -3,8 +3,8 @@ from common import selection
 for item in ["orig", "simpleOneBin",
              "afterAlphaT", "afterAlphaT_b", "afterAlphaT_noMHT_ov_MET",
              "mixedMuons", "mixedMuons_b",
-             "mixedMuons_b_sets_aT", "mixedMuons_b_sets_aT_reweighted",
-             "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted"] :
+             "mixedMuons_b_sets_aT", "mixedMuons_b_sets_aT_reweighted", "mixedMuons_b_sets_aT_reweighted_2",
+             "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted", "mixedMuons_b_sets_reweighted_2"] :
     exec("from inputData import %s"%item)
 
 def alphaT_slices_noMHTovMET(systMode = 1) :
@@ -70,8 +70,12 @@ def noAlphaT_0btags(systMode = 1) :
                       universalKQcd = True,
                       )]
 
-def alphaT_0btags(systMode = 1, reweighted = False) :
-    module = mixedMuons_b_sets_aT_reweighted if reweighted else mixedMuons_b_sets_aT
+def alphaT_0btags(systMode = 1, reweighted = False, predictionsEverywhere = None) :
+    if reweighted :
+        module = mixedMuons_b_sets_aT_reweighted_2 if predictionsEverywhere else mixedMuons_b_sets_aT_reweighted
+    else :
+        module = mixedMuons_b_sets_aT
+
     return [ selection(name = "55_0b",
                        note = "0 b-tags (w/ #alpha_{T})",
                        alphaTMinMax = ("55", None),
@@ -95,8 +99,11 @@ def noAlphaT_gt0b(systMode = 1, universalSystematics = True, universalKQcd = Tru
                        universalKQcd = universalKQcd,
                        )]
 
-def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False) :
-    module = mixedMuons_b_sets_reweighted if reweighted else mixedMuons_b_sets
+def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predictionsEverywhere = None) :
+    if reweighted :
+        module = mixedMuons_b_sets_reweighted_2 if predictionsEverywhere else mixedMuons_b_sets_reweighted
+    else :
+        mixedMuons_b_sets
 
     out = [
         selection(name = "55_1b",

@@ -16,13 +16,14 @@ tests
 - remove syst. encouragement
 - signal injection
 
-zero
+2011
 ----
-- increase range for T1bbbb
-- T1 slice test
-- example T2tt points
-- update best-fit plots
-- update limits
+- stat. bands: CMSSM
+- theor. band: CMSSM
+- stat. curves: SMS
+- update lumi
+- cosmetics
+- "error reduction" in PAS
 
 one
 ---
@@ -37,7 +38,6 @@ one
 two
 ---
 - upper limit tests toys old/toys new/asympt
-- error propagation in plots
 - improve mc ratio
 - mc stats as systematic
 - errors on translation factors
@@ -60,7 +60,7 @@ four
 - TGraphs in file
 - automatic N_bins, N_nuisance
 - store workspace / profile wrapper
-- fix leaks in pValue() and expectedLimit()
+- fix leaks in ensemble() and expectedLimit()
 - query fit status for toys (improve 0 cut)
 - (2D) pickling.stuffVars
 - (2D) more histos in check
