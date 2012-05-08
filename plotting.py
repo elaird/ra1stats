@@ -1054,7 +1054,6 @@ class validationPlotter(object) :
         numHisto,denomHisto = histos
         if not numHisto : return ratios
 
-        same = ""
         ratio = None
         if numHisto and denomHisto and numHisto.GetEntries() and denomHisto.GetEntries() :
             #ratio = utils.ratioHistogram(numHisto,denomHisto)
@@ -1079,8 +1078,7 @@ class validationPlotter(object) :
             color = numHisto.GetLineColor()
             ratio.SetLineColor(color)
             ratio.SetMarkerColor(color)
-            ratio.Draw(same)
-            same = "same"
+            ratio.Draw("p0")
         else :
             self.canvas.cd(2)
         ratios.append(ratio)
