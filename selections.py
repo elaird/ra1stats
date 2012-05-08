@@ -119,7 +119,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
                   AQcdIni = 0.0,
         ),
         selection(name = "55_2b",
-                  note = "n_{b}= 2",
+                  note = "%s= 2"%nb,
                   alphaTMinMax = ("55", None),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                   #samplesAndSignalEff = {"had":True, "muon":True},
@@ -134,7 +134,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
     if not predictedGe3b :
         out.append(
             selection(name = "55_gt2b",
-                      note = "n_{b}#geq 3",
+                      note = "%s#geq 3"%nb,
                       alphaTMinMax = ("55", None),
                       samplesAndSignalEff = {"had":True, "muon":True},
                       muonForFullEwk = True,
@@ -146,7 +146,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
     else :
         out.append(
             selection(name = "55_gt2b", #v4!!
-                      note = "n_{b}#geq 3",
+                      note = "%s#geq 3"%nb,
                       alphaTMinMax = ("55", None),
                       samplesAndSignalEff = {"had":True, "muon":True},
                       muonForFullEwk = True,
