@@ -7,6 +7,9 @@ for item in ["orig", "simpleOneBin",
              "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted", "mixedMuons_b_sets_reweighted_2"] :
     exec("from inputData import %s"%item)
 
+#graphical hack (white superscript b)
+nb = "n_{b}^{#color[0]{b}}"
+
 def alphaT_slices_noMHTovMET(systMode = 1) :
     return [
         selection(name = "55",
@@ -61,7 +64,7 @@ def alphaT_slices(systMode = 1) :
  
 def noAlphaT_0btags(systMode = 1) :
     return [selection(name = "55_0b",
-                      note = "0 b-tags",
+                      note = "0 b-tags (before #alpha_{T})",
                       alphaTMinMax = ("55", None),
                       samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                       data = mixedMuons_b_sets.data_55_0btag( systMode = systMode ),
@@ -77,7 +80,7 @@ def alphaT_0btags(systMode = 1, reweighted = False, predictionsEverywhere = None
         module = mixedMuons_b_sets_aT
 
     return [ selection(name = "55_0b",
-                       note = "0 b-tags (w/ #alpha_{T})",
+                       note = "%s= 0"%nb,
                        alphaTMinMax = ("55", None),
                        samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                        data = module.data_55_0btag( systMode = systMode ),
@@ -107,7 +110,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
 
     out = [
         selection(name = "55_1b",
-                  note = "1 b-tag",
+                  note = "%s= 1"%nb,
                   alphaTMinMax = ("55", None),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                   data = module.data_55_1btag( systMode = systMode ),
@@ -116,7 +119,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
                   AQcdIni = 0.0,
         ),
         selection(name = "55_2b",
-                  note = "2 b-tags",
+                  note = "n_{b}= 2",
                   alphaTMinMax = ("55", None),
                   samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                   #samplesAndSignalEff = {"had":True, "muon":True},
@@ -131,7 +134,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
     if not predictedGe3b :
         out.append(
             selection(name = "55_gt2b",
-                      note = "#geq3 b-tags",
+                      note = "n_{b}#geq 3",
                       alphaTMinMax = ("55", None),
                       samplesAndSignalEff = {"had":True, "muon":True},
                       muonForFullEwk = True,
@@ -143,7 +146,7 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
     else :
         out.append(
             selection(name = "55_gt2b", #v4!!
-                      note = "#geq3 b-tags",
+                      note = "n_{b}#geq 3",
                       alphaTMinMax = ("55", None),
                       samplesAndSignalEff = {"had":True, "muon":True},
                       muonForFullEwk = True,
