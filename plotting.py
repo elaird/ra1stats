@@ -303,16 +303,16 @@ class validationPlotter(object) :
 
         self.simplePlots()
         self.hadPlots()
-#        #self.hadDataMcPlots()
-#        self.muonPlots()
-#        self.photPlots()
-#        self.mumuPlots()
-#        self.ewkPlots()
-#        self.mcFactorPlots()
-#        self.alphaTRatioPlots()
-#        self.rhoPlots()
-#        self.printPars()
-#        self.correlationHist()
+        #self.hadDataMcPlots()
+        self.muonPlots()
+        self.photPlots()
+        self.mumuPlots()
+        self.ewkPlots()
+        self.mcFactorPlots()
+        self.alphaTRatioPlots()
+        self.rhoPlots()
+        self.printPars()
+        self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
 
 	if self.printPages :
@@ -372,10 +372,8 @@ class validationPlotter(object) :
             obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
                    "desc": "Data (hadronic sample, %s)"%self.selNote}
 
-            # might want to include SM errors here too if we want errors on the ratios?
-            ratioVars = (vars[0], obs) if self.drawRatios else (None,None)
             self.plot(fileName = fileName, legend0 = (0.4 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.88),
-                      obs = obs, otherVars = vars, logY = logY, stampParams = True, ratioVars = ratioVars)
+                      obs = obs, otherVars = vars, logY = logY, stampParams = True, ratioDenom = "hadB")
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
@@ -410,7 +408,7 @@ class validationPlotter(object) :
             self.plot(fileName = fileName, legend0 = (0.12, 0.18), legend1 = (0.6, 0.4),
                       obs = {"var":"nMuon", #"desc": obsString(self.obsLabel, "muon sample", self.lumi["muon"])},
                              "desc": "Data (#mu + jets sample, %s)"%self.selNote},
-                      otherVars = vars, logY = logY)
+                      otherVars = vars, logY = logY, ratioDenom = "muonB")
 
     def photPlots(self) :
         if "phot" not in self.lumi : return
@@ -426,7 +424,7 @@ class validationPlotter(object) :
                 {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
                 {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2, "desc":"Standard Model", "stack":None, "errorBand":self.smError},
-                ])
+                ], ratioDenom = "photExp")
 
     def mumuPlots(self) :
         if "mumu" not in self.lumi : return
@@ -438,7 +436,7 @@ class validationPlotter(object) :
                       reverseLegend = True,
                       obs = {"var":"nMumu", #"desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])},
                              "desc": "Data (#mu#mu + jets sample, %s)"%self.selNote},
-                      logY = logY, otherVars = [
+                      logY = logY, ratioDenom = "mumuExp", otherVars = [
                 {"var":"mcMumu", "type":None, "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
                 {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"Standard Model", "stack":None, "errorBand":self.smError},
@@ -969,11 +967,11 @@ class validationPlotter(object) :
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
              selNoteCoords = (0.13, 0.85),
              minimum = 0.0, maximum = None, customMaxFactor = (1.1, 2.0), logY = False, stampParams = False,
-             obs = {"var":"", "desc":""}, otherVars = [], yLabel = "Events / bin", scale = 1.0, ratioVars = (None,None) ) :
+             obs = {"var":"", "desc":""}, otherVars = [], yLabel = "Events / bin", scale = 1.0, ratioDenom = "" ) :
 
-        # assert [CONDITION], would work here, but this seems easier to read
-        if ( self.drawRatios and (None in ratioVars) ) or ( len(ratioVars) != 2 ) :
-            assert False, "Wrong number of histograms provided to plot() for drawRatios"
+        ## assert [CONDITION], would work here, but this seems easier to read
+        #if ( self.drawRatios and (None in ratioVars) ) or ( len(ratioVars) != 2 ) :
+        #    assert False, "Wrong number of histograms provided to plot() for drawRatios"
 
         self.canvas.cd(1)
 
@@ -1036,7 +1034,8 @@ class validationPlotter(object) :
         #    latex.SetNDC()
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
-        self.plotRatio(ratioVars,1)
+        denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})["value"]
+        foo = self.plotRatio([obsHisto, denomHisto], 1)
 
         if self.printPages and fileName :
             #obsHisto.SetTitle("")
@@ -1052,19 +1051,16 @@ class validationPlotter(object) :
         #if type(denomSampleNames)!=list: denomSampleNames = [denomSampleNames]
 
         ratios = []
-        try:
-            numHisto = histos[0]["value"]
-            denomHisto = histos[1]["value"]
-        except TypeError:
-            return ratios
-
+        numHisto,denomHisto = histos
         if not numHisto : return ratios
 
         same = ""
         ratio = None
         if numHisto and denomHisto and numHisto.GetEntries() and denomHisto.GetEntries() :
             #ratio = utils.ratioHistogram(numHisto,denomHisto)
-            ratio = numHisto.Divide(denomHisto)
+            ratio = numHisto.Clone("%sClone"%numHisto.GetName())
+            ratio.SetDirectory(0)
+            ratio.Divide(denomHisto)
             ratio.SetMinimum(0.0)
             ratio.SetMaximum(2.0)
             ratio.GetYaxis().SetTitle(numLabel+"/"+denomLabel)
@@ -1079,8 +1075,8 @@ class validationPlotter(object) :
             ratio.GetXaxis().SetTitleOffset(0.2)
             ratio.GetYaxis().SetTitleSize(0.2)
             ratio.GetYaxis().SetTitleOffset(0.2)
-            if len(denomHistos)==1: ratio.SetMarkerStyle(numHisto.GetMarkerStyle())
-            color = numHisto.GetLineColor() if len(denomHistos)==1 else denomHisto.GetLineColor()
+            ratio.SetMarkerStyle(numHisto.GetMarkerStyle())
+            color = numHisto.GetLineColor()
             ratio.SetLineColor(color)
             ratio.SetMarkerColor(color)
             ratio.Draw(same)
