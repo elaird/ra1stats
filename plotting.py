@@ -262,6 +262,7 @@ class validationPlotter(object) :
         for key,value in args.iteritems() :
             setattr(self,key,value)
         if self.signalExampleToStack : assert self.smOnly
+        if not hasattr(self,"drawRatios") : setattr(self,"drawRatios",False)
 
         if self.printPages :
             print "printing individual pages; drawMc = False"
@@ -292,9 +293,9 @@ class validationPlotter(object) :
         self.qcd = r.kGreen+3
         self.qcdError = r.kGreen-3
         
-    def go(self, ratio) :
+    def go(self) :
         self.canvas = utils.numberedCanvas()
-        utils.divideCanvas( self.canvas, ratio )
+        utils.divideCanvas( self.canvas, self.drawRatios )
         fields = ["%s/bestFit"%self.plotsDir, self.note, "sel%s"%self.label]
         if self.smOnly : fields.append("smOnly")
         self.psFileName = "_".join(fields)+".pdf"
@@ -981,7 +982,7 @@ class validationPlotter(object) :
         if "dens" in obs :
             for den,denType in zip(obs["dens"], obs["denTypes"]) :
                 obsHisto.Divide(self.varHisto(spec = {"var":den, "type": denType})["value"])
-    	
+
         obsHisto.SetMarkerStyle(inDict(obs, "markerStyle", 20))
         obsHisto.SetStats(False)
         obsHisto.Draw(inDict(obs, "goptions", "p"))
@@ -1006,17 +1007,17 @@ class validationPlotter(object) :
             
         stuff += stackDict
 
-	for key,stack in stackDict.iteritems() :
-	    stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = False)
+        for key,stack in stackDict.iteritems() :
+            stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = False)
 
         obsHisto.Draw("psame") #redraw data
 
-	for item in reversed(legEntries) if reverseLegend else legEntries :
-	    leg.AddEntry(*item)
-	leg.Draw()
-	r.gPad.SetTickx()
-	r.gPad.SetTicky()
-	r.gPad.Update()
+        for item in reversed(legEntries) if reverseLegend else legEntries :
+            leg.AddEntry(*item)
+        leg.Draw()
+        r.gPad.SetTickx()
+        r.gPad.SetTicky()
+        r.gPad.Update()
 
         if stampParams and not self.printPages : stuff += [self.stampMlParameters()]
         #if selNoteCoords :
@@ -1025,12 +1026,12 @@ class validationPlotter(object) :
         #    latex.SetNDC()
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
-	if self.printPages and fileName :
-	    #obsHisto.SetTitle("")
-	    printOnePage(self.canvas, fileName+self.label)
-	    #printOnePage(self.canvas, fileName, ext = ".C")
-	self.canvas.Print(self.psFileName)
+        if self.printPages and fileName :
+            #obsHisto.SetTitle("")
+            printOnePage(self.canvas, fileName+self.label)
+            #printOnePage(self.canvas, fileName, ext = ".C")
+        self.canvas.Print(self.psFileName)
 
-	return stuff
+        return stuff
 
 rootSetup()

@@ -828,7 +828,7 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True, errorsFromToys = False) :
+    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True, errorsFromToys = False, drawRatios = False) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
@@ -840,10 +840,11 @@ class foo(object) :
                          "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
-                         "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys
+                         "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
+                         "drawRatios" : drawRatios,
                          })
             plotter = plotting.validationPlotter(args)
-            plotter.go(ratio = True)
+            plotter.go()
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
