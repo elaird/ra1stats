@@ -292,8 +292,9 @@ class validationPlotter(object) :
         self.qcd = r.kGreen+3
         self.qcdError = r.kGreen-3
         
-    def go(self) :
+    def go(self, ratio) :
         self.canvas = utils.numberedCanvas()
+        utils.divideCanvas( self.canvas, ratio )
         fields = ["%s/bestFit"%self.plotsDir, self.note, "sel%s"%self.label]
         if self.smOnly : fields.append("smOnly")
         self.psFileName = "_".join(fields)+".pdf"
@@ -301,16 +302,16 @@ class validationPlotter(object) :
 
         self.simplePlots()
         self.hadPlots()
-        #self.hadDataMcPlots()
-        self.muonPlots()
-        self.photPlots()
-        self.mumuPlots()
-        self.ewkPlots()
-        self.mcFactorPlots()
-        self.alphaTRatioPlots()
-        self.rhoPlots()
-        self.printPars()
-        self.correlationHist()
+#        #self.hadDataMcPlots()
+#        self.muonPlots()
+#        self.photPlots()
+#        self.mumuPlots()
+#        self.ewkPlots()
+#        self.mcFactorPlots()
+#        self.alphaTRatioPlots()
+#        self.rhoPlots()
+#        self.printPars()
+#        self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
 
 	if self.printPages :
