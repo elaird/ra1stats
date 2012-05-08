@@ -1085,7 +1085,6 @@ class validationPlotter(object) :
             line.SetLineWidth(1)
             line.SetLineStyle(3)
             line.Draw()
-
             ratios.append(line) #lol
         else :
             self.canvas.cd(2)
