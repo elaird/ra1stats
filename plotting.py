@@ -1046,8 +1046,8 @@ class validationPlotter(object) :
         return stuff
 
     def plotRatio(self,histos,dimension) :
-        numLabel,denomLabel = "LOL", "LOL2"
-        numSampleName,denomSampleNames = "NOLOL", "NOLOL2"
+        numLabel,denomLabel = "Data", "SM"
+        numSampleName,denomSampleNames = "Data", "SM"
         #if type(denomSampleNames)!=list: denomSampleNames = [denomSampleNames]
 
         ratios = []
@@ -1061,11 +1061,11 @@ class validationPlotter(object) :
             ratio.SetDirectory(0)
             ratio.Divide(denomHisto)
             ratio.SetMinimum(0.0)
-            ratio.SetMaximum(2.0)
+            ratio.SetMaximum(4.0)
             ratio.GetYaxis().SetTitle(numLabel+"/"+denomLabel)
             self.canvas.cd(2)
             #adjustPad(r.gPad, self.anMode)
-            r.gPad.SetGridy()
+            #r.gPad.SetGridy()
             ratio.SetStats(False)
             ratio.GetXaxis().SetLabelSize(0.0)
             ratio.GetXaxis().SetTickLength(3.5*ratio.GetXaxis().GetTickLength())
@@ -1078,7 +1078,15 @@ class validationPlotter(object) :
             color = numHisto.GetLineColor()
             ratio.SetLineColor(color)
             ratio.SetMarkerColor(color)
-            ratio.Draw("p0")
+            ratio.Draw("E0")
+
+            xr = [ ratio.GetXaxis().GetXmin(), ratio.GetXaxis().GetXmax() ]
+            line = r.TLine(xr[0],1.0,xr[1],1.0)
+            line.SetLineWidth(1)
+            line.SetLineStyle(3)
+            line.Draw()
+
+            ratios.append(line) #lol
         else :
             self.canvas.cd(2)
         ratios.append(ratio)
