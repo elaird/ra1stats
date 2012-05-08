@@ -369,11 +369,13 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
+            obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
+                   "desc": "Data (hadronic sample, %s)"%self.selNote}
+
             self.plot(fileName = fileName, legend0 = (0.4 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.88),
-                      obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
-                             "desc": "Data (hadronic sample, %s)"%self.selNote},
-                      otherVars = vars, logY = logY, stampParams = True)
-            
+                      obs = obs, otherVars = vars, logY = logY, stampParams = True)
+            ratioVars = [vars[0], obs] # might want to include SM errors here too if we want errors on the ratios?
+
     def hadDataMcPlots(self) :
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
