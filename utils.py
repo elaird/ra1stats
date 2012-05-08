@@ -115,6 +115,28 @@ class numberedCanvas(r.TCanvas) :
         self.page += 1
         super(numberedCanvas, self).Print(*args)
 #####################################
+def divideCanvas( canvas, ratioCanvas = True, dimension = 1, nhistos = 0 ) :
+    canvas.Clear()
+    if dimension==1 :
+        if ratioCanvas :
+            split = 0.2
+            canvas.Divide(1,2)
+            canvas.cd(1).SetPad(0.01,split+0.01,0.99,0.99)
+            canvas.cd(2).SetPad(0.01,0.01,0.99,split)
+            #canvas.cd(2).SetTopMargin(0.07)#default=0.05
+            #canvas.cd(2).SetBottomMargin(0.45)
+            canvas.cd(1)
+        else :
+            canvas.Divide(1,1)
+            #if self.anMode : canvas.UseCurrentStyle()
+    else :
+        mx=1
+        my=1
+        while mx*my<nhistos :
+            if mx==my : mx+=1
+            else :      my+=1
+        canvas.Divide(mx,my)
+#####################################
 def ps2pdf(psFileName, removePs = True, sameDir = False) :
     cmd = ("ps2pdf %s"%psFileName) if not sameDir else ("ps2pdf %s %s"%(psFileName, psFileName.replace(".ps", ".pdf")))
     os.system(cmd)
