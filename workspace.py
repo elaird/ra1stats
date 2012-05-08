@@ -843,7 +843,7 @@ class foo(object) :
                          "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys
                          })
             plotter = plotting.validationPlotter(args)
-            plotter.go()
+            plotter.go(ratio = True)
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
