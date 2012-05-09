@@ -1061,7 +1061,7 @@ class validationPlotter(object) :
             ratio.SetDirectory(0)
             ratio.Divide(denomHisto)
             ratio.SetMinimum(0.0)
-            ratio.SetMaximum(4.0)
+            ratio.SetMaximum(2.0)
             ratio.GetYaxis().SetTitle(numLabel+"/"+denomLabel)
             self.canvas.cd(2)
             #adjustPad(r.gPad, self.anMode)
