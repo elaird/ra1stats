@@ -1035,7 +1035,10 @@ class validationPlotter(object) :
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
         denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})["value"]
-        foo = self.plotRatio([obsHisto, denomHisto], 1)
+        numHistos = [obsHisto]
+        ratios = self.makeRatios( denomHisto, numHistos )
+        #foo = self.plotRatio([obsHisto, denomHisto], 1)
+        foo = self.plotRatios( ratios )
 
         if self.printPages and fileName :
             #obsHisto.SetTitle("")
@@ -1045,27 +1048,29 @@ class validationPlotter(object) :
 
         return stuff
 
-    def plotRatio(self,histos,dimension) :
+    def makeRatios( self, denomHisto, numHistos ) :
+        ratioHistos = []
+        for numHisto in numHistos :
+            ratioHistos.append(numHisto.Clone("%sClone"%numHisto.GetName()))
+            ratioHistos[-1].SetDirectory(0)
+            ratioHistos[-1].Divide(denomHisto)
+            ratioHistos[-1].SetMarkerStyle(numHisto.GetMarkerStyle())
+            color = numHisto.GetLineColor()
+            ratioHistos[-1].SetLineColor(color)
+            ratioHistos[-1].SetMarkerColor(color)
+        return ratioHistos
+        
+
+    def plotRatios( self, ratios ) :
         numLabel,denomLabel = "Data", "SM"
         numSampleName,denomSampleNames = "Data", "SM"
-        #if type(denomSampleNames)!=list: denomSampleNames = [denomSampleNames]
 
-        ratios = []
-        numHisto,denomHisto = histos
-        if not numHisto : return ratios
-
-        ratio = None
-        if numHisto and denomHisto and numHisto.GetEntries() and denomHisto.GetEntries() :
-            #ratio = utils.ratioHistogram(numHisto,denomHisto)
-            ratio = numHisto.Clone("%sClone"%numHisto.GetName())
-            ratio.SetDirectory(0)
-            ratio.Divide(denomHisto)
+        same = ""
+        self.canvas.cd(2)
+        for ratio in ratios :
             ratio.SetMinimum(0.0)
             ratio.SetMaximum(2.0)
             ratio.GetYaxis().SetTitle(numLabel+"/"+denomLabel)
-            self.canvas.cd(2)
-            #adjustPad(r.gPad, self.anMode)
-            #r.gPad.SetGridy()
             ratio.SetStats(False)
             ratio.GetXaxis().SetLabelSize(0.0)
             ratio.GetXaxis().SetTickLength(3.5*ratio.GetXaxis().GetTickLength())
@@ -1074,20 +1079,11 @@ class validationPlotter(object) :
             ratio.GetXaxis().SetTitleOffset(0.2)
             ratio.GetYaxis().SetTitleSize(0.2)
             ratio.GetYaxis().SetTitleOffset(0.2)
-            ratio.SetMarkerStyle(numHisto.GetMarkerStyle())
-            color = numHisto.GetLineColor()
-            ratio.SetLineColor(color)
-            ratio.SetMarkerColor(color)
-            ratio.Draw("E0")
+            ratio.Draw(same)
 
-            xr = [ ratio.GetXaxis().GetXmin(), ratio.GetXaxis().GetXmax() ]
-            line = r.TLine(xr[0],1.0,xr[1],1.0)
-            line.SetLineWidth(1)
-            line.SetLineStyle(3)
-            line.Draw()
-            ratios.append(line) #lol
-        else :
-            self.canvas.cd(2)
-        ratios.append(ratio)
-        return ratios
-rootSetup()
+        xr = [ ratio.GetXaxis().GetXmin(), ratio.GetXaxis().GetXmax() ]
+        line = r.TLine(xr[0],1.0,xr[1],1.0)
+        line.SetLineWidth(1)
+        line.SetLineStyle(3)
+        line.Draw()
+        return line
