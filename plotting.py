@@ -315,7 +315,7 @@ class validationPlotter(object) :
 #        self.correlationHist()
 #        #self.propagatedErrorsPlots(printResults = False)
 
-	if self.printPages :
+        if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
                 print " ".join(item)
             #self.hadronicSummaryTable()
@@ -608,11 +608,11 @@ class validationPlotter(object) :
         r.gStyle.SetPaintTextFormat("4.1f")
         h.Draw("colztext")
 
-	if self.printPages and name :
-	    h.SetTitle("")
-	    printOnePage(self.canvas, name)
-	    #printOnePage(self.canvas, name, ext = ".C")
-	self.canvas.Print(self.psFileName)
+        if self.printPages and name :
+            h.SetTitle("")
+            printOnePage(self.canvas, name)
+            #printOnePage(self.canvas, name, ext = ".C")
+        self.canvas.Print(self.psFileName)
         utils.delete(h)
 
     def randomizedPars(self, nValues) :
@@ -823,17 +823,17 @@ class validationPlotter(object) :
         errorsFrom  = inDict(spec, "errorsFrom",  "")
         systMap     = inDict(spec, "systMap",  False)
 
-	d = {}
-	d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
-	d["value"].Reset()
+        d = {}
+        d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
+        d["value"].Reset()
 
-	if wspaceMemberFunc=="var" :
-	    for item in ["min", "max"] :
-	        d[item] = d["value"].Clone(d["value"].GetName()+item)
+        if wspaceMemberFunc=="var" :
+            for item in ["min", "max"] :
+                d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         if self.errorsFromToys :
-	    for item in ["errorLo", "errorHi"] :
-	        d[item] = d["value"].Clone(d["value"].GetName()+item)
+            for item in ["errorLo", "errorHi"] :
+                d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         #style
         for key,histo in d.iteritems() :
@@ -849,30 +849,30 @@ class validationPlotter(object) :
                 histo.SetLineStyle(lineStyle+1)
 
 
-	toPrint = []
-	for i in range(len(self.htBinLowerEdges)) :
-	    if wspaceMemberFunc :
+        toPrint = []
+        for i in range(len(self.htBinLowerEdges)) :
+            if wspaceMemberFunc :
                 iLabel = i if not systMap else self.inputData.systBins()[varName.replace("rho", "sigma")][i]
                 item1 = ni(varName, "", iLabel)
                 item2 = ni(varName, self.label, iLabel)
-	        var = self.wspace.var(item1)
+                var = self.wspace.var(item1)
                 if not var : var = self.wspace.var(item2)
-	        func = self.wspace.function(item1)
+                func = self.wspace.function(item1)
                 if not func : func = self.wspace.function(item2)
-	        if (not var) and (not func) : continue
+                if (not var) and (not func) : continue
 
-	        value = (var if var else func).getVal()
-	        d["value"].SetBinContent(i+1, value)
-	        if var :
+                value = (var if var else func).getVal()
+                d["value"].SetBinContent(i+1, value)
+                if var :
                     if varName[0]=="n" :
                         d["value"].SetBinError(i+1, math.sqrt(value))
                     else :
                         d["value"].SetBinError(i+1, var.getError())
 
-	            for item in ["min", "max"] :
-	                x = getattr(var, "get%s"%item.capitalize())()
-	                if abs(x)==1.0e30 : continue
-	                d[item].SetBinContent(i+1, x)
+                    for item in ["min", "max"] :
+                        x = getattr(var, "get%s"%item.capitalize())()
+                        if abs(x)==1.0e30 : continue
+                        d[item].SetBinContent(i+1, x)
                 elif self.errorsFromToys :
                     q = self.quantiles[ni(varName, self.label, i)]
                     d["errorLo"].SetBinContent(i+1, q[0])
@@ -882,19 +882,19 @@ class validationPlotter(object) :
                     errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, label, i))
                     if errorsVar and errorsVar.getVal() : d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
                 #else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
-	    else :
-	        value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
-	        purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
+            else :
+                value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
+                purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
                 if value!=None and purity :
                     d["value"].SetBinContent(i+1, value/purity)
-	        key = varName+"Err"
-	        if key in self.inputData.mcStatError() :
+                key = varName+"Err"
+                if key in self.inputData.mcStatError() :
                     error = self.inputData.mcStatError()[key][i]
                     if error!=None and purity :
                         d["value"].SetBinError(i+1, error/purity)
-	    toPrint.append(value)
+            toPrint.append(value)
         self.toPrint.append( (varName.rjust(10), lumiString.rjust(10), pretty(toPrint)) )
-	return d
+        return d
 
     def stampMlParameters(self) :
         def sl(s) :
@@ -934,28 +934,28 @@ class validationPlotter(object) :
         return
 
     def stacks(self, specs, extraName = "", lumiString = "", scale = 1.0) :
-	stacks = {}
+        stacks = {}
         histoList = []
-	legEntries = []
+        legEntries = []
 
-	for iSpec,d in enumerate(specs) :
+        for iSpec,d in enumerate(specs) :
             extraName = "%s%s"%(extraName, "_".join(d["dens"]) if "dens" in d else "")
 
-	    if "example" not in d :
+            if "example" not in d :
                 if "var" not in d : continue
-	        histos = self.varHisto(extraName = extraName, lumiString = lumiString, spec = d)
-	    else :
+                histos = self.varHisto(extraName = extraName, lumiString = lumiString, spec = d)
+            else :
                 d2 = copy.deepcopy(d)
                 d2["extraName"] = extraName
-	        histos = {"value":self.signalExampleHisto(d2)}
-	    if not histos["value"].GetEntries() : continue
+                histos = {"value":self.signalExampleHisto(d2)}
+            if not histos["value"].GetEntries() : continue
 
             if "dens" in d :
                 for h in histos.values() :
                     for den,denType in zip(d["dens"], d["denTypes"]) :
                         h.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
 
-	    legEntries.append( (histos["value"], "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
+            legEntries.append( (histos["value"], "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
 
             stack = inDict(d, "stack", "")
             if not stack : stack = "_".join(["NONE","%03d"%iSpec]+[d["var"]]*3) #hacky default stack name
