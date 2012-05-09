@@ -303,17 +303,17 @@ class validationPlotter(object) :
 
         self.simplePlots()
         self.hadPlots()
-        #self.hadDataMcPlots()
-        self.muonPlots()
-        self.photPlots()
-        self.mumuPlots()
-        self.ewkPlots()
-        self.mcFactorPlots()
-        self.alphaTRatioPlots()
-        self.rhoPlots()
-        self.printPars()
-        self.correlationHist()
-        #self.propagatedErrorsPlots(printResults = False)
+#        #self.hadDataMcPlots()
+#        self.muonPlots()
+#        self.photPlots()
+#        self.mumuPlots()
+#        self.ewkPlots()
+#        self.mcFactorPlots()
+#        self.alphaTRatioPlots()
+#        self.rhoPlots()
+#        self.printPars()
+#        self.correlationHist()
+#        #self.propagatedErrorsPlots(printResults = False)
 
 	if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -373,7 +373,7 @@ class validationPlotter(object) :
                    "desc": "Data (hadronic sample, %s)"%self.selNote}
 
             self.plot(fileName = fileName, legend0 = (0.4 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.88),
-                      obs = obs, otherVars = vars, logY = logY, stampParams = True, ratioDenom = "hadB")
+                      obs = obs, otherVars = vars, logY = logY, stampParams = True, ratioDenom = "hadB" )
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
@@ -1037,6 +1037,7 @@ class validationPlotter(object) :
         denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})["value"]
         numHistos = [obsHisto]
         ratios = self.makeRatios( denomHisto, numHistos )
+
         #foo = self.plotRatio([obsHisto, denomHisto], 1)
         foo = self.plotRatios( ratios )
 
