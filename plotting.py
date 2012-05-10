@@ -832,7 +832,7 @@ class validationPlotter(object) :
                 d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         if self.errorsFromToys :
-            for item in ["errors", "noErrors"] :
+            for item in ["errors", "noErrors", "errorsLo", "errorsHi"] :
                 d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         #style
@@ -879,6 +879,8 @@ class validationPlotter(object) :
                     d["errors"].SetBinError(i+1, (q[2]-q[0])/2.0)
                     d["noErrors"].SetBinContent(i+1, value)
                     d["noErrors"].SetBinError(i+1, 0.0)
+                    d["errorsLo"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)-d["errors"].GetBinError(i+1)) #used in ratioPlots
+                    d["errorsHi"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)+d["errors"].GetBinError(i+1)) #used in ratioPlots
                 elif errorsFrom :
                     noI = ni(errorsFrom, label)
                     errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, label, i))
@@ -1041,9 +1043,9 @@ class validationPlotter(object) :
         #    latex.SetNDC()
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
-        denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})["value"]
-        numHistos = [obsHisto]
-        ratios = self.makeRatios( denomHisto, numHistos )
+        denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
+        numHistos = [obsHisto, denomHisto["errorsLo"], denomHisto["errorsHi"]]
+        ratios = self.makeRatios( denomHisto["value"], numHistos )
 
         #foo = self.plotRatio([obsHisto, denomHisto], 1)
         foo = self.plotRatios( ratios )
@@ -1088,6 +1090,7 @@ class validationPlotter(object) :
             ratio.GetYaxis().SetTitleSize(0.2)
             ratio.GetYaxis().SetTitleOffset(0.2)
             ratio.Draw(same)
+            same = "same"
 
         xr = [ ratio.GetXaxis().GetXmin(), ratio.GetXaxis().GetXmax() ]
         line = r.TLine(xr[0],1.0,xr[1],1.0)
