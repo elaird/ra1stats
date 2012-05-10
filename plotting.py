@@ -303,17 +303,17 @@ class validationPlotter(object) :
 
         self.simplePlots()
         self.hadPlots()
-#        #self.hadDataMcPlots()
-#        self.muonPlots()
-#        self.photPlots()
-#        self.mumuPlots()
-#        self.ewkPlots()
-#        self.mcFactorPlots()
-#        self.alphaTRatioPlots()
-#        self.rhoPlots()
-#        self.printPars()
-#        self.correlationHist()
-#        #self.propagatedErrorsPlots(printResults = False)
+        #self.hadDataMcPlots()
+        self.muonPlots()
+        self.photPlots()
+        self.mumuPlots()
+        self.ewkPlots()
+        self.mcFactorPlots()
+        self.alphaTRatioPlots()
+        self.rhoPlots()
+        self.printPars()
+        self.correlationHist()
+        #self.propagatedErrorsPlots(printResults = False)
 
         if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -1045,6 +1045,9 @@ class validationPlotter(object) :
 
         denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
         numHistos = [obsHisto, denomHisto["errorsLo"], denomHisto["errorsHi"]]
+        if "total" in stackDict :
+            numHistos.append(stackDict["total"].histos[-1][0]["value"])
+
         ratios = self.makeRatios( denomHisto["value"], numHistos )
 
         #foo = self.plotRatio([obsHisto, denomHisto], 1)
@@ -1080,7 +1083,7 @@ class validationPlotter(object) :
         for ratio in ratios :
             ratio.SetMinimum(0.0)
             ratio.SetMaximum(2.0)
-            ratio.GetYaxis().SetTitle(numLabel+"/"+denomLabel)
+            ratio.GetYaxis().SetTitle(numLabel+" / "+denomLabel)
             ratio.SetStats(False)
             ratio.GetXaxis().SetLabelSize(0.0)
             ratio.GetXaxis().SetTickLength(3.5*ratio.GetXaxis().GetTickLength())
@@ -1092,6 +1095,8 @@ class validationPlotter(object) :
             ratio.Draw(same)
             same = "same"
 
+        r.gPad.SetTickx()
+        r.gPad.SetTicky()
         xr = [ ratio.GetXaxis().GetXmin(), ratio.GetXaxis().GetXmax() ]
         line = r.TLine(xr[0],1.0,xr[1],1.0)
         line.SetLineWidth(1)
