@@ -572,6 +572,8 @@ class foo(object) :
 
         self.checkInputs()
         r.gROOT.SetBatch(True)
+        r.gErrorIgnoreLevel = r.kWarning
+        r.gPrintViaErrorHandler = True
         r.RooRandom.randomGenerator().SetSeed(1)
 
         self.wspace = r.RooWorkspace("Workspace")
