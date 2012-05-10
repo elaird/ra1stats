@@ -47,6 +47,7 @@ class thstackMulti(object) :
         self.histos.append( (histos, spec) )
         if len(self.histos)>1 :
             self.histos[-1][0]["value"].Add(self.histos[-2][0]["value"])
+            #propagate error too?
 
     def Draw(self, goptions, reverse = False) :
         repeat = []
