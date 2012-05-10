@@ -42,7 +42,6 @@ class thstackMulti(object) :
         self.name = name
         self.errorsFromToys = errorsFromToys
         self.histos = []
-        self.refs = []
 
     def Add(self, histos = {}, spec = {}) :
         self.histos.append( (histos, spec) )
@@ -78,29 +77,16 @@ class thstackMulti(object) :
     def DrawOne(self, histos = None, goptions = "", noErrors = None, errorBand = False, bandFillStyle = 1001) :
         if (not errorBand) or noErrors :
             histos["value"].Draw(goptions)
-            for key,h in histos.iteritems() :
-                if key in ["value", "errorLo", "errorHi"] : continue
-                h.Draw(goptions)
+            for key in ["min", "max"] :
+                if key in histos :
+                    histos[key].Draw(goptions)
         else :
-            band = "errorLo" in histos and "errorHi" in histos
-            goptions = "he2"+goptions
-            errors   = histos["value"].Clone(histos["value"].GetName()+"_errors")
-            noerrors = histos["value"].Clone(histos["value"].GetName()+"_noerrors")
-            for i in range(1, 1+noerrors.GetNbinsX()) :
-                noerrors.SetBinError(i, 0.0)
-                if band :
-                    lo = histos["errorLo"].GetBinContent(i)
-                    hi = histos["errorHi"].GetBinContent(i)
-                    errors.SetBinContent(i, (hi+lo)/2.0)
-                    errors.SetBinError(i, (hi-lo)/2.0)
-
-            errors.SetFillColor(errorBand)
-            errors.SetMarkerColor(errorBand)
-            errors.SetMarkerStyle(1)
-            errors.SetFillStyle(bandFillStyle)
-            errors.Draw("e2same")
-            noerrors.Draw("h"+goptions)
-            self.refs += [errors, noerrors]
+            histos["errors"].SetFillColor(errorBand)
+            histos["errors"].SetMarkerColor(errorBand)
+            histos["errors"].SetMarkerStyle(1)
+            histos["errors"].SetFillStyle(bandFillStyle)
+            histos["errors"].Draw("e2same")
+            histos["noErrors"].Draw("he2"+goptions)
 #####################################
 class numberedCanvas(r.TCanvas) :
     page = 0
