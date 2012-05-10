@@ -832,7 +832,7 @@ class validationPlotter(object) :
                 d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         if self.errorsFromToys :
-            for item in ["errorLo", "errorHi"] :
+            for item in ["errors", "noErrors"] :
                 d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         #style
@@ -875,8 +875,10 @@ class validationPlotter(object) :
                         d[item].SetBinContent(i+1, x)
                 elif self.errorsFromToys :
                     q = self.quantiles[ni(varName, self.label, i)]
-                    d["errorLo"].SetBinContent(i+1, q[0])
-                    d["errorHi"].SetBinContent(i+1, q[2])
+                    d["errors"].SetBinContent(i+1, (q[2]+q[0])/2.0)
+                    d["errors"].SetBinError(i+1, (q[2]-q[0])/2.0)
+                    d["noErrors"].SetBinContent(i+1, value)
+                    d["noErrors"].SetBinError(i+1, 0.0)
                 elif errorsFrom :
                     noI = ni(errorsFrom, label)
                     errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, label, i))
