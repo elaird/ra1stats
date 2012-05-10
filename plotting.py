@@ -889,11 +889,16 @@ class validationPlotter(object) :
                 purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
                 if value!=None and purity :
                     d["value"].SetBinContent(i+1, value/purity)
+                    d["errors"].SetBinContent(i+1, value/purity)
+                    d["noErrors"].SetBinContent(i+1, value/purity)
                 key = varName+"Err"
                 if key in self.inputData.mcStatError() :
                     error = self.inputData.mcStatError()[key][i]
                     if error!=None and purity :
                         d["value"].SetBinError(i+1, error/purity)
+                        d["errors"].SetBinError(i+1, error/purity)
+                        d["noErrors"].SetBinError(i+1, 0.0)
+
             toPrint.append(value)
         self.toPrint.append( (varName.rjust(10), lumiString.rjust(10), pretty(toPrint)) )
         return d
