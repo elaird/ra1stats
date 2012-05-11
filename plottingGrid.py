@@ -115,7 +115,6 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     #output a root file
     g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
     h2.Write()
-    g.Close()
     
     ranges = hs.smsRanges(s["signalModel"])
     setRange("smsXRange", ranges, h2, "X")
@@ -123,6 +122,11 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     
     h2.Draw("colz")
     graphs = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
+
+    g.cd()
+    for dct in graphs :
+        dct["graph"].Write("graph_%5.3f_xs"%dct["factor"])
+    g.Close()
 
     if simpleExcl :
         ps = fileName.replace(".eps","_simpleExcl.ps")
