@@ -167,7 +167,7 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     printOnce(c, printName)
     printHoles(h2)
     
-def makeEfficiencyPlot(names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False) :
+def makeEfficiencyPlot() :
     s = conf.switches()
     if not s["isSms"] : return
     
@@ -176,7 +176,6 @@ def makeEfficiencyPlot(names = [], drawGraphs = True, mDeltaFuncs = {}, simpleEx
     fileName = inFile.replace(".root","_efficiency.eps")
 
     c = squareCanvas()
-    h2 = None
 
     h3 = None
     for item in f.GetListOfKeys() :
@@ -196,7 +195,7 @@ def makeEfficiencyPlot(names = [], drawGraphs = True, mDeltaFuncs = {}, simpleEx
     modifyHisto(h2, s)
     
     title = hs.histoTitle(model = s["signalModel"])
-    title += ";A*#epsilon"
+    title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
 
     #output a root file
