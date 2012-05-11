@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import common,workspace,cpp
-import likelihoodSpec
+import common,workspace,likelihoodSpec
 
 def signal(i) :
 
@@ -133,7 +132,6 @@ def signal(i) :
 
     return [simple, lm6, p_33_53,  p_181_29, t1bbbb, t2tt, t2bb, t1][i]
 
-cpp.compile()
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signalToTest = signal(-1),
                   signalExampleToStack = signal(-1),
