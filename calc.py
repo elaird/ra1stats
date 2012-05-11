@@ -1,8 +1,9 @@
 import math,array,copy,collections
-import utils
-import plotting
+import utils,cpp,plotting
 import ROOT as r
 from common import obs,pdf,wimport,pseudoData
+
+cpp.compile()
 
 def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True, poiList = []) :
     assert poiList
