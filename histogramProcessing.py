@@ -100,6 +100,9 @@ def nEventsInHisto() :
 def effHisto(**args) :
     s = conf.switches()
     model = s["signalModel"]
+    if model in ["T1","T2"] and args["box"]=="muon" :
+        print "WARNING: ignoring muon efficiency for %s"%model
+        return None
     if not s["isSms"] : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
     else : return smsEffHisto(model = model, **args)
 
