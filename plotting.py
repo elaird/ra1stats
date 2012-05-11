@@ -303,17 +303,17 @@ class validationPlotter(object) :
 
         self.simplePlots()
         self.hadPlots()
-        #self.hadDataMcPlots()
-        self.muonPlots()
-        self.photPlots()
-        self.mumuPlots()
-        self.ewkPlots()
-        self.mcFactorPlots()
-        self.alphaTRatioPlots()
-        self.rhoPlots()
-        self.printPars()
-        self.correlationHist()
-        #self.propagatedErrorsPlots(printResults = False)
+#        #self.hadDataMcPlots()
+#        self.muonPlots()
+#        self.photPlots()
+#        self.mumuPlots()
+#        self.ewkPlots()
+#        self.mcFactorPlots()
+#        self.alphaTRatioPlots()
+#        self.rhoPlots()
+#        self.printPars()
+#        self.correlationHist()
+#        #self.propagatedErrorsPlots(printResults = False)
 
         if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -1044,11 +1044,22 @@ class validationPlotter(object) :
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
         denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
-        numHistos = [obsHisto, denomHisto["errorsLo"], denomHisto["errorsHi"]]
+        denomHisto["errorsHi"].SetFillColor(r.kAzure)
+        denomHisto["errorsHi"].SetFillStyle(1001)
+        denomHisto["errorsHi"].SetLineStyle(1)
+        denomHisto["errorsHi"].SetLineColor(r.kAzure)
+
+        denomHisto["errorsLo"].SetFillColor(10)
+        denomHisto["errorsLo"].SetFillStyle(1001)
+        denomHisto["errorsLo"].SetLineStyle(1)
+        denomHisto["errorsLo"].SetLineColor(r.kAzure)
+
+        numHistos = [ denomHisto["errorsHi"], denomHisto["errorsLo"] ]
         if "total" in stackDict :
             numHistos.append(stackDict["total"].histos[-1][0]["value"])
+        numHistos.append( obsHisto )
 
-        ratios = self.makeRatios( denomHisto["value"], numHistos )
+        ratios = self.makeRatios(numHistos, denomHisto["value"])
 
         #foo = self.plotRatio([obsHisto, denomHisto], 1)
         foo = self.plotRatios( ratios )
@@ -1061,7 +1072,7 @@ class validationPlotter(object) :
 
         return stuff
 
-    def makeRatios( self, denomHisto, numHistos ) :
+    def makeRatios( self, numHistos, denomHisto ) :
         ratioHistos = []
         for numHisto in numHistos :
             ratioHistos.append(numHisto.Clone("%sClone"%numHisto.GetName()))
@@ -1080,26 +1091,30 @@ class validationPlotter(object) :
 
         same = ""
         self.canvas.cd(2)
-        for ratio in ratios :
-            ratio.SetMinimum(0.0)
-            ratio.SetMaximum(2.0)
-            ratio.GetYaxis().SetTitle(numLabel+" / "+denomLabel)
-            ratio.SetStats(False)
-            ratio.GetXaxis().SetLabelSize(0.0)
-            ratio.GetXaxis().SetTickLength(3.5*ratio.GetXaxis().GetTickLength())
-            ratio.GetYaxis().SetLabelSize(0.2)
-            ratio.GetYaxis().SetNdivisions(502,True)
-            ratio.GetXaxis().SetTitleOffset(0.2)
-            ratio.GetYaxis().SetTitleSize(0.2)
-            ratio.GetYaxis().SetTitleOffset(0.2)
+        for i,ratio in enumerate(ratios) :
+            if same == "" :
+                ratio.SetMinimum(0.0)
+                ratio.SetMaximum(2.0)
+                ratio.GetYaxis().SetTitle(numLabel+" / "+denomLabel)
+                ratio.SetStats(False)
+                ratio.GetXaxis().SetLabelSize(0.0)
+                ratio.GetXaxis().SetTickLength(3.5*ratio.GetXaxis().GetTickLength())
+                ratio.GetYaxis().SetLabelSize(0.2)
+                ratio.GetYaxis().SetNdivisions(502,True)
+                ratio.GetXaxis().SetTitleOffset(0.2)
+                ratio.GetYaxis().SetTitleSize(0.2)
+                ratio.GetYaxis().SetTitleOffset(0.2)
             ratio.Draw(same)
+            if i == 2 :
+                xr = [ ratio.GetXaxis().GetXmin(), ratio.GetXaxis().GetXmax() ]
+                line = r.TLine(xr[0],1.0,xr[1],1.0)
+                line.SetLineWidth(1)
+                line.SetLineStyle(1)
+                line.SetLineColor(r.kAzure+6)
+                line.Draw()
             same = "same"
 
         r.gPad.SetTickx()
         r.gPad.SetTicky()
-        xr = [ ratio.GetXaxis().GetXmin(), ratio.GetXaxis().GetXmax() ]
-        line = r.TLine(xr[0],1.0,xr[1],1.0)
-        line.SetLineWidth(1)
-        line.SetLineStyle(3)
-        line.Draw()
+        r.gPad.RedrawAxis()
         return line
