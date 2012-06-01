@@ -46,7 +46,9 @@ def checkHistoBinning(histoList = []) :
 
     for axis,values in properties(histoList).iteritems() :
         #print "Here are the %s binnings: %s"%(axis, str(values))
-        if len(set(values))!=1 :
+        sv = set(values)
+        #if len(sv)!=1 :
+        if abs(max(sv)-min(sv))>1.0e-6 :
             print "The %s binnings do not match: %s"%(axis, str(values))
             for h in histoList :
                 print h,properties([h])
