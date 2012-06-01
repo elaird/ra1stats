@@ -5,7 +5,7 @@ for item in ["orig", "simpleOneBin",
              "mixedMuons", "mixedMuons_b",
              "mixedMuons_b_sets_aT", "mixedMuons_b_sets_aT_reweighted", "mixedMuons_b_sets_aT_reweighted_2",
              "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted", "mixedMuons_b_sets_reweighted_2"] :
-    exec("from inputData import %s"%item)
+    exec("from inputData.data2011 import %s"%item)
 
 #graphical hack (white superscript b)
 nb = "n_{b}^{#color[0]{b}}"
