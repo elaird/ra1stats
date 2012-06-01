@@ -303,17 +303,17 @@ class validationPlotter(object) :
 
         self.simplePlots()
         self.hadPlots()
-#        #self.hadDataMcPlots()
-#        self.muonPlots()
-#        self.photPlots()
-#        self.mumuPlots()
-#        self.ewkPlots()
-#        self.mcFactorPlots()
-#        self.alphaTRatioPlots()
-#        self.rhoPlots()
-#        self.printPars()
-#        self.correlationHist()
-#        #self.propagatedErrorsPlots(printResults = False)
+        #self.hadDataMcPlots()
+        self.muonPlots()
+        self.photPlots()
+        self.mumuPlots()
+        self.ewkPlots()
+        self.mcFactorPlots()
+        self.alphaTRatioPlots()
+        self.rhoPlots()
+        self.printPars()
+        self.correlationHist()
+        #self.propagatedErrorsPlots(printResults = False)
 
         if self.printPages :
             for item in sorted(list(set(self.toPrint))) :
@@ -831,9 +831,8 @@ class validationPlotter(object) :
             for item in ["min", "max"] :
                 d[item] = d["value"].Clone(d["value"].GetName()+item)
 
-        if self.errorsFromToys :
-            for item in ["errors", "noErrors", "errorsLo", "errorsHi"] :
-                d[item] = d["value"].Clone(d["value"].GetName()+item)
+        for item in ["errors", "noErrors", "errorsLo", "errorsHi"] :
+            d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         #style
         for key,histo in d.iteritems() :
