@@ -1,4 +1,4 @@
-from common import selection
+from common import selection,nb
 
 for item in ["orig", "simpleOneBin",
              "afterAlphaT", "afterAlphaT_b", "afterAlphaT_noMHT_ov_MET",
@@ -6,9 +6,6 @@ for item in ["orig", "simpleOneBin",
              "mixedMuons_b_sets_aT", "mixedMuons_b_sets_aT_reweighted", "mixedMuons_b_sets_aT_reweighted_2",
              "mixedMuons_b_sets", "mixedMuons_b_sets_reweighted", "mixedMuons_b_sets_reweighted_2"] :
     exec("from inputData.data2011 import %s"%item)
-
-#graphical hack (white superscript b)
-nb = "n_{b}^{#color[0]{b}}"
 
 def alphaT_slices_noMHTovMET(systMode = 1) :
     return [
