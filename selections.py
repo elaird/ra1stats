@@ -151,6 +151,11 @@ def btags_1_2_gt2(systMode = 1, reweighted = False, predictedGe3b = False, predi
                       samplesAndSignalEff = {"had":True, "muon":True},
                       muonForFullEwk = True,
                       data = mixedMuons_b_sets.data_55_gt2btag_v4( systMode = systMode ),
+
+                      #requested studies
+                      #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                      #muonForFullEwk = True,
+                      #data = mixedMuons_b_sets.data_55_gt2btag_v4_ford_test( systMode = systMode ),
                       bTagLower = "2",
                       fZinvIni = 0.1,
                       AQcdIni = 0.0,
