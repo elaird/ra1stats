@@ -1,4 +1,3 @@
-import utils
 from inputData import syst
 from data import data,scaled
 
