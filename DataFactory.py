@@ -113,7 +113,7 @@ class DataSlice( object ) :
         i = 0 
         hname = histo_dict[ histo_dict.keys()[0] ].keys()[i]
         h = histo_dict[ histo_dict.keys()[0] ][hname]
-        while h.GetName().find("lumi") > 0 :
+        while h.GetName().find("lumi") >= 0 :
             i+=1
             hname = histo_dict[ histo_dict.keys()[0] ].keys()[i]
             h = histo_dict[ histo_dict.keys()[0] ][hname]
@@ -165,7 +165,7 @@ class DataSlice( object ) :
             total = None
             mcstr = "mc%s" % (objName.capitalize())
             if objName != "had" :
-                for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ" ] :
+                for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ", "Phot" ] :
                     if MC not in histo_dict[objName] :
                         continue
                     if total == None :
