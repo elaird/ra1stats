@@ -3,33 +3,33 @@ from inputData import syst
 from data import data,scaled
 
 def common(x, systMode = 3) :
-    setattr(x,"_htBinLowerEdges", (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0))
-    setattr(x, "_htMaxForPlot", 975.0)
-    setattr(x, "_htMeans", ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02)) #old
-    setattr(x, "_mergeBins", None)
-    setattr(x, "_constantMcRatioAfterHere", (    0,     0,     0,     0,     0,     0,     0,     1))
-    setattr(x, "_lumi", {
-            "mumu"   : 1561. ,
-            "muon"   : 1561. ,
-            "mcPhot" : 1550. ,
-            "phot"   : 1550. ,
-            "mcHad"  : 1566. ,
-            "had"    : 1566. ,
-            "mcMuon" : 1561. ,
-            "mcMumu" : 1561. ,
-            })
-    setattr(x, "_triggerEfficiencies", {
-            "hadBulk":       (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            "had":           (     0.916,     0.988,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            "muon":          (     0.880,     0.880,     0.880,     0.880,     0.880,     0.880,     0.880,     0.880),
-            "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            "mumu":          (     0.950,     0.950,     0.950,     0.950,     0.950,     0.950,     0.950,     0.980),
-            })
-    setattr(x, "_purities", {
-            "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
-            })
+    x._htBinLowerEdges = (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
+    x._htMaxForPlot = 975.0
+    x._htMeans = ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
+    x._mergeBins = None
+    x._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
+    x._lumi = {
+        "mumu"   : 1561. ,
+        "muon"   : 1561. ,
+        "mcPhot" : 1550. ,
+        "phot"   : 1550. ,
+        "mcHad"  : 1566. ,
+        "had"    : 1566. ,
+        "mcMuon" : 1561. ,
+        "mcMumu" : 1561. ,
+        }
+    x._triggerEfficiencies = {
+        "hadBulk":       (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+        "had":           (     0.916,     0.988,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+        "muon":          (     0.880,     0.880,     0.880,     0.880,     0.880,     0.880,     0.880,     0.880),
+        "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+        "mumu":          (     0.950,     0.950,     0.950,     0.950,     0.950,     0.950,     0.950,     0.980),
+        }
+    x._purities = {
+        "phot":          (     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000,     1.000),
+        }
     x._mcExpectationsBeforeTrigger["mcGjets"] =  x._mcExpectationsBeforeTrigger["mcPhot"]
-    setattr(x, "_mcExtraBeforeTrigger", {})
+    x._mcExtraBeforeTrigger = {}
     x._observations["nHadBulk"] = (92544000, 43592000, 29373000,  9830500,   3689500,   1458500,    677000,    671000)
     syst.load(x, mode = systMode)
 
