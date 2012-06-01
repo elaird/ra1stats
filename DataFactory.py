@@ -61,7 +61,11 @@ def getMultiHists( d ) :
                 histo_dict[dir][histo_name] =  h_temp
                 if h_temp.ClassName()[:3] == "TH2" :
                     h.append( h_temp )
-    #hP.checkHistoBinning( h ) #FIXME turn back on once fixed
+    try :
+        hP.checkHistoBinning( h ) #FIXME more sensible error handling
+    except AssertionError as e :
+        print e
+
     return histo_dict
 
 # ok from here: 
