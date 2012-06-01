@@ -153,15 +153,15 @@ class DataSlice( object ) :
                 self._purities[ objName.capitalize() ] = \
                     tuple( [ histo_dict[objName]["purity"].GetBinError(xbin)       for xbin in xbins ] )
             if "atTriggerEff" in objKeys :
-                self._atTriggerEff[dir] = \
+                self._atTriggerEff[objName] = \
                     tuple( [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
             if "HtTriggerEff" in objKeys :
-                self._HtTriggerEff[dir] = \
+                self._HtTriggerEff[objName] = \
                     tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
             if "lumiData" in objKeys :
-                self._lumi[dir] = histo_dict[dir]["lumiData"].GetBinContent(1)
+                self._lumi[objName] = histo_dict[objName]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
-                self._lumi["mc"+dir.capitalize()] = histo_dict[dir]["lumiMc"].GetBinContent(1)
+                self._lumi["mc"+objName.capitalize()] = histo_dict[objName]["lumiMc"].GetBinContent(1)
             total = None
             mcstr = "mc%s" % (objName.capitalize())
             if objName != "had" :
