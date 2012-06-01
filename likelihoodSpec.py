@@ -1,4 +1,5 @@
 import selections
+from common import selection,nb
 
 class spec(object) :
 
@@ -27,7 +28,52 @@ class spec(object) :
 
     def __init__(self) :
         self._selections = []
+        self.__init2012__()
 
+    def __init2012__(self) :
+        from inputData.data2012 import take1 as module
+        self.add([
+                selection(name = "55_0b",
+                          note = "%s= 0"%nb,
+                          alphaTMinMax = ("55", None),
+                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          data = module.data_0b(),
+                          nbTag = "0",
+                          fZinvIni = 0.50,
+                          AQcdIni = 0.0,
+                          ),
+                selection(name = "55_1b",
+                          note = "%s= 1"%nb,
+                          alphaTMinMax = ("55", None),
+                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          data = module.data_1b(),
+                          nbTag = "1",
+                          fZinvIni = 0.25,
+                          AQcdIni = 0.0,
+                          ),
+                selection(name = "55_2b",
+                          note = "%s= 2"%nb,
+                          alphaTMinMax = ("55", None),
+                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          data = module.data_2b(),
+                          nbTag = "2",
+                          fZinvIni = 0.1,
+                          AQcdIni = 0.0,
+                          ),
+                selection(name = "55_gt2b",
+                          note = "%s#geq 3"%nb,
+                          alphaTMinMax = ("55", None),
+                          samplesAndSignalEff = {"had":True, "muon":True},
+                          muonForFullEwk = True,
+
+                          data = module.data_ge3b(),
+                          bTagLower = "2",
+                          fZinvIni = 0.1,
+                          AQcdIni = 0.0,
+                          ),
+                ])
+
+    def __init2011__(self) :
         args = {}
         args["systMode"] = 3
         args["reweighted"] = predictedGe3b = True
