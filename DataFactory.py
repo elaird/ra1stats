@@ -102,9 +102,11 @@ class DataSlice( object ) :
     # this class *checks* that everything souhld be a TH1D as otherwise makes no
     # sense for it
     def __init__( self, histo_dict, suffix = "" ) :
-        for obj in [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations",
-            "_purities", "_atTriggerEff", "_HtTriggerEff", "_lumi", "_mcExtra",
-            "_fixedParameters", "_htMeans" ] :
+        req_attr = [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations", "_lumi" ]
+#            [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations",
+#            "_purities", "_atTriggerEff", "_HtTriggerEff", "_lumi", "_mcExtra",
+#            "_fixedParameters", "_htMeans" ]
+        for obj in req_attr :
             setattr(self, obj, {} )
         for dir in histo_dict.keys() :
             for name in histo_dict[dir] :
@@ -128,8 +130,8 @@ class DataSlice( object ) :
         self._htMaxForPlot = h.GetXaxis().GetBinUpEdge( nxbins )
 
         # called from data.py mergeEfficiency
-        self._mergeBins = None
-        self._constantMcRatioAfterHere =  [ ]
+        #self._mergeBins = None
+        #self._constantMcRatioAfterHere =  [ ]
 
 #        try :
 #            self._htMeans = tuple( [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ] )
@@ -149,15 +151,15 @@ class DataSlice( object ) :
                 histo_dict[objName]["obs"].Draw()
                 self._observations[ "n"+objName.capitalize() ] = \
                     tuple( [ histo_dict[objName]["obs"].GetBinContent(xbin)        for xbin in xbins ] )
-            if "purity" in objKeys :
-                self._purities[ objName.capitalize() ] = \
-                    tuple( [ histo_dict[objName]["purity"].GetBinError(xbin)       for xbin in xbins ] )
-            if "atTriggerEff" in objKeys :
-                self._atTriggerEff[objName] = \
-                    tuple( [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
-            if "HtTriggerEff" in objKeys :
-                self._HtTriggerEff[objName] = \
-                    tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
+#            if "purity" in objKeys :
+#                self._purities[ objName.capitalize() ] = \
+#                    tuple( [ histo_dict[objName]["purity"].GetBinError(xbin)       for xbin in xbins ] )
+#            if "atTriggerEff" in objKeys :
+#                self._atTriggerEff[objName] = \
+#                    tuple( [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
+#            if "HtTriggerEff" in objKeys :
+#                self._HtTriggerEff[objName] = \
+#                    tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
             if "lumiData" in objKeys :
                 self._lumi[objName] = histo_dict[objName]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
