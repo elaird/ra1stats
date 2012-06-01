@@ -61,7 +61,11 @@ def getMultiHists( d ) :
                 histo_dict[dir][histo_name] =  h_temp
                 if h_temp.ClassName()[:3] == "TH2" :
                     h.append( h_temp )
-    hP.checkHistoBinning( h )
+    try :
+        hP.checkHistoBinning( h ) #FIXME more sensible error handling
+    except AssertionError as e :
+        print e
+
     return histo_dict
 
 # ok from here: 
@@ -102,9 +106,11 @@ class DataSlice( object ) :
     # this class *checks* that everything souhld be a TH1D as otherwise makes no
     # sense for it
     def __init__( self, histo_dict, suffix = "" ) :
-        for obj in [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations",
-            "_purities", "_atTriggerEff", "_HtTriggerEff", "_lumi", "_mcExtra",
-            "_fixedParameters", "_htMeans" ] :
+        req_attr = [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations", "_lumi" ]
+#            [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations",
+#            "_purities", "_atTriggerEff", "_HtTriggerEff", "_lumi", "_mcExtra",
+#            "_fixedParameters", "_htMeans" ]
+        for obj in req_attr :
             setattr(self, obj, {} )
         for dir in histo_dict.keys() :
             for name in histo_dict[dir] :
@@ -113,7 +119,7 @@ class DataSlice( object ) :
         i = 0 
         hname = histo_dict[ histo_dict.keys()[0] ].keys()[i]
         h = histo_dict[ histo_dict.keys()[0] ][hname]
-        while h.GetName().find("lumi") > 0 :
+        while h.GetName().find("lumi") >= 0 :
             i+=1
             hname = histo_dict[ histo_dict.keys()[0] ].keys()[i]
             h = histo_dict[ histo_dict.keys()[0] ][hname]
@@ -128,8 +134,8 @@ class DataSlice( object ) :
         self._htMaxForPlot = h.GetXaxis().GetBinUpEdge( nxbins )
 
         # called from data.py mergeEfficiency
-        self._mergeBins = None
-        self._constantMcRatioAfterHere =  [ ]
+        #self._mergeBins = None
+        #self._constantMcRatioAfterHere =  [ ]
 
 #        try :
 #            self._htMeans = tuple( [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ] )
@@ -149,23 +155,23 @@ class DataSlice( object ) :
                 histo_dict[objName]["obs"].Draw()
                 self._observations[ "n"+objName.capitalize() ] = \
                     tuple( [ histo_dict[objName]["obs"].GetBinContent(xbin)        for xbin in xbins ] )
-            if "purity" in objKeys :
-                self._purities[ objName.capitalize() ] = \
-                    tuple( [ histo_dict[objName]["purity"].GetBinError(xbin)       for xbin in xbins ] )
-            if "atTriggerEff" in objKeys :
-                self._atTriggerEff[dir] = \
-                    tuple( [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
-            if "HtTriggerEff" in objKeys :
-                self._HtTriggerEff[dir] = \
-                    tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
+#            if "purity" in objKeys :
+#                self._purities[ objName.capitalize() ] = \
+#                    tuple( [ histo_dict[objName]["purity"].GetBinError(xbin)       for xbin in xbins ] )
+#            if "atTriggerEff" in objKeys :
+#                self._atTriggerEff[objName] = \
+#                    tuple( [ histo_dict[objName]["atTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
+#            if "HtTriggerEff" in objKeys :
+#                self._HtTriggerEff[objName] = \
+#                    tuple( [ histo_dict[objName]["HtTriggerEff"].GetBinError(xbin) for xbin in xbins ] )
             if "lumiData" in objKeys :
-                self._lumi[dir] = histo_dict[dir]["lumiData"].GetBinContent(1)
+                self._lumi[objName] = 1000.*histo_dict[objName]["lumiData"].GetBinContent(1)
             if "lumiMc" in objKeys :
-                self._lumi["mc"+dir.capitalize()] = histo_dict[dir]["lumiMc"].GetBinContent(1)
+                self._lumi["mc"+objName.capitalize()] = 1000.*histo_dict[objName]["lumiMc"].GetBinContent(1)
             total = None
             mcstr = "mc%s" % (objName.capitalize())
             if objName != "had" :
-                for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ" ] :
+                for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ", "Phot" ] :
                     if MC not in histo_dict[objName] :
                         continue
                     if total == None :
