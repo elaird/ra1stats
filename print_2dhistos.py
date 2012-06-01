@@ -43,17 +43,25 @@ std_selections = { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", 
                          "DY", "tt", "obs", "WZ" ],
                  }
 
-may_04_files = ["~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_Stats_More_Than_One_btags.root",
-                "~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_Stats_More_Than_Two_btags.root",
-                "~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_Stats_More_Than_Zero_btags.root",
-                "~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_Stats_One_btag.root",
-                "~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_Stats_Two_btags.root",
-                "~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_Stats_Zero_btags.root",
-                "~/public_html/03_RA1/07_numbers_from_darren/02_04_05_2012/RA1_Stats_Zero_btags_AlphaT_Cut.root",
+base_dir = "~/public_html/03_RA1/07_numbers_from_darren/"
+d_set = "03_01_06_2012"
+file_names = [  #"RA1_Stats_More_Than_One_btags.root",
+                "RA1_Stats_More_Than_Two_btag.root",
+                #"RA1_Stats_More_Than_Zero_btags.root",
+                "RA1_Stats_One_btag.root",
+                "RA1_Stats_Two_btags.root",
+                "RA1_Stats_Zero_btags.root",
+                #"RA1_Stats_Zero_btags_AlphaT_Cut.root",
                ]
-names = [ "btag_gt1", "btag_gt2", "btag_gt0", "btag1", "btag2", "btag0", "btag0_aT" ]
 
-selections = [ { rfile : std_selections } for rfile in may_04_files ] 
+fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]
+
+
+
+#names = [ "btag_gt1", "btag_gt2", "btag_gt0", "btag1", "btag2", "btag0", "btag0_aT" ]
+names = [ "btag_gt2", "btag1", "btag2", "btag0_aT" ]
+
+selections = [ { rfile : std_selections } for rfile in fullfiles ] 
 
 dsfs = [ DF.DataSliceFactory( selection ) for selection in selections ]
 dss  = [ dsf.makeSlice("x",55.5,55.6) for dsf in dsfs ]
