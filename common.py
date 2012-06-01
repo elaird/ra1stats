@@ -1,5 +1,8 @@
 import ROOT as r
 
+#graphical hack (white superscript b)
+nb = "n_{b}^{#color[0]{b}}"
+
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
     the corresponding value determines whether signal efficiency is considered for that sample.'''
