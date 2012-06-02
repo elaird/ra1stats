@@ -150,9 +150,9 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #            testStatType = 3, nToys = 50, nWorkers = 1); print out
 #f.profile()
 #f.writeMlTable()
-f.bestFit(printValues = True, drawRatios = True, errorsFromToys = True)
+f.bestFit(printValues = True, drawRatios = True, errorsFromToys = False)
 #f.bestFit(drawMc = False, printValues = False)
-#f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = True)
+#f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
 #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
 #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True, drawRatios = True)
 #f.qcdPlot()
