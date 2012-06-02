@@ -983,7 +983,7 @@ class validationPlotter(object) :
 
         self.canvas.cd(1)
 
-        leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV")
+        leg = r.TLegend(legend0[0], legend0[1], legend1[0], legend1[1], self.legendTitle)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)
 
@@ -1061,7 +1061,7 @@ class validationPlotter(object) :
         ratios = self.makeRatios(numHistos, denomHisto["value"])
 
         #foo = self.plotRatio([obsHisto, denomHisto], 1)
-        foo = self.plotRatios( ratios )
+        #foo = self.plotRatios( ratios )
 
         if self.printPages and fileName :
             #obsHisto.SetTitle("")
