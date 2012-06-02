@@ -1,4 +1,5 @@
-import syst,utils
+import utils
+from inputData import syst
 from data import data,scaled,excl
 
 class data2011_55_v6(data) :

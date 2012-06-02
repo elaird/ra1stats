@@ -1,4 +1,5 @@
-import syst,utils
+from inputData import syst
+import utils
 from data import data,scaled,excl
 
 class data_55_0btag(data) :

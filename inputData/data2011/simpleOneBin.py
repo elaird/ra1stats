@@ -1,4 +1,4 @@
-import syst
+from inputData import syst
 from data import data,scaled,excl
 
 class data_simple(data) :
