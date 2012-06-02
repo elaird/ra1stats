@@ -805,6 +805,9 @@ class foo(object) :
 
         for item in ["REwk", "RQcd"] :
             args[item] = getattr(self.likelihoodSpec, item)()
+
+        for item in ["legendTitle"] :
+            args[item] = getattr(self.likelihoodSpec, item)
         return args
 
     def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
@@ -834,8 +837,12 @@ class foo(object) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)),
+        try:
+            calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)),
                        note = self.note(), plotsDir = "plots")
+        except:
+            print "ERROR: pull plots failed"
+
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
             args.update({"results": results,
