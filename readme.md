@@ -50,4 +50,4 @@ Useful pages for setting up and learning pyROOT:
 [here](http://root.cern.ch/drupal/content/how-use-use-python-pyroot-interpreter) and [here](http://wlav.web.cern.ch/wlav/pyroot/)
 
 ## Bugs
-Please report any problems on our (issues page)[https://github.com/elaird/ra1stats/issues]
+Please report any problems on our [issues page](https://github.com/elaird/ra1stats/issues)
