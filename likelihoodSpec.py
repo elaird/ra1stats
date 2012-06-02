@@ -31,6 +31,7 @@ class spec(object) :
         self.__init2012__()
 
     def __init2012__(self) :
+        self.legendTitle = "CMS, 1.5 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take1 as module
         self.add([
                 selection(name = "55_0b",
@@ -68,7 +69,6 @@ class spec(object) :
                           alphaTMinMax = ("55", None),
                           samplesAndSignalEff = {"had":True, "muon":True},
                           muonForFullEwk = True,
-
                           data = module.data_ge3b(),
                           bTagLower = "2",
                           fZinvIni = 0.1,
@@ -77,6 +77,7 @@ class spec(object) :
                 ])
 
     def __init2011__(self) :
+        self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
         args["systMode"] = 3
         args["reweighted"] = predictedGe3b = True
