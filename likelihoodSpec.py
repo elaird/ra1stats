@@ -41,6 +41,9 @@ class spec(object) :
                           nbTag = "0",
                           fZinvIni = 0.50,
                           AQcdIni = 0.0,
+
+                          universalSystematics = True,
+                          universalKQcd = True,
                           ),
                 selection(name = "55_1b",
                           note = "%s= 1"%nb,
