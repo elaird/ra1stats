@@ -79,6 +79,17 @@ def pointsToFile( filename, points ) :
         print>>file, out
     file.close()
 
+def getQueueRanges( npoints ) :
+    from queueData import qData
+    from math import ceil
+    total_cores = sum( [ q["ncores"] for q in qData.values() ] )
+    jobs_per_core = npoints / float(total_cores)
+    jobsPerQueue = {}
+    for qname, info in qData.iteritems() :
+        jobsPerQueue[qname] = ceil(info["ncores"]*jobs_per_core)
+
+    return jobsPerQueue
+
 ############################################
 def pbatch() :
     from socket import gethostname
@@ -88,6 +99,9 @@ def pbatch() :
     njm = conf.switches()["nJobsMax"]
     njobs = (npoints/njm) + 1
 
+    myDict = getQueueRanges( npoints )
+    for key,value in myDict.iteritems() :
+        print "{key} => {value}".format(key=key, value=value)
     subCmds = []
     for i,j in enumerate(jcs) :
         start = i*njm + 1
@@ -95,7 +109,8 @@ def pbatch() :
         if end > npoints : 
             end = npoints
         subCmds.append( "%s -t %d-%d:1 %s"%(conf.switches()["subCmd"], start, end, j ) )
-    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    print subCmds
+    #utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
