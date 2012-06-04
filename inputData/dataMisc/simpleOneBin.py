@@ -16,7 +16,7 @@ class data_simple(data) :
             "simple":     4650.,
             }
         self._observations = {
-            "nSimple": (6.0,),
+            "nSimple": (9.0,),
             }
 
         self._triggerEfficiencies = {
@@ -24,7 +24,7 @@ class data_simple(data) :
             }
 
         self._mcExpectationsBeforeTrigger = {
-            "mcSimple": (4.0,),
+            "mcSimple": (10.0,),
             }
 
         for item in ["mcStatError", "purities", "mcExtraBeforeTrigger"] :
