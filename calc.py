@@ -53,7 +53,7 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
     for point in [0.0] + points :
         f.setVal(point)
         poiValues.add(r.RooArgSet(f))
-        
+
     out = {}
     calc = r.RooStats.FeldmanCousins(dataset, modelconfig)
     calc.SetPOIPointsToTest(poiValues)
@@ -62,7 +62,7 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
     #calc.AdditionalNToysFactor(4)
     #calc.SetNBins(40)
     #calc.GetTestStatSampler().SetProofConfig(r.RooStats.ProofConfig(wspace, 1, "workers=4", False))
-    
+
     calc.SetConfidenceLevel(cl)
     lInt = calc.GetInterval()
 
@@ -74,7 +74,7 @@ def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None
         nll = pdf(wspace).createNLL(data)
         sbLl = -nll.getVal()
         utils.delete(nll)
-        
+
         wspace.loadSnapshot(snapB)
         nll = pdf(wspace).createNLL(data)
         bLl = -nll.getVal()
@@ -87,17 +87,17 @@ def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = Non
         results = utils.rooFitResults(pdf(wspace), data)
         if verbose :
             print "S+B"
-            print "---"            
+            print "---"
             results.Print("v")
         sbLl = -results.minNll()
         utils.delete(results)
-        
+
         wspace.loadSnapshot(snapB)
         results = utils.rooFitResults(pdf(wspace), data)
         if verbose :
             print " B "
-            print "---"            
-            results.Print("v")        
+            print "---"
+            results.Print("v")
         bLl = -results.minNll()
         utils.delete(results)
 
@@ -117,8 +117,8 @@ def ts40(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = Non
         results = utils.rooFitResults(pdf(wspace), data)
         if verbose :
             print " B "
-            print "---"            
-            results.Print("v")        
+            print "---"
+            results.Print("v")
         out = -results.minNll()
         utils.delete(results)
 
@@ -153,7 +153,7 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
     out = {}
     values = collections.defaultdict(list)
     for label in ["b", "sb"] :
-        for toy in toys[label] : 
+        for toy in toys[label] :
             values[label].append(ts(data = toy, **args))
         out["CL%s"%label] = 1.0-utils.indexFraction(obs, values[label])
     if plots : plotting.clsCustomPlots(obs = obs, valuesDict = values, note = "TS%d_%s"%(testStatType, note))
@@ -194,6 +194,9 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         hypoTestInvTool.SetParameter(key, value)
 
     ctd = {"frequentist":0, "asymptotic":2, "asymptoticNom":3}
+    if False : # run alternative implementation of AsymptoticCalculator
+        r.RooStats.asROOT(wspace)
+        print "\n\n\n\n\n\n\n\n\n"
     result = hypoTestInvTool.RunInverter(wspace, #RooWorkspace * w,
                                          "modelConfig", "", #const char * modelSBName, const char * modelBName,
                                          "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
@@ -213,7 +216,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         out["CLsError%s"%s] = result.CLsError(iPoint)
         out["PoiValue%s"%s] = result.GetXValue(iPoint)
         args["CLs%s"%s] = out["CLs%s"%s]
-    
+
     if nPoints==1 and poiMin==poiMax :
         for item in ["testStatType", "plusMinus", "note", "makePlots", "nPoints"] :
             args[item] = eval(item)
@@ -273,7 +276,7 @@ def clsOnePoint(args) :
         ps = "cls_%s_TS%d.ps"%(args["note"], args["testStatType"])
         canvas = r.TCanvas()
         canvas.Print(ps+"[")
-        
+
         resultPlot = r.RooStats.HypoTestInverterPlot("HTI_Result_Plot", "", result)
         resultPlot.Draw("CLb 2CL")
         canvas.Print(ps)
@@ -282,7 +285,7 @@ def clsOnePoint(args) :
         text.SetNDC()
 
         rootFile = r.TFile(ps.replace(".ps", ".root"), "RECREATE")
-        
+
         for i in range(args["nPoints"]) :
             if False :
                 tsPlot = resultPlot.MakeTestStatPlot(i)
@@ -308,7 +311,7 @@ def clsOnePoint(args) :
                 h = r.TH1D("testStatisticType%d"%i, "testStatisticType", 1, 0, 1)
                 h.SetBinContent(1, args["testStatisticType"])
                 h.Write()
-                
+
                 htr = result.GetResult(i)
                 h = r.TH1D("tsObs%d"%i, "observed TS", 1, 0, 1)
                 h.SetBinContent(1, htr.GetTestStatisticData())
@@ -319,7 +322,7 @@ def clsOnePoint(args) :
                         h = r.TH1D("%s%d"%(item, i), item, 1, 0, 1)
                         h.SetBinContent(1, getattr(htr, item)())
                         h.Write()
-                
+
             text.DrawText(0.1, 0.95, "Point %d"%i)
             canvas.Print(ps)
 
@@ -327,7 +330,7 @@ def clsOnePoint(args) :
         leg = plotting.drawDecoratedHisto(quantiles = q, hist = hist, obs = args["CLs"])
         text.DrawText(0.1, 0.95, "Point %d"%iPoint)
         canvas.Print(ps)
-        
+
         canvas.Print(ps+"]")
         utils.ps2pdf(ps)
     return q
@@ -362,7 +365,7 @@ def quantiles(values = [], plusMinus = {}, histoName = "", histoTitle = "", hist
             if cutZero and (not item) : continue
             h.Fill(item)
         return h
-    
+
     def probList(plusMinus) :
         def lo(nSigma) : return ( 1.0-r.TMath.Erf(nSigma/math.sqrt(2.0)) )/2.0
         def hi(nSigma) : return 1.0-lo(nSigma)
@@ -375,21 +378,21 @@ def quantiles(values = [], plusMinus = {}, histoName = "", histoTitle = "", hist
 
     def oneElement(i, l) :
         return map(lambda x:x[i], l)
-    
+
     pl = probList(plusMinus)
     probs = oneElement(0, pl)
     names = oneElement(1, pl)
-    
+
     probSum = array.array('d', probs)
     q = array.array('d', [0.0]*len(probSum))
 
     h = histoFromList(values, name = histoName, title = histoTitle, bins = histoBins, cutZero = cutZero)
     h.GetQuantiles(len(probSum), q, probSum)
     return dict(zip(names, q)),h
-    
+
 def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, note = "", makePlots = False) :
     assert not smOnly
-    
+
     #fit to SM-only
     wspace.var("f").setVal(0.0)
     wspace.var("f").setConstant(True)
