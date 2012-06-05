@@ -417,14 +417,15 @@ class validationPlotter(object) :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = "photon_control_fit%s"%("_logy" if logY else "")
             self.plot(fileName = fileName, legend0 = (0.44 - self.legendXSub, 0.73), legend1 = (0.86 - self.legendXSub, 0.88),
-                      reverseLegend = True, logY = logY,
+                      reverseLegend = True, logY = logY, ratioDenom = "photExp",
                       obs = {"var":"nPhot", #"desc": obsString(self.obsLabel, "photon sample", self.lumi["phot"])},
                              "desc": "Data (#gamma + jets sample, %s)"%self.selNote},
                       otherVars = [
-                {"var":"mcGjets", "type":None, "purityKey": "phot", "color":r.kGray+2, "style":2, "width":2,
+                {"var":"mcPhot", "type":None, "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
-                {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2, "desc":"Standard Model", "stack":None, "errorBand":self.smError},
-                ], ratioDenom = "photExp")
+                {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2,
+                 "desc":"Standard Model", "stack":None, "errorBand":self.smError},
+                ])
 
     def mumuPlots(self) :
         if "mumu" not in self.lumi : return
