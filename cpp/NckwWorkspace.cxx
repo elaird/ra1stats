@@ -24,10 +24,7 @@ namespace RooStats {
         double rMin =0;
         double rMax =5;
   
-        //RooWorkspace *w =(RooWorkspace *) _file0->Get("Workspace");
-        std::cout << "getting data" << std::endl;
         RooDataSet *data = (RooDataSet*)w->data("dataName");
-        std::cout << data << std::endl;
         RooStats::ModelConfig *bModel =(RooStats::ModelConfig*) w->genobj("");
         RooStats::ModelConfig *sbModel =(RooStats::ModelConfig*) w->genobj("modelConfig");
 
