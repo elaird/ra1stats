@@ -28,7 +28,18 @@ class spec(object) :
 
     def __init__(self) :
         self._selections = []
+        #self.__initSimple__()
         self.__init2012__()
+
+    def __initSimple__(self) :
+        self.legendTitle = "SIMPLE TEST"
+        from inputData.dataMisc import simpleOneBin as module
+        self.add([
+                selection(name = "test",
+                          samplesAndSignalEff = {"simple":True},
+                          data = module.data_simple(),
+                          ),
+                ])
 
     def __init2012__(self) :
         self.legendTitle = "CMS, 1.5 fb^{-1}, #sqrt{s} = 8 TeV"
