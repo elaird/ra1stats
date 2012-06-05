@@ -42,8 +42,8 @@ class spec(object) :
                 ])
 
     def __init2012__(self) :
-        self.legendTitle = "CMS, 1.5 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take1 as module
+        self.legendTitle = "CMS, 1.5-2.0 fb^{-1}, #sqrt{s} = 8 TeV"
+        from inputData.data2012 import take2 as module
         self.add([
                 selection(name = "55_0b",
                           note = "%s= 0"%nb,
