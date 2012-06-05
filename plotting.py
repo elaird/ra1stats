@@ -1059,7 +1059,7 @@ class validationPlotter(object) :
             numHistos.append(stackDict["total"].histos[-1][0]["value"])
         numHistos.append( obsHisto )
 
-        ratios = self.makeRatios(numHistos, denomHisto["value"])
+        #ratios = self.makeRatios(numHistos, denomHisto["value"])
 
         #foo = self.plotRatio([obsHisto, denomHisto], 1)
         #foo = self.plotRatios( ratios )
