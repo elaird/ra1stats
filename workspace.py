@@ -727,7 +727,17 @@ class foo(object) :
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
                  nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
-        
+
+        hack = False
+        if hack :
+            print "HACK!"
+            d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
+            d["nIterations"] = 1
+            s = self.wspace.set("poi"); assert s.getSize()==1
+            s.first().setMax(40.0)
+            s.first().setMin(0.0)
+            return d
+
         for i in range(nIterationsMax) :
             d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
             d["nIterations"] = i+1
