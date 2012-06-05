@@ -202,7 +202,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
                                          True, #bool useNumberCounting = false,
                                          "") #const char * nuisPriorName = 0);
 
-    #hypoTestInvTool.AnalyzeResult( result, ctd[calculatorType], testStatType, True, nPoints, "lulz.root" )
+    hypoTestInvTool.AnalyzeResult( result, ctd[calculatorType], testStatType, True, nPoints, "lulz.root" )
     out = {}
     args = {}
     for iPoint in range(nPoints) :
