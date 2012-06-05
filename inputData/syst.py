@@ -92,9 +92,9 @@ def load(data = None, mode = None, nHtBins = 8) :
 
         data._fixedParameters = {
             "sigmaLumiLike": tuple([lumiLikeValue]*1),
-            "sigmaPhotZ": tuple([0.10, 0.50, 0.80]),
-            "sigmaMuonW": tuple([0.10, 0.50, 0.80]),
-            "sigmaMumuZ": tuple([0.10, 0.50, 0.80]),
+            "sigmaPhotZ": tuple([0.20, 0.40, 0.60]),
+            "sigmaMuonW": tuple([0.20, 0.40, 0.60]),
+            "sigmaMumuZ": tuple([0.20, 0.40, 0.60]),
 
             "k_qcd_nom"     : 2.89e-2,
             "k_qcd_unc_inp" : 0.76e-2,

@@ -7,9 +7,9 @@ def signal(i) :
     def scaled(t, factor) :
         return tuple([factor*item for item in t])
 
-    simple = common.signal(xs = 1.0e-2, label = "signal")
+    simple = common.signal(xs = 1.0, label = "signal")
     simple.insert("test", {
-            "effSimple": (0.30, ),
+            "effSimple": (1.0, ),
             })
     
     lm6 = common.signal(xs = 0.3104, label = "LM6 (LO)")
@@ -147,7 +147,11 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
 #out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
 #            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
-#            testStatType = 3, nToys = 50, nWorkers = 1); print out
+#            testStatType = 3, nToys = 50, nWorkers = 1,
+#            plSeed = True, plNIterationsMax = 10, nToys = 300,
+#            ); print out
+
+
 #f.profile()
 #f.writeMlTable()
 f.bestFit(printValues = True, drawRatios = True, errorsFromToys = False)
