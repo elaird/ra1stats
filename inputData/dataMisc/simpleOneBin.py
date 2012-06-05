@@ -1,5 +1,5 @@
 from inputData import syst
-from data import data,scaled,excl
+from data import data
 
 class data_simple(data) :
     """one bin test data"""
@@ -13,7 +13,7 @@ class data_simple(data) :
 
         self._htMeans = ( 9.188e+02, )
         self._lumi = {
-            "simple":     4650.,
+            "simple": 1.0
             }
         self._observations = {
             "nSimple": (9.0,),
@@ -35,5 +35,5 @@ class data_simple(data) :
             }
         
         data._fixedParameters = {
-            "sigmaLumiLike": (0.15,),
+            "sigmaLumiLike": (0.001,),
             }
