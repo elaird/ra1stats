@@ -255,7 +255,7 @@ def ensembleRow( data, indices, d ) :
         return d
     return [ d[index] for index in indices ]
 
-def ensembleResultsBySample( d, data ) :
+def ensembleResultsBySample( d, data, nEmptyPhot = 4 ) :
     samples =  ["had", "muon", "mumu", "phot"]
     samples_long =  [ "Hadronic", "$\mu$+jets",
                       "$\mu\mu$+jets", "$\gamma$+jets"]
@@ -270,7 +270,7 @@ def ensembleResultsBySample( d, data ) :
         mc_out[mc_title] = ensembleSplit2(d, group = sample )
         if sample == "phot" :
             for selection, values in mc_out[mc_title].iteritems() :
-                mc_out[mc_title][selection] = ["--", "--" ] + values
+                mc_out[mc_title][selection] = ["--"]*nEmptyPhot + values
 
         titles = []
         selections = sorted(mc_out[mc_title].keys())
@@ -327,7 +327,7 @@ def ensembleResultsBySample( d, data ) :
     write( doc, "ensemble_bySample.tex" )
 
 
-def ensembleResultsBySelection( d, data ) :
+def ensembleResultsBySelection( d, data, nEmptyPhot = 4 ) :
     mc_out = {}
     data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]
@@ -347,7 +347,7 @@ def ensembleResultsBySelection( d, data ) :
         mc_out[title] = ensembleSplit2(d, group = sample )
         if sample == "phot" :
             for selection, values in mc_out[title].iteritems() :
-                mc_out[title][selection] = ["--", "--" ] + values
+                mc_out[title][selection] = ["--"]*nEmptyPhot + values
 
     selections = sorted(mc_out[mc_titles[0]].keys())
 
