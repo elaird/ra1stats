@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import data,os,sys
 
-def check(fileName) :
+def check(topDir, fileName) :
     if len(fileName)<3 or fileName[-3:]!=".py" : return
     module = fileName[:-3]
-    if module in ["__init__", "syst"] : return
+    if module in ["__init__"] : return
 
-    exec("from input import %s"%module)
+    exec("from %s import %s"%(topDir, module))
     for item in dir(eval(module)) :
         if item=="data" : continue
         obj = eval("%s.%s"%(module,item))
@@ -20,10 +20,12 @@ def check(fileName) :
 
 def walk(topDir = "") :
     for dirName in os.listdir("%s/"%topDir) :
+        if dirName.startswith("__init__") or dirName.startswith("syst") : continue
         print dirName,":"
+        
         for fileName in os.listdir("%s/%s"%(topDir, dirName)) :
             print fileName
-            check(fileName)
+            check(topDir, fileName)
 
 
 walk("inputData")
