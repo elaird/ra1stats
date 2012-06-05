@@ -33,7 +33,7 @@ class spec(object) :
 
     def __initSimple__(self) :
         self.legendTitle = "SIMPLE TEST"
-        from inputData.data2011 import simpleOneBin as module
+        from inputData.dataMisc import simpleOneBin as module
         self.add([
                 selection(name = "test",
                           samplesAndSignalEff = {"simple":True},
