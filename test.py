@@ -133,8 +133,8 @@ def signal(i) :
     return [simple, lm6, p_33_53,  p_181_29, t1bbbb, t2tt, t2bb, t1][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signalToTest = signal(-1),
-                  signalExampleToStack = signal(-1),
+                  signalToTest = signal(0),
+                  #signalExampleToStack = signal(-1),
                   #signalToInject = signal(-1),
 
                   #trace = True
@@ -145,16 +145,16 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
 
 cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
-#            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
-#            testStatType = 3, nToys = 50, nWorkers = 1,
-#            plSeed = True, plNIterationsMax = 10, nToys = 300,
-#            ); print out
+out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
+            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
+            testStatType = 3, nToys = 50, nWorkers = 1,
+            plSeed = True, plNIterationsMax = 10,
+            ); print out
 
 
 #f.profile()
 #f.writeMlTable()
-f.bestFit(printValues = True, drawRatios = True, errorsFromToys = False)
+#f.bestFit(printValues = True, drawRatios = True, errorsFromToys = False)
 #f.bestFit(drawMc = False, printValues = False)
 #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
 #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
