@@ -11,7 +11,7 @@ def signal(i) :
     simple.insert("test", {
             "effSimple": (1.0, ),
             })
-    
+
     lm6 = common.signal(xs = 0.3104, label = "LM6 (LO)")
     lm6.insert("55", {
             "effHad": (0.0,     0.0,     0.005,   0.012,  0.019,  0.022,  0.018,  0.029),
@@ -19,7 +19,7 @@ def signal(i) :
     lm6.insert("2010_55", { #mocked up from 2011
             "effHad": (0.0,     0.0,     0.005,   0.012 + 0.019 + 0.022 + 0.018 + 0.029),
             "effMuon":scaled((0.045, 0.045, 0.1568, 0.245 + 0.3254 + 0.3481 + 0.2836 + 0.3618), 1.0e-2)})
-    
+
     p_33_53 = common.signal(xs = 0.050740907, label = "RM1")#, label = "m_{0}=320 GeV, m_{1/2}=520 GeV (NLO)")
     p_33_53.insert("52", {
             "effHad": [0.000866, 0.000601, 0.000772, 0.001045, 0.000395, 0.001344, 0.001069, 0.013154],
@@ -148,7 +148,7 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
             calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
             testStatType = 3, nToys = 50, nWorkers = 1,
-            plSeed = True, plNIterationsMax = 10,
+            plSeed = True, plNIterationsMax = 10, calcToUse="NCKW"
             ); print out
 
 
