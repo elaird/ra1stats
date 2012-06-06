@@ -211,7 +211,6 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
 #                                         nToys, #int ntoys,
 #                                         True, #bool useNumberCounting = false,
 #                                         "") #const char * nuisPriorName = 0);
-    print "{pmin}->{pmax}:{steps}".format(pmin=poiMin,pmax=poiMax,steps=nPoints)
     result = calcs[calcToUse](wspace, #RooWorkspace * w,
                              "modelConfig", "", #const char * modelSBName, const char * modelBName,
                              "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
@@ -224,6 +223,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
 
     upperLimit = result.UpperLimit();
     ulError = result.UpperLimitEstimatedError();
+    print "{pmin}->{pmax}:{steps}".format(pmin=poiMin,pmax=poiMax,steps=nPoints)
     print "The computed upper limit is: {ul} +/- {ul_e}".format(ul=upperLimit,
                                                                 ul_e=ulError)
     for value in sigma_values :
