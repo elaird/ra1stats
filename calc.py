@@ -162,7 +162,8 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
     return out
 
 def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
-        plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints = 1, poiMin = 1.0, poiMax = 1.0) :
+        plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints =
+        1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") :
     assert not smOnly
 
     wimport(wspace, dataset)
@@ -189,21 +190,35 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         "ResultFileName": "",
         }
 
+    ctd = {"frequentist":0, "asymptotic":2, "asymptoticNom":3}
+
     hypoTestInvTool = r.RooStats.HypoTestInvTool()
     for key,value in opts.iteritems() :
         hypoTestInvTool.SetParameter(key, value)
 
-    ctd = {"frequentist":0, "asymptotic":2, "asymptoticNom":3}
-    if False : # run alternative implementation of AsymptoticCalculator
-        r.RooStats.asROOT(wspace)
-        print "\n\n\n\n\n\n\n\n\n"
-    result = hypoTestInvTool.RunInverter(wspace, #RooWorkspace * w,
-                                         "modelConfig", "", #const char * modelSBName, const char * modelBName,
-                                         "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
-                                         True, nPoints, poiMin, poiMax, #bool useCLs, int npoints, double poimin, double poimax,
-                                         nToys, #int ntoys,
-                                         True, #bool useNumberCounting = false,
-                                         "") #const char * nuisPriorName = 0);
+    calcs = {
+        "SHTID" : hypoTestInvTool.RunInverter,
+        "NCKW"  : r.RooStats.asROOT
+    }
+
+#    if False : # run alternative implementation of AsymptoticCalculator
+#        r.RooStats.asROOT(wspace)
+#        print "\n\n\n\n\n\n\n\n\n"
+#    result = hypoTestInvTool.RunInverter(wspace, #RooWorkspace * w,
+#                                         "modelConfig", "", #const char * modelSBName, const char * modelBName,
+#                                         "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
+#                                         True, nPoints, poiMin, poiMax, #bool useCLs, int npoints, double poimin, double poimax,
+#                                         nToys, #int ntoys,
+#                                         True, #bool useNumberCounting = false,
+#                                         "") #const char * nuisPriorName = 0);
+    result = calcs[calcToUse](wspace, #RooWorkspace * w,
+                             "modelConfig", "", #const char * modelSBName, const char * modelBName,
+                             "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
+                             True, nPoints, poiMin, poiMax, #bool useCLs, int npoints, double poimin, double poimax,
+                             nToys, #int ntoys,
+                             True, #bool useNumberCounting = false,
+                             "") #const char * nuisPriorName = 0);
+
 
     hypoTestInvTool.AnalyzeResult( result, ctd[calculatorType], testStatType, True, nPoints, "lulz.root" )
     out = {}
