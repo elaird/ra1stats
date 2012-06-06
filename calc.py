@@ -258,6 +258,9 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         out["UpperLimitError"] = result.UpperLimitEstimatedError()
         out["LowerLimit"] = result.LowerLimit()
         out["LowerLimitError"] = result.LowerLimitEstimatedError()
+        for i in range(-2,3) :
+        #for i in range(-7,8) :
+            out["ExpectedUpperLimit_%dSigma"%i] = result.GetExpectedUpperLimit(i)
 
     return out
 
