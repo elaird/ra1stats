@@ -163,7 +163,7 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
 
 def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
         plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints =
-        1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") :
+        1, poiMin = 1.0, poiMax = 1.0, calcToUse="NCKW") :
     assert not smOnly
 
     wimport(wspace, dataset)
@@ -223,7 +223,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
 
     upperLimit = result.UpperLimit();
     ulError = result.UpperLimitEstimatedError();
-    print "{pmin}->{pmax}:{steps}".format(pmin=poiMin,pmax=poiMax,steps=nPoints)
+    print "{cal}::{pmin}->{pmax}:{steps}".format(cal=calcToUse,pmin=poiMin,pmax=poiMax,steps=nPoints)
     print "The computed upper limit is: {ul} +/- {ul_e}".format(ul=upperLimit,
                                                                 ul_e=ulError)
     for value in sigma_values :
