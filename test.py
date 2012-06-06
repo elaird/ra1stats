@@ -133,7 +133,7 @@ def signal(i) :
     return [simple, lm6, p_33_53,  p_181_29, t1bbbb, t2tt, t2bb, t1][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  signalToTest = signal(0),
+                  signalToTest = signal(-1),
                   #signalExampleToStack = signal(-1),
                   #signalToInject = signal(-1),
 
