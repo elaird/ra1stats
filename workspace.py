@@ -763,7 +763,7 @@ class foo(object) :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
     def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1,
-            plSeed = False, plNIterationsMax = None, calcToUse="SHTID") :
+            plSeed = False, plNIterationsMax = None, calcToUse="NCKW") :
         args = {}
         out = {}
         if plSeed :
