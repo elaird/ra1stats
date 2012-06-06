@@ -112,8 +112,7 @@ def checkAndAdjust(d) :
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
 
     d["rhoSignalMin"] = 0.0
-    d["nIterationsMax"] = 1
-    d["plSeedForCLs"] = False
+    d["plSeedParams"] = {"usePlSeed": False}
     d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     d["extraSigEffUncSources"] = []
 
@@ -123,9 +122,7 @@ def checkAndAdjust(d) :
         d["fIniFactor"] = 0.05
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
-        if d["method"]!="profileLikelihood": # if PL and nIterations>1, then limit is suspect (range for f may not include 0)
-            d["nIterationsMax"] = 10
-        d["plSeedForCLs"] = True
+        d["plSeedParams"] = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
         #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
         d["fiftyGeVStepsOnly"] = True
