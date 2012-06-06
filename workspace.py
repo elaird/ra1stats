@@ -441,7 +441,7 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
     signalEffVariables(w, inputData, label, signalToTest)
 
     out = collections.defaultdict(list)
-    print "HACK"; return out
+    #print "HACK"; return out
     if label==systematicsLabel :
         for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
             #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalToTest[item] for item in extraSigEffUncSources])
