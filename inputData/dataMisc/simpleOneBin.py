@@ -3,11 +3,11 @@ from data import data
 
 class data_simple(data) :
     """one bin test data"""
-    
+
     def _fill(self) :
         self._htBinLowerEdges = (875.0, )
         self._htMaxForPlot = 975.0
-        
+
         self._mergeBins = None
         self._constantMcRatioAfterHere = ( 1, )
 
@@ -33,7 +33,7 @@ class data_simple(data) :
         self._systBins = {
             "sigmaLumiLike": [0],
             }
-        
+
         data._fixedParameters = {
             "sigmaLumiLike": (0.001,),
             }
