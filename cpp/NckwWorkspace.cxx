@@ -89,17 +89,17 @@ namespace RooStats {
         calc.SetFixedScan(npoints,poimin,poimax);
         RooStats::HypoTestInverterResult * r = calc.GetInterval();
   
-        // Easy as that --> Results output in same format as combine
-        double upperLimit = r->UpperLimit();
-        double ulError = r->UpperLimitEstimatedError();
-
-        std::cout << "The computed upper limit is: " << upperLimit << " +/- " << ulError << std::endl;
-        std::cout << std::endl;
-        std::cout << " expected limit (median) " << r->GetExpectedUpperLimit(0) << std::endl;
-        std::cout << " expected limit (-1 sig) " << r->GetExpectedUpperLimit(-1) << std::endl;
-        std::cout << " expected limit (+1 sig) " << r->GetExpectedUpperLimit(1) << std::endl;
-        std::cout << " expected limit (-2 sig) " << r->GetExpectedUpperLimit(-2) << std::endl;
-        std::cout << " expected limit (+2 sig) " << r->GetExpectedUpperLimit(2) << std::endl;
+//        // Easy as that --> Results output in same format as combine
+//        double upperLimit = r->UpperLimit();
+//        double ulError = r->UpperLimitEstimatedError();
+//
+//        std::cout << "The computed upper limit is: " << upperLimit << " +/- " << ulError << std::endl;
+//        std::cout << std::endl;
+//        std::cout << " expected limit (median) " << r->GetExpectedUpperLimit(0) << std::endl;
+//        std::cout << " expected limit (-1 sig) " << r->GetExpectedUpperLimit(-1) << std::endl;
+//        std::cout << " expected limit (+1 sig) " << r->GetExpectedUpperLimit(1) << std::endl;
+//        std::cout << " expected limit (-2 sig) " << r->GetExpectedUpperLimit(-2) << std::endl;
+//        std::cout << " expected limit (+2 sig) " << r->GetExpectedUpperLimit(2) << std::endl;
   
         delete ac;
         return r;
