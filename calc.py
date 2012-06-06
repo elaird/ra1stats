@@ -163,7 +163,7 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
 
 def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
         plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints =
-        1, poiMin = 1.0, poiMax = 1.0, calcToUse="NCKW") :
+        1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") : # FIXME encoding default calc in two places (here and workspace)
     assert not smOnly
 
     wimport(wspace, dataset)
