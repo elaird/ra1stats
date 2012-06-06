@@ -29,7 +29,8 @@ class spec(object) :
     def __init__(self) :
         self._selections = []
         #self.__initSimple__()
-        self.__init2012__()
+        #self.__init2012__()
+        self.__init2011__()
 
     def __initSimple__(self) :
         self.legendTitle = "SIMPLE TEST"
