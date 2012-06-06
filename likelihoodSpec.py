@@ -10,9 +10,9 @@ class spec(object) :
                 {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
                 {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0]
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
-    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][0]
+    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return False
+    def constrainQcdSlope(self) : return True
 
     def selections(self) :
         return self._selections
@@ -28,8 +28,8 @@ class spec(object) :
 
     def __init__(self) :
         self._selections = []
-        self.__initSimple__()
-        #self.__init2012__()
+        #self.__initSimple__()
+        self.__init2012__()
 
     def __initSimple__(self) :
         self.legendTitle = "SIMPLE TEST"
@@ -107,7 +107,7 @@ class spec(object) :
         assert sum([slices,b,multib]) == 1
         if args["predictionsEverywhere"] :
             assert args["reweighted"]
-        
+
         if slices :
             self.add( selections.alphaT_slices(**args) )
 
