@@ -763,7 +763,7 @@ class foo(object) :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
     def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1,
-            plSeed = False, plNIterationsMax = None, calcToUse="NCKW") :
+            plSeed = False, plNIterationsMax = None, calcToUse="SHTID") : # FIXME encoding default calc in two places (here and workspace)
         args = {}
         out = {}
         if plSeed :
@@ -773,9 +773,9 @@ class foo(object) :
             #args["nPoints"] = 3
             #args["poiMin"] = plUpperLimit*0.5
             #args["poiMax"] = plUpperLimit*1.5
-            args["nPoints"] = 7
-            args["poiMin"] = plUpperLimit*0.5
-            args["poiMax"] = plUpperLimit*2.0
+            args["nPoints"] = 10
+            args["poiMin"] = plUpperLimit*0.0
+            args["poiMax"] = plUpperLimit*3.0
 
             s = self.wspace.set("poi"); assert s.getSize()==1
             if s.first().getMin() : s.first().setMin(0.0)
