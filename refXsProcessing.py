@@ -43,20 +43,22 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
         f.SetLineColor(r.kBlack)
 
     return out
-        
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune = None, noOneThird = False, timesTen = False, printXs = False) :
-    out = [{"factor": 1.0 , "label": "#sigma^{prod} = #sigma^{NLO-QCD}",     "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
-           {"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
+
+def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune =
+           None, noOneThird = True, timesTen = False, printXs = False, lineStyle=1,
+           label="#sigma^{prod} = #sigma^{NLO-QCD}") :
+    out = [{"factor": 1.0 , "label": label , "color": r.kBlack, "lineStyle": lineStyle, "lineWidth": 3, "markerStyle": 20},
+           #{"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
            ] if not timesTen else [
-        {"factor": 10.0 , "label": "#sigma^{prod} = 10 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 1, "lineWidth": 3, "markerStyle": 20},
+        {"factor": 10.0 , "label": "#sigma^{prod} = 10 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": lineStyle, "lineWidth": 3, "markerStyle": 20},
         {"factor": 30.0 , "label": "#sigma^{prod} = 30 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},]
-           
+
     if not noOneThird :
         if not timesTen :
             out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
         else :
             out.append({"factor": 10/3., "label": "#sigma^{prod} = 10/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
-            
+
     for d in out :
         d["graph"] = excludedGraph(h, d["factor"], model, interBin, printXs = printXs)
         stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
@@ -79,14 +81,14 @@ def content(h, *coords) :
     dim = int(h.ClassName()[2])
     args = tuple(coords[:dim])
     return h.GetBinContent(h.FindBin(*args))
-    
+
 
 def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", prune = False, printXs = False) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
     refHisto = refXsHisto(model)
-    
+
     d = collections.defaultdict(list)
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
@@ -104,14 +106,14 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
         if len(d[x])==1 :
             print "INFO: %s (factor %g) hit iBinX = %d (x = %g), y = %g repeated"%(h.GetName(), factor, iBinX, x, d[x][0])
             d[x].append(d[x][0])
-            
+
     l1 = []
     l2 = []
     for x in sorted(d.keys()) :
         values = sorted(d[x])
         values.reverse()
         if prune : values = [values[0], values[-1]]
-        
+
         l1+= [(x,y) for y in values[:-1]]
         l2+= [(x,y) for y in values[-1:]]
     l2.reverse()
@@ -177,8 +179,8 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
     g.SetMarkerStyle(markerStyle)
     return
 
-def drawGraphs(graphs) :
-    legend = r.TLegend(0.2, 0.67, 0.7, 0.67+0.04*len(graphs))
+def drawGraphs(graphs, legendTitle="") :
+    legend = r.TLegend(0.2, 0.67, 0.7, 0.67+0.04*len(graphs), legendTitle)
     legend.SetBorderSize(0)
     legend.SetFillStyle(0)
     for d in graphs :
@@ -206,7 +208,7 @@ def extrapolatedGraph(h, gr, yValueToPrune) :
             index +=1
         grOut.SetPoint(index, X[index-2], yValueToPrune - binWidth(h, "Y")/2.0)
     return grOut
-    
+
 def excludedGraphOld(h, factor = None, model = None, interBin = "CenterOrLowEdge", pruneAndExtrapolate = False, yValueToPrune = -80) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
