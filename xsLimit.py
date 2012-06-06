@@ -3,7 +3,8 @@
 import plottingGrid
 
 plottingGrid.makeTopologyXsLimitPlots(logZ = True,
-                                      names = ["UpperLimit","upperLimit95"],
+                                      #names = ["UpperLimit","upperLimit95"],
+                                      names = ["ExpectedUpperLimit_0Sigma"],
                                       #simpleExcl = True,
                                       #drawGraphs = False,
                                       #mDeltaFuncs = {"mDeltaMin":0.0, "mDeltaMax":400.0, "nSteps":4, "mGMax":1250.},
