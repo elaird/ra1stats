@@ -1,7 +1,15 @@
 import collections,socket
 
 def locations() :
-    s = "/vols/cms02/samr/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
+    dct = {
+        "ic.ac.uk"   : "/vols/cms02/samr",
+        "phosphorus" : "/home/elaird/71_stats_files/",
+        "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
+    }
+    lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
+    assert len(lst) == 1, lst
+    s = dct[ lst[0] ]
+
     return {"eff": "%s/20_yieldHistograms/2011/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
@@ -45,7 +53,7 @@ def signal() :
                                        (37, 5, 1), (37, 6, 1), (37, 7, 1), ],
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             })
-    
+
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
 
     return {"minSignalXsForConsideration": 1.0e-6,
@@ -174,7 +182,7 @@ def benchmarkPoints() :
     out["LM11"] = dict(zip(fields, [   250,    325,     0,        35,         1]))
     out["LM12"] = dict(zip(fields, [  2545,    247,  -866,        48,         1]))
     out["LM13"] = dict(zip(fields, [   270,    218,  -553,        40,         1]))
-    
+
     #out["IM1" ] = dict(zip(fields, [   100,    510,     0,        10,         1]))
     #out["IM2" ] = dict(zip(fields, [   180,    510,     0,        10,         1]))
     #out["IM3" ] = dict(zip(fields, [   260,    450,     0,        10,         1]))
