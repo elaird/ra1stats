@@ -56,10 +56,10 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
         if switches["method"]=="CLs" :
             results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"],
                             testStatType = switches["testStatistic"], calculatorType = switches["calculatorType"],
-                            plSeed = switches["plSeedForCLs"], plNIterationsMax = switches["nIterationsMax"])
+                            plSeedParams = switches["plSeedParams"])
             for key,value in results.iteritems() :
                 out[key] = (value, description(key))
-                if switches["plSeedForCLs"] : continue
+                if switches["plSeedParams"]["usePlSeed"] : continue
                 if key=="CLs" or ("Median" in key) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
@@ -71,7 +71,7 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
         elif not switches["computeExpectedLimit"] :
-            results = f.interval(cl = cl, method = switches["method"], nIterationsMax = switches["nIterationsMax"])
+            results = f.interval(cl = cl, method = switches["method"], nIterationsMax = 1)
             for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
             out["excluded%g"%cl2] = (compare(results["upperLimit"], 1.0), "is (%g%% upper limit on XS factor)<1?"%cl2)
         else :

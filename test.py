@@ -133,8 +133,8 @@ def signal(i) :
     return [simple, lm6, p_33_53,  p_181_29, t1bbbb, t2tt, t2bb, t1][i]
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signalToTest = signal(-1),
-                  signalExampleToStack = signal(-1),
+                  signalToTest = signal(-1),
+                  #signalExampleToStack = signal(-1),
                   #signalToInject = signal(-1),
 
                   #trace = True
@@ -145,12 +145,12 @@ f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
 
 cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
-#out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
-#            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
-#            testStatType = 3, nToys = 50, nWorkers = 1,
-#            plSeed = True, plNIterationsMax = 10, nToys = 300,
-#            ); print out
-
+out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
+            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
+            testStatType = 3, nToys = 50, nWorkers = 1,
+            #plSeedParams = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0},
+            plSeedParams = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0},
+            ); print out
 
 #f.profile()
 #f.writeMlTable()
