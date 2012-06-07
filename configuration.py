@@ -122,6 +122,7 @@ def checkAndAdjust(d) :
         d["fIniFactor"] = 0.05
         d["nlo"] = False
         d["rhoSignalMin"] = 0.1
+        #d["plSeedParams"] = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0}
         d["plSeedParams"] = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
         #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
     if d["method"]=="feldmanCousins" :
