@@ -64,8 +64,10 @@ def pjobCmds() :
     pos = 0
     host=gethostname()
     pid=os.getpid()
-    out = defaultdict(list)
+    out = defaultdict(dict)
     for q_name, num_points in getQueueRanges(n_points).iteritems():
+        out[q_name]["args"] = []
+        out[q_name]["n_points"] = num_points
         filename = "points/{host}_{queue}_{pid}.points".format(host=host,
                                                                queue=q_name,
                                                                pid=pid)
@@ -73,8 +75,8 @@ def pjobCmds() :
         pos += num_points
         n_para_jobs = (num_points/njm) + 1
         iStart = 0
-        iFinish = ( n_points /  njm ) + 1
-        if n_points % njm == 0 :
+        iFinish = ( num_points /  njm ) + 1
+        if num_points % njm == 0 :
             # if they exactly divide we don't need the final job
             iFinish-=1
 
@@ -82,7 +84,7 @@ def pjobCmds() :
             argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:switches["envScript"],
                        3:"/dev/null" }
             args = [argDict[key] for key in sorted(argDict.keys())]
-            out[q_name].append("%s %s" %(" ".join(args),filename))
+            out[q_name]["args"].append("%s %s" %(" ".join(args),filename))
     return out, n_points
 
 def pointsToFile( filename, points ) :
@@ -110,17 +112,17 @@ def getQueueRanges( npoints ) :
 
 ############################################
 def pbatch() :
-    job_commands, n_points = pjobCmds()
+    queue_job_details, n_points = pjobCmds()
     switches = conf.switches()
     n_jobs_max = switches["nJobsMax"]
 
     subCmds = []
-    for q_name, argset in job_commands.iteritems():
-        for i, args in enumerate(argset):
-            print i, q_name, args
-            continue
+    for q_name, details in queue_job_details.iteritems():
+        for i, args in enumerate(details["args"]):
+            #print "{q} => {a}".format( q=q_name, a=args )
+            #continue
             start = i*n_jobs_max + 1
-            end   = i*n_jobs_max + n_jobs_max
+            end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
             base_cmd = switches["subCmdFormat"] % q_name
             cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
                                                               start=start, end=end,
