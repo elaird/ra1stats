@@ -1,9 +1,6 @@
 #include "StandardHypoTestInvDemo.cxx"
 
 void cls(RooWorkspace *wspace = 0, int nPoints = 1, double poiMin = 0.0, double poiMax = 0.0, int nToys = 1) {
-  //wimport(wspace, dataset);
-  //wimport(wspace, modelconfig);
-
   RooStats::HypoTestInvTool hypoTestInvTool;
   hypoTestInvTool.SetParameter("PlotHypoTestResult", false);
   hypoTestInvTool.SetParameter("WriteResult", false);
@@ -35,11 +32,18 @@ void cls(RooWorkspace *wspace = 0, int nPoints = 1, double poiMin = 0.0, double 
   hypoTestInvTool.AnalyzeResult( result, 0, 3, true, nPoints, "lulz.root" );
 }
 
-int drive(void) {
-  cls();
+int drive(char* fileName) {
+  TFile f(fileName);
+  RooWorkspace *wspace = (RooWorkspace*)f.Get("Workspace");
+  cls(wspace, 2, 0.0, 3.0, 5);
+  f.Close();
   return 0;
 }
 
-int main(void) {
-  return drive();
+int main(int argc, char** argv) {
+  if (argc<2) {
+    std::cout << "Usage: " << argv[0] << " root-file" << std::endl;
+    return 1;
+  }
+  return drive(argv[1]);
 }
