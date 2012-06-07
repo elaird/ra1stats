@@ -4,8 +4,8 @@ import common,workspace,likelihoodSpec,signals
 
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signalToTest = signals.simple,
-                  signalExampleToStack = signals.t1bbbb2,
+                  signalToTest = signals.t1bbbb2,
+                  #signalExampleToStack = signals.t1bbbb2,
                   #signalToInject = signals.t1,
 
                   #trace = True
@@ -26,7 +26,7 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 #f.profile()
 #f.writeMlTable()
 #f.bestFit(printValues = True, drawRatios = True, errorsFromToys = False)
-f.bestFit(drawMc = False, printValues = False)
+#f.bestFit(drawMc = False, printValues = False)
 #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
 #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
 #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True, drawRatios = True)
@@ -35,3 +35,4 @@ f.bestFit(drawMc = False, printValues = False)
 #print f.clsCustom(nToys = 500, testStatType = 1)
 #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
 #f.debug()
+f.cppDrive()
