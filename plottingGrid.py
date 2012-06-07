@@ -89,7 +89,7 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
 def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False) :
     s = conf.switches()
     if not s["isSms"] : return
-    
+
     inFile = mergedFile()
     f = r.TFile(inFile)
     fileName = inFile.replace(".root","_xsLimit.eps")
@@ -106,7 +106,7 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
 
     assert h2,names
     modifyHisto(h2, s)
-    
+
     assert len(s["CL"])==1
     title = hs.histoTitle(model = s["signalModel"])
     title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0])
@@ -115,13 +115,21 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     #output a root file
     g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
     h2.Write()
-    
+
     ranges = hs.smsRanges(s["signalModel"])
     setRange("smsXRange", ranges, h2, "X")
     setRange("smsYRange", ranges, h2, "Y")
-    
+
     h2.Draw("colz")
     graphs = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
+
+    for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
+        h2exp = threeToTwo(f.Get(name))
+        modifyHisto(h2exp,s)
+        graphs += rxs.graphs(h2exp, s["signalModel"], "LowEdge",
+                printXs=printXs, lineStyle=i+2,
+                label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit'))
+        #graphs[-1]["lineStyle"] = i+1
 
     g.cd()
     for dct in graphs :
@@ -163,14 +171,14 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
     s3 = stamp(text = "%s, 4.6 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.62, factor = 0.7)
-    
+
     printOnce(c, printName)
     printHoles(h2)
-    
+
 def makeEfficiencyPlot() :
     s = conf.switches()
     if not s["isSms"] : return
-    
+
     inFile = mergedFile()
     f = r.TFile(inFile)
     fileName = inFile.replace(".root","_efficiency.eps")
@@ -181,8 +189,8 @@ def makeEfficiencyPlot() :
     for item in f.GetListOfKeys() :
         h = f.Get(item.GetName())
         if "effHadSum" not in h.GetName() : continue
-        
-        if not h3 : 
+
+        if not h3 :
             h3 = h.Clone("eff")
             h3.SetDirectory(0)
         else :
@@ -193,7 +201,7 @@ def makeEfficiencyPlot() :
 
     assert h2
     modifyHisto(h2, s)
-    
+
     title = hs.histoTitle(model = s["signalModel"])
     title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
@@ -202,21 +210,21 @@ def makeEfficiencyPlot() :
     g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
     h2.Write()
     g.Close()
-    
+
     ranges = hs.smsRanges(s["signalModel"])
     setRange("smsXRange", ranges, h2, "X")
     setRange("smsYRange", ranges, h2, "Y")
-    
+
     h2.Draw("colz")
 
     printName = fileName
     setRange("smsEffZRange", ranges, h2, "Z")
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
-    
+
     printOnce(c, printName)
     printHoles(h2)
-    
+
 def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
     if not s["isSms"] : return
@@ -240,7 +248,7 @@ def makeEfficiencyUncertaintyPlots() :
         g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
         h2.Write()
         g.Close()
-        
+
         printOnce(c, fileName)
 
     go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncExpZRange")
@@ -297,7 +305,7 @@ def drawBenchmarks() :
     if not switches["drawBenchmarkPoints"] : return
     if not (switches["signalModel"] in parameters) : return
     params = parameters[switches["signalModel"]]
-        
+
     text = r.TText()
     out = []
     for label,coords in conf.benchmarkPoints().iteritems() :
@@ -332,10 +340,10 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
     stuff = drawBenchmarks()
 
     if "excluded" in name and switches["isSms"] : return
-    
+
     printSinglePage  = (not switches["isSms"]) and "excluded" in name
     printSinglePage |= switches["isSms"] and "upperLimit" in name
-    
+
     if printSinglePage :
         title = h2.GetTitle()
         h2.SetTitle("")
@@ -385,17 +393,17 @@ def sortedNames(histos = [], first = [], last = []) :
 
 def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False) :
     assert tag
-    
+
     inFile = mergedFile()
     f = r.TFile(inFile)
     r.gROOT.cd()
-    
+
     fileName = inFile.replace(".root","_%s.pdf"%tag)
     rootFileName = fileName.replace(".pdf", ".root")
-    
+
     canvas = utils.numberedCanvas()
     canvas.SetRightMargin(0.15)
-    
+
     canvas.Print(fileName+"[")
     canvas.SetTickx()
     canvas.SetTicky()
@@ -412,12 +420,12 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     if outputRootFile :
         outFile = r.TFile(rootFileName, "RECREATE")
         r.gROOT.cd()
-    
+
     suppressed = []
     for name in names :
         if whiteListMatch and not any([item in name for item in whiteListMatch]) : continue
         if any([item in name for item in blackListMatch]) : continue
-        
+
         h2 = threeToTwo(f.Get(name))
         if modify : modifyHisto(h2, s)
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
@@ -434,7 +442,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     canvas.Clear()
     text3 = printSuppressed(suppressed)
     canvas.Print(fileName)
-    
+
     canvas.Print(fileName+"]")
 
     print "%s has been written."%fileName
@@ -494,7 +502,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
             limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
             limLine.SetLineColor(r.kBlue)
             graphs[name] = [graph, clLine, limLine]
-            
+
             if not whiteList :
                 xLimPl = histos["PlUpperLimit"].GetBinContent(iBinX, iBinY)
                 plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
@@ -522,7 +530,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
     else :
         canvas.Print(fileName+"]")
         print "%s has been written."%fileName
-    
+
 def makePlots() :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
     multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
@@ -533,7 +541,7 @@ def makePlots() :
     if s["isSms"] and s["method"]=="CLs" :
         for cl in s["CL"] :
             clsValidation(tag = "clsValidation", cl = cl, masterKey = "xs")
-    
+
     #pg.makeEfficiencyUncertaintyPlots()
     #pg.makeTopologyXsLimitPlots()
 
@@ -552,7 +560,7 @@ def expectedLimit(obsFile, expFile) :
         for x in ["X", "Y"] :
             for attr in ["GetXmin", "GetXmax", "GetNbins"] :
                 assert getattr(a(h1, x)(), attr)()==getattr(a(h2, x)(), attr)()
-        
+
     def compare(h1, h2) :
         check(h1, h2)
         out = h2.Clone(h1.GetName()+h2.GetName())
@@ -574,7 +582,7 @@ def expectedLimit(obsFile, expFile) :
         for key in keys :
             out += ["MedianPlus%s"%key, "MedianMinus%s"%key]
         return out
-    
+
     psFileName = expFile.replace(".root", "_results.ps")
     rootFileName = psFileName.replace(".ps", ".root")
     outFile = r.TFile(rootFileName, "RECREATE")
