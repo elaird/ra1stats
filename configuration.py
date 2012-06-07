@@ -82,7 +82,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T1"]
+            "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 
 def listOfTestPoints() :
