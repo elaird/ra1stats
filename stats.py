@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from optparse import OptionParser
 import os
+from collections import defaultdict
 ############################################
 def opts() :
     parser = OptionParser("usage: %prog [options]")
@@ -25,7 +26,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False) :
     if not nSlices : nSlices = len(points)
     out = []
     if skip : return out,""
-    
+
     logStem = conf.stringsNoArgs()["logStem"]
     switches = conf.switches()
 
@@ -47,29 +48,42 @@ def jobCmds(nSlices = None, offset = 0, skip = False) :
 
     return out,warning
 
-def pjobCmds( filename ) :
-    pwd = os.environ["PWD"]
-    points = histogramProcessing.points()
-    npoints = len(points)
-    njm = conf.switches()["nJobsMax"]
-    pickling.writeSignalFiles(points, outFilesAlso = False)
-    pointsToFile( filename, points )
+def pjobCmds() :
+    from socket import gethostname
 
-    logStem = conf.stringsNoArgs()["logStem"]
     switches = conf.switches()
+    utils.mkdir("points")
+    pwd = os.environ["PWD"]
 
-    njobs = (npoints/njm) + 1
-    out = []
-    iStart = 0
-    iFinish = ( npoints /  njm ) + 1
-    if npoints % njm == 0 :
-        iFinish-=1
-    for i in range(iStart, iFinish) :
-        argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:switches["envScript"],
-                   3:"/dev/null" }
-        args = [argDict[key] for key in sorted(argDict.keys())]
-        out.append("%s %s" %(" ".join(args),filename))
-    return out, npoints
+    points = histogramProcessing.points()
+    n_points = len(points)
+
+    njm = switches["nJobsMax"]
+    pickling.writeSignalFiles(points, outFilesAlso = False)
+
+    pos = 0
+    host=gethostname()
+    pid=os.getpid()
+    out = defaultdict(list)
+    for q_name, num_points in getQueueRanges(n_points).iteritems():
+        filename = "points/{host}_{queue}_{pid}.points".format(host=host,
+                                                               queue=q_name,
+                                                               pid=pid)
+        pointsToFile( filename, points[pos:pos+num_points] )
+        pos += num_points
+        n_para_jobs = (num_points/njm) + 1
+        iStart = 0
+        iFinish = ( n_points /  njm ) + 1
+        if n_points % njm == 0 :
+            # if they exactly divide we don't need the final job
+            iFinish-=1
+
+        for i in range(iStart, iFinish) :
+            argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:switches["envScript"],
+                       3:"/dev/null" }
+            args = [argDict[key] for key in sorted(argDict.keys())]
+            out[q_name].append("%s %s" %(" ".join(args),filename))
+    return out, n_points
 
 def pointsToFile( filename, points ) :
     file = open( filename, 'w')
@@ -85,31 +99,35 @@ def getQueueRanges( npoints ) :
     total_cores = sum( [ q["ncores"] for q in qData.values() ] )
     jobs_per_core = npoints / float(total_cores)
     jobsPerQueue = {}
+    total_covered = 0
     for qname, info in qData.iteritems() :
-        jobsPerQueue[qname] = ceil(info["ncores"]*jobs_per_core)
+        n_jobs = int(ceil(info["ncores"]*jobs_per_core))
+        jobsPerQueue[qname] = n_jobs if (total_covered + n_jobs) <= npoints \
+                                     else (npoints - total_covered)
+        total_covered += n_jobs
 
     return jobsPerQueue
 
 ############################################
 def pbatch() :
-    from socket import gethostname
-    utils.mkdir("points")
-    filename = "points/%s_%d.points" % ( gethostname(), os.getpid() )
-    jcs, npoints = pjobCmds(filename)
-    njm = conf.switches()["nJobsMax"]
-    njobs = (npoints/njm) + 1
+    job_commands, n_points = pjobCmds()
+    switches = conf.switches()
+    n_jobs_max = switches["nJobsMax"]
 
-    myDict = getQueueRanges( npoints )
-    for key,value in myDict.iteritems() :
-        print "{key} => {value}".format(key=key, value=value)
     subCmds = []
-    for i,j in enumerate(jcs) :
-        start = i*njm + 1
-        end   = i*njm + njm
-        if end > npoints : 
-            end = npoints
-        subCmds.append( "%s -t %d-%d:1 %s"%(conf.switches()["subCmd"], start, end, j ) )
-    print subCmds
+    for q_name, argset in job_commands.iteritems():
+        for i, args in enumerate(argset):
+            print i, q_name, args
+            continue
+            start = i*n_jobs_max + 1
+            end   = i*n_jobs_max + n_jobs_max
+            base_cmd = switches["subCmdFormat"] % q_name
+            cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
+                                                              start=start, end=end,
+                                                              args=args)
+            subCmds.append(cmd)
+    for cmd in subCmds :
+            print cmd
     #utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
