@@ -103,6 +103,7 @@ def other() :
             "icfDefaultNEventsIn": 10000,
             "subCmd": "qsub -o /dev/null -e /dev/null -q hep%s.q"%(["short", "medium", "long"][0]),
             "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
+            "queueSelection" : ["short", "medium", "long"][:],
             "envScript": "env.sh",
             "nJobsMax": 2000}
 
