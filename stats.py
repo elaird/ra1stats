@@ -25,25 +25,29 @@ def jobCmds(nSlices = None, offset = 0, skip = False) :
     if not nSlices : nSlices = len(points)
     out = []
     if skip : return out,""
-    
+
     logStem = conf.stringsNoArgs()["logStem"]
     switches = conf.switches()
 
-    iStart = offset*switches["nJobsMax"]
-    iFinish = min(iStart+switches["nJobsMax"], nSlices)
+    nJobsMax = switches["nJobsMax"]
+    iStart = offset*nJobsMax
+    iFinish = min(iStart+nJobsMax, nSlices) if nJobsMax > 0 else nSlices
     if (iFinish!=nSlices) or offset :
         warning = "Only jobs [%d - %d] / [%d - %d] jobs have been submitted."%(iStart, iFinish-1, 0, nSlices-1)
     else :
         warning = ""
-    if (iFinish!=nSlices) :
+    if (iFinish!=nSlices) and iFinish!=0 :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
-    assert iStart<iFinish,warning
-    for iSlice in range(iStart, iFinish) :
-        argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
-                   3:"%s/%s_%d.log"%(pwd, logStem, iSlice) if options.output else "/dev/null"}
-        args = [argDict[key] for key in sorted(argDict.keys())]
-        slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
-        out.append(" ".join(args+slices))
+    #assert iStart<iFinish,warning
+    if conf.batchHost == "IC" :
+        for iSlice in range(iStart, iFinish) :
+            argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
+                       3:"%s/%s_%d.log"%(pwd, logStem, iSlice) if options.output else "/dev/null"}
+            args = [argDict[key] for key in sorted(argDict.keys())]
+            slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
+            out.append(" ".join(args+slices))
+    elif conf.batchHost == "FNAL" :
+        pass
 
     return out,warning
 
@@ -92,7 +96,7 @@ def pbatch() :
     for i,j in enumerate(jcs) :
         start = i*njm + 1
         end   = i*njm + njm
-        if end > npoints : 
+        if end > npoints :
             end = npoints
         subCmds.append( "%s -t %d-%d:1 %s"%(conf.switches()["subCmd"], start, end, j ) )
     utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
@@ -100,6 +104,8 @@ def pbatch() :
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip)
+    print jcs
+    exit()
     subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
     utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
     if warning : print warning
@@ -116,7 +122,6 @@ def mkdirs() :
 ############################################
 options = opts()
 
-import configuration as conf
 import plottingGrid,pickling,histogramProcessing,utils,cpp
 
 mkdirs()
