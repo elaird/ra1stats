@@ -104,22 +104,25 @@ def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip,
             ignoreScript = (conf.batchHost=="FNAL"))
     subCmds = []
+    star = False
+    dstar = False
     if conf.batchHost == "IC" :
         subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
         qFunc = os.system
     elif conf.batchHost == "FNAL" :
+        dstar = True
         # replaces os.system in the below example
         from condor.supy import submitBatchJob
         qFunc = submitBatchJob
         subCmds = [ {
-                        "jobCmd": "job.sh %s" % (jc),
+                        "jobCmd": "./job.sh %s" % (jc),
                         "indexDict": { "dir": "condor_batch", "ind": i },
                         "subScript": conf.getSubCmds(),
                         "jobScript": "job.sh",
                         "condorTemplate": "condor/fnal_cmsTemplate.condor",
                         "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
                     } for i,jc in enumerate(jcs) ]
-    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = False), subCmds)
+    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
     if warning : print warning
 ############################################
 def local(nWorkers = None, skip = False) :
