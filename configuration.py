@@ -1,5 +1,7 @@
 import collections,socket
 
+batchHost = [ "FNAL", "IC" ][0]
+
 #def site() :
 #    dct = {
 #        "ic.ac.uk"   : "IC"
@@ -124,19 +126,12 @@ def listOfTestPoints() :
 def xWhiteList() :
     return []
 
-def getSubCmds(host) :
-    return {
-        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
-        "FNAL": "condor_submit {submit} {description} {file}"
-    }[host]
-
-
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
-            "subCmd": getSubCmds("FNAL")
+            "subCmd": getSubCmds()
             "envScript": "env.sh",
-            "nJobsMax": 2000}
+            "nJobsMax": getMaxJobs()}
 
 def switches() :
     out = {}
@@ -148,6 +143,18 @@ def switches() :
     for dct in lst : out.update(dct)
     checkAndAdjust(out)
     return out
+
+def getMaxJobs() :
+    return {
+        "IC": 2000,
+        "FNAL": 0,
+    }[batchHost]
+
+def getSubCmds() :
+    return {
+        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
+        "FNAL": "condor_submit {sub_script}"
+    }[batchHost]
 
 def checkAndAdjust(d) :
     if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
