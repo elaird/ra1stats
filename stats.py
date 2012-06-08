@@ -18,7 +18,7 @@ def opts() :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
 ############################################
-def jobCmds(nSlices = None, offset = 0, skip = False) :
+def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     pwd = os.environ["PWD"]
     points = histogramProcessing.points()
     if not offset : pickling.writeSignalFiles(points, outFilesAlso = skip)
@@ -42,7 +42,8 @@ def jobCmds(nSlices = None, offset = 0, skip = False) :
     for iSlice in range(iStart, iFinish) :
         argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
                    3:"%s/%s_%d.log"%(pwd, logStem, iSlice) if options.output else "/dev/null"}
-        args = [argDict[key] for key in sorted(argDict.keys())]
+        keyslice = 1 if ignoreScript else 0
+        args = [argDict[key] for key in sorted(argDict.keys())[keyslice:]]
         slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
         out.append(" ".join(args+slices))
 
@@ -100,7 +101,9 @@ def pbatch() :
 
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
-    jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip)
+    jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip,
+            ignoreScript = (conf.batchHost=="FNAL"))
+    subCmds = []
     if conf.batchHost == "IC" :
         subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
         qFunc = os.system
@@ -109,14 +112,15 @@ def batch(nSlices = None, offset = None, skip = False) :
         from condor.supy import submitBatchJob
         qFunc = submitBatchJob
         subCmds = [ {
-                        "jobCmd":
-                        "indexDict": None,
-                        "subScript": conf.getSubCmds()
-                        "jobScript":
-                        "condorTemplate":
-                    } for i in range(len(jcs)) ]
-    for jc in jcs :
-        print jc
+                        "jobCmd": "./testBatchDir/job_%d.sh %s" % (i, jc),
+                        "indexDict": { "dir": "testBatchDir", "ind": i },
+                        "subScript": conf.getSubCmds(),
+                        "jobScript": "job.sh",
+                        "condorTemplate": "condor/fnal_cmsTemplate.condor",
+                        "jobSriptFileName_format": "%(dir)s/job_%(ind)d",
+                    } for i,jc in enumerate(jcs) ]
+    for sc in subCmds :
+        print sc["jobCmd"]
     exit()
     utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = False), subCmds)
     if warning : print warning
