@@ -153,7 +153,7 @@ def getMaxJobs() :
 def getSubCmds() :
     return {
         "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
-        "FNAL": "condor_submit {sub_script}"
+        "FNAL": "condor_submit"
     }[batchHost]
 
 def checkAndAdjust(d) :
