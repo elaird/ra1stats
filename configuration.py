@@ -17,6 +17,7 @@ def locations() :
         "ic.ac.uk"   : "/vols/cms02/samr",
         "phosphorus" : "/home/elaird/71_stats_files/",
         "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
+        "fnal.gov"   : "/uscms_data/d1/samr/",
     }
     lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
     assert len(lst) == 1, lst
@@ -27,9 +28,9 @@ def locations() :
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
-            "nToys": 2000,
+            "nToys": 20,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "computeExpectedLimit": False,
             "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
