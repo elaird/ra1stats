@@ -106,8 +106,8 @@ def batch(nSlices = None, offset = None, skip = False) :
         qFunc = os.system
     elif conf.batchHost == "FNAL" :
         # replaces os.system in the below example
-        from condor.supy import submitBatchJobs
-        qFunc = submitBatchJobs
+        from condor.supy import submitBatchJob
+        qFunc = submitBatchJob
         subCmds = []
     print jcs
     exit()
@@ -126,6 +126,7 @@ def mkdirs() :
 ############################################
 options = opts()
 
+import configuration as conf
 import plottingGrid,pickling,histogramProcessing,utils,cpp
 
 mkdirs()

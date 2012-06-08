@@ -53,7 +53,7 @@ def importedClass(module) :
     theClass = None
     for itemName in dir(eval(module)) :
         item=eval(module+"."+itemName)
-        if not inspect.isclass(item) : continue        
+        if not inspect.isclass(item) : continue
         if issubclass(item, supy.analysis) and item is not supy.analysis :
             count+=1
             theClass = item
@@ -112,34 +112,35 @@ def doBatch(someInstance) :
                               listOfIndices, supy.whereami()+'/'+subScript, supy.whereami()+'/'+jobScript, supy.whereami()+'/'+condorTemplate) )
     supy.utils.operateOnListUsingQueue(configuration.nCoresDefault(), supy.utils.qWorker(submitBatchJob), args)
 ############################################
-        
+
+if __name__=="__main__" :
 # get options
-options,arg = opts()
+    options,arg = opts()
 
 # set up ROOT
-setupROOT()
+    setupROOT()
 
 # generate dictionaries
-supy.utils.generateDictionaries(inList = configuration.cppROOTDictionariesToGenerate(), dir = supy.whereami())
+    supy.utils.generateDictionaries(inList = configuration.cppROOTDictionariesToGenerate(), dir = supy.whereami())
 
 # construct the analysis
-someClass = importedClass(moduleName(arg))
-someInstance = someClass(options)
+    someClass = importedClass(moduleName(arg))
+    someInstance = someClass(options)
 
-if options.batch : #make one script per job and submit them to the queue
-    doBatch(someInstance)
-elif options.loop!=None : #loop over the events
-    someInstance.loop()
+    if options.batch : #make one script per job and submit them to the queue
+        doBatch(someInstance)
+    elif options.loop!=None : #loop over the events
+        someInstance.loop()
 
 # merge output and conclude
-if options.jobId==None and not options.batch :
-    try:
-        someInstance.mergeAllOutput()
-        someInstance.manageSecondaries(options.update,options.report)
-        if options.update==None and options.report==None:
-            someInstance.concludeAll()
-    except AssertionError as foo:
-        print
-        print foo
-        #print "Have you looped?"
+    if options.jobId==None and not options.batch :
+        try:
+            someInstance.mergeAllOutput()
+            someInstance.manageSecondaries(options.update,options.report)
+            if options.update==None and options.report==None:
+                someInstance.concludeAll()
+        except AssertionError as foo:
+            print
+            print foo
+            #print "Have you looped?"
 ############################################

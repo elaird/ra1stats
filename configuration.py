@@ -129,7 +129,7 @@ def xWhiteList() :
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
-            "subCmd": getSubCmds()
+            "subCmd": getSubCmds(),
             "envScript": "env.sh",
             "nJobsMax": getMaxJobs()}
 
