@@ -61,15 +61,17 @@ def importedClass(module) :
     assert module==theClass.__name__,"module name %s != class name %s"%(module, theClass.__name__)
     return theClass
 ############################################
-def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobScriptFileName_format=None) :
+def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobScriptFileName_format=None, doCopy=False) :
     if jobScriptFileName_format == None :
         jobScriptFileName_format = "%(base)s/%(tag)s/%(sample)s/job%(iSlice)d.sh"
     jobScriptFileName = jobScriptFileName_format%indexDict
     jobScriptDir = jobScriptFileName[:jobScriptFileName.rfind('/')]
     if not os.path.isdir(jobScriptDir): os.system("mkdir -p %s"%jobScriptDir)
-    os.system("cp -p "+jobScript+" "+jobScriptFileName)
-    os.system("chmod +x "+jobScriptFileName)
-    with open(jobScriptFileName,"a") as file :
+    if doCopy :
+        os.system("cp -p "+jobScript+" "+jobScriptFileName)
+        os.system("chmod +x "+jobScriptFileName)
+    mode = "a" if doCopy else "w"
+    with open(jobScriptFileName, mode) as file :
         print >>file
         for item in ["PYTHONPATH", "LD_LIBRARY_PATH"] :
             value = os.environ[item]
