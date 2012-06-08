@@ -112,16 +112,13 @@ def batch(nSlices = None, offset = None, skip = False) :
         from condor.supy import submitBatchJob
         qFunc = submitBatchJob
         subCmds = [ {
-                        "jobCmd": "./testBatchDir/job_%d.sh %s" % (i, jc),
-                        "indexDict": { "dir": "testBatchDir", "ind": i },
+                        "jobCmd": "job.sh %s" % (jc),
+                        "indexDict": { "dir": "condor_batch", "ind": i },
                         "subScript": conf.getSubCmds(),
                         "jobScript": "job.sh",
                         "condorTemplate": "condor/fnal_cmsTemplate.condor",
-                        "jobSriptFileName_format": "%(dir)s/job_%(ind)d",
+                        "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
                     } for i,jc in enumerate(jcs) ]
-    for sc in subCmds :
-        print sc["jobCmd"]
-    exit()
     utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = False), subCmds)
     if warning : print warning
 ############################################
