@@ -35,7 +35,14 @@ void cls(RooWorkspace *wspace = 0, int nPoints = 1, double poiMin = 0.0, double 
 int drive(char* fileName) {
   TFile f(fileName);
   RooWorkspace *wspace = (RooWorkspace*)f.Get("Workspace");
-  cls(wspace, 2, 0.0, 3.0, 5);
+  int nPoints = 3;
+  double poiMin = 0.0;
+  double poiMax = 3.0;
+  int nToys = 10;
+  wspace->var("f")->setMin(0.0);
+  wspace->var("f")->setMax(poiMax);
+
+  cls(wspace, nPoints, poiMin, poiMax, nToys);
   f.Close();
   return 0;
 }
