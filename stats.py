@@ -101,10 +101,17 @@ def pbatch() :
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip)
+    if conf.batchHost == "IC" :
+        subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
+        qFunc = os.system
+    elif conf.batchHost == "FNAL" :
+        # replaces os.system in the below example
+        from condor.supy import submitBatchJobs
+        qFunc = submitBatchJobs
+        subCmds = []
     print jcs
     exit()
-    subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
-    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = False), subCmds)
     if warning : print warning
 ############################################
 def local(nWorkers = None, skip = False) :
