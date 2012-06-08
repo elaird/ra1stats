@@ -1,5 +1,15 @@
 import collections,socket
 
+#def site() :
+#    dct = {
+#        "ic.ac.uk"   : "IC"
+#        "phosphorus" : "ted_local"
+#        "kinitos"    : "sam_local"
+#    }
+#    lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
+#    assert len(lst) == 1, lst
+#    s = dct[ lst[0] ]
+
 def locations() :
     dct = {
         "ic.ac.uk"   : "/vols/cms02/samr",
@@ -114,10 +124,17 @@ def listOfTestPoints() :
 def xWhiteList() :
     return []
 
+def getSubCmds(host) :
+    return {
+        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
+        "FNAL": "condor_submit {submit} {description} {file}"
+    }[host]
+
+
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
-            "subCmd": "qsub -o /dev/null -e /dev/null -q hep%s.q"%(["short", "medium", "long"][0]),
+            "subCmd": getSubCmds("FNAL")
             "envScript": "env.sh",
             "nJobsMax": 2000}
 
