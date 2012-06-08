@@ -7,6 +7,7 @@ def opts() :
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N",          help = "split into N jobs and submit to batch queue (N=0 means max splitting)")
     parser.add_option("--pbatch",     dest = "pbatch",     default = False, metavar = "N",          help = "split into maximum number of jobs and submit parametrically to the queue", action="store_true")
+    parser.add_option("--queue",      dest = "queue",      default = None,  metavar = "QUEUE_NAME", help = "choose specific queue for pbatch submission", action="store")
     parser.add_option("--offset",     dest = "offset",     default = 0,     metavar = "N",          help = "offset by N*nJobsMax")
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N",          help = "loop over events locally using N cores (N>0)")
     parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "merge job output")
@@ -15,6 +16,8 @@ def opts() :
     parser.add_option("--output",     dest = "output",     default = False, action  = "store_true", help = "write stdout&stderr to disk rather than to /dev/null")
     options,args = parser.parse_args()
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
+    if options.queue is not None :
+        assert options.pbatch, "Cannot choose queue for non parametric batch submission"
     for pair in [("local", "batch"), ("merge", "batch"), ("pbatch", "batch"), ("local","pbatch"), ("merge","pbatch")] :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
@@ -48,7 +51,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False) :
 
     return out,warning
 
-def pjobCmds() :
+def pjobCmds(queue=None) :
     from socket import gethostname
 
     switches = conf.switches()
@@ -65,7 +68,7 @@ def pjobCmds() :
     host=gethostname()
     pid=os.getpid()
     out = defaultdict(dict)
-    for q_name, num_points in getQueueRanges(n_points).iteritems():
+    for q_name, num_points in getQueueRanges(n_points,queue).iteritems():
         out[q_name]["args"] = []
         out[q_name]["n_points"] = num_points
         filename = "points/{host}_{queue}_{pid}.points".format(host=host,
@@ -95,9 +98,12 @@ def pointsToFile( filename, points ) :
         print>>file, out
     file.close()
 
-def getQueueRanges( npoints ) :
+def getQueueRanges( npoints, queue=None ) :
     from queueData import qData
     from math import ceil
+    if queue is not None and queue in qData.keys():
+        # allow override for running on a single queue
+        qData = { queue : qData[queue] }
     total_cores = sum( [ q["ncores"] for q in qData.values() ] )
     jobs_per_core = npoints / float(total_cores)
     jobsPerQueue = {}
@@ -111,8 +117,8 @@ def getQueueRanges( npoints ) :
     return jobsPerQueue
 
 ############################################
-def pbatch() :
-    queue_job_details, n_points = pjobCmds()
+def pbatch(queue=None) :
+    queue_job_details, n_points = pjobCmds(queue)
     switches = conf.switches()
     n_jobs_max = switches["nJobsMax"]
 
@@ -160,7 +166,7 @@ cpp.compile()
 if options.batch  : batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
 if options.local  : local(nWorkers = int(options.local), skip = options.skip)
 if options.merge  : pickling.mergePickledFiles()
-if options.pbatch : pbatch()
+if options.pbatch : pbatch(options.queue)
 
 if options.merge or options.validation :
     plottingGrid.makePlots()
