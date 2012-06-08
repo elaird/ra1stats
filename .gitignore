@@ -14,3 +14,4 @@ points/
 *.tex
 *.obs
 cpp/drive
+callgrind.out*
