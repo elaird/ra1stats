@@ -108,8 +108,15 @@ def batch(nSlices = None, offset = None, skip = False) :
         # replaces os.system in the below example
         from condor.supy import submitBatchJob
         qFunc = submitBatchJob
-        subCmds = []
-    print jcs
+        subCmds = [ {
+                        "jobCmd":
+                        "indexDict": None,
+                        "subScript": conf.getSubCmds()
+                        "jobScript":
+                        "condorTemplate":
+                    } for i in range(len(jcs)) ]
+    for jc in jcs :
+        print jc
     exit()
     utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = False), subCmds)
     if warning : print warning
