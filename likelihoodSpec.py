@@ -91,7 +91,7 @@ class spec(object) :
 
     def __init2011reorg__(self) :
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
-        from inputData.data2011reorg import take1 as module
+        from inputData.data2011reorg import take2 as module
         self.add([selection(name = "55_0b",
                             note = "%s= 0"%nb,
                             alphaTMinMax = ("55", None),
