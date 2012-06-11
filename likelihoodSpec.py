@@ -30,7 +30,7 @@ class spec(object) :
         self._selections = []
         #self.__initSimple__()
         self.__init2012__()
-        #self.__init2011__()
+        #self.__init2011old__()
 
     def __initSimple__(self) :
         self.legendTitle = "SIMPLE TEST"
@@ -88,7 +88,7 @@ class spec(object) :
                           ),
                 ])
 
-    def __init2011__(self) :
+    def __init2011old__(self) :
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
         args["systMode"] = 3
