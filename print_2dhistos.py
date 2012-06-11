@@ -6,7 +6,7 @@ from array import array
 import DataFactory as DF
 
 def print_unpack( item, level = 0, ending_comma = False ) :
-    if not isinstance( item, dict) : 
+    if not isinstance( item, dict) :
         if not isinstance( item, Iterable ) :
             print "\t"*level,"{item:.4}".format(item=item),
             if ending_comma :
@@ -14,8 +14,8 @@ def print_unpack( item, level = 0, ending_comma = False ) :
             else:
                 print
         else :
-            s = "(" if isinstance( item,tuple ) else "[" 
-            e = ")" if isinstance( item,tuple ) else "]" 
+            s = "(" if isinstance( item,tuple ) else "["
+            e = ")" if isinstance( item,tuple ) else "]"
             print "\t"*level,s,
             for i in item :
                 print "{i:.4},".format(i=i),
@@ -42,7 +42,7 @@ std_selections = { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", 
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
 base_dir = "~/public_html/03_RA1/07_ra1stats_numbers/"
-d_set = "05_07_06_2012"
+d_set = "06_08_06_2012"
 file_names = [ "june_{0}b.root".format(i) for i in range(0,4) ]
 
 fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]

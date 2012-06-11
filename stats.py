@@ -22,7 +22,7 @@ def opts() :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
 ############################################
-def jobCmds(nSlices = None, offset = 0, skip = False) :
+def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     pwd = os.environ["PWD"]
     points = histogramProcessing.points()
     if not offset : pickling.writeSignalFiles(points, outFilesAlso = skip)
@@ -33,19 +33,21 @@ def jobCmds(nSlices = None, offset = 0, skip = False) :
     logStem = conf.stringsNoArgs()["logStem"]
     switches = conf.switches()
 
-    iStart = offset*switches["nJobsMax"]
-    iFinish = min(iStart+switches["nJobsMax"], nSlices)
+    nJobsMax = switches["nJobsMax"]
+    iStart = offset*nJobsMax
+    iFinish = min(iStart+nJobsMax, nSlices) if nJobsMax > 0 else nSlices
     if (iFinish!=nSlices) or offset :
         warning = "Only jobs [%d - %d] / [%d - %d] jobs have been submitted."%(iStart, iFinish-1, 0, nSlices-1)
     else :
         warning = ""
-    if (iFinish!=nSlices) :
+    if (iFinish!=nSlices) and iFinish!=0 :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
-    assert iStart<iFinish,warning
+    #assert iStart<iFinish,warning
     for iSlice in range(iStart, iFinish) :
         argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
                    3:"%s/%s_%d.log"%(pwd, logStem, iSlice) if options.output else "/dev/null"}
-        args = [argDict[key] for key in sorted(argDict.keys())]
+        keyslice = 1 if ignoreScript else 0
+        args = [argDict[key] for key in sorted(argDict.keys())[keyslice:]]
         slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
         out.append(" ".join(args+slices))
 
@@ -134,15 +136,32 @@ def pbatch(queue=None) :
                                                               start=start, end=end,
                                                               args=args)
             subCmds.append(cmd)
-    for cmd in subCmds :
-            print cmd
-    #utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
-    jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip)
-    subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
-    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip,
+            ignoreScript = (conf.batchHost=="FNAL"))
+    subCmds = []
+    star = False
+    dstar = False
+    if conf.batchHost == "IC" :
+        subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
+        qFunc = os.system
+    elif conf.batchHost == "FNAL" :
+        dstar = True
+        # replaces os.system in the below example
+        from condor import submitBatchJob
+        qFunc = submitBatchJob
+        subCmds = [ {
+                        "jobCmd": "./job.sh %s" % (jc),
+                        "indexDict": { "dir": "condor_batch", "ind": i },
+                        "subScript": conf.getSubCmds(),
+                        "jobScript": "job.sh",
+                        "condorTemplate": "condor/fnal_cmsTemplate.condor",
+                        "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
+                    } for i,jc in enumerate(jcs) ]
+    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
     if warning : print warning
 ############################################
 def local(nWorkers = None, skip = False) :

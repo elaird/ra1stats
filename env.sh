@@ -10,6 +10,9 @@ if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
 elif [[ "$HOSTNAME" == *cern.ch ]]; then
     BASEDIR=/afs/cern.ch/sw/lcg/
     ROOTVER="5.32.01/${TAG}"
+elif [[ "$HOSTNAME" == *.fnal.gov ]]; then
+    BASEDIR=/uscms_data/d1/samr/18_root_from_afs/lcg/
+    ROOTVER="5.32.01"
 fi
 
 if [[ "$BASEDIR" ]]; then

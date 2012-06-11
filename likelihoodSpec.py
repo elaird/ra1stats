@@ -29,8 +29,8 @@ class spec(object) :
     def __init__(self) :
         self._selections = []
         #self.__initSimple__()
-        #self.__init2012__()
-        self.__init2011__()
+        self.__init2012__()
+        #self.__init2011__()
 
     def __initSimple__(self) :
         self.legendTitle = "SIMPLE TEST"
@@ -43,8 +43,8 @@ class spec(object) :
                 ])
 
     def __init2012__(self) :
-        self.legendTitle = "CMS, 1.5-2.0 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take2 as module
+        self.legendTitle = "CMS, 1.5-2.4 fb^{-1}, #sqrt{s} = 8 TeV"
+        from inputData.data2012 import take4 as module
         self.add([
                 selection(name = "55_0b",
                           note = "%s= 0"%nb,
@@ -54,7 +54,7 @@ class spec(object) :
                           nbTag = "0",
                           fZinvIni = 0.50,
                           AQcdIni = 0.0,
-
+                          #zeroQcd=True,
                           universalSystematics = True,
                           universalKQcd = True,
                           ),
@@ -67,15 +67,15 @@ class spec(object) :
                           fZinvIni = 0.25,
                           AQcdIni = 0.0,
                           ),
-                selection(name = "55_2b",
-                          note = "%s= 2"%nb,
-                          alphaTMinMax = ("55", None),
-                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                          data = module.data_2b(),
-                          nbTag = "2",
-                          fZinvIni = 0.1,
-                          AQcdIni = 0.0,
-                          ),
+#                selection(name = "55_2b",
+#                          note = "%s= 2"%nb,
+#                          alphaTMinMax = ("55", None),
+#                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+#                          data = module.data_2b(),
+#                          nbTag = "2",
+#                          fZinvIni = 0.1,
+#                          AQcdIni = 0.0,
+#                          ),
                 selection(name = "55_gt2b",
                           note = "%s#geq 3"%nb,
                           alphaTMinMax = ("55", None),
@@ -108,7 +108,7 @@ class spec(object) :
         assert sum([slices,b,multib]) == 1
         if args["predictionsEverywhere"] :
             assert args["reweighted"]
-        
+
         if slices :
             self.add( selections.alphaT_slices(**args) )
 
