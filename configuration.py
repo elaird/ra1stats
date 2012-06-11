@@ -2,16 +2,6 @@ import collections,socket
 
 batchHost = [ "FNAL", "IC" ][0]
 
-#def site() :
-#    dct = {
-#        "ic.ac.uk"   : "IC"
-#        "phosphorus" : "ted_local"
-#        "kinitos"    : "sam_local"
-#    }
-#    lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
-#    assert len(lst) == 1, lst
-#    s = dct[ lst[0] ]
-
 def locations() :
     dct = {
         "ic.ac.uk"   : "/vols/cms02/samr",
