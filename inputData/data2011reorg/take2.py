@@ -12,19 +12,19 @@ def common(x, systMode = 124) :
     x._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
 
     x._lumi = {
-        "had":     4.98e+03 ,#4650.,
-        "hadBulk": 4.98e+03 ,#4650.,
+        "had":     4.98e+03,
+        "hadBulk": 4.98e+03,
         
-        "muon":    4650.,
-        "mcMuon":  4650.,
-        "mcTtw":   4650.,
+        "muon":    4.98e+03,
+        "mcMuon":  4.98e+03,
+        "mcTtw":   4.98e+03,
         
-        "phot":    4529.,
-        "mcGjets": 4529.,
-        "mcZinv":  4529.,
+        "phot":    4.98e+03*4529./4650,
+        "mcGjets": 4.98e+03*4529./4650,
+        "mcZinv":  4.98e+03*4529./4650,
         
-        "mumu":    4650.,
-        "mcMumu":  4650.,
+        "mumu":    4.98e+03,
+        "mcMumu":  4.98e+03,
         }
 
     x._triggerEfficiencies = {
