@@ -38,8 +38,12 @@ def common(x, systMode = 3) :
         }
     
     x._mcExtraBeforeTrigger = {}
-    x._observations["nHadBulk"] = ( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06)
+    #self._mcExtraBeforeTrigger["mcHad"] =\
+    #    tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
+    #self._mcStatError["mcHadErr"] =\
+    #    tuple([utils.quadSum([x,y]) for x,y in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
 
+    x._observations["nHadBulk"] = ( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06)
     syst.load(x, mode = systMode)
 
 
@@ -72,36 +76,40 @@ class data_0b(data) :
             "mcMumuErr"          :   ( 7.134, 5.709, 4.533, 2.59, 1.923, 1.067, 0.0, 0.6509, ) ,
             "mcHadErr"           :   ( 78.0, 57.4, 8.884, 5.219, 3.248, 2.098, 1.106, 0.823, ) ,
             }
-
         common(self)
 
 class data_1b(data) :
+    """muons and mumu have no alt cut for highest six bins"""
+    
     def _fill(self) :
-        self._observations =  	{
-            "nPhot"              :   ( None, None, None, None, 6.0, 5.0, 1.0, 0.0, ) ,
-            "nHad"               :   ( 58.0, 23.0, 20.0, 9.0, 5.0, 1.0, 0.0, 0.0, ) ,
-            "nMuon"              :   ( 246.0, 119.0, 130.0, 68.0, 36.0, 25.0, 13.0, 6.0, ) ,
-            "nMumu"              :   ( 12.0, 5.0, 7.0, 5.0, 2.0, 0.0, 1.0, 0.0, ) ,
-            }
+        isExcl =                         (    1,     1,     0,     0,     0,     0,     0,     1)
+        self._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
         
-        self._mcExpectationsBeforeTrigger =  	{
-            "mcPhot"             :   ( None, None, None, None, 5.769, 1.977, 0.5422, 1.332, ) ,
-            "mcHad"              :   ( 93.14, 39.48, 34.35, 14.01, 7.871, 3.681, 1.882, 1.054, ) ,
-            "mcTtw"              :   ( 68.68, 27.53, 23.68, 9.005, 5.831, 2.313, 1.099, 0.9777, ) ,
-            "mcMuon"             :   ( 376.1, 216.2, 219.0, 111.2, 54.6, 27.65, 16.51, 20.54, ) ,
-            "mcZinv"             :   ( 24.46, 11.95, 10.67, 5.002, 2.04, 1.368, 0.7827, 0.07645, ) ,
-            "mcMumu"             :   ( 10.13, 7.228, 6.511, 4.568, 2.045, 0.7302, 0.5453, 0.5268, ) ,
+        self._observations = {
+            "nHad"               :   ( 614.0, 294.0, 214.0, 71.0, 20.0, 6.0, 4.0, 0.0, ) ,
+            "nMuon"              :   ( 347.0, 146.0, 568.0, 288.0, 116.0, 48.0, 22.0, 26.0, ) ,
+            "nMumu"              :   ( 15.0, 9.0, 34.0, 20.0, 10.0, 7.0, 0.0, 6.0, ) ,
+            "nPhot":     excl((      None,      None,       200,        74,        31,        12,         7,         2), isExcl),
             }
+
+        self._mcExpectationsBeforeTrigger = {
+            "mcGjets":        excl(  (  None,    None,     2.0e2,    72,     31,     12,      6,    3  ), isExcl), #>=1 b-tag
+            "mcTtw"              :   ( 432.6, 199.4, 144.7, 50.31, 16.92, 10.06, 2.075, 0.8008, ) ,
+            "mcZinv"             :   ( 176.9, 76.16, 50.62, 21.88, 8.212, 2.772, 1.031, 0.88, ) ,
+            "mcMumu"             :   ( 19.81, 7.089, 28.69, 14.62, 9.282, 3.116, 1.247, 2.136, ) ,
+            "mcMuon"             :   ( 390.6, 170.9, 593.4, 292.8, 138.5, 61.94, 28.65, 29.81, ) ,
+	    }
         
-        self._mcStatError =  	{
-            "mcMuonErr"          :   ( 31.98, 9.734, 19.87, 7.939, 4.401, 2.628, 2.838, 3.684, ) ,
-            "mcMumuErr"          :   ( 2.547, 1.389, 2.549, 1.283, 0.6499, 0.4161, 0.2867, 0.05558, ) ,
-            "mcHadErr"           :   ( 10.22, 2.53, 2.249, 1.397, 1.967, 0.7035, 1.054, 0.6494, ) ,
-            "mcZinvErr"          :   ( 2.844, 1.169, 0.01227, 0.1073, 1.128, 0.0, 0.7617, 0.0, ) ,
-            "mcTtwErr"           :   ( 9.821, 2.244, 2.249, 1.392, 1.611, 0.7035, 0.7288, 0.6494, ) ,
-            "mcPhotErr"          :   ( None, None, None, None, 1.313, 0.5975, 0.2707, 0.7021, ) ,
+        self._mcStatError = {
+            "mcGjetsErr"         :   ( None,  None,   10,    7,    5,    3,    2,    1),
+            "mcTtwErr"           :   ( 23.42, 22.25, 5.427, 3.43, 1.976, 2.221, 0.5263, 0.2402, ) ,
+            "mcZinvErr"          :   ( 4.357, 2.619, 2.095, 1.87, 0.835, 0.4906, 0.3131, 0.2947, ) ,
+            "mcMuonErr"          :   ( 23.57, 15.14, 10.57, 7.595, 5.525, 4.138, 2.405, 2.22, ) ,
+            "mcMumuErr"          :   ( 2.986, 1.878, 3.64, 2.524, 2.072, 1.088, 0.6461, 0.9835, ) ,
             }
         common(self)
+
+
 
 class data_2b(data) :
     def _fill(self) :
