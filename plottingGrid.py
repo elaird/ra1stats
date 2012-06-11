@@ -86,6 +86,20 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
     latex.DrawLatex(x, y, text)
     return latex
 
+def pruneGraph( graph, lst=[], debug=False ):
+    if debug: graph.Print()
+    for p in lst:
+        x = graph.GetX()
+        y = graph.GetY()
+        bad = []
+        for i in range(graph.GetN()):
+            if abs(p[0]-x[i]) < 1.0e-6 and abs(p[1]-y[i]) < 1.0e-6:
+                bad.append(i-len(bad))
+        for i in bad:
+            print "WARNING: Removing point %d = (%g,%g) from graph %s" % (i, x[i], y[i], graph.GetName())
+            graph.RemovePoint(i)
+    if debug: graph.Print()
+
 def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False) :
     s = conf.switches()
     if not s["isSms"] : return
@@ -121,15 +135,19 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     setRange("smsYRange", ranges, h2, "Y")
 
     h2.Draw("colz")
-    graphs = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
+    graph = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
 
+    pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']])
+    graphs = []
+    graphs += graph
     for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
         h2exp = threeToTwo(f.Get(name))
         modifyHisto(h2exp,s)
-        graphs += rxs.graphs(h2exp, s["signalModel"], "LowEdge",
+        graph = rxs.graphs(h2exp, s["signalModel"], "LowEdge",
                 printXs=printXs, lineStyle=i+2,
                 label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit'))
-        #graphs[-1]["lineStyle"] = i+1
+        pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
+        graphs += graph
 
     g.cd()
     for dct in graphs :
@@ -170,7 +188,7 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    s3 = stamp(text = "%s, 4.6 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.62, factor = 0.7)
+    s3 = stamp(text = "%s, 5.0 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.62, factor = 0.7)
 
     printOnce(c, printName)
     printHoles(h2)
