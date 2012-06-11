@@ -4,7 +4,7 @@ import common,workspace,likelihoodSpec,signals
 
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
-                  #signalToTest = signals.t1bbbb2,
+                  #signalToTest = signals.simple,
                   signalExampleToStack = signals.t1bbbb2,
                   #signalToInject = signals.t1,
 
