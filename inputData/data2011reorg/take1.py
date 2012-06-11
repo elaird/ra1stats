@@ -1,5 +1,6 @@
 from inputData import syst
 from data import data,scaled,excl
+import utils
 
 ## traditional numbers (predictions only ge3b), organized into one file ##
 
@@ -38,10 +39,10 @@ def common(x, systMode = 3) :
         }
     
     x._mcExtraBeforeTrigger = {}
-    #self._mcExtraBeforeTrigger["mcHad"] =\
-    #    tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(self._mcExpectationsBeforeTrigger["mcTtw"], self._mcExpectationsBeforeTrigger["mcZinv"])])
-    #self._mcStatError["mcHadErr"] =\
-    #    tuple([utils.quadSum([x,y]) for x,y in zip(self._mcStatError["mcTtwErr"], self._mcStatError["mcZinvErr"])])
+    x._mcExtraBeforeTrigger["mcHad"] =\
+        tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(x._mcExpectationsBeforeTrigger["mcTtw"], x._mcExpectationsBeforeTrigger["mcZinv"])])
+    x._mcStatError["mcHadErr"] =\
+        tuple([utils.quadSum([a,b]) for a,b in zip(x._mcStatError["mcTtwErr"], x._mcStatError["mcZinvErr"])])
 
     x._observations["nHadBulk"] = ( 2.792e+08, 1.214e+08, 8.544e+07, 2.842e+07, 9.953e+06, 3.954e+06, 1.679e+06, 1.563e+06)
     syst.load(x, mode = systMode)
