@@ -96,7 +96,7 @@ class numberedCanvas(r.TCanvas) :
     text.SetTextFont(102)
     text.SetTextSize(0.45*text.GetTextSize())
     text.SetTextAlign(33)
-    
+
     def Print(self, *args) :
         if self.page : self.text.DrawText(0.95, 0.02, "page %2d"%self.page)
         self.page += 1
@@ -164,15 +164,17 @@ def operateOnListUsingQueue(nCores, workerFunc, inList) :
         process.terminate()
 #####################################
 class qWorker(object) :
-    def __init__(self, func = None, star = True) :
+    def __init__(self, func = None, star = True, dstar =  False) :
         self.func = func
         self.star = star
+        self.dstar = dstar
     def __call__(self,q) :
         while True:
             item = q.get()
             try:
                 if self.func :
                     if self.star : self.func(*item)
+                    if self.dstar: self.func(**item)
                     else : self.func(item)
                 else: item()
             except Exception as e:
@@ -264,10 +266,10 @@ def combineBinContentAndError(histo, binToContainCombo, binToBeKilled) :
 
     currentContent = histo.GetBinContent(binToContainCombo)
     currentError   = histo.GetBinError(binToContainCombo)
-    
+
     histo.SetBinContent(binToBeKilled, 0.0)
     histo.SetBinContent(binToContainCombo, currentContent+xflows)
-    
+
     histo.SetBinError(binToBeKilled, 0.0)
     histo.SetBinError(binToContainCombo, math.sqrt(xflowError**2+currentError**2))
 ##############################
@@ -296,7 +298,7 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, fileNa
             canvas.cd(0)
             canvas.Clear()
             canvas.Divide(*divide)
-            
+
         canvas.cd(1+j)
         if ticks :
             r.gPad.SetTickx()
@@ -319,7 +321,7 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, fileNa
             tps.SetY2NDC(1.00)
 
         if j==(n-1) :
-            canvas.cd(0)                
+            canvas.cd(0)
             canvas.Print(fileName)
             needPrint = False
 
