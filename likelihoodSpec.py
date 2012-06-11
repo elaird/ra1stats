@@ -29,7 +29,8 @@ class spec(object) :
     def __init__(self) :
         self._selections = []
         #self.__initSimple__()
-        self.__init2012__()
+        #self.__init2012__()
+        self.__init2011reorg__()
         #self.__init2011old__()
 
     def __initSimple__(self) :
@@ -86,6 +87,49 @@ class spec(object) :
                           fZinvIni = 0.1,
                           AQcdIni = 0.0,
                           ),
+                ])
+
+    def __init2011reorg__(self) :
+        self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
+        from inputData.data2011reorg import take1 as module
+        self.add([selection(name = "55_0b",
+                            note = "%s= 0"%nb,
+                            alphaTMinMax = ("55", None),
+                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                            data = module.data_0b(),
+                            nbTag = "0",
+                            universalSystematics = True,
+                            universalKQcd = True,
+                            ),
+        
+#                selection(name = "55_1b",
+#                          note = "%s= 1"%nb,
+#                          alphaTMinMax = ("55", None),
+#                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+#                          data = module.data_1b(),
+#                          nbTag = "1",
+#                          fZinvIni = 0.25,
+#                          AQcdIni = 0.0,
+#                          ),
+#                selection(name = "55_2b",
+#                          note = "%s= 2"%nb,
+#                          alphaTMinMax = ("55", None),
+#                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+#                          data = module.data_2b(),
+#                          nbTag = "2",
+#                          fZinvIni = 0.1,
+#                          AQcdIni = 0.0,
+#                          ),
+#                selection(name = "55_gt2b",
+#                          note = "%s#geq 3"%nb,
+#                          alphaTMinMax = ("55", None),
+#                          samplesAndSignalEff = {"had":True, "muon":True},
+#                          muonForFullEwk = True,
+#                          data = module.data_ge3b(),
+#                          bTagLower = "2",
+#                          fZinvIni = 0.1,
+#                          AQcdIni = 0.0,
+#                          ),
                 ])
 
     def __init2011old__(self) :
