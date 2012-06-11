@@ -1,5 +1,6 @@
 import collections,socket
 
+batchHost = [ "FNAL", "IC" ][0]
 
 def locations() :
     dct = {
@@ -117,12 +118,11 @@ def xWhiteList() :
     return []
 
 def other() :
-    batchHost = [ "FNAL", "IC" ][0]
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
-            "subCmd": getSubCmds(batchHost),
+            "subCmd": getSubCmds(),
             "envScript": "env.sh",
-            "nJobsMax": getMaxJobs(batchHost)}
+            "nJobsMax": getMaxJobs()}
 
 def switches() :
     out = {}
@@ -135,13 +135,13 @@ def switches() :
     checkAndAdjust(out)
     return out
 
-def getMaxJobs( batchHost ) :
+def getMaxJobs() :
     return {
         "IC": 2000,
         "FNAL": 0,
     }[batchHost]
 
-def getSubCmds( batchHost ) :
+def getSubCmds() :
     return {
         "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
         "FNAL": "condor_submit"
