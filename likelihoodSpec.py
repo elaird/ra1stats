@@ -119,16 +119,20 @@ class spec(object) :
                             fZinvIni = 0.1,
                             AQcdIni = 0.0,
                             ),
-#                selection(name = "55_gt2b",
-#                          note = "%s#geq 3"%nb,
-#                          alphaTMinMax = ("55", None),
-#                          samplesAndSignalEff = {"had":True, "muon":True},
-#                          muonForFullEwk = True,
-#                          data = module.data_ge3b(),
-#                          bTagLower = "2",
-#                          fZinvIni = 0.1,
-#                          AQcdIni = 0.0,
-#                          ),
+                  selection(name = "55_gt2b", #v4!!
+                            note = "%s#geq 3"%nb,
+                            alphaTMinMax = ("55", None),
+                            samplesAndSignalEff = {"had":True, "muon":True},
+                            muonForFullEwk = True,
+                            data = module.data_ge3b(),
+                            #requested studies
+                            #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                            #muonForFullEwk = True,
+                            #data = mixedMuons_b_sets.data_55_gt2btag_v4_ford_test( systMode = systMode ),
+                            bTagLower = "2",
+                            fZinvIni = 0.1,
+                            AQcdIni = 0.0,
+                            ),
                 ])
 
     def __init2011old__(self) :
