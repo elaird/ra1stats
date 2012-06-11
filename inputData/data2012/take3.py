@@ -1,6 +1,8 @@
 from inputData import syst
 from data import data,scaled
 
+# TypeI corrected caloMET
+
 def common(x, systMode = 4) :
     x._htBinLowerEdges = (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
     x._htMaxForPlot = 975.0
