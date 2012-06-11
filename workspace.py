@@ -1,4 +1,4 @@
-import collections,math
+import collections,math,os
 import utils,plotting,calc,ensemble
 from common import obs,pdf,note,ni,wimport,floatingVars
 import ROOT as r
@@ -760,6 +760,17 @@ class foo(object) :
                                    cl = cl, poiList = self.likelihoodSpec.poiList(), makePlots = makePlots)
         elif method=="feldmanCousins" :
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
+
+    def cppDrive(self, tool = ["", "valgrind", "igprof"][0]) :
+        wimport(self.wspace, self.data)
+        wimport(self.wspace, self.modelConfig)
+        fileName = "workspace.root"
+        self.wspace.writeToFile(fileName)
+        cmd = {"":"",
+               "valgrind":"valgrind --tool=callgrind",
+               "igprof":"igprof",
+               }[tool]
+        os.system(cmd+" cpp/drive %s"%fileName)
 
     def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1, plSeedParams = {}) :
         args = {}

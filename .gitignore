@@ -13,3 +13,5 @@ points/
 *.aux
 *.tex
 *.obs
+cpp/drive
+callgrind.out*
