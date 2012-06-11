@@ -112,7 +112,7 @@ def batch(nSlices = None, offset = None, skip = False) :
     elif conf.batchHost == "FNAL" :
         dstar = True
         # replaces os.system in the below example
-        from condor.supy import submitBatchJob
+        from condor import submitBatchJob
         qFunc = submitBatchJob
         subCmds = [ {
                         "jobCmd": "./job.sh %s" % (jc),
