@@ -41,9 +41,9 @@ std_selections = { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", 
                          "DY", "tt", "obs", "WZ" ],
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
-base_dir = "~/public_html/03_RA1/07_ra1stats_numbers/"
-d_set = "06_08_06_2012"
-file_names = [ "june_{0}b.root".format(i) for i in range(0,4) ]
+base_dir = "~/116_numbers/"
+d_set = ""
+file_names = [ "{0}b.root".format(i) for i in range(0,4) ]
 
 fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]
 
