@@ -117,6 +117,7 @@ class data_2b(data) :
             "nPhot":            excl(( None,  None,  20,  10,  6,  4,  0,  0), isExcl),
             }
 
+        print "WARNING: old trigger efficiencies in take2 2b"
         self._triggerEfficiencies = {
             "hadBulk":       (     0.878,     0.906,     0.957,     1.000,     1.000,     1.000,     1.000,     1.000),
             "had":           (     0.727,     0.869,     0.943,     1.000,     1.000,     1.000,     1.000,     1.000),
