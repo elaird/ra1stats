@@ -846,7 +846,8 @@ class validationPlotter(object) :
                 histo.SetMarkerStyle(markerStyle)
                 histo.SetLineStyle(lineStyle)
             else :
-                histo.SetLineStyle(lineStyle+1)
+                # FIXME: lineStyle increment
+                histo.SetLineStyle(lineStyle+0)
 
 
         toPrint = []
@@ -1083,7 +1084,7 @@ class validationPlotter(object) :
             ratioHistos[-1].SetLineColor(color)
             ratioHistos[-1].SetMarkerColor(color)
         return ratioHistos
-        
+
 
     def plotRatios( self, ratios ) :
         numLabel,denomLabel = "Data", "SM"

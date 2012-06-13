@@ -8,7 +8,7 @@ def smsRanges(model) :
     y = {"":     ( 50.0, 1224.9), #(min, max)
          "T5zz": ( 50.0,  999.9),
          }
-    
+
     d = {}
 
     d["smsXRange"] = x[model if model in x else ""]
@@ -30,13 +30,13 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              }
 
-    sms = {"T1":      {"had": "v5"},
-           "T2":      {"had": "v5"},
-           "T2tt":    {"had": "v8", "muon": "v8"},
-           "T2bb":    {"had": "v3", "muon": "v3"},
+    sms = {"T1":      {"had": "rw_fix"},
+           "T2":      {"had": "rw_fix"},
+           "T2tt":    {"had": "rw_fix", "muon": "rw_fix"},
+           "T2bb":    {"had": "rw_fix", "muon": "rw_fix"},
            "T5zz":    {"had": "v1", "muon": "v1"},
-           "T1bbbb":  {"had": "v1", "muon": "v1"},
-           "T1tttt":  {"had": "v2", "muon": "v2"},
+           "T1bbbb":  {"had": "rw_fix", "muon": "rw_fix"},
+           "T1tttt":  {"had": "rw_fix", "muon": "rw_fix"},
            "TGQ_0p0": {"had": "v1"},
            "TGQ_0p2": {"had": "v1"},
            "TGQ_0p4": {"had": "v1"},
@@ -63,7 +63,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
         out["afterDir"] = "smsScan"
     else :
         assert False, "model %s not in list"%model
-    
+
     if nbTag is not None     : out["afterDir"] += "_btag_==_%s"%nbTag
     if bTagLower is not None : out["afterDir"] += "_btag_>_%s"%bTagLower
     if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
