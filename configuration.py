@@ -18,7 +18,7 @@ def locations() :
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
-            "nToys": 200,
+            "nToys": 1000,
             "testStatistic": 3,
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
@@ -65,10 +65,22 @@ def signal() :
 
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
 
+    graphBlackLists = {}
+    for key in [ "UpperLimit", "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ] :
+        graphBlackLists[key] = collections.defaultdict(list)
+
+    # e.g. "UpperLimit", "ExpectedUpperLimit_+2_Sigma"
+
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (700,200), (600,275), (675, 225) ]})
+    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2" : [ (550,250) ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,75) ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (500,325), (575,275), (625,225) ]})
+
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
             "overwriteInput": overwriteInput,
             "overwriteOutput": overwriteOutput,
+            "graphBlackLists": graphBlackLists,
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
@@ -94,7 +106,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2tt"]
+            "signalModel": dict(zip(models, models))["T1bbbb"]
             }
 
 def listOfTestPoints() :
