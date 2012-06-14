@@ -132,6 +132,7 @@ class spec(object) :
                             bTagLower = "2",
                             fZinvIni = 0.1,
                             AQcdIni = 0.0,
+                            AQcdMax = 1.0,
                             ),
                 ])
 
