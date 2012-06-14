@@ -26,9 +26,8 @@ def collect(wspace, results, extraStructure = False) :
     return out
 
 def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None ) :
-    wspace.saveSnapshot("snap", wspace.allVars())
     results = utils.rooFitResults(pdf(wspace), data)
-    #wspace.saveSnapshot("snap", wspace.allVars())
+    wspace.saveSnapshot("snap", wspace.allVars())
 
     obs = collect(wspace, results, extraStructure = True)
 
