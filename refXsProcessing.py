@@ -180,7 +180,7 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
     return
 
 def drawGraphs(graphs, legendTitle="") :
-    legend = r.TLegend(0.2, 0.67, 0.7, 0.67+0.04*len(graphs), legendTitle)
+    legend = r.TLegend(0.2, 0.64, 0.7, 0.64+0.04*len(graphs), legendTitle)
     legend.SetBorderSize(0)
     legend.SetFillStyle(0)
     for d in graphs :
