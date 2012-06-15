@@ -110,7 +110,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None) :
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
 
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -124,7 +124,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     A_ewk_ini = 1.3e-5
     factor = 0.7
     A = ni("A_qcd", label)
-    argsA = poi[A] if A in poi else (AQcdIni, 0.0, 100.0)
+    argsA = poi[A] if A in poi else (AQcdIni, 0.0, AQcdMax)
     wimport(w, r.RooRealVar(A, A, *argsA))
 
     k = ni("k_qcd", kQcdLabel)
@@ -509,7 +509,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
 
     moreArgs = {}
     moreArgs["had"] = {}
-    for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni"] :
+    for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax"] :
         moreArgs["had"][item] = getattr(selection, item)
     for item in ["REwk", "RQcd", "nFZinv", "poi"] :
         moreArgs["had"][item] = eval(item)
