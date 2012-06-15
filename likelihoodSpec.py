@@ -30,8 +30,7 @@ class spec(object) :
         self._selections = []
         #self.__initSimple__()
         #self.__init2012__()
-        self.__init2011reorg__()
-        #self.__init2011old__()
+        self.__init2011reorg__(updated = True)
 
     def __initSimple__(self) :
         self.legendTitle = "SIMPLE TEST"
@@ -89,9 +88,13 @@ class spec(object) :
                           ),
                 ])
 
-    def __init2011reorg__(self) :
+    def __init2011reorg__(self, updated = True) :
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
-        from inputData.data2011reorg import take3 as module
+        if updated :
+            from inputData.data2011reorg import take3 as module
+        else :
+            from inputData.data2011reorg import take1 as module
+
         self.add([selection(name = "55_0b",
                             note = "%s= 0"%nb,
                             alphaTMinMax = ("55", None),
@@ -132,6 +135,7 @@ class spec(object) :
                             bTagLower = "2",
                             fZinvIni = 0.1,
                             AQcdIni = 0.0,
+                            AQcdMax = 1.0 if updated else 100.0,
                             ),
                 ])
 
