@@ -32,18 +32,29 @@ def signal() :
     overwriteOutput.update({"T1": [],
                             "T2": [],
                             "T2tt": [],
+                            "T1bbbb": [(36,29,1)],
+                            "T1tttt": [(37, 2, 1), (37, 3, 1), (37, 4, 1),
+                                       (37, 5, 1), (37, 6, 1), (37, 7, 1), ],
+                            "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             "T2bb":   [],
                             "T1bbbb": [],
                             "T1tttt": [],
                             "T5zz": [],
                             })
-
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
+
+    graphBlackLists = {}
+    for key in [ "UpperLimit", "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ] :
+        graphBlackLists[key] = collections.defaultdict(list)
+    graphBlackLists["UpperLimit"].update({"T1bbbb" : [ (1075,325), (1050,600), (1025, 475), (1000,525), (975,525), (950,500),
+                                                       (950,550), (1000,625), ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T1bbbb" : [ (1050,250), (1075,350), (1050,350) ]})
 
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
             "overwriteInput": overwriteInput,
             "overwriteOutput": overwriteOutput,
+            "graphBlackLists": graphBlackLists,
             "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
