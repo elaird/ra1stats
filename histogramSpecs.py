@@ -26,7 +26,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     base = locations()["eff"]
 
-    cmssm = {"tanBeta10":  {"cmssw":"rw", "had":"v1", "muon":"v1"},
+    cmssm = {"tanBeta10":  {"cmssw":"rw", "had":"v2", "muon":"v2"},
              #"tanBeta10":  {"cmssw":"42", "had":"v8", "muon":"v8"},
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              }
