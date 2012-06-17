@@ -142,13 +142,14 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     graphs = []
     graphs += graph
 
-    for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
+    for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-2,-1,1,2] ]) :
         h2exp = threeToTwo(f.Get(name))
         modifyHisto(h2exp,s)
         graph = rxs.graphs(h2exp, s["signalModel"], "LowEdge",
                 printXs=printXs, lineStyle=i+2,
                 label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit'))
-        pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
+        if name in s['graphBlackLists']:
+            pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
         graphs += graph
     g.cd()
     for dct in graphs :
@@ -366,9 +367,11 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
     if printSinglePage :
         title = h2.GetTitle()
         h2.SetTitle("")
-        eps = fileName.replace(".ps","_%s.eps"%name)
-        super(utils.numberedCanvas, canvas).Print(eps)
-        utils.epsToPdf(eps)
+#        eps = fileName.replace(".ps","_%s.eps"%name)
+#        super(utils.numberedCanvas, canvas).Print(eps)
+#        utils.epsToPdf(eps)
+        pdf_fileName = fileName.replace(".pdf","_%s.pdf"%name)
+        super(utils.numberedCanvas, canvas).Print(pdf_fileName)
         h2.SetTitle(title)
 
     canvas.Print(fileName)
