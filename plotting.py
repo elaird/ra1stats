@@ -609,6 +609,9 @@ class validationPlotter(object) :
         r.gStyle.SetPaintTextFormat("4.1f")
         h.Draw("colztext")
 
+        for s in ["Right", "Left", "Top", "Bottom"] :
+            getattr(r.gPad,"Set%sMargin"%s)(0.15)
+
         if self.printPages and name :
             h.SetTitle("")
             printOnePage(self.canvas, name)
