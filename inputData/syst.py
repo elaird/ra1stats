@@ -1,11 +1,11 @@
 import utils
 
 def load(data = None, mode = None, nHtBins = 8) :
-    lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
+#    lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
 # SMS other than T1, T2
-    #lumiLikeValue = utils.quadSum({"btagUncert": 0.035, "lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
-# T1, T2 only
-    #lumiLikeValue = utils.quadSum({"btagUncert": 0.12, "lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
+    lumiLikeValue = utils.quadSum({"btagUncert": 0.035, "lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
+ #T1, T2, cMSSM tb10 only
+#    lumiLikeValue = utils.quadSum({"btagUncert": 0.12, "lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
 
 
     if mode==-1 :
