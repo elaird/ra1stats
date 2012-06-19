@@ -1,6 +1,6 @@
 import collections,socket
 
-batchHost = [ "FNAL", "IC" ][0]
+batchHost = [ "FNAL", "IC" ][1]
 
 def locations() :
     dct = {
@@ -38,7 +38,7 @@ def signal() :
                             "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
                             "T2bb":   [],
                             "T1bbbb": [],
-                            "T1tttt": [],
+                            #"T1tttt": [],
                             "T5zz": [],
                             })
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
@@ -80,7 +80,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2"]
+            "signalModel": dict(zip(models, models))["T1tttt"]
             }
 
 def listOfTestPoints() :
