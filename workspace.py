@@ -158,7 +158,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         qcdArgs[item] = eval(item)
 
     if qcdParameterIsYield :
-        qcdArgs["normIniMinMax"] = (0.0, 0.0, max(1, obs["nHad"][0]))
+        qcdArgs["normIniMinMax"] = (0.0, 0.0, max(1, obs["nHad"][0]/2.))
     else :
         qcdArgs["normIniMinMax"] = (AQcdIni, 0.0, AQcdMax)
     importQcdParameters(**qcdArgs)
