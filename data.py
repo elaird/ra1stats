@@ -41,14 +41,15 @@ class data(object) :
         self._applyTrigger()
         self._doBinMerge()
 
-    def __str__(self) :
+    def __str__(self, notes = False) :
         out = ""
         for func in ["observations", "mcExpectations", "purities", "mcExtra", "mcStatError"] :
             out += "\n".join(["", func, "-"*20, ""])
             d = getattr(self, func)()
             for key in sorted(d.keys()) :
                 out += "%s %s\n"%(key, d[key])
-            out += r'''
+            if notes :
+                out += r'''
 NOTES
 -----
 
