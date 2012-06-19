@@ -184,20 +184,30 @@ def add(lst = []) :
 
 def fetched(lst = [], func = "", attr = "", key = "") :
     return [(getattr(x,func)() if func else getattr(x,attr))[key] for x in lst]
-    
+
+def fill(x, lst = []) :
+    x._observations = {}
+    for key in ["nPhot", "nHad", "nMuon", "nMumu"] :
+        x._observations[key] = add(fetched(lst = lst, func = "observations", key = key))
+
+    x._mcExpectationsBeforeTrigger = {}
+    for key in ["mcPhot", "mcHad", "mcTtw", "mcMuon", "mcZinv", "mcMumu"] :
+        x._mcExpectationsBeforeTrigger[key] = add(fetched(lst = lst, attr = "_mcExpectationsBeforeTrigger", key = key))
+
+    x._mcStatError = {}
+    for key in ["mcMuonErr", "mcMumuErr", "mcHadErr", "mcZinvErr", "mcTtwErr", "mcPhotErr"] :
+        x._mcStatError[key] = lst[0].mcStatError()[key]
+    common(x)
+
+_excl = [data_0b(), data_1b(), data_2b(), data_ge3b()]
+class data_ge0b(data) :
+    def _fill(self) :
+        fill(self,  lst = _excl[:])
+
 class data_ge1b(data) :
-    def _fill(self, lst = [data_1b(), data_2b(), data_ge3b()]) :
-        self._observations = {}
-        for key in ["nPhot", "nHad", "nMuon", "nMumu"] :
-            self._observations[key] = add(fetched(lst = lst, func = "observations", key = key))
+    def _fill(self) :
+        fill(self,  lst = _excl[1:])
 
-        self._mcExpectationsBeforeTrigger = {}
-        for key in ["mcPhot", "mcHad", "mcTtw", "mcMuon", "mcZinv", "mcMumu"] :
-            self._mcExpectationsBeforeTrigger[key] = add(fetched(lst = lst, attr = "_mcExpectationsBeforeTrigger", key = key))
-
-        self._mcStatError = {}
-        for key in ["mcMuonErr", "mcMumuErr", "mcHadErr", "mcZinvErr", "mcTtwErr", "mcPhotErr"] :
-            self._mcStatError[key] = lst[0].mcStatError()[key]
-        common(self)
-
-d = data_ge1b()
+class data_ge2b(data) :
+    def _fill(self) :
+        fill(self,  lst = _excl[2:])
