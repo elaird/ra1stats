@@ -110,8 +110,9 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
     return varOrFunc(w, name, label, i)
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
-
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
+             zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
+    print qcdParameterIsYield
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
     htMeans = inputData.htMeans()
@@ -486,7 +487,8 @@ def dataset(obsSet) :
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
                     extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
-                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, separateSystObs = None) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
+                    constrainQcdSlope = None, qcdParameterIsYield = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -511,7 +513,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax"] :
         moreArgs["had"][item] = getattr(selection, item)
-    for item in ["REwk", "RQcd", "nFZinv", "poi"] :
+    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield"] :
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
@@ -583,7 +585,8 @@ class foo(object) :
         args["smOnly"] = self.smOnly()
         args["injectSignal"] = self.injectSignal()
 
-        for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv", "constrainQcdSlope"] :
+        for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
+                     "constrainQcdSlope", "qcdParameterIsYield"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
