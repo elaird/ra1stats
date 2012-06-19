@@ -109,12 +109,11 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
-def importQcdParameters_A_k(w = None, RQcd = None, AQcdIni = None, AQcdMax = None, zeroQcd = None,
-                            label = "", kQcdLabel = "", poi = {}, A_ewk_ini = None) :
-    factor = 0.7
-    A = ni("A_qcd", label)
-    argsA = poi[A] if A in poi else (AQcdIni, 0.0, AQcdMax)
-    wimport(w, r.RooRealVar(A, A, *argsA))
+def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None), zeroQcd = None,
+                            label = "", kQcdLabel = "", poi = {}, qcdParameterIsYield = None) :
+    norm = ni("QCD", label, i = 0) if qcdParameterIsYield else ni("A_qcd", label)
+    args = poi[norm] if norm in poi else normIniMinMax
+    wimport(w, r.RooRealVar(norm, norm, *args))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
@@ -126,10 +125,9 @@ def importQcdParameters_A_k(w = None, RQcd = None, AQcdIni = None, AQcdMax = Non
             w.var(k).setConstant()
 
     if RQcd=="Zero" or zeroQcd :
-        w.var(A).setVal(0.0)
-        w.var(A).setConstant()
+        w.var(norm).setVal(0.0)
+        w.var(norm).setConstant()
 
-    
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
              REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
              zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
@@ -144,12 +142,14 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     assert RQcd!="FallingExpA"
     A_ewk_ini = 1.3e-5
     qcdArgs = {}
-    for item in ["w", "RQcd", "AQcdIni", "AQcdMax", "label", "kQcdLabel", "poi", "zeroQcd", "A_ewk_ini"] :
+    for item in ["w", "RQcd", "label", "kQcdLabel", "poi", "zeroQcd", "qcdParameterIsYield"] :
         qcdArgs[item] = eval(item)
+
     if qcdParameterIsYield :
-        importQcdParameters_A_k(**qcdArgs)
+        qcdArgs["normIniMinMax"] = (0.0, 0.0, 3000.0)
     else :
-        importQcdParameters_A_k(**qcdArgs)
+        qcdArgs["normIniMinMax"] = (AQcdIni, 0.0, AQcdMax)
+    importQcdParameters(**qcdArgs)
 
     #observed "constants", not depending upon slice
     for i,htMeanValue,nHadBulkValue,hadTrgEff, hadBulkTrgEff in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"], trg["hadBulk"]) :
