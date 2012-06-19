@@ -45,6 +45,19 @@ def initialAQcd(inputData, factor, A_ewk_ini, kQcd) :
     out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
     return out
                      
+def parametrizedExpViaYield(w = None, name = "", label = "", kLabel = "", i = None) :
+    assert i,i
+    yield0 = ni("%s"%name, label, 0)
+    k = ni("k_%s"%name, kLabel)
+    bulk0 = ni("nHadBulk", label, 0)
+    bulkI = ni("nHadBulk", label, i)
+    mean0 = ni("htMean", label, 0)
+    meanI = ni("htMean", label, i)
+    varName = ni(name, label, i)
+    return r.RooFormulaVar(varName, "(@0)*(@1)/(@2)*exp(-(@3)*((@4)-(@5)))",
+                           r.RooArgList(w.var(yield0), w.var(bulkI), w.var(bulk0), w.var(k), w.var(meanI), w.var(mean0)),
+                           )
+
 def parametrizedExp(w = None, name = "", label = "", kLabel = "", i = None) :
     A = ni("A_%s"%name, label)
     k = ni("k_%s"%name, kLabel)
@@ -111,7 +124,7 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
 
 def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None), zeroQcd = None,
                             label = "", kQcdLabel = "", poi = {}, qcdParameterIsYield = None) :
-    norm = ni("QCD", label, i = 0) if qcdParameterIsYield else ni("A_qcd", label)
+    norm = ni("qcd", label, i = 0) if qcdParameterIsYield else ni("A_qcd", label)
     args = poi[norm] if norm in poi else normIniMinMax
     wimport(w, r.RooRealVar(norm, norm, *args))
 
@@ -131,7 +144,6 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
              REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
              zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
-    print qcdParameterIsYield
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
     htMeans = inputData.htMeans()
@@ -146,7 +158,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         qcdArgs[item] = eval(item)
 
     if qcdParameterIsYield :
-        qcdArgs["normIniMinMax"] = (0.0, 0.0, 3000.0)
+        qcdArgs["normIniMinMax"] = (0.0, 0.0, max(1, obs["nHad"][0]))
     else :
         qcdArgs["normIniMinMax"] = (AQcdIni, 0.0, AQcdMax)
     importQcdParameters(**qcdArgs)
@@ -166,9 +178,18 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
 
-        if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
-        else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
-        qcd = w.function(ni("qcd", label, i))
+        if RQcd=="FallingExpA" :
+            wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
+            qcd = w.function(ni("qcd", label, i))
+        elif qcdParameterIsYield :
+            if i :
+                wimport(w, parametrizedExpViaYield(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
+                qcd = w.function(ni("qcd", label, i))
+            else :
+                qcd = w.var(ni("qcd", label, i))
+        else :
+            wimport(w, parametrizedExp(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
+            qcd = w.function(ni("qcd", label, i))
 
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
         if not muonForFullEwk :
