@@ -109,20 +109,8 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
-def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
-             zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
-    print qcdParameterIsYield
-    obs = inputData.observations()
-    trg = inputData.triggerEfficiencies()
-    htMeans = inputData.htMeans()
-    terms = []
-    out = collections.defaultdict(list)
-
-    assert RQcd!="FallingExpA"
-
-    #QCD variables
-    A_ewk_ini = 1.3e-5
+def importQcdParameters_A_k(w = None, RQcd = None, AQcdIni = None, AQcdMax = None, zeroQcd = None,
+                            label = "", kQcdLabel = "", poi = {}, A_ewk_ini = None) :
     factor = 0.7
     A = ni("A_qcd", label)
     argsA = poi[A] if A in poi else (AQcdIni, 0.0, AQcdMax)
@@ -140,6 +128,28 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     if RQcd=="Zero" or zeroQcd :
         w.var(A).setVal(0.0)
         w.var(A).setConstant()
+
+    
+def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
+             zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
+    print qcdParameterIsYield
+    obs = inputData.observations()
+    trg = inputData.triggerEfficiencies()
+    htMeans = inputData.htMeans()
+    terms = []
+    out = collections.defaultdict(list)
+
+    #QCD parameters
+    assert RQcd!="FallingExpA"
+    A_ewk_ini = 1.3e-5
+    qcdArgs = {}
+    for item in ["w", "RQcd", "AQcdIni", "AQcdMax", "label", "kQcdLabel", "poi", "zeroQcd", "A_ewk_ini"] :
+        qcdArgs[item] = eval(item)
+    if qcdParameterIsYield :
+        importQcdParameters_A_k(**qcdArgs)
+    else :
+        importQcdParameters_A_k(**qcdArgs)
 
     #observed "constants", not depending upon slice
     for i,htMeanValue,nHadBulkValue,hadTrgEff, hadBulkTrgEff in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"], trg["hadBulk"]) :
