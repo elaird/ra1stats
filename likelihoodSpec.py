@@ -12,7 +12,7 @@ class spec(object) :
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return True
+    def constrainQcdSlope(self) : return False
     def qcdParameterIsYield(self) : return False
 
     def selections(self) :
@@ -30,8 +30,8 @@ class spec(object) :
     def __init__(self) :
         self._selections = []
         #self.__initSimple__()
-        #self.__init2012__()
-        self.__init2011reorg__(updated = True)
+        self.__init2012__()
+        #self.__init2011reorg__(updated = True)
 
     def __initSimple__(self) :
         self.legendTitle = "SIMPLE TEST"
@@ -44,13 +44,14 @@ class spec(object) :
                 ])
 
     def __init2012__(self) :
-        self.legendTitle = "CMS, 1.5-2.4 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take4 as module
+        self.legendTitle = "CMS, 3.8 fb^{-1}, #sqrt{s} = 8 TeV"
+        from inputData.data2012 import take5 as module
         self.add([
                 selection(name = "55_0b",
                           note = "%s= 0"%nb,
                           alphaTMinMax = ("55", None),
-                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
                           data = module.data_0b(),
                           nbTag = "0",
                           fZinvIni = 0.50,
@@ -68,15 +69,15 @@ class spec(object) :
                           fZinvIni = 0.25,
                           AQcdIni = 0.0,
                           ),
-#                selection(name = "55_2b",
-#                          note = "%s= 2"%nb,
-#                          alphaTMinMax = ("55", None),
-#                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-#                          data = module.data_2b(),
-#                          nbTag = "2",
-#                          fZinvIni = 0.1,
-#                          AQcdIni = 0.0,
-#                          ),
+                selection(name = "55_2b",
+                          note = "%s= 2"%nb,
+                          alphaTMinMax = ("55", None),
+                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          data = module.data_2b(),
+                          nbTag = "2",
+                          fZinvIni = 0.1,
+                          AQcdIni = 0.0,
+                          ),
                 selection(name = "55_gt2b",
                           note = "%s#geq 3"%nb,
                           alphaTMinMax = ("55", None),
