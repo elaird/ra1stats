@@ -142,7 +142,7 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     graphs = []
     graphs += graph
 
-    for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-2,-1,1,2] ]) :
+    for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
         h2exp = threeToTwo(f.Get(name))
         modifyHisto(h2exp,s)
         graph = rxs.graphs(h2exp, s["signalModel"], "LowEdge",
