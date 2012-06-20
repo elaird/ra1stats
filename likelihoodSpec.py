@@ -13,6 +13,7 @@ class spec(object) :
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
     def constrainQcdSlope(self) : return True
+    def qcdParameterIsYield(self) : return False
 
     def selections(self) :
         return self._selections

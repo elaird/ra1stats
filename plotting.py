@@ -609,8 +609,8 @@ class validationPlotter(object) :
         r.gStyle.SetPaintTextFormat("4.1f")
         h.Draw("colztext")
 
-        for s in ["Right", "Left", "Top", "Bottom"] :
-            getattr(r.gPad,"Set%sMargin"%s)(0.15)
+        for side in ["Right", "Left", "Top", "Bottom"] :
+            getattr(r.gPad,"Set%sMargin"%side)(0.15)
 
         if self.printPages and name :
             h.SetTitle("")
@@ -876,7 +876,7 @@ class validationPlotter(object) :
                     for item in ["min", "max"] :
                         x = getattr(var, "get%s"%item.capitalize())()
                         if abs(x)==1.0e30 : continue
-                        d[item].SetBinContent(i+1, x)
+                        if item in d : d[item].SetBinContent(i+1, x)
                 elif self.errorsFromToys :
                     q = self.quantiles[ni(varName, self.label, i)]
                     d["errors"].SetBinContent(i+1, (q[2]+q[0])/2.0)
