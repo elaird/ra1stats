@@ -43,7 +43,7 @@ def signal() :
                                 (40, 34, 1), (41, 11, 1), (41, 16, 1), (41, 20, 1), (41, 23, 1),
                                 (41, 27, 1), (42, 21, 1), (42, 29, 1), (42, 31, 1), (42, 33, 1),
                                 (43, 13, 1), (44, 6, 1), (44, 9, 1), (44, 17, 1), (44, 26, 1),
-                                (44, 31, 1), (44, 33, 1), (20, 12, 1)
+                                (44, 31, 1), (44, 33, 1), (20, 12, 1),
                                 ],
                             "T1bbbb": [
                                 (9, 2, 1), (13, 5, 1), (16, 6, 1), (16, 8, 1), (21, 1, 1),
@@ -106,7 +106,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T1tttt"]
+            "signalModel": dict(zip(models, models))["T2bb"]
             }
 
 def listOfTestPoints() :
