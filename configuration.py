@@ -31,7 +31,7 @@ def signal() :
     overwriteOutput = collections.defaultdict(list)
     overwriteOutput.update({"T1": [],
                             "T2": [],
-                            "T2tt": [],
+                            "T2tt": [(15,1,1),(17,4,1),(18,5,1),(19,3,1)],
                             "T2bb":   [
                                 (16, 9, 1), (18, 2, 1), (20, 3, 1), (20, 14, 1), (21, 1, 1),
                                 (22, 5, 1), (22, 15, 1), (23, 12, 1), (25, 17, 1), (26, 14, 1),
@@ -106,7 +106,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2bb"]
+            "signalModel": dict(zip(models, models))["T2tt"]
             }
 
 def listOfTestPoints() :
