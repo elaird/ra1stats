@@ -3,8 +3,7 @@ from data import data,scaled
 
 # TypeI PF MET
 
-def common(x, systMode = 4) :
-    print "Update syst mode!"
+def common(x, systMode = 124) :
     x._htBinLowerEdges = (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
     x._htMaxForPlot = 975.0
     x._htMeans = ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
