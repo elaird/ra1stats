@@ -576,7 +576,7 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
         if abs(h.GetMinimum())>yMax :
             print "ERROR: minimum pull=",h.GetMinimum()
         if abs(h.GetMaximum())>yMax :
-            print "ERROR: minimum pull=",h.GetMaximum()
+            print "ERROR: maximum pull=",h.GetMaximum()
         h.GetYaxis().SetRangeUser(-yMax, yMax)
 
         h2 = h.Clone("%s_outliers")
