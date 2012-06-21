@@ -63,7 +63,7 @@ NOTES
 '''
         return out
 
-    def translationFactor(self, tr = ["gZ", "muW", "mumuZ", "muHad"][0], considerLumi = False) :
+    def translationFactor(self, tr = ["gZ", "muW", "mumuZ", "muHad"][0], considerLumi = False, afterTrigger = True) :
         dct = {"gZ":   {"num":"mcPhot", "den":"mcZinv"},
                "muW":  {"num":"mcMuon", "den":"mcTtw" },
                "mumuZ":{"num":"mcMumu", "den":"mcZinv"},
@@ -71,9 +71,8 @@ NOTES
                }[tr]
 
         assert self._constantMcRatioAfterHere == tuple([0]*7+[1]),self._constantMcRatioAfterHere
-        #todo: handle purities and trigger efficiencies
-        print "handle trigger efficiency"
-        value = self.mcExpectations()
+        #todo: handle purities
+        value = self.mcExpectations() if afterTrigger else self._mcExpectationsBeforeTrigger
         error = self.mcStatError()
         lumi = self.lumi()
 
