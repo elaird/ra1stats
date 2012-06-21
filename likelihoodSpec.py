@@ -168,6 +168,7 @@ class spec(object) :
                 ])
 
     def __init2011old__(self) :
+        self._constrainQcdSlope = True
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
         args["systMode"] = 3
