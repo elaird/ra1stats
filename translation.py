@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import ROOT as r
-from inputData.data2012 import take5
+from inputData.data2012 import take5a as module
 from array import array
 #todo: what to minimize in a fit?
 
@@ -14,7 +14,7 @@ afterTrigger = False
 fileName = "tr.pdf"
 canvas.Print(fileName+"[")
 for dataset in ["0b_no_aT", "0b", "1b", "2b", "ge3b"] :
-    d = getattr(take5, "data_%s"%dataset)()
+    d = getattr(module, "data_%s"%dataset)()
     htMeans = d.htMeans()
     factors = ["gZ", "mumuZ", "muW"] if dataset!="ge3b" else ["muHad"]
     canvas.cd(0)
