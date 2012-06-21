@@ -607,7 +607,7 @@ class validationPlotter(object) :
         h = self.results.correlationHist(name)
         h.SetStats(False)
         r.gStyle.SetPaintTextFormat("4.1f")
-        h.Draw("colztext")
+        h.Draw("colz")
 
         for side in ["Right", "Left", "Top", "Bottom"] :
             getattr(r.gPad,"Set%sMargin"%side)(0.15)
