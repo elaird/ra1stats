@@ -12,7 +12,7 @@ class spec(object) :
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return False
+    def constrainQcdSlope(self) : return self._constrainQcdSlope
     def qcdParameterIsYield(self) : return False
 
     def selections(self) :
@@ -34,6 +34,7 @@ class spec(object) :
         #self.__init2011reorg__(updated = True)
 
     def __initSimple__(self) :
+        self._constrainQcdSlope = False
         self.legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
@@ -44,6 +45,7 @@ class spec(object) :
                 ])
 
     def __init2012__(self) :
+        self._constrainQcdSlope = False
         self.legendTitle = "CMS, 3.8 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5 as module
         self.add([
@@ -90,6 +92,7 @@ class spec(object) :
                 ])
 
     def __init2011reorg__(self, updated = True) :
+        self._constrainQcdSlope = True
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
