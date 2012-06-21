@@ -588,6 +588,8 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
             nTerms += 1
             total.Fill(content)
             if abs(content)>threshold :
+                hx = h.GetXaxis()
+                hx.SetBinLabel(iBin, "#color[4]{%s}"%hx.GetBinLabel(iBin))
                 h2.SetBinContent(iBin, content)
                 l2 = line.DrawLine(iBin, -yMax, iBin, content)
                 lines.append(l2)
