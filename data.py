@@ -41,6 +41,28 @@ class data(object) :
         self._applyTrigger()
         self._doBinMerge()
 
+    def __str__(self, notes = False) :
+        out = ""
+        for func in ["observations", "mcExpectations", "purities", "mcExtra", "mcStatError"] :
+            out += "\n".join(["", func, "-"*20, ""])
+            d = getattr(self, func)()
+            for key in sorted(d.keys()) :
+                out += "%s %s\n"%(key, d[key])
+            if notes :
+                out += r'''
+NOTES
+-----
+
+- all numbers are after the trigger, i.e.
+-- the observations are integers
+-- the appropriate MC samples are scaled down to emulate trigger inefficiency
+
+- mcGJets is the true gamma+jets component of the MC
+- mcPhot is what is to be compared to data; (GJets + QCD contamination)
+- they are related by the photon purity
+'''
+        return out
+
     def _fill(self) : raise Exception("NotImplemented", "Implement a member function _fill(self)")
 
     def _checkVars(self) :

@@ -13,6 +13,7 @@ class spec(object) :
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
     def constrainQcdSlope(self) : return True
+    def qcdParameterIsYield(self) : return False
 
     def selections(self) :
         return self._selections
@@ -104,6 +105,21 @@ class spec(object) :
                             universalSystematics = True,
                             universalKQcd = True,
                             ),
+#                  selection(name = "55_ge0b",
+#                            note = "%s>= 0"%nb,
+#                            alphaTMinMax = ("55", None),
+#                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+#                            data = module.data_ge0b(),
+#                            ),
+#                  selection(name = "55_ge1b",
+#                            note = "%s>= 1"%nb,
+#                            alphaTMinMax = ("55", None),
+#                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+#                            data = module.data_ge1b(),
+#                            bTagLower = "0",
+#                            fZinvIni = 0.25,
+#                            AQcdIni = 0.0,
+#                            ),
                   selection(name = "55_1b",
                             note = "%s= 1"%nb,
                             alphaTMinMax = ("55", None),
@@ -122,6 +138,15 @@ class spec(object) :
                             fZinvIni = 0.1,
                             AQcdIni = 0.0,
                             ),
+#                  selection(name = "55_ge2b",
+#                            note = "%s>= 2"%nb,
+#                            alphaTMinMax = ("55", None),
+#                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+#                            data = module.data_ge2b(),
+#                            bTagLower = "1",
+#                            fZinvIni = 0.1,
+#                            AQcdIni = 0.0,
+#                            ),
                   selection(name = "55_gt2b", #v4!!
                             note = "%s#geq 3"%nb,
                             alphaTMinMax = ("55", None),
