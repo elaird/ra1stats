@@ -6,7 +6,8 @@ from data import data,scaled
 def common(x, systMode = 124) :
     x._htBinLowerEdges = (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
     x._htMaxForPlot = 975.0
-    x._htMeans = ( 2.960e+02, 3.464e+02, 4.128e+02, 5.144e+02, 6.161e+02, 7.171e+02, 8.179e+02, 9.188e+02) #old
+    x._htMeans = ( 297.96, 347.558, 415.942, 516.723, 617.19, 718.153, 818.612, 1044.56 )
+
     x._mergeBins = None
     x._constantMcRatioAfterHere = (    0,     0,     0,     0,     0,     0,     0,     1)
     x._lumi =  	{
@@ -31,7 +32,7 @@ def common(x, systMode = 124) :
         }
     x._mcExpectationsBeforeTrigger["mcGjets"] =  x._mcExpectationsBeforeTrigger["mcPhot"]
     x._mcExtraBeforeTrigger = {}
-    x._observations["nHadBulk"] = (92544000, 43592000, 29373000,  9830500,   3689500,   1458500,    677000,    671000) #old
+    x._observations["nHadBulk"] = (231496000, 103615000, 76347400, 25456300, 9467480, 3855680, 1729150, 1750550)
     syst.load(x, mode = systMode)
 
 
