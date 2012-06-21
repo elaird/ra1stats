@@ -883,15 +883,12 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True, errorsFromToys = False, drawRatios = False) :
+    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
+                errorsFromToys = False, drawRatios = False, pullPlotMax = 3.5) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        try:
-            calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)),
-                       note = self.note(), plotsDir = "plots")
-        except:
-            print "ERROR: pull plots failed"
+        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)), note = self.note(), plotsDir = "plots", yMax = pullPlotMax)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
