@@ -71,8 +71,8 @@ def signal() :
 
     # e.g. "UpperLimit", "ExpectedUpperLimit_+2_Sigma"
 
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (700,200), (600,275), (675, 225) ]})
-    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2" : [ (550,250) ]})
+#    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (700,200), (600,275), (675, 225) ]})
+#    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2" : [ (550,250) ]})
     graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,75) ]})
     graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (500,325), (575,275), (625,225) ]})
 
@@ -106,7 +106,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2tt"]
+            "signalModel": dict(zip(models, models))["T2"]
             }
 
 def listOfTestPoints() :
