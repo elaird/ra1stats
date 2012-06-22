@@ -137,19 +137,26 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     h2.Draw("colz")
 
     graph = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
-    pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']])
+    pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
 
     graphs = []
     graphs += graph
 
+    debugs = [ False, False, False ]
     for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
         h2exp = threeToTwo(f.Get(name))
         modifyHisto(h2exp,s)
+        if i < 2 :
+            label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit').replace("-1","#pm1")
+        else :
+            label = ""
+
         graph = rxs.graphs(h2exp, s["signalModel"], "LowEdge",
-                printXs=printXs, lineStyle=i+2,
-                label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit'))
+                           printXs=printXs, lineStyle={0:2, 1:3, 2:3}[i],
+                           label=label)
         if name in s['graphBlackLists']:
-            pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
+            pruneGraph(graph[0]['graph'],
+                    lst=s['graphBlackLists'][name][s['signalModel']], debug=debugs[i])
         graphs += graph
     g.cd()
     for dct in graphs :
@@ -190,7 +197,7 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.50, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    s3 = stamp(text = "%s, 5.0 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.55, factor = 0.7)
+    s3 = stamp(text = "%s,  5.0 fb^{-1},  #sqrt{s}=7 TeV"%textMap[conf.switches()["method"]], x = 0.22, y = 0.55, factor = 0.7)
 
     printOnce(c, printName)
     printHoles(h2)
