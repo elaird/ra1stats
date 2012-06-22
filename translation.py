@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 
 import ROOT as r
-from inputData.data2012 import take5a as module
 from array import array
+
+##2011
+#from inputData.data2011reorg import take3 as module
+#slices = ["0b", "1b", "2b", "ge3b"]
+
+#2012
+from inputData.data2012 import take5a as module
+slices = ["0b_no_aT", "0b", "1b", "2b", "ge3b"]
+
 #todo: what to minimize in a fit?
 
 r.gROOT.SetBatch(True)
@@ -13,7 +21,7 @@ canvas = r.TCanvas("canvas", "canvas", 600, 800)
 afterTrigger = False
 fileName = "tr.pdf"
 canvas.Print(fileName+"[")
-for dataset in ["0b_no_aT", "0b", "1b", "2b", "ge3b"] :
+for dataset in slices :
     d = getattr(module, "data_%s"%dataset)()
     htMeans = d.htMeans()
     factors = ["gZ", "mumuZ", "muW"] if dataset!="ge3b" else ["muHad"]
