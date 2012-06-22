@@ -47,7 +47,7 @@ class spec(object) :
     def __init2012__(self) :
         self._constrainQcdSlope = False
         self.legendTitle = "CMS, 3.8 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take5 as module
+        from inputData.data2012 import take5a as module
         self.add([
                 selection(name = "55_0b",
                           note = "%s= 0"%nb,
@@ -57,9 +57,15 @@ class spec(object) :
                           nbTag = "0",
                           fZinvIni = 0.50,
                           AQcdIni = 0.0,
-                          #zeroQcd=True,
-                          universalSystematics = True,
-                          universalKQcd = True,
+                          ),
+                selection(name = "55_0b_no_aT",
+                          note = "%s= 0"%nb,
+                          alphaTMinMax = ("55", None),
+                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          data = module.data_0b_no_aT(),
+                          nbTag = "0",
+                          fZinvIni = 0.50,
+                          AQcdIni = 0.0,
                           ),
                 selection(name = "55_1b",
                           note = "%s= 1"%nb,
@@ -89,7 +95,7 @@ class spec(object) :
                           fZinvIni = 0.1,
                           AQcdIni = 0.0,
                           ),
-                ])
+                ][4:5])
 
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
