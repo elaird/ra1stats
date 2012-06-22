@@ -30,8 +30,8 @@ def signal() :
     overwriteInput = collections.defaultdict(list)
     overwriteOutput = collections.defaultdict(list)
     overwriteOutput.update({"T1": [],
-                            "T2": [],
-                            "T2tt": [(15,1,1),(17,4,1),(18,5,1),(19,3,1)],
+                            "T2": [(9,2,1)],
+                            "T2tt": [],
                             "T2bb":   [
                                 (16, 9, 1), (18, 2, 1), (20, 3, 1), (20, 14, 1), (21, 1, 1),
                                 (22, 5, 1), (22, 15, 1), (23, 12, 1), (25, 17, 1), (26, 14, 1),
@@ -43,22 +43,12 @@ def signal() :
                                 (40, 34, 1), (41, 11, 1), (41, 16, 1), (41, 20, 1), (41, 23, 1),
                                 (41, 27, 1), (42, 21, 1), (42, 29, 1), (42, 31, 1), (42, 33, 1),
                                 (43, 13, 1), (44, 6, 1), (44, 9, 1), (44, 17, 1), (44, 26, 1),
-                                (44, 31, 1), (44, 33, 1), (20, 12, 1),
+                                (44, 31, 1), (44, 33, 1), (20, 12, 1), (31,2,1)
                                 ],
-                            "T1bbbb": [
-                                (9, 2, 1), (13, 5, 1), (16, 6, 1), (16, 8, 1), (21, 1, 1),
-                                (21, 6, 1), (21, 11, 1), (21, 12, 1), (23, 6, 1), (24, 7, 1),
-                                (27, 2, 1), (27, 19, 1), (28, 2, 1), (28, 8, 1), (30, 5, 1),
-                                (30, 8, 1), (30, 20, 1), (31, 17, 1), (31, 21, 1), (32, 9, 1),
-                                (32, 13, 1), (32, 22, 1), (33, 25, 1), (35, 2, 1), (36, 22, 1),
-                                (36, 29, 1), (38, 5, 1), (38, 7, 1), (38, 20, 1), (39, 24, 1),
-                                (40, 8, 1), (41, 5, 1), (41, 16, 1), (42, 11, 1), (43, 23, 1),
-                                (44, 38, 1), (41, 8, 1), (32, 21, 1), (41, 15, 1), (42, 20, 1),
-                                (43, 8, 1)
-                                ],
+                            "T1bbbb": [ (36, 29, 1) ],
                             "T1tttt": [
-                                (37, 2, 1), (37, 3, 1), (37, 4, 1), (37, 5, 1), (37, 6, 1),
-                                (37, 7, 1),
+                                #(37, 2, 1), (37, 3, 1), (37, 4, 1), (37, 5, 1), (37, 6, 1),
+                                #(37, 7, 1),
                                 ],
                             "T5zz": [],
                             })
@@ -69,12 +59,27 @@ def signal() :
     for key in [ "UpperLimit", "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ] :
         graphBlackLists[key] = collections.defaultdict(list)
 
-    # e.g. "UpperLimit", "ExpectedUpperLimit_+2_Sigma"
+    graphBlackLists["UpperLimit"].update({"T1" : [ (1000,125), (1000,175) ]})
 
-#    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (700,200), (600,275), (675, 225) ]})
-#    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2" : [ (550,250) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,75) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (500,325), (575,275), (625,225) ]})
+    graphBlackLists["UpperLimit"].update({"T2" : [ (800,200) ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (875,150) ]})
+
+    graphBlackLists["UpperLimit"].update({"T2bb" : [ (750,300), (750,425), (775, 375)]})
+    graphBlackLists["ExpectedUpperLimit"].update({"T2bb" : [ (675,425), (825,100, (825,100)) ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (800,500), (825,150), (825,200) ]})
+    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (800,100), (825,100) ]})
+
+    graphBlackLists["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50), (475,100) ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
+
+    graphBlackLists["UpperLimit"].update({"T1bbbb" : [ (1050,200), (1050,250),
+        (1075,650), (1050,400), (1025,475), (975,650), (1050,450), (950,625),
+        (975,550), (1000,525), (1025,525), (1050,475), (1000,575) ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T1bbbb" :
+        [(1075,50), (1100,200), (975,625), (875, 625), (925,575), (900,575),
+        (875,575), (850,575), (825,575) ]})
+    graphBlackLists["ExpectedUpperLimit"].update({"T1bbbb" : [ (1025,475),
+        (1025,450) ]})
 
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
@@ -106,7 +111,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2"]
+            "signalModel": dict(zip(models, models))["T1bbbb"]
             }
 
 def listOfTestPoints() :
