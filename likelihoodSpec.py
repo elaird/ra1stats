@@ -30,8 +30,8 @@ class spec(object) :
     def __init__(self) :
         self._selections = []
         #self.__initSimple__()
-        self.__init2012__()
-        #self.__init2011reorg__(updated = True)
+        #self.__init2012__()
+        self.__init2011reorg__(updated = True)
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
