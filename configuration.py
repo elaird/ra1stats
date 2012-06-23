@@ -22,8 +22,8 @@ def method() :
             "testStatistic": 3,
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
-            "computeExpectedLimit": False,
-            "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
+            "binaryExclusionRatherThanUpperLimit": False,
+            "fiftyGeVStepsOnly": False,
             }
 
 def signal() :
@@ -80,7 +80,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T1tttt"]
+            "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 
 def listOfTestPoints() :
@@ -127,26 +127,20 @@ def getSubCmds() :
     }[batchHost]
 
 def checkAndAdjust(d) :
-    if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
-
-    d["rhoSignalMin"] = 0.0
-    d["plSeedParams"] = {"usePlSeed": False}
-    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
-    d["extraSigEffUncSources"] = []
-
-    d["fIniFactor"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
     if d["isSms"] :
-        d["fIniFactor"] = 0.05
         d["nlo"] = False
-        d["rhoSignalMin"] = 0.1
-        #d["plSeedParams"] = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0}
-        d["plSeedParams"] = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
-        #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
-    if d["method"]=="feldmanCousins" :
-        d["fiftyGeVStepsOnly"] = True
-    else :
-        d["fiftyGeVStepsOnly"] = False
+
+    binary = d["binaryExclusionRatherThanUpperLimit"]
+    d["rhoSignalMin"] = 0.0 if binary else 0.1
+    d["fIniFactor"] = 1.0 if binary else 0.05
+    d["extraSigEffUncSources"] = [] if binary else [] #["effHadSumUncRelMcStats"]
+
+    d["plSeedParams"] = {"usePlSeed": False} if binary else \
+                        {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
+                        #{"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0}
+
+    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     return
 
 def mergedFileStem(outputDir, switches) :
@@ -155,8 +149,6 @@ def mergedFileStem(outputDir, switches) :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
     out += "_%s"%switches["signalModel"]
     out += "_nlo" if switches["nlo"] else "_lo"
-    for item in ["computeExpectedLimit"] :
-        if switches[item] : out += "_%s"%item
     return out
 
 def stringsNoArgs() :
