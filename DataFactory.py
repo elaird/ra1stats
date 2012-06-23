@@ -41,7 +41,7 @@ def projectHistogram( histo, axis, amin, amax, suffix, addOverFlow = True,
         h_proj.SetBinContent( 1,     minBinContent + overflow )
         h_proj.SetBinError(   1,     sqrt(minBinErr**2 + underflowErr**2) )
     return h_proj
-    
+
 
 def getMultiHists( d ) :
     # d is a dictionary: structured:
@@ -68,7 +68,7 @@ def getMultiHists( d ) :
 
     return histo_dict
 
-# ok from here: 
+# ok from here:
 #   - we want a class the *just* holds the histograms: this means any sort of
 #   import of this module cannot accidently cause huge overhead. This is the
 #   only reason to do a class rather than a function here
@@ -91,13 +91,13 @@ class DataSliceFactory( object ) :
                 # set some sensible defaults
                 # how is ProjectionX defined in the binning varies across slices.  Should probably put some check on this
                 cName = histo.ClassName()
-                if cName[:3] == "TH2" : 
+                if cName[:3] == "TH2" :
                     h[dir][histo_name] = projectHistogram( histo, axis,  amin, amax, h_suffix ).Clone()
                 elif cName[:3] == "TH1" : # only the lumi hists are 1D
-                    h[dir][histo_name] = histo 
+                    h[dir][histo_name] = histo
 
         return DataSlice( h, h_suffix )
-        
+
 
 ######
 DEBUG = False
@@ -116,7 +116,7 @@ class DataSlice( object ) :
             for name in histo_dict[dir] :
                 if histo_dict[dir][name].ClassName()[:3] != "TH1" :
                     assert False, "Attempted to take a 1D histogram slice without providing 1D histos"
-        i = 0 
+        i = 0
         hname = histo_dict[ histo_dict.keys()[0] ].keys()[i]
         h = histo_dict[ histo_dict.keys()[0] ][hname]
         while h.GetName().find("lumi") >= 0 :
@@ -171,13 +171,14 @@ class DataSlice( object ) :
             total = None
             mcstr = "mc%s" % (objName.capitalize())
             if objName != "had" :
-                for MC in [ "WW", "WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ", "Phot" ] :
+                for MC in ["WJets", "Zinv", "t", "ZZ", "DY", "tt", "WZ",
+                           "Phot", ]: # "WW", ] :
                     if MC not in histo_dict[objName] :
                         continue
                     if total == None :
                         total = histo_dict[objName][MC].Clone(mcstr)
                         total.Reset()
-                    if MC in objKeys : 
+                    if MC in objKeys :
                         total.Add( histo_dict[objName][MC] )
                 self._mcExpectationsBeforeTrigger[ mcstr ]    = tuple([ total.GetBinContent(xbin) for xbin in xbins ])
                 self._mcStatError[ mcstr+"Err" ] = tuple([ total.GetBinError(xbin)   for xbin in xbins ])
@@ -187,15 +188,15 @@ class DataSlice( object ) :
                     if total_zinv == None :
                         total_zinv = histo_dict[objName][MC].Clone(mcstr)
                         total_zinv.Reset()
-                    if MC in objKeys : 
+                    if MC in objKeys :
                         total_zinv.Add( histo_dict[objName][MC] )
 
                 total_ttw = None
-                for MC  in [ "WW", "WJets", "t", "tt", "DY", "ZZ", "WZ" ] :
+                for MC  in [ "WJets", "t", "tt", "DY", "ZZ", "WZ", ]: # "WW"  ] :
                     if total_ttw == None :
                         total_ttw = histo_dict[objName][MC].Clone(mcstr)
                         total_ttw.Reset()
-                    if MC in objKeys : 
+                    if MC in objKeys :
                         total_ttw.Add( histo_dict[objName][MC] )
 
                 self._mcExpectationsBeforeTrigger[ "mcZinv" ] = tuple([ total_zinv.GetBinContent(xbin) for xbin in xbins ])

@@ -7,7 +7,7 @@ import ROOT as r
 def ratio(file, numDir, numHisto, denDir, denHisto) :
     f = r.TFile(file)
     assert not f.IsZombie(), file
-        
+
     hOld = f.Get("%s/%s"%(numDir, numHisto))
     assert hOld,"%s:%s/%s"%(file, numDir, numHisto)
     h = hOld.Clone("%s_clone"%hOld.GetName())
@@ -19,7 +19,7 @@ def ratio(file, numDir, numHisto, denDir, denHisto) :
 def oneHisto(file, dir, name) :
     f = r.TFile(file)
     assert not f.IsZombie(), file
-        
+
     hOld = f.Get("%s/%s"%(dir, name))
     assert hOld,"%s/%s"%(dir, name)
     h = hOld.Clone("%s_clone"%hOld.GetName())
@@ -63,7 +63,7 @@ def fillPoints(h, points = []) :
     for point in points :
         iBinX,iBinY,iBinZ = point
         valueOld = h.GetBinContent(iBinX, iBinY, iBinZ)
-        
+
         items = []
         if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
         if iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
@@ -75,7 +75,7 @@ def fillPoints(h, points = []) :
             h.SetBinContent(iBinX, iBinY, iBinZ, value)
             print "WARNING: histo %s bin (%3d, %3d, %3d) [%d zero neighbors]: %g has been overwritten with %g"%\
                   (h.GetName(), iBinX, iBinY, iBinZ, items.count(0.0), valueOld, value)
-        
+
 def killPoints(h, cutFunc = None) :
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = h.GetXaxis().GetBinLowEdge(iBinX)
@@ -209,7 +209,7 @@ def printHoles(h) :
                                                                              h.GetYaxis().GetBinCenter(iBinY),
                                                                              h.GetZaxis().GetBinCenter(iBinZ))
     return
-    
+
 def printMaxes(h) :
     s = conf.switches()
     for iBinX in range(1, 1+h.GetNbinsX()) :
