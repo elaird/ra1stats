@@ -135,18 +135,28 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
     setRange("smsYRange", ranges, h2, "Y")
 
     h2.Draw("colz")
-    graph = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
 
-    pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']])
+    graph = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
+    pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
+
     graphs = []
     graphs += graph
+
+    debugs = [ False, False, False ]
     for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
         h2exp = threeToTwo(f.Get(name))
         modifyHisto(h2exp,s)
+        if i < 2 :
+            label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit').replace("-1","#pm1")
+        else :
+            label = ""
+
         graph = rxs.graphs(h2exp, s["signalModel"], "LowEdge",
-                printXs=printXs, lineStyle=i+2,
-                label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit'))
-        pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
+                           printXs=printXs, lineStyle={0:2, 1:3, 2:3}[i],
+                           label=label)
+        if name in s['graphBlackLists']:
+            pruneGraph(graph[0]['graph'],
+                    lst=s['graphBlackLists'][name][s['signalModel']], debug=debugs[i])
         graphs += graph
 
     g.cd()
@@ -186,9 +196,9 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
                 func.Draw("same")
         printName = fileName.replace(".eps", "_logZ.eps")
 
-    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
+    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.50, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    s3 = stamp(text = "%s, 5.0 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.62, factor = 0.7)
+    s3 = stamp(text = "%s,  5.0 fb^{-1},  #sqrt{s}=7 TeV"%textMap[conf.switches()["method"]], x = 0.22, y = 0.55, factor = 0.7)
 
     printOnce(c, printName)
     printHoles(h2)
@@ -365,9 +375,11 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
     if printSinglePage :
         title = h2.GetTitle()
         h2.SetTitle("")
-        eps = fileName.replace(".ps","_%s.eps"%name)
-        super(utils.numberedCanvas, canvas).Print(eps)
-        utils.epsToPdf(eps)
+#        eps = fileName.replace(".ps","_%s.eps"%name)
+#        super(utils.numberedCanvas, canvas).Print(eps)
+#        utils.epsToPdf(eps)
+        pdf_fileName = fileName.replace(".pdf","_%s.pdf"%name)
+        super(utils.numberedCanvas, canvas).Print(pdf_fileName)
         h2.SetTitle(title)
 
     canvas.Print(fileName)
