@@ -117,12 +117,10 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
         writeDir.Close()
     return graphs
 
-def xsUpperLimitHistograms(fileName = "", switches = {}) :
+def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
     assert len(switches["CL"])==1
     cl = switches["CL"][0]
     model = switches["signalModel"]
-    ranges = hs.smsRanges(model)
-    print "repair range"
 
     f = r.TFile(fileName)
     histos = {}
@@ -135,8 +133,8 @@ def xsUpperLimitHistograms(fileName = "", switches = {}) :
         print "repair title"
         title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
         adjustHisto(h, title = title)
-        setRange("smsXRange", ranges, h, "X")
-        setRange("smsYRange", ranges, h, "Y")
+        setRange("xRange", ranges, h, "X")
+        setRange("yRange", ranges, h, "Y")
         histos[name] = h
 
     f.Close()
@@ -144,11 +142,12 @@ def xsUpperLimitHistograms(fileName = "", switches = {}) :
 
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit") :
     s = conf.switches()
+    ranges = hs.ranges(s["signalModel"])
 
     inFile = mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFilePdf  = inFile.replace(".root", "_xsLimit.pdf")
-    histos = xsUpperLimitHistograms(fileName = inFile, switches = s)
+    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges)
 
     #output a root file
     g = r.TFile(outFileRoot, "RECREATE")
@@ -158,6 +157,12 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #draw observed limit
     c = squareCanvas()
     histos[name].Draw("colz")
+    if logZ :
+        c.SetLogz()
+        setRange("xsZRangeLog", ranges, histos[name], "Z")
+    else :
+        setRange("xsZRangeLin", ranges, histos[name], "Z")
+        outFilePdf = outFilePdf.replace(".pdf", "_logZ.pdf")
 
     #draw exclusion curves
     if exclusionCurves :
@@ -185,13 +190,6 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         funcs = rxs.mDeltaFuncs(**mDeltaFuncs)
         for func in funcs :
             func.Draw("same")
-
-    if logZ :
-        c.SetLogz()
-        print "repair ranges"#setRange("smsXsZRangeLog", ranges, h2, "Z")
-    else :
-        print "repair ranges"#setRange("smsXsZRangeLin", ranges, h2, "Z")
-        outFilePdf = outFilePdf.replace(".pdf", "_logZ.pdf")
 
     #stamp plot
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
@@ -237,14 +235,14 @@ def makeEfficiencyPlot() :
     h2.Write()
     g.Close()
 
-    ranges = hs.smsRanges(s["signalModel"])
-    setRange("smsXRange", ranges, h2, "X")
-    setRange("smsYRange", ranges, h2, "Y")
+    ranges = hs.ranges(s["signalModel"])
+    setRange("xRange", ranges, h2, "X")
+    setRange("yRange", ranges, h2, "Y")
 
     h2.Draw("colz")
 
     printName = fileName
-    setRange("smsEffZRange", ranges, h2, "Z")
+    setRange("effZRange", ranges, h2, "Z")
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
 
@@ -257,7 +255,7 @@ def makeEfficiencyUncertaintyPlots() :
 
     inFile = mergedFile()
     f = r.TFile(inFile)
-    ranges = hs.smsRanges(s["signalModel"])
+    ranges = hs.ranges(s["signalModel"])
 
     def go(name, suffix, zTitle, zRangeKey) :
         fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
@@ -265,8 +263,8 @@ def makeEfficiencyUncertaintyPlots() :
         h2 = threeToTwo(f.Get(name))
         xyTitle = hs.histoTitle(model = s["signalModel"])
         adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
-        setRange("smsXRange", ranges, h2, "X")
-        setRange("smsYRange", ranges, h2, "Y")
+        setRange("xRange", ranges, h2, "X")
+        setRange("yRange", ranges, h2, "Y")
         h2.Draw("colz")
         setRange(zRangeKey, ranges, h2, "Z")
 
@@ -277,12 +275,12 @@ def makeEfficiencyUncertaintyPlots() :
 
         printOnce(c, fileName)
 
-    go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncExpZRange")
-    go(name = "effUncRelTheoretical", suffix = "effUncRelTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncThZRange")
-    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelIsrZRange")
-    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelPdfZRange")
-    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelJesZRange")
-    go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelMcStatsZRange")
+    go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "effUncExpZRange")
+    go(name = "effUncRelTheoretical", suffix = "effUncRelTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon", zRangeKey = "effUncThZRange")
+    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon", zRangeKey = "effUncRelIsrZRange")
+    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon", zRangeKey = "effUncRelPdfZRange")
+    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon", zRangeKey = "effUncRelJesZRange")
+    go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "effUncRelMcStatsZRange")
 
 def printTimeStamp() :
     #l = conf.likelihood()
