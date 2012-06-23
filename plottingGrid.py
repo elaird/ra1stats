@@ -105,43 +105,13 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
     graphs = []
     for i,name in enumerate([ "UpperLimit",]):# "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
         h = histos[name]
-        label = name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit')
-        graph = rxs.graphs(h, signalModel, "LowEdge", printXs=printXs, lineStyle=i+2, label = label)
-        pruneGraph(graph[0]['graph'], lst = graphBlackLists[name][signalModel], debug = False)
-        graphs += graph
-
-#=======
-#    h2.Draw("colz")
-#
-#    graph = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
-#    pruneGraph(graph[0]['graph'], lst=s['graphBlackLists'][name][s['signalModel']], debug=False)
-#
-#    graphs = []
-#    graphs += graph
-#
-#    debugs = [ False, False, False ]
-#    for i,name in enumerate([ "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
-#        h2exp = threeToTwo(f.Get(name))
-#        modifyHisto(h2exp,s)
-#        if i < 2 :
-#            label=name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit').replace("-1","#pm1")
-#        else :
-#            label = ""
-#
-#        graph = rxs.graphs(h2exp, s["signalModel"], "LowEdge",
-#                           printXs=printXs, lineStyle={0:2, 1:3, 2:3}[i],
-#                           label=label)
-#        if name in s['graphBlackLists']:
-#            pruneGraph(graph[0]['graph'],
-#                    lst=s['graphBlackLists'][name][s['signalModel']], debug=debugs[i])
-#        graphs += graph
-#>>>>>>> master:plottingGrid.py
-#
-
-
-
-
-
+        if i==4 :
+            label = ""
+        else :
+            label = name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit').replace("-1","#pm1")
+        graph = rxs.graphs(h, signalModel, "LowEdge", printXs = printXs, lineStyle = {0:1, 1:2, 2:3, 3:3}[i], label = label)
+        if name in graphBlackLists :
+            pruneGraph(graph[0]['graph'], lst = graphBlackLists[name][signalModel], debug = False)
 
     if writeDir :
         writeDir.cd()
@@ -199,7 +169,9 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     #draw exclusion curves
     if exclusionCurves :
+        outFilePdf = outFilePdf.replace(".pdf", "_refXs.pdf")
         graphs = exclusions(histos = histos, writeDir = g, signalModel = s["signalModel"], graphBlackLists = s["graphBlackLists"])
+        stuff = rxs.drawGraphs(graphs)
 
         if simpleExcl :
             pdf = outFilePdf.replace(".pdf","_simpleExcl.pdf")
@@ -213,9 +185,6 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
                 c.Print(pdf)
             c.Print(pdf+"]")
             return
-
-        stuff = rxs.drawGraphs(graphs)
-        outFilePdf = outFilePdf.replace(".pdf", "_refXs.pdf")
 
     #draw curves of iso-mDelta
     if mDeltaFuncs :
