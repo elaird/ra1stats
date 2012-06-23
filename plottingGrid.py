@@ -117,7 +117,7 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
     if writeDir :
         writeDir.cd()
         for dct in graphs :
-            dct["graph"].Write("graph_%5.3f_xs"%dct["factor"])
+            dct["graph"].Write()#"graph_%5.3f_xs"%dct["factor"])
         writeDir.Close()
     return graphs
 
@@ -135,7 +135,6 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
         h = threeToTwo(h3)
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
-        print "repair title"
         title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
