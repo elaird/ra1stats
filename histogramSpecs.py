@@ -1,6 +1,6 @@
 from configuration import locations
 
-def smsRanges(model) :
+def ranges(model) :
     x = {"":     ( 50.0, 1499.9), #(min, max)
          "T1":   ( 50.0, 1224.9),
          "T5zz": (400.0, 1224.9),
@@ -11,14 +11,14 @@ def smsRanges(model) :
 
     d = {}
 
-    d["smsXRange"] = x[model if model in x else ""]
-    d["smsYRange"] = y[model if model in y else ""]
-    d["smsXsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
-    d["smsXsZRangeLog"] = (1.0e-3, 100.0, 20)
-    d["smsEffZRange"]   = (0.0, 0.35, 35)
+    d["xRange"] = x[model if model in x else ""]
+    d["yRange"] = y[model if model in y else ""]
+    d["xsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
+    d["xsZRangeLog"] = (1.0e-3, 100.0, 20)
+    d["effZRange"]   = (0.0, 0.35, 35)
 
-    d["smsEffUncExpZRange"] = (0.0, 0.20, 20)
-    d["smsEffUncThZRange"] = (0.0, 0.40, 40)
+    d["effUncExpZRange"] = (0.0, 0.20, 20)
+    d["effUncThZRange"] = (0.0, 0.40, 40)
     return d
 
 def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None) :

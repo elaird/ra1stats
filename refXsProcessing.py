@@ -19,7 +19,7 @@ def histoSpec(model) :
          "TGQ_0p4":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          "TGQ_0p8":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          }
-    assert model in d,model
+    assert model in d,"model=%s"%model
     return d[model]
 
 def refXsHisto(model) :

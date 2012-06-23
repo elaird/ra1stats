@@ -129,10 +129,19 @@ def ps2pdf(psFileName, removePs = True, sameDir = False) :
     os.system(cmd)
     if removePs : os.remove(psFileName)
 #####################################
-def epsToPdf(epsFileName, removeEps = True, sameDir = False) :
-    cmd = ("epstopdf %s"%epsFileName) if not sameDir else ("epstopdf %s --outfile=%s"%(epsFileName, epsFileName.replace(".eps", ".pdf")))
-    os.system(cmd)
-    if removeEps : os.remove(epsFileName)
+def epsToPdf(fileName, tight = True, sameDir = False) :
+    if sameDir :
+        print "WARNING: ignoring sameDir argument to utils.epsToPdf"
+    if not tight : #make pdf
+        os.system("epstopdf "+fileName)
+        os.system("rm       "+fileName)
+    else : #make pdf with tight bounding box
+        epsiFile = fileName.replace(".eps",".epsi")
+        os.system("ps2epsi "+fileName+" "+epsiFile)
+        os.system("epstopdf "+epsiFile)
+        os.system("rm       "+epsiFile)
+        os.system("rm       "+fileName)
+    print "INFO: %s has been written."%fileName.replace(".eps", ".pdf")
 #####################################
 def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
     return pdf.fitTo(data, *options)
