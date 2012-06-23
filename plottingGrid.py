@@ -103,15 +103,16 @@ def pruneGraph( graph, lst=[], debug=False ):
 
 def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None) :
     graphs = []
-    for i,name in enumerate([ "UpperLimit",]):# "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]) :
+    for i,(name,label) in enumerate([("UpperLimit", "#sigma^{prod} = #sigma^{NLO-QCD}"),
+                                     ("ExpectedUpperLimit", "Expected Limit"),
+                                     ("ExpectedUpperLimit_-1_Sigma", "Expected Limit #pm1 #sigma"),
+                                     ("ExpectedUpperLimit_+1_Sigma", ""),
+                                     ]) :
         h = histos[name]
-        if i==4 :
-            label = ""
-        else :
-            label = name.replace('_Sigma',' #sigma').replace('_',' ').replace('ExpectedUpperLimit','Expected Limit').replace("-1","#pm1")
         graph = rxs.graphs(h, signalModel, "LowEdge", printXs = printXs, lineStyle = {0:1, 1:2, 2:3, 3:3}[i], label = label)
         if name in graphBlackLists :
             pruneGraph(graph[0]['graph'], lst = graphBlackLists[name][signalModel], debug = False)
+        graphs += graph
 
     if writeDir :
         writeDir.cd()
@@ -127,7 +128,8 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
 
     f = r.TFile(fileName)
     histos = {}
-    for name in ["UpperLimit", ] :
+
+    for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
         h3 = f.Get(name)
         if not h3 : continue
         h = threeToTwo(h3)
