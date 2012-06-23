@@ -3,6 +3,7 @@
 import ROOT as r
 from collections import Iterable
 from array import array
+from socket import gethostname
 import DataFactory as DF
 
 def print_unpack( item, level = 0, ending_comma = False ) :
@@ -33,17 +34,24 @@ def print_unpack( item, level = 0, ending_comma = False ) :
 
 r.gROOT.SetBatch(1)
 
-std_selections = { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                   "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                   "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
+base_histos = [ "lumiData", "lumiMc", "WJets", "Zinv", "t", "ZZ",
+                "DY", "tt", "obs" ] #"WW", "WZ" ]
+
+std_selections = { "had"  : base_histos,
+                   "muon" : base_histos,
+                   "mumu" : base_histos,
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
-base_dir = "~/116_numbers/"
-d_set = ""
-file_names = [ "{0}b.root".format(i) for i in range(0,4) ]
+
+base_dir = { 'phosphorus' : '~/116_numbers/',
+             'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
+           }[gethostname()]
+
+d_set = "08_23_06_2012"
+#file_names = [ "{0}b.root".format(i) for i in range(0,4) ]
+file_names = [ "RA1_Stats_{0}_btags.root".format(s) for s in "Zero", "One",
+                                                             "Two",
+                                                             "More_Than_Two" ]
 
 fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]
 
