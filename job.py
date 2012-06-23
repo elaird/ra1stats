@@ -54,7 +54,7 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
                           rhoSignalMin = switches["rhoSignalMin"], fIniFactor = switches["fIniFactor"])
 
         if switches["method"]=="CLs" :
-            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"],
+            results = f.cls(cl = cl, nToys = switches["nToys"],# plusMinus = switches["expectedPlusMinus"],
                             testStatType = switches["testStatistic"], calculatorType = switches["calculatorType"],
                             plSeedParams = switches["plSeedParams"])
             for key,value in results.iteritems() :
