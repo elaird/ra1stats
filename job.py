@@ -70,16 +70,17 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
                 if key=="CLs" or ("Median" in key) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
-        elif not switches["computeExpectedLimit"] :
+        else :
             results = f.interval(cl = cl, method = switches["method"], nIterationsMax = 1)
             for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
             out["excluded%g"%cl2] = (compare(results["upperLimit"], 1.0), "is (%g%% upper limit on XS factor)<1?"%cl2)
-        else :
-            d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
-            for key,value in d.iteritems() :
-                out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-                out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
-            out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
+        #old expected limit code
+        #else :
+        #    d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
+        #    for key,value in d.iteritems() :
+        #        out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+        #        out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
+        #    out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
     return out
 
 def compare(item, threshold) :
