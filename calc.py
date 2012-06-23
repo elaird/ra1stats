@@ -573,8 +573,10 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
         h.SetMarkerStyle(20)
         h.Draw("p")
 
-        assert abs(h.GetMinimum())<yMax,h.GetMinimum()
-        assert abs(h.GetMaximum())<yMax,h.GetMaximum()
+        if abs(h.GetMinimum())>yMax :
+            print "ERROR: minimum pull=",h.GetMinimum()
+        if abs(h.GetMaximum())>yMax :
+            print "ERROR: maximum pull=",h.GetMaximum()
         h.GetYaxis().SetRangeUser(-yMax, yMax)
 
         h2 = h.Clone("%s_outliers")
@@ -586,6 +588,8 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
             nTerms += 1
             total.Fill(content)
             if abs(content)>threshold :
+                hx = h.GetXaxis()
+                hx.SetBinLabel(iBin, "#color[4]{%s}"%hx.GetBinLabel(iBin))
                 h2.SetBinContent(iBin, content)
                 l2 = line.DrawLine(iBin, -yMax, iBin, content)
                 lines.append(l2)

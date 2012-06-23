@@ -551,15 +551,15 @@ class validationPlotter(object) :
         if self.label!=self.systematicsLabel : return
         self.plot(otherVars = [{"var":"rhoPhotZ", "type":"var", "desc":"#rho_{#gammaZ}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
+                  maximum = 2.0, yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
 
         self.plot(otherVars = [{"var":"rhoMuonW", "type":"var", "desc":"#rho_{#muW}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
+                  maximum = 2.0, yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
 
         self.plot(otherVars = [{"var":"rhoMumuZ", "type":"var", "desc":"#rho_{#mu#muZ}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                  maximum = 2.0, yLabel = "", legend0 = (0.78, 0.75), legend1 = (0.85, 0.88))
+                  maximum = 2.0, yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
 
     def printPars(self) :
         def ini(x, y) :
@@ -607,7 +607,10 @@ class validationPlotter(object) :
         h = self.results.correlationHist(name)
         h.SetStats(False)
         r.gStyle.SetPaintTextFormat("4.1f")
-        h.Draw("colztext")
+        h.Draw("colz")
+
+        for side in ["Right", "Left", "Top", "Bottom"] :
+            getattr(r.gPad,"Set%sMargin"%side)(0.15)
 
         if self.printPages and name :
             h.SetTitle("")
@@ -873,7 +876,12 @@ class validationPlotter(object) :
                     for item in ["min", "max"] :
                         x = getattr(var, "get%s"%item.capitalize())()
                         if abs(x)==1.0e30 : continue
-                        d[item].SetBinContent(i+1, x)
+                        if item in d : d[item].SetBinContent(i+1, x)
+
+                    d["errors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
+                    d["errors"].SetBinError(i+1, d["value"].GetBinError(i+1))
+                    d["noErrors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
+                    d["noErrors"].SetBinError(i+1, 0.0)
                 elif self.errorsFromToys :
                     q = self.quantiles[ni(varName, self.label, i)]
                     d["errors"].SetBinContent(i+1, (q[2]+q[0])/2.0)

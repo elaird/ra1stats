@@ -158,6 +158,7 @@ def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDelta
             pruneGraph(graph[0]['graph'],
                     lst=s['graphBlackLists'][name][s['signalModel']], debug=debugs[i])
         graphs += graph
+
     g.cd()
     for dct in graphs :
         dct["graph"].Write("graph_%5.3f_xs"%dct["factor"])

@@ -1,6 +1,6 @@
 from inputData import syst
 from data import data
-import utils
+import utils,collections
 
 def common(x) :
     x._htBinLowerEdges = (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
@@ -167,3 +167,47 @@ class data_ge3b(data) :
             "mcPhotErr"          :   ( None, None, 0.06227, 0.02414, 0.04888, 0.01385, 0.0, 0.0, ) ,
             }
         common(self)
+
+
+def add(lst = []) :
+    dct = collections.defaultdict(float)
+    lens = []
+    for t in lst :
+        lens.append(len(t))
+        for i,x in enumerate(t) :
+            if x!=None :
+                dct[i] += x
+            else :
+                dct[i] = None
+    assert len(set(lens))==1,set(lens)
+    return tuple([dct[i] for i in range(len(dct))])
+
+def fetched(lst = [], func = "", attr = "", key = "") :
+    return [(getattr(x,func)() if func else getattr(x,attr))[key] for x in lst]
+
+def fill(x, lst = []) :
+    x._observations = {}
+    for key in ["nPhot", "nHad", "nMuon", "nMumu"] :
+        x._observations[key] = add(fetched(lst = lst, func = "observations", key = key))
+
+    x._mcExpectationsBeforeTrigger = {}
+    for key in ["mcPhot", "mcHad", "mcTtw", "mcMuon", "mcZinv", "mcMumu"] :
+        x._mcExpectationsBeforeTrigger[key] = add(fetched(lst = lst, attr = "_mcExpectationsBeforeTrigger", key = key))
+
+    x._mcStatError = {}
+    for key in ["mcMuonErr", "mcMumuErr", "mcHadErr", "mcZinvErr", "mcTtwErr", "mcPhotErr"] :
+        x._mcStatError[key] = lst[0].mcStatError()[key]
+    common(x)
+
+_excl = [data_0b(), data_1b(), data_2b(), data_ge3b()]
+class data_ge0b(data) :
+    def _fill(self) :
+        fill(self,  lst = _excl[:])
+
+class data_ge1b(data) :
+    def _fill(self) :
+        fill(self,  lst = _excl[1:])
+
+class data_ge2b(data) :
+    def _fill(self) :
+        fill(self,  lst = _excl[2:])

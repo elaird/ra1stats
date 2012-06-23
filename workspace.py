@@ -45,6 +45,19 @@ def initialAQcd(inputData, factor, A_ewk_ini, kQcd) :
     out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
     return out
                      
+def parametrizedExpViaYield(w = None, name = "", label = "", kLabel = "", i = None) :
+    assert i,i
+    yield0 = ni("%s"%name, label, 0)
+    k = ni("k_%s"%name, kLabel)
+    bulk0 = ni("nHadBulk", label, 0)
+    bulkI = ni("nHadBulk", label, i)
+    mean0 = ni("htMean", label, 0)
+    meanI = ni("htMean", label, i)
+    varName = ni(name, label, i)
+    return r.RooFormulaVar(varName, "(@0)*(@1)/(@2)*exp(-(@3)*((@4)-(@5)))",
+                           r.RooArgList(w.var(yield0), w.var(bulkI), w.var(bulk0), w.var(k), w.var(meanI), w.var(mean0)),
+                           )
+
 def parametrizedExp(w = None, name = "", label = "", kLabel = "", i = None) :
     A = ni("A_%s"%name, label)
     k = ni("k_%s"%name, kLabel)
@@ -109,23 +122,11 @@ def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst =
             wimport(w, r.RooFormulaVar(fz(i), "(@0)+((@2)-(@3))*((@1)-(@0))/((@4)-(@3))", argList))
     return varOrFunc(w, name, label, i)
 
-def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
-
-    obs = inputData.observations()
-    trg = inputData.triggerEfficiencies()
-    htMeans = inputData.htMeans()
-    terms = []
-    out = collections.defaultdict(list)
-
-    assert RQcd!="FallingExpA"
-
-    #QCD variables
-    A_ewk_ini = 1.3e-5
-    factor = 0.7
-    A = ni("A_qcd", label)
-    argsA = poi[A] if A in poi else (AQcdIni, 0.0, AQcdMax)
-    wimport(w, r.RooRealVar(A, A, *argsA))
+def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None), zeroQcd = None,
+                            label = "", kQcdLabel = "", poi = {}, qcdParameterIsYield = None) :
+    norm = ni("qcd", label, i = 0) if qcdParameterIsYield else ni("A_qcd", label)
+    args = poi[norm] if norm in poi else normIniMinMax
+    wimport(w, r.RooRealVar(norm, norm, *args))
 
     k = ni("k_qcd", kQcdLabel)
     if label==kQcdLabel :
@@ -137,8 +138,30 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             w.var(k).setConstant()
 
     if RQcd=="Zero" or zeroQcd :
-        w.var(A).setVal(0.0)
-        w.var(A).setConstant()
+        w.var(norm).setVal(0.0)
+        w.var(norm).setConstant()
+
+def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
+             zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
+    obs = inputData.observations()
+    trg = inputData.triggerEfficiencies()
+    htMeans = inputData.htMeans()
+    terms = []
+    out = collections.defaultdict(list)
+
+    #QCD parameters
+    assert RQcd!="FallingExpA"
+    A_ewk_ini = 1.3e-5
+    qcdArgs = {}
+    for item in ["w", "RQcd", "label", "kQcdLabel", "poi", "zeroQcd", "qcdParameterIsYield"] :
+        qcdArgs[item] = eval(item)
+
+    if qcdParameterIsYield :
+        qcdArgs["normIniMinMax"] = (0.0, 0.0, max(1, obs["nHad"][0]/2.))
+    else :
+        qcdArgs["normIniMinMax"] = (AQcdIni, 0.0, AQcdMax)
+    importQcdParameters(**qcdArgs)
 
     #observed "constants", not depending upon slice
     for i,htMeanValue,nHadBulkValue,hadTrgEff, hadBulkTrgEff in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"], trg["hadBulk"]) :
@@ -155,9 +178,18 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
 
-        if RQcd=="FallingExpA" : wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
-        else :                   wimport(w, parametrizedExp (w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
-        qcd = w.function(ni("qcd", label, i))
+        if RQcd=="FallingExpA" :
+            wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
+            qcd = w.function(ni("qcd", label, i))
+        elif qcdParameterIsYield :
+            if i :
+                wimport(w, parametrizedExpViaYield(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
+                qcd = w.function(ni("qcd", label, i))
+            else :
+                qcd = w.var(ni("qcd", label, i))
+        else :
+            wimport(w, parametrizedExp(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
+            qcd = w.function(ni("qcd", label, i))
 
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
         if not muonForFullEwk :
@@ -486,7 +518,8 @@ def dataset(obsSet) :
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
                     extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
-                    REwk = None, RQcd = None, nFZinv = None, poi = {}, constrainQcdSlope = None, separateSystObs = None) :
+                    REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
+                    constrainQcdSlope = None, qcdParameterIsYield = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -511,7 +544,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax"] :
         moreArgs["had"][item] = getattr(selection, item)
-    for item in ["REwk", "RQcd", "nFZinv", "poi"] :
+    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield"] :
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
@@ -583,7 +616,8 @@ class foo(object) :
         args["smOnly"] = self.smOnly()
         args["injectSignal"] = self.injectSignal()
 
-        for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv", "constrainQcdSlope"] :
+        for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
+                     "constrainQcdSlope", "qcdParameterIsYield"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
@@ -849,15 +883,12 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True, errorsFromToys = False, drawRatios = False) :
+    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
+                errorsFromToys = False, drawRatios = False, pullPlotMax = 3.5) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        try:
-            calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)),
-                       note = self.note(), plotsDir = "plots")
-        except:
-            print "ERROR: pull plots failed"
+        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)), note = self.note(), plotsDir = "plots", yMax = pullPlotMax)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)

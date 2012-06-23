@@ -5,7 +5,7 @@ import common,workspace,likelihoodSpec,signals
 
 f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(),
                   #signalToTest = signals.simple,
-                  signalExampleToStack = signals.t1bbbb,
+                  signalExampleToStack = signals.t2bb,
                   #signalToInject = signals.t1,
 
                   #trace = True
@@ -25,7 +25,7 @@ cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
 
 #f.profile()
 #f.writeMlTable()
-f.bestFit(drawMc = False, printValues = True)
+f.bestFit(drawMc = False, printValues = True, pullPlotMax = 6.0)
 #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
 #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
 #f.qcdPlot()
