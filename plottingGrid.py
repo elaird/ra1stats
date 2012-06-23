@@ -43,18 +43,6 @@ def squareCanvas(margin = 0.18, ticks = True) :
     canvas.SetTicky(ticks)
     return canvas
 
-def epsToPdf(fileName, tight = True) :
-    if not tight : #make pdf
-        os.system("epstopdf "+fileName)
-        os.system("rm       "+fileName)
-    else : #make pdf with tight bounding box
-        epsiFile = fileName.replace(".eps",".epsi")
-        os.system("ps2epsi "+fileName+" "+epsiFile)
-        os.system("epstopdf "+epsiFile)
-        os.system("rm       "+epsiFile)
-        os.system("rm       "+fileName)
-    print "%s has been written."%fileName.replace(".eps",".pdf")
-
 def adjustHisto(h, title = "") :
     h.SetStats(False)
     h.SetTitle(title)
@@ -67,8 +55,8 @@ def printOnce(canvas, fileName) :
     text.SetTextAlign(22)
     text.DrawText(0.5, 0.85, "CMS Preliminary")
     canvas.Print(fileName)
-    print "INFO: %s created."%fileName
-    canvas.Print(fileName.replace(".pdf",".C"))
+    utils.epsToPdf(fileName)
+    #canvas.Print(fileName.replace(".eps",".C"))
 
 def setRange(var, ranges, histo, axisString) :
     if var not in ranges : return
@@ -150,7 +138,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     inFile = mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
-    outFilePdf  = inFile.replace(".root", "_xsLimit.pdf")
+    outFileEps  = inFile.replace(".root", "_xsLimit.eps")
     histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges)
 
     #output a root file
@@ -164,18 +152,18 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     if logZ :
         c.SetLogz()
         setRange("xsZRangeLog", ranges, histos[name], "Z")
-        outFilePdf = outFilePdf.replace(".pdf", "_logZ.pdf")
+        outFileEps = outFileEps.replace(".eps", "_logZ.eps")
     else :
         setRange("xsZRangeLin", ranges, histos[name], "Z")
 
     #draw exclusion curves
     if exclusionCurves :
-        outFilePdf = outFilePdf.replace(".pdf", "_refXs.pdf")
+        outFileEps = outFileEps.replace(".eps", "_refXs.eps")
         graphs = exclusions(histos = histos, writeDir = g, signalModel = s["signalModel"], graphBlackLists = s["graphBlackLists"])
         stuff = rxs.drawGraphs(graphs)
 
         if simpleExcl :
-            pdf = outFilePdf.replace(".pdf","_simpleExcl.pdf")
+            pdf = outFileEps.replace(".eps","_simpleExcl.pdf")
             c.Print(pdf+"[")
             for d in graphs :
                 d["histo"].Draw("colz")
@@ -189,7 +177,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     #draw curves of iso-mDelta
     if mDeltaFuncs :
-        outFilePdf = outFilePdf.replace(".pdf", "_mDelta.pdf")
+        outFileEps = outFileEps.replace(".eps", "_mDelta.eps")
         funcs = rxs.mDeltaFuncs(**mDeltaFuncs)
         for func in funcs :
             func.Draw("same")
@@ -199,7 +187,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
     s3 = stamp(text = "%s,  5.0 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
 
-    printOnce(c, outFilePdf)
+    printOnce(c, outFileEps)
     printHoles(histos[name])
 
 def makeEfficiencyPlot() :
