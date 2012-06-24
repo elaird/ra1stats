@@ -514,7 +514,15 @@ def pullHisto(termType = "", pulls = {}, title = "") :
         h.SetBinContent(1+i, p[key])
         if termType=="Pois" :
             try:
-                sample,sel,nB,iHt = key.split("_")
+                fields = key.split("_")
+                if len(fields)==4 :
+                    sample,sel,nB,iHt = fields
+                elif len(fields)==6 :
+                    sample,sel,nB,s1,s2,iHt = fields
+                    assert s1=="no",s1
+                    assert s2=="aT",s2
+                else :
+                    assert False,"unsupported length %d"%len(fields)
             except:
                 print key
                 exit()
