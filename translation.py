@@ -49,7 +49,7 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
 def plot(datasets = []) :
     canvas = r.TCanvas("canvas", "canvas", 600, 800)
 
-    fileName = "tr.pdf"
+    fileName = "translation_factors.pdf"
     canvas.Print(fileName+"[")
     misc = []
     slices = datasets[0]["slices"] #assume first list of slices contains the subsequent ones
