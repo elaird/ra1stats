@@ -3,7 +3,7 @@ from common import selection,nb
 
 class spec(object) :
 
-    def separateSystObs(self) : return True
+    def separateSystObs(self) : return self._separateSystObs
     def poi(self) :
         return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
                 {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
@@ -27,13 +27,13 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None, year = 2011) :
+    def __init__(self, iLower = None, iUpper = None, year = 2011, separateSystObs = True) :
         self._iLower = iLower
         self._iUpper = iUpper
         self._selections = []
+        self._separateSystObs = separateSystObs
 
         assert year in [0, 2011, 2012],year
-
         if year==0 :
             self.__initSimple__()
         elif year==2011 :
