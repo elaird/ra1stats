@@ -308,7 +308,7 @@ class validationPlotter(object) :
         self.photPlots()
         self.mumuPlots()
         self.ewkPlots()
-        self.mcFactorPlots()
+        #self.mcFactorPlots()
         self.alphaTRatioPlots()
         self.rhoPlots()
         self.printPars()
