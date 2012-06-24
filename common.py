@@ -103,3 +103,19 @@ def note(likelihoodSpec = {}) :
     for selection in l.selections() :
         out += "_%s-%s"%(selection.name, sampleCode(selection.samplesAndSignalEff))
     return out
+
+def split(key) :
+    try:
+        fields = key.split("_")
+        if len(fields)==4 :
+            sample,sel,nB,iHt = fields
+        elif len(fields)==6 :
+            sample,sel,nB,s1,s2,iHt = fields
+            assert s1=="no",s1
+            assert s2=="aT",s2
+        else :
+            assert False,"unsupported length %d"%len(fields)
+        return sample,sel,nB,iHt
+    except:
+        print key
+        exit()
