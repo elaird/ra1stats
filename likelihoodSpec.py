@@ -27,14 +27,19 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None) :
+    def __init__(self, iLower = None, iUpper = None, year = 2011) :
         self._iLower = iLower
         self._iUpper = iUpper
         self._selections = []
 
-        #self.__initSimple__()
-        self.__init2012__()
-        #self.__init2011reorg__(updated = True)
+        assert year in [0, 2011, 2012],year
+
+        if year==0 :
+            self.__initSimple__()
+        elif year==2011 :
+            self.__init2011reorg__(updated = True)
+        elif year==2012 :
+            self.__init2012__()
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
