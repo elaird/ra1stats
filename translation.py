@@ -7,7 +7,7 @@ def setup() :
     r.gROOT.SetBatch(True)
     r.gErrorIgnoreLevel = 2000
 
-def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset = 0, afterTrigger = False) :
+def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset = 0, color = None, afterTrigger = False) :
     htMeans = data.htMeans()
 
     if htMeans[-1]<1000. :
@@ -15,7 +15,6 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
         print "WARNING: hacking HT mean %g  -->  %g for dataset %d"%(htMeans[-1], htMax, iDataset)
         htMeans = tuple(list(htMeans[:-1])+[htMax])
 
-    color = {0:1, 1:2, 2:4}[iDataset]
     graphs = []
     for i,tr in enumerate(factors) :
         canvas.cd(1+i)
@@ -73,6 +72,7 @@ def plot(datasets = []) :
                                 data = getattr(module, "data_%s"%name)(),
                                 name = name,
                                 iDataset = iDataset,
+                                color = dct["color"],
                                 )
             leg.AddEntry(graphs[0], dct["label"], "lp")
             misc += graphs
@@ -85,11 +85,12 @@ def plot(datasets = []) :
 
 
 from inputData.data2011reorg import take3 #2011
-from inputData.data2012 import take5a,take5_capped #2012
+from inputData.data2012 import take5,take5a,take5_capped #2012
 
-datasets = [ {"module": take5a,       "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "label": "2012 (hacked)"},
-             {"module": take5_capped, "slices": ["0b", "1b", "2b", "ge3b"],             "label": "2012 (weights capped at 5)"},
-             {"module": take3,        "slices": ["0b", "1b", "2b", "ge3b"],             "label": "2011"},
+datasets = [ {"module": take5,        "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,"label": "2012 (raw)"},
+             {"module": take5a,       "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack, "label": "2012 (hacked)"},
+             {"module": take5_capped, "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kBlue,  "label": "2012 (weights capped at 5)"},
+             {"module": take3,        "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kRed,   "label": "2011"},
              ]
 
 #todo: what to minimize in a fit?
