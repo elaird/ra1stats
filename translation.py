@@ -10,6 +10,11 @@ def setup() :
 def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset = 0, afterTrigger = False) :
     htMeans = data.htMeans()
 
+    if htMeans[-1]<1000. :
+        htMax = 1045.
+        print "WARNING: hacking HT mean %g  -->  %g for dataset %d"%(htMeans[-1], htMax, iDataset)
+        htMeans = tuple(list(htMeans[:-1])+[htMax])
+
     color = {0:1, 1:2, 2:4}[iDataset]
     graphs = []
     for i,tr in enumerate(factors) :
@@ -21,7 +26,7 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
         assert len(set([len(htMeans), len(trFactor), len(trFactorErr)]))==1
 
         gr = r.TGraphErrors()
-        gr.SetName("%s%s"%(name, tr))
+        gr.SetName("%s%s%s"%(name, tr, "%d"%iDataset if iDataset else ""))
         gr.SetMarkerStyle(20)
         gr.SetLineColor(color)
         gr.SetMarkerColor(color)
@@ -53,6 +58,10 @@ def plot(datasets = []) :
         canvas.cd(0)
         canvas.Clear()
         canvas.Divide(1, 3)
+        leg = r.TLegend(0.6, 0.9, 0.9, 0.98)
+        leg.SetFillStyle(0)
+        leg.SetBorderSize(0)
+
         for iDataset,dct in enumerate(datasets) :
             attr = "data_%s"%name
             module = dct["module"]
@@ -65,7 +74,11 @@ def plot(datasets = []) :
                                 name = name,
                                 iDataset = iDataset,
                                 )
+            leg.AddEntry(graphs[0], dct["label"], "lp")
             misc += graphs
+
+        canvas.cd(0)
+        leg.Draw()
         canvas.Print(fileName)
     canvas.Print(fileName+"]")
 
