@@ -3,7 +3,7 @@ from data import data,scaled
 
 # TypeI PF MET
 
-def common(x, systMode = 124) :
+def common(x, systMode = 1240) :
     x._htBinLowerEdges = (275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0)
     x._htMaxForPlot = 975.0
     x._htMeans = ( 297.96, 347.558, 415.942, 516.723, 617.19, 718.153, 818.612, 1044.56 )
