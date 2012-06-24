@@ -1,7 +1,7 @@
 import math,array,copy,collections
 import utils,cpp,plotting
 import ROOT as r
-from common import obs,pdf,wimport,pseudoData
+import common
 
 cpp.compile()
 
@@ -71,12 +71,12 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
 
 def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapSb)
-        nll = pdf(wspace).createNLL(data)
+        nll = common.pdf(wspace).createNLL(data)
         sbLl = -nll.getVal()
         utils.delete(nll)
         
         wspace.loadSnapshot(snapB)
-        nll = pdf(wspace).createNLL(data)
+        nll = common.pdf(wspace).createNLL(data)
         bLl = -nll.getVal()
         utils.delete(nll)
 
@@ -84,7 +84,7 @@ def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None
 
 def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapSb)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         if verbose :
             print "S+B"
             print "---"            
@@ -93,7 +93,7 @@ def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = Non
         utils.delete(results)
         
         wspace.loadSnapshot(snapB)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         if verbose :
             print " B "
             print "---"            
@@ -107,14 +107,14 @@ def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = Non
 
 def ts4(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapB)
-        nll = pdf(wspace).createNLL(data)
+        nll = common.pdf(wspace).createNLL(data)
         bLl = -nll.getVal()
         utils.delete(nll)
         return bLl
 
 def ts40(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapB)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         if verbose :
             print " B "
             print "---"            
@@ -142,9 +142,9 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
         else :
             wspace.var("f").setVal(1.0)
             wspace.var("f").setConstant(False)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         wspace.saveSnapshot("snap_%s"%label, wspace.allVars())
-        toys[label] = pseudoData(wspace, nToys)
+        toys[label] = common.pseudoData(wspace, nToys)
         utils.delete(results)
 
     args = {"wspace": wspace, "testStatType": testStatType, "snapSb": "snap_sb", "snapB": "snap_b", "snapfHat": "snap_fHat"}
@@ -165,8 +165,8 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints = 1, poiMin = 1.0, poiMax = 1.0) :
     assert not smOnly
 
-    wimport(wspace, dataset)
-    wimport(wspace, modelconfig)
+    common.wimport(wspace, dataset)
+    common.wimport(wspace, modelconfig)
 
     #from StandardHypoTestInvDemo.C
     opts = {
@@ -396,10 +396,10 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
     #fit to SM-only
     wspace.var("f").setVal(0.0)
     wspace.var("f").setConstant(True)
-    results = utils.rooFitResults(pdf(wspace), dataset)
+    results = utils.rooFitResults(common.pdf(wspace), dataset)
 
     #generate toys
-    toys = pseudoData(wspace, nToys)
+    toys = common.pseudoData(wspace, nToys)
 
     #restore signal model
     wspace.var("f").setVal(1.0)
@@ -513,11 +513,7 @@ def pullHisto(termType = "", pulls = {}, title = "") :
     for i,key in enumerate(sorted(p.keys())) :
         h.SetBinContent(1+i, p[key])
         if termType=="Pois" :
-            try:
-                sample,sel,nB,iHt = key.split("_")
-            except:
-                print key
-                exit()
+            sample,sel,nB,iHt = common.split(key)
             sample = sample.replace(termType,"")
             nB = nB.replace("gt2","3")
             if not int(iHt)%2 :

@@ -3,7 +3,7 @@ from common import selection,nb
 
 class spec(object) :
 
-    def separateSystObs(self) : return True
+    def separateSystObs(self) : return self._separateSystObs
     def poi(self) :
         return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
                 {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
@@ -16,7 +16,7 @@ class spec(object) :
     def qcdParameterIsYield(self) : return False
 
     def selections(self) :
-        return self._selections
+        return self._selections[self._iLower:self._iUpper]
 
     def poiList(self) :
         return self.poi().keys()
@@ -27,11 +27,19 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self) :
+    def __init__(self, iLower = None, iUpper = None, year = 2011, separateSystObs = True) :
+        self._iLower = iLower
+        self._iUpper = iUpper
         self._selections = []
-        #self.__initSimple__()
-        #self.__init2012__()
-        self.__init2011reorg__(updated = True)
+        self._separateSystObs = separateSystObs
+
+        assert year in [0, 2011, 2012],year
+        if year==0 :
+            self.__initSimple__()
+        elif year==2011 :
+            self.__init2011reorg__(updated = True)
+        elif year==2012 :
+            self.__init2012__()
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
@@ -45,7 +53,7 @@ class spec(object) :
                 ])
 
     def __init2012__(self) :
-        self._constrainQcdSlope = False
+        self._constrainQcdSlope = True
         self.legendTitle = "CMS, 3.8 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5a as module
         self.add([
@@ -95,7 +103,7 @@ class spec(object) :
                           fZinvIni = 0.1,
                           AQcdIni = 0.0,
                           ),
-                ][4:5])
+                ])
 
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
