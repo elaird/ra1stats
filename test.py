@@ -2,8 +2,12 @@
 
 import common,workspace,likelihoodSpec,signals
 
-def go(iLower = None, iUpper = None, year = 2011) :
-    f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(iLower = iLower, iUpper = iUpper, year = year),
+def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
+    f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(iLower = iLower,
+                                                           iUpper = iUpper,
+                                                           year = year,
+                                                           separateSystObs = not ensemble,
+                                                           ),
                       #signalToTest = signals.simple,
                       #signalExampleToStack = signals.t2bb,
                       #signalToInject = signals.t1,
@@ -12,6 +16,10 @@ def go(iLower = None, iUpper = None, year = 2011) :
                       #fIniFactor = 0.1,
                       #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                       )
+
+    if ensemble :
+        f.ensemble(nToys = 300, stdout = True)
+        return
 
     #cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
     #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
@@ -28,7 +36,6 @@ def go(iLower = None, iUpper = None, year = 2011) :
     #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
     #f.qcdPlot()
-    #f.ensemble(nToys = 3000, stdout = True)
     #print f.clsCustom(nToys = 500, testStatType = 1)
     #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
     #f.debug()
@@ -38,6 +45,6 @@ year2012 = True
 
 if year2012 :
     for iLower in range(5) :
-        go(iLower = iLower, iUpper = 1+iLower, year = 2012)
+        go(iLower = iLower, iUpper = 1+iLower, year = 2012, ensemble = False)
 else :
     go() #2011
