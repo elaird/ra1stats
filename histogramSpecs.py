@@ -37,7 +37,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
            "T2bb":    {"had": "rw_fix", "muon": "rw_fix"},
            "T5zz":    {"had": "v1", "muon": "v1"},
            "T1bbbb":  {"had": "rw_fix", "muon": "rw_fix"},
-           "T1tttt":  {"had": "rw_fix", "muon": "rw_fix"},#{"had": "v3", "muon": "v3"},
+           "T1tttt":  {"had": "2012proto",},# "muon": "2012proto"},#{"had": "v3", "muon": "v3"},
            "TGQ_0p0": {"had": "v1"},
            "TGQ_0p2": {"had": "v1"},
            "TGQ_0p4": {"had": "v1"},
