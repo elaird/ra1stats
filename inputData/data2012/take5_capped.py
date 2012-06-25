@@ -62,6 +62,7 @@ class data_0b(data) :
                 "nMuon"              :   ( 694.0, 294.0, 247.0, 69.0, 25.0, 5.0, 5.0, 1.0, ) ,
                 "nMumu"              :   ( 103.0, 52.0, 31.0, 15.0, 2.0, 2.0, 2.0, 0.0, ) ,
             }
+        common(self)
 
 class data_0b_no_aT(data) :
     def _fill(self) :
