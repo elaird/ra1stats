@@ -121,7 +121,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T1"]
+            "signalModel": dict(zip(models, models))["T1tttt"]
             }
 
 def listOfTestPoints() :
@@ -163,7 +163,7 @@ def getMaxJobs() :
 
 def getSubCmds() :
     return {
-        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][1]),
+        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
         "FNAL": "condor_submit"
     }[batchHost]
 
