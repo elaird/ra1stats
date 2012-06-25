@@ -34,7 +34,7 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
         for h,t,tE in zip(htMeans, trFactor, trFactorErr) :
             if t is None : continue
             gr.SetPoint(iGraph, h, t)
-            gr.SetPointError(iGraph, 0.0, tE)
+            gr.SetPointError(iGraph, 0.0, tE if tE else 0.0)
             iGraph += 1
 
         gr.Draw("psame" if iDataset else "ap")
@@ -57,7 +57,7 @@ def plot(datasets = []) :
         canvas.cd(0)
         canvas.Clear()
         canvas.Divide(1, 3)
-        leg = r.TLegend(0.6, 0.9, 0.9, 0.98)
+        leg = r.TLegend(0.6, 0.9, 0.85, 0.98)
         leg.SetFillStyle(0)
         leg.SetBorderSize(0)
 
@@ -83,14 +83,17 @@ def plot(datasets = []) :
     canvas.Print(fileName+"]")
 
 
+#2011
+from inputData.data2011reorg import take3
 
-from inputData.data2011reorg import take3 #2011
-from inputData.data2012 import take5,take5a,take5_capped #2012
+#2012
+from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
 
-datasets = [ {"module": take5,        "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,"label": "2012 (raw)"},
-             {"module": take5a,       "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack, "label": "2012 (hacked)"},
-             {"module": take5_capped, "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kBlue,  "label": "2012 (weights capped at 5)"},
-             {"module": take3,        "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kRed,   "label": "2011"},
+datasets = [ {"module": take5,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
+             {"module": take5a,           "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack,   "label": "2012 (fully weighted; hacked)"},
+             {"module": take5_capped,     "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kBlue,    "label": "2012 (weights capped at 5)"},
+             {"module": take5_unweighted, "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kCyan,    "label": "2012 (unweighted)"},
+             {"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kMagenta, "label": "2011"},
              ]
 
 #todo: what to minimize in a fit?
