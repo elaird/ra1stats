@@ -47,16 +47,19 @@ base_dir = { 'phosphorus' : '~/116_numbers/',
              'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
            }[gethostname()]
 
-d_set = "08_23_06_2012"
-#file_names = [ "{0}b.root".format(i) for i in range(0,4) ]
-file_names = [ "RA1_Stats_{0}_btags.root".format(s) for s in "Zero", "One",
-                                                             "Two",
-                                                             "More_Than_Two" ]
+d_set = "09_25_06_2012_unweighted"
+file_names = [ "RA1_Stats_Zero_btags_noAlphaTCut.root",
+    "RA1_Stats_Zero_btags.root",
+    "RA1_Stats_One_btag.root",
+    "RA1_Stats_Two_btags.root",
+    "RA1_Stats_More_Than_Two_btag.root",
+    ]
+
 
 fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]
 
 
-names = [ "btag0", "btag1", "btag2", "btag3", ]
+names = [ "btag0_noAT", "btag0_wAT", "btag1", "btag2", "btag3" ]
 
 selections  = [ { rfile : std_selections } for rfile in fullfiles ]
 
