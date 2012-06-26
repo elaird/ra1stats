@@ -131,6 +131,7 @@ def listOfTestPoints() :
     #out = [(13, 1, 1)]
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
+    #out = [(19,5,1)]
     out = []
     return out
 
