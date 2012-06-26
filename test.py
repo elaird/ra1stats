@@ -8,8 +8,8 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                                                            year = year,
                                                            separateSystObs = not ensemble,
                                                            ),
-                      #signalToTest = signals.t1tttt_2012,
-                      signalExampleToStack = signals.t1tttt_2012,
+                      #signalToTest = signals.t2tt2,
+                      #signalExampleToStack = signals.t2tt2,
                       #signalToInject = signals.t1,
                       #trace = True
                       #rhoSignalMin = 0.1,
@@ -32,7 +32,8 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #
     #f.profile()
     #f.writeMlTable()
-    f.bestFit(drawMc = False, printValues = True, pullPlotMax = 6.0)
+    f.bestFit(drawMc = False, printValues = True, pullPlotMax = 4.0, pullThreshold = 5.0)
+    #f.bestFit(drawMc = False, printValues = False, drawComponents = False)
     #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
     #f.qcdPlot()
@@ -41,7 +42,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #f.debug()
     #f.cppDrive(tool = "")
 
-year2012 = True
+year2012 = False
 
 if year2012 :
     for iLower in range(5) :

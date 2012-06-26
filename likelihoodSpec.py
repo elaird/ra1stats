@@ -30,15 +30,16 @@ class spec(object) :
     def __init__(self, iLower = None, iUpper = None, year = 2012, separateSystObs = True) :
         self._iLower = iLower
         self._iUpper = iUpper
+        self._year = year
         self._selections = []
         self._separateSystObs = separateSystObs
 
-        assert year in [0, 2011, 2012],year
-        if year==0 :
+        assert self._year in [0, 2011, 2012],self._year
+        if self._year==0 :
             self.__initSimple__()
-        elif year==2011 :
+        elif self._year==2011 :
             self.__init2011reorg__(updated = True)
-        elif year==2012 :
+        elif self._year==2012 :
             self.__init2012__()
 
     def __initSimple__(self) :
