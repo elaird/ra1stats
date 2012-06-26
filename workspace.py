@@ -884,11 +884,12 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
-                errorsFromToys = False, drawRatios = False, pullPlotMax = 3.5) :
+                errorsFromToys = False, drawRatios = False, pullPlotMax = 3.5, pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)), note = self.note(), plotsDir = "plots", yMax = pullPlotMax)
+        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)), note = self.note(), plotsDir = "plots",
+                       yMax = pullPlotMax, threshold = pullThreshold)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
