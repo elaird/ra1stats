@@ -21,8 +21,8 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
         f.ensemble(nToys = 300, stdout = True)
         return
 
-    cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
-    out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
+    #cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
+    #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
     #out = f.cls(cl = cl, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0},makePlots = True,
     #            calculatorType = ["frequentist", "asymptotic", "asymptoticNom"][1],
     #            testStatType = 3, nToys = 50, nWorkers = 1,
@@ -32,7 +32,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #
     #f.profile()
     #f.writeMlTable()
-    #f.bestFit(drawMc = False, printValues = True, pullPlotMax = 6.0)
+    f.bestFit(drawMc = False, printValues = True, pullPlotMax = 6.0)
     #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
     #f.qcdPlot()
@@ -43,8 +43,8 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
 
 year2012 = True
 
-#if year2012 :
-    #for iLower in range(5) :
-        #go(iLower = iLower, iUpper = 1+iLower, year = 2012, ensemble = False)
-#else :
+if year2012 :
+    for iLower in range(5) :
+        go(iLower = iLower, iUpper = 1+iLower, year = 2012, ensemble = False)
+else :
 go() #2011
