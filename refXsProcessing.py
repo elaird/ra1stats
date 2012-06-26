@@ -7,17 +7,18 @@ def histoSpec(model) :
     tgqFile = "%s/v1/TGQ_xSec.root"%base
     tgqHisto = "clone"
     tgqFactor = 1.0
-    d = {"T1":        {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T2":        {"histo": "squark", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T2tt":      {"histo": "stop_or_sbottom","factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T2bb":      {"histo": "squark", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T5zz":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T1bbbb":    {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T1tttt":    {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "TGQ_0p0":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
-         "TGQ_0p2":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
-         "TGQ_0p4":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
-         "TGQ_0p8":   {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+    d = {"T1":          {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T2":          {"histo": "squark", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T2bb":        {"histo": "squark", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T5zz":        {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T1bbbb":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T1tttt":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T1tttt_2012": {"histo": "gluino", "factor": 1.0,  "file": "%s/v4/sms_xs.root"%base},
+         "TGQ_0p0":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+         "TGQ_0p2":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+         "TGQ_0p4":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+         "TGQ_0p8":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
          }
     assert model in d,"model=%s"%model
     return d[model]

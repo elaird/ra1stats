@@ -27,7 +27,7 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None, year = 2011, separateSystObs = True) :
+    def __init__(self, iLower = None, iUpper = None, year = 2012, separateSystObs = True) :
         self._iLower = iLower
         self._iUpper = iUpper
         self._year = year
@@ -67,15 +67,15 @@ class spec(object) :
                           fZinvIni = 0.50,
                           AQcdIni = 0.0,
                           ),
-                selection(name = "55_0b_no_aT",
-                          note = "%s= 0"%nb,
-                          alphaTMinMax = ("55", None),
-                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-                          data = module.data_0b_no_aT(),
-                          nbTag = "0",
-                          fZinvIni = 0.50,
-                          AQcdIni = 0.0,
-                          ),
+                #selection(name = "55_0b_no_aT",
+                          #note = "%s= 0"%nb,
+                          #alphaTMinMax = ("55", None),
+                          #samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          #data = module.data_0b_no_aT(),
+                          #nbTag = "0",
+                          #fZinvIni = 0.50,
+                          #AQcdIni = 0.0,
+                          #),
                 selection(name = "55_1b",
                           note = "%s= 1"%nb,
                           alphaTMinMax = ("55", None),

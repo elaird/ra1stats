@@ -53,7 +53,9 @@ def signal() :
                                 ],
                             "T5zz": [],
                             })
-    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
+    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
+              "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+              "T1tttt_2012"]
 
     graphBlackLists = {}
     for key in [ "UpperLimit", "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ] :
@@ -103,6 +105,7 @@ def signal() :
                            "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
                            "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+                           "T1tttt_2012":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
                            },
             "nEventsIn":{""       :(9900., 10100.),
                          "T1"   :(1, None),
@@ -116,6 +119,7 @@ def signal() :
                          "TGQ_0p2":(1, None),
                          "TGQ_0p4":(1, None),
                          "TGQ_0p8":(1, None)},
+                         "T1tttt_2012"   :(1, None),
             "nlo": True,
             "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
@@ -128,10 +132,11 @@ def listOfTestPoints() :
     #out = [(181, 29, 1)]
     #out = [(33, 53, 1)]
     #out = [(61, 61, 1)]
-    out = [(13, 3, 1)]
+    #out = [(13, 3, 1)]
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
-    #out = []
+    #out = [(19,5,1)]
+    out = []
     return out
 
 def xWhiteList() :
@@ -163,7 +168,7 @@ def getMaxJobs() :
 
 def getSubCmds() :
     return {
-        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][1]),
+        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
         "FNAL": "condor_submit"
     }[batchHost]
 
