@@ -91,7 +91,7 @@ def sampleCode(samples) :
 
 def note(likelihoodSpec = {}) :
     l = likelihoodSpec
-    out = ""
+    out = "%d_"%l._year
     
     if l.REwk() : out += "REwk%s_"%l.REwk()
     out += "RQcd%s"%l.RQcd()
