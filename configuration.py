@@ -23,7 +23,7 @@ def method() :
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
-            "fiftyGeVStepsOnly": False,
+            "fiftyGeVStepsOnly": True,
             }
 
 def signal() :
@@ -47,9 +47,9 @@ def signal() :
                                 ],
                             "T1bbbb": [ (36, 29, 1) ],
                             "T1tttt": [
-                                (37, 2, 1), (37, 3, 1), (37, 4, 1), (37, 5, 1), (37, 6, 1),
-                                (37, 7, 1), (29, 13, 1), (40, 24, 1), (44, 28, 1),
-                                (27, 11, 1)
+#                                (37, 2, 1), (37, 3, 1), (37, 4, 1), (37, 5, 1), (37, 6, 1),
+#                                (37, 7, 1), (29, 13, 1), (40, 24, 1), (44, 28, 1),
+#                                (27, 11, 1)
                                 ],
                             "T5zz": [],
                             })
@@ -82,14 +82,14 @@ def signal() :
     graphBlackLists["ExpectedUpperLimit"].update({"T1bbbb" : [ (1025,475),
         (1025,450) ]})
 
-    graphBlackLists["UpperLimit"].update({"T1tttt" : [ (550,150), (800,350),
-        (750,300), (800,300), (800,250), (825,200), (825,250), (875,300) ]})
-    graphBlackLists["ExpectedUpperLimit"].update({"T1tttt" : [(825,175)] })
-    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T1tttt" :
-        [(675,175), (750, 125) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T1tttt" :
-        [(875,350), (900,150), (900,200), (1000,225), (925,225), (950,275),
-        (950,300), (900,325), (850,325)]})
+    #graphBlackLists["UpperLimit"].update({"T1tttt" : [ (550,150), (800,350),
+        #(750,300), (800,300), (800,250), (825,200), (825,250), (875,300) ]})
+    #graphBlackLists["ExpectedUpperLimit"].update({"T1tttt" : [(825,175)] })
+    #graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T1tttt" :
+        #[(675,175), (750, 125) ]})
+    #graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T1tttt" :
+        #[(875,350), (900,150), (900,200), (1000,225), (925,225), (950,275),
+        #(950,300), (900,325), (850,325)]})
 
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
