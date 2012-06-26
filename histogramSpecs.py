@@ -7,6 +7,7 @@ def ranges(model) :
          }
     y = {"":     ( 50.0, 1224.9), #(min, max)
          "T5zz": ( 50.0,  999.9),
+         "T1tttt_2012": (25.0, 1149.9),
          }
 
     d = {}
@@ -31,17 +32,18 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              }
 
-    sms = {"T1":      {"had": "rw_fix"},
-           "T2":      {"had": "rw_fix"},
-           "T2tt":    {"had": "rw_fix", "muon": "rw_fix"},
-           "T2bb":    {"had": "rw_fix", "muon": "rw_fix"},
-           "T5zz":    {"had": "v1", "muon": "v1"},
-           "T1bbbb":  {"had": "rw_fix", "muon": "rw_fix"},
-           "T1tttt":  {"had": "rw_fix", "muon": "rw_fix"},#{"had": "v3", "muon": "v3"},
-           "TGQ_0p0": {"had": "v1"},
-           "TGQ_0p2": {"had": "v1"},
-           "TGQ_0p4": {"had": "v1"},
-           "TGQ_0p8": {"had": "v1"},
+    sms = {"T1":          {"had": "rw_fix"},
+           "T2":          {"had": "rw_fix"},
+           "T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
+           "T2bb":        {"had": "rw_fix", "muon": "rw_fix"},
+           "T5zz":        {"had": "v1", "muon": "v1"},
+           "T1bbbb":      {"had": "rw_fix", "muon": "rw_fix"},
+           "T1tttt":      {"had": "v3", "muon": "v3"},
+           "T1tttt_2012": {"had": "2012full", "muon": "2012full"},
+           "TGQ_0p0":     {"had": "v1"},
+           "TGQ_0p2":     {"had": "v1"},
+           "TGQ_0p4":     {"had": "v1"},
+           "TGQ_0p8":     {"had": "v1"},
            }
 
     #remove these hard-coded numbers
@@ -75,17 +77,18 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     return out
 
 def histoTitle(model = "") :
-    d = {"T1"      : ";m_{gluino} (GeV);m_{LSP} (GeV)",
-         "T2"      : ";m_{squark} (GeV);m_{LSP} (GeV)",
-         "T2tt"    : ";m_{stop} (GeV);m_{LSP} (GeV)",
-         "T2bb"    : ";m_{sbottom} (GeV);m_{LSP} (GeV)",
-         "T5zz"    : ";m_{gluino} (GeV);m_{LSP} (GeV)",
-         "T1bbbb"  : ";m_{gluino} (GeV);m_{LSP} (GeV)",
-         "T1tttt"  : ";m_{gluino} (GeV);m_{LSP} (GeV)",
-         "TGQ_0p0" : ";m_{gluino} (GeV);m_{squark} (GeV)",
-         "TGQ_0p2" : ";m_{gluino} (GeV);m_{squark} (GeV)",
-         "TGQ_0p4" : ";m_{gluino} (GeV);m_{squark} (GeV)",
-         "TGQ_0p8" : ";m_{gluino} (GeV);m_{squark} (GeV)",
-         ""        : ";m_{0} (GeV);m_{1/2} (GeV)",
+    d = {"T1"           : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T2"           : ";m_{squark} (GeV);m_{LSP} (GeV)",
+         "T2tt"         : ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "T2bb"         : ";m_{sbottom} (GeV);m_{LSP} (GeV)",
+         "T5zz"         : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T1bbbb"       : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T1tttt"       : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "T1tttt_2012"  : ";m_{gluino} (GeV);m_{LSP} (GeV)",
+         "TGQ_0p0"      : ";m_{gluino} (GeV);m_{squark} (GeV)",
+         "TGQ_0p2"      : ";m_{gluino} (GeV);m_{squark} (GeV)",
+         "TGQ_0p4"      : ";m_{gluino} (GeV);m_{squark} (GeV)",
+         "TGQ_0p8"      : ";m_{gluino} (GeV);m_{squark} (GeV)",
+         ""             : ";m_{0} (GeV);m_{1/2} (GeV)",
          }
     return d[model] if model in d else d[""]

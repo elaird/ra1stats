@@ -8,8 +8,8 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                                                            year = year,
                                                            separateSystObs = not ensemble,
                                                            ),
-                      #signalToTest = signals.simple,
-                      #signalExampleToStack = signals.t2bb,
+                      #signalToTest = signals.t1tttt_2012,
+                      signalExampleToStack = signals.t1tttt_2012,
                       #signalToInject = signals.t1,
                       #trace = True
                       #rhoSignalMin = 0.1,

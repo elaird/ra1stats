@@ -159,7 +159,10 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #draw exclusion curves
     if exclusionCurves :
         outFileEps = outFileEps.replace(".eps", "_refXs.eps")
-        graphs = exclusions(histos = histos, writeDir = g, signalModel = s["signalModel"], graphBlackLists = s["graphBlackLists"])
+        graphs = exclusions(histos = histos, writeDir = g,
+                            signalModel = s["signalModel"],
+                            graphBlackLists = s["graphBlackLists"],
+                            printXs = printXs)
         stuff = rxs.drawGraphs(graphs)
 
         if simpleExcl :
@@ -185,7 +188,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #stamp plot
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.50, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    s3 = stamp(text = "%s,  5.0 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
+    s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
 
     printOnce(c, outFileEps)
     printHoles(histos[name])
