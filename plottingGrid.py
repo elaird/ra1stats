@@ -159,7 +159,10 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #draw exclusion curves
     if exclusionCurves :
         outFileEps = outFileEps.replace(".eps", "_refXs.eps")
-        graphs = exclusions(histos = histos, writeDir = g, signalModel = s["signalModel"], graphBlackLists = s["graphBlackLists"])
+        graphs = exclusions(histos = histos, writeDir = g,
+                            signalModel = s["signalModel"],
+                            graphBlackLists = s["graphBlackLists"],
+                            printXs = printXs)
         stuff = rxs.drawGraphs(graphs)
 
         if simpleExcl :
