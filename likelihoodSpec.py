@@ -55,8 +55,10 @@ class spec(object) :
 
     def __init2012__(self) :
         self._constrainQcdSlope = True
-        self.legendTitle = "CMS, 3.8 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take5a as module
+        #self.legendTitle = "CMS, 3.8 fb^{-1}, #sqrt{s} = 8 TeV"
+        #from inputData.data2012 import take5a as module
+        self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 8 TeV"
+        from inputData.data2012 import take6 as module
         self.add([
                 selection(name = "55_0b",
                           note = "%s= 0"%nb,
