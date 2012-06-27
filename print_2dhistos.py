@@ -43,18 +43,17 @@ std_selections = { "had"  : base_histos,
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
 
-base_dir = { 'phosphorus' : '~/116_numbers/',
+base_dir = { 'phosphorus' : '~/117_2012_5fb/weighted/',
              'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
            }[gethostname()]
 
-d_set = "09_25_06_2012_unweighted"
-file_names = [ "RA1_Stats_Zero_btags_noAlphaTCut.root",
-    "RA1_Stats_Zero_btags.root",
-    "RA1_Stats_One_btag.root",
-    "RA1_Stats_Two_btags.root",
-    "RA1_Stats_More_Than_Two_btag.root",
-    ]
-
+d_set = ""
+file_names = [ "RA1_Stats_Zero_btags_noAlphaT.root",
+               "RA1_Stats_Zero_btags.root",
+               "RA1_Stats_One_btag.root",
+               "RA1_Stats_Two_btags.root",
+               "RA1_Stats_More_Than_Two_btag.root",
+               ]
 
 fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]
 
