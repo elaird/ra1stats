@@ -32,9 +32,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #
     #f.profile()
     #f.writeMlTable()
-    f.bestFit(drawMc = False, printValues = True, pullPlotMax = 4.0, pullThreshold = 5.0)
-    #f.bestFit(drawMc = False, printValues = False, drawComponents = False)
-    #f.bestFit(drawMc = False, printValues = False, drawComponents = False, errorsFromToys = False, drawRatios = False)
+    f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
@@ -42,7 +40,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #f.debug()
     #f.cppDrive(tool = "")
 
-year2012 = False
+year2012 = True
 
 if year2012 :
     for iLower in range(5) :
