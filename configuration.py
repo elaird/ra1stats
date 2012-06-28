@@ -20,7 +20,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
             "fiftyGeVStepsOnly": False,
@@ -66,10 +66,11 @@ def signal() :
     graphBlackLists["UpperLimit"].update({"T2" : [ (800,200) ]})
     graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (875,150) ]})
 
-    graphBlackLists["UpperLimit"].update({"T2bb" : [ (750,300), (750,425), (775, 375)]})
-    graphBlackLists["ExpectedUpperLimit"].update({"T2bb" : [ (675,425), (825,100, (825,100)) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (800,500), (825,150), (825,200) ]})
-    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (800,100), (825,100) ]})
+    graphBlackLists["UpperLimit"].update({"T2bb" : [ (500,100), (500,250),
+        (575,125), (500, 150), (525,200), (500,200) ]})
+    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (500,250),
+        (525,225), (525,100), (525,200)]})
+    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (475, 75), ]})
 
     graphBlackLists["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50), (475,100) ]})
     graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
@@ -125,7 +126,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T1tttt_2012"]
+            "signalModel": dict(zip(models, models))["T2bb"]
             }
 
 def listOfTestPoints() :
