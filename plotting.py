@@ -346,6 +346,7 @@ class validationPlotter(object) :
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "Standard Model",
              "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
+            #"color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True, "errorsFrom":"ewk"},#for test when removing had sample from likelihood
             {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -891,9 +892,14 @@ class validationPlotter(object) :
                     d["errorsLo"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)-d["errors"].GetBinError(i+1)) #used in ratioPlots
                     d["errorsHi"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)+d["errors"].GetBinError(i+1)) #used in ratioPlots
                 elif errorsFrom :
-                    noI = ni(errorsFrom, label)
-                    errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, label, i))
-                    if errorsVar and errorsVar.getVal() : d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
+                    noI = ni(errorsFrom, self.label)
+                    errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, self.label, i))
+                    if errorsVar and errorsVar.getVal() :
+                        d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
+                        d["errors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
+                        d["errors"].SetBinError(i+1, d["value"].GetBinError(i+1))
+                        d["noErrors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
+                        d["noErrors"].SetBinError(i+1, 0.0)
                 #else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
             else :
                 value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
@@ -977,8 +983,7 @@ class validationPlotter(object) :
 
             stack = inDict(d, "stack", "")
             if not stack : stack = "_".join(["NONE","%03d"%iSpec]+[d["var"]]*3) #hacky default stack name
-
-            if stack not in stacks : stacks[stack] = utils.thstackMulti(name = stack, errorsFromToys = self.errorsFromToys)
+            if stack not in stacks : stacks[stack] = utils.thstackMulti(name = stack, drawErrors = (self.errorsFromToys or d.get("errorsFrom")))
             stacks[stack].Add(histos, d)
         return stacks,legEntries
 
