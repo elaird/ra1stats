@@ -43,7 +43,7 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
                 break
         if switches["method"] and eff : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
     else :
-        print "WARNING nEventsIn = %d not in allowed range[ %d, %d ] " % ( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
+        print "WARNING nEventsIn = {0} not in allowed range[ {1}, {2} ] ".format( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
     return out
 
 def results(switches = None, likelihoodSpec = None, signal = None) :
