@@ -38,9 +38,9 @@ def inDict(d, key, default) :
     return d[key] if key in d else default
 #####################################
 class thstackMulti(object) :
-    def __init__(self, name = "", errorsFromToys = False) :
+    def __init__(self, name = "", drawErrors = False) :
         self.name = name
-        self.errorsFromToys = errorsFromToys
+        self.drawErrors = drawErrors
         self.histos = []
 
     def Add(self, histos = {}, spec = {}) :
@@ -61,7 +61,7 @@ class thstackMulti(object) :
                 repeat.append( (histos2, spec) )
             self.DrawOne(histos2,
                          goptions = goptions + ("" if "goptions" not in spec else spec["goptions"]),
-                         noErrors = ("type" in spec) and spec["type"]=="function" and not self.errorsFromToys,
+                         noErrors = ("type" in spec) and spec["type"]=="function" and not self.drawErrors,
                          errorBand = inDict(spec, "errorBand", False),
                          bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
 
