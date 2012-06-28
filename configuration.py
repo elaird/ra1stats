@@ -20,7 +20,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
             "fiftyGeVStepsOnly": False,
@@ -126,7 +126,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2bb"]
+            "signalModel": dict(zip(models, models))["T2tt"]
             }
 
 def listOfTestPoints() :
@@ -138,7 +138,7 @@ def listOfTestPoints() :
     #out = [(37, 19, 1)]
     #out = [(19,5,1)]
     #out = [(15,3,1)]
-    out = []
+    out = [(13,1,1)]
     return out
 
 def xWhiteList() :
