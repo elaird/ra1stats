@@ -9,7 +9,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                                                            separateSystObs = not ensemble,
                                                            ),
                       #signalToTest = signals.t2tt2,
-                      signalExampleToStack = signals.t1tttt_2012_2,
+                      signalExampleToStack = signals.t2tt,
                       #signalToInject = signals.t1,
                       #trace = True
                       #rhoSignalMin = 0.1,
@@ -40,7 +40,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #f.debug()
     #f.cppDrive(tool = "")
 
-year2012 = True
+year2012 = False
 
 if year2012 :
     for iLower in range(4) :
