@@ -118,14 +118,14 @@ def signal() :
                          "TGQ_0p0":(1, None),
                          "TGQ_0p2":(1, None),
                          "TGQ_0p4":(1, None),
-                         "TGQ_0p8":(1, None)},
-                         "T1tttt_2012"   :(1, None),
+                         "TGQ_0p8":(1, None),
+                         "T1tttt_2012"   :(1, None),},
             "nlo": True,
             "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
 
-            "signalModel": dict(zip(models, models))["T2tt"]
+            "signalModel": dict(zip(models, models))["T1tttt_2012"]
             }
 
 def listOfTestPoints() :
@@ -136,6 +136,7 @@ def listOfTestPoints() :
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
     #out = [(19,5,1)]
+    #out = [(15,3,1)]
     out = []
     return out
 
