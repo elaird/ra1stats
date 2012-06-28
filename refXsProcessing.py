@@ -10,7 +10,7 @@ def histoSpec(model) :
     d = {"T1":          {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
          "T2":          {"histo": "squark", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
          "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T2bb":        {"histo": "squark", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
+         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
          "T5zz":        {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
          "T1bbbb":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
          "T1tttt":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},

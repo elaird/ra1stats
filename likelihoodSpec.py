@@ -27,7 +27,7 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None, year = 2012, separateSystObs = True) :
+    def __init__(self, iLower = None, iUpper = None, year = 2011, separateSystObs = True) :
         self._iLower = iLower
         self._iUpper = iUpper
         self._year = year
