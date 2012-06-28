@@ -18,7 +18,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                       )
 
     if ensemble :
-        f.ensemble(nToys = 300, stdout = True)
+        f.ensemble(nToys = 1000, stdout = True)
         return
 
     #cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
