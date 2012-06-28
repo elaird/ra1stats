@@ -144,3 +144,23 @@ def load(data = None, mode = None, nHtBins = 8) :
             "k_qcd_nom"     : 2.96e-2,
             "k_qcd_unc_inp" : utils.quadSum([0.61e-2, 0.463e-2])
             }
+
+    if mode==237 :
+        systBins = tuple([0]*4+[1]*2+[2]*2)
+        nSyst = 1+max(systBins)
+        data._systBins = {
+            "sigmaLumiLike": [0]*8,
+            "sigmaPhotZ": systBins,
+            "sigmaMuonW": systBins,
+            "sigmaMumuZ": systBins,
+            }
+
+        data._fixedParameters = {
+            "sigmaLumiLike": tuple([lumiLikeValue]*1),
+            "sigmaPhotZ": tuple([0.20, 0.30, 0.70]),
+            "sigmaMuonW": tuple([0.20, 0.30, 0.70]),
+            "sigmaMumuZ": tuple([0.20, 0.30, 0.70]),
+
+            "k_qcd_nom"     : 2.96e-2,
+            "k_qcd_unc_inp" : utils.quadSum([0.61e-2, 0.463e-2])
+            }
