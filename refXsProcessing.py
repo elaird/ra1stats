@@ -45,26 +45,13 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
 
     return out
 
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune =
-           None, noOneThird = True, timesTen = False, printXs = False, lineStyle=1,
-           label="#sigma^{prod} = #sigma^{NLO-QCD}") :
-    out = [{"factor": 1.0 , "label": label , "color": r.kBlack, "lineStyle": lineStyle, "lineWidth": 3, "markerStyle": 20},
-           #{"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
-           ] if not timesTen else [
-        {"factor": 10.0 , "label": "#sigma^{prod} = 10 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": lineStyle, "lineWidth": 3, "markerStyle": 20},
-        {"factor": 30.0 , "label": "#sigma^{prod} = 30 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},]
-
-    if not noOneThird :
-        if not timesTen :
-            out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
-        else :
-            out.append({"factor": 10/3., "label": "#sigma^{prod} = 10/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
-
-    for d in out :
-        d["graph"] = excludedGraph(h, d["factor"], model, interBin, printXs = printXs)
-        stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
-        d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin)
-    return out
+def graph(h, model, interBin, printXs = False, spec = {}) :
+    d = {"color":r.kBlack, "lineStyle":1, "lineWidth":3, "markerStyle":20, "factor":1.0, "label":"a curve"}
+    d.update(spec)
+    d["graph"] = excludedGraph(h, d["factor"], model, interBin, printXs = printXs)
+    stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
+    d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin)
+    return d
 
 def binWidth(h, axisString) :
     a = getattr(h, "Get%saxis"%axisString)()
