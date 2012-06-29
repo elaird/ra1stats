@@ -9,7 +9,7 @@ def getReferenceXsHisto(refHistoName, filename):
     refHisto.SetDirectory(0)
     refFile.Close()
     histoD = {
-        refHistoName: {
+        'refHisto': {
             'hist': refHisto,
             'LineColor': r.kBlue,
             'label': '{0} pair production'.format(refHistoName)
@@ -27,20 +27,25 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'opts': '][',
             },
         'ExpectedUpperLimit': {
-            'label': 'Expected Upper Limit',
+            'label': 'Expected Upper Limit (#pm 1 #sigma)',
             'LineColor': 46,
-            'opts': 'F][',
-            },
-        'ExpectedUpperLimit_-1_Sigma': {
-            'label': 'Expected Upper Limit (-1 #sigma)',
-            'LineStyle': 2,
-            'LineColor': 48,
+            'FillColor': 48,
+            'FillStyle': 3002,
             'opts': '][',
             },
         'ExpectedUpperLimit_+1_Sigma': {
             'label': 'Expected Upper Limit (+1 #sigma)',
             'LineStyle': 2,
-            'LineColor': 48,
+            'LineColor': 0,
+            'FillStyle': 3002,
+            'FillColor': 48,
+            'opts': '][',
+            },
+        'ExpectedUpperLimit_-1_Sigma': {
+            'label': 'Expected Upper Limit (-1 #sigma)',
+            'LineStyle': 2,
+            'LineColor': 0,
+            'FillColor': 10,
             'opts': '][',
             },
         }
@@ -78,7 +83,13 @@ def compareXs(refProcess, refXsFile="sms_xs/sms_xs.root",
     leg = r.TLegend(0.5, 0.7, 0.88, 0.88)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
-    for iHisto,(hname,props) in enumerate(sorted(hs.iteritems(), reverse=True)) :
+    histosToDraw = [ 'ExpectedUpperLimit_+1_Sigma',
+                     'ExpectedUpperLimit',
+                     'ExpectedUpperLimit_-1_Sigma',
+                     'UpperLimit',
+                     'refHisto' ]
+    for iHisto, hname in enumerate(histosToDraw):
+        props = hs[hname]
         h = props['hist']
         h.SetStats(False)
         h.SetTitle("")
@@ -88,8 +99,13 @@ def compareXs(refProcess, refXsFile="sms_xs/sms_xs.root",
         h.Draw("%s%s"%(props.get('opts','c'), "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
             eval('h.Set{attr}(props.get("{attr}",1))'.format(attr=attr))
-        leg.AddEntry(h, props['label'], "l")
+        for attr in ['FillStyle', 'FillColor']:
+            if attr in props:
+                eval('h.Set{attr}(props.get("{attr}",1))'.format(attr=attr))
+        if "Sigma" not in hname:
+            leg.AddEntry(h, props['label'], "lf")
     leg.Draw()
+    r.gPad.RedrawAxis()
     canvas.SetLogy()
     canvas.SetTickx()
     canvas.SetTicky()
