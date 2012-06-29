@@ -91,16 +91,20 @@ def pruneGraph( graph, lst=[], debug=False ):
 
 def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None) :
     graphs = []
-    for i,(name,label) in enumerate([("UpperLimit", "#sigma^{prod} = #sigma^{NLO-QCD}"),
-                                     ("ExpectedUpperLimit", "Expected Limit"),
-                                     ("ExpectedUpperLimit_-1_Sigma", "Expected Limit #pm1 #sigma"),
-                                     ("ExpectedUpperLimit_+1_Sigma", ""),
-                                     ]) :
+
+    specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "color": r.kViolet, "label":"Expected Limit #pm1 #sigma exp."},
+             {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "color": r.kViolet, "label":""},
+             {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "color": r.kViolet, "label":""},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "color": r.kBlack,  "label":"#sigma^{NLO+NLL}"},
+             ]
+
+    for i,spec in enumerate(specs) :
+        name = spec["name"]
         h = histos[name]
-        graph = rxs.graphs(h, signalModel, "LowEdge", printXs = printXs, lineStyle = {0:1, 1:2, 2:3, 3:3}[i], label = label)
+        graph = rxs.graph(h, signalModel, "LowEdge", printXs = printXs, spec = spec)
         if name in graphBlackLists :
-            pruneGraph(graph[0]['graph'], lst = graphBlackLists[name][signalModel], debug = False)
-        graphs += graph
+            pruneGraph(graph['graph'], lst = graphBlackLists[name][signalModel], debug = False)
+        graphs.append(graph)
 
     if writeDir :
         writeDir.cd()
