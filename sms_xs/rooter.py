@@ -46,7 +46,7 @@ def histos() :
     return histosOut,comsOut
 
 def exclusionHisto(xsFile='T2tt_xs.root', xsHistoName='UpperLimit_2D',
-                   yMinMax=(50,50), doScale=True) :
+                   yMinMax=(50,50)) :
 
     rfile = r.TFile(xsFile,'READ')
     xsHisto = rfile.Get(xsHistoName)
@@ -55,18 +55,14 @@ def exclusionHisto(xsFile='T2tt_xs.root', xsHistoName='UpperLimit_2D',
     maxYBin = xsHisto.GetYaxis().FindBin(yMinMax[1])
 
     xsProj = xsHisto.ProjectionX('T2tt',minYBin,maxYBin)
-    xsProj.Print()
-
-    #if doScale:
-        #xsProj *= 1000.
 
     xsProj.SetDirectory(0)
     rfile.Close()
     return xsProj, "excluded"
 
 
-def makeRootFile(fileName = "") :
-    xsH, xsC = exclusionHisto()
+def makeRootFile(fileName = "", xsFile=None) :
+    xsH, xsC = exclusionHisto(xsFile=xsFile)
 
     outFile = r.TFile(fileName, "RECREATE")
 
@@ -106,4 +102,7 @@ def setup() :
     r.gErrorIgnoreLevel = 2000
 
 setup()
-makeRootFile(fileName = "sms_xs.root")
+xsFile = ('~/Projects/ra1ToyResults/2011/1000_toys/T2tt/CLs_frequentist_TS3_'
+          'T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_0b-1hx2p_55_1b-1hx2p_55_2b-'
+          '1hx2p_55_gt2b-1h_xsLimit.root')
+makeRootFile(fileName = "sms_xs.root", xsFile=xsFile)
