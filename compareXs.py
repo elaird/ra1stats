@@ -12,7 +12,7 @@ def getReferenceXsHisto(refHistoName, filename):
         'refHisto': {
             'hist': refHisto,
             'LineColor': r.kBlue,
-            'label': '{0} pair production'.format(refHistoName)
+            'label': '{0} pair production'.format(refHistoName.capitalize())
             }
         }
     return histoD
