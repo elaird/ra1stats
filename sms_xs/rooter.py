@@ -23,9 +23,9 @@ def parsed(fileName = "") :
 
 def histos() :
     histosOut = defaultdict(dict)
-    for fileName,histName in {#"gluglu_decoupled7TeV.txt":"gluino",
+    for fileName,histName in {"gluglu_decoupled7TeV.txt":"gluino",
                               "sqsq_decoupled7TeV.txt":"squark",
-                              #"stst_decoupled7TeV.txt":"stop_or_sbottom",
+                              "stst_decoupled7TeV.txt":"stop_or_sbottom",
                               }.iteritems() :
         dct = parsed(fileName)
         masses = sorted(dct.keys())
