@@ -23,9 +23,9 @@ def parsed(fileName = "") :
 def histos() :
     histosOut = []
     comsOut = []
-    for fileName,histName in {"gluglu_decoupled7TeV.txt":"gluino",
+    for fileName,histName in {#"gluglu_decoupled7TeV.txt":"gluino",
                               "sqsq_decoupled7TeV.txt":"squark",
-                              "stst_decoupled7TeV.txt":"stop_or_sbottom",
+                              #"stst_decoupled7TeV.txt":"stop_or_sbottom",
                               }.iteritems() :
         dct = parsed(fileName)
         masses = sorted(dct.keys())
@@ -45,23 +45,54 @@ def histos() :
         comsOut.append(fileName[-8:-4])
     return histosOut,comsOut
 
+def exclusionHisto(xsFile='T2tt_xs.root', xsHistoName='UpperLimit_2D',
+                   yMinMax=(50,50), doScale=True) :
+
+    rfile = r.TFile(xsFile,'READ')
+    xsHisto = rfile.Get(xsHistoName)
+
+    minYBin = xsHisto.GetYaxis().FindBin(yMinMax[0])
+    maxYBin = xsHisto.GetYaxis().FindBin(yMinMax[1])
+
+    xsProj = xsHisto.ProjectionX('T2tt',minYBin,maxYBin)
+    xsProj.Print()
+
+    #if doScale:
+        #xsProj *= 1000.
+
+    xsProj.SetDirectory(0)
+    rfile.Close()
+    return xsProj, "excluded"
+
+
 def makeRootFile(fileName = "") :
+    xsH, xsC = exclusionHisto()
+
     outFile = r.TFile(fileName, "RECREATE")
-    
+
     canvas = r.TCanvas()
     pdfFile = "sms_xs.pdf"
+
     hs,coms = histos()
+    hs.append(xsH)
+    coms.append(xsC)
+
     leg = r.TLegend(0.5, 0.7, 0.88, 0.88)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
     for iHisto,(h,com) in enumerate(zip(hs,coms)) :
+        isExcl = (com == "excluded")
         h.Write()
         h.SetStats(False)
         h.SetTitle("")
-        h.Draw("p%s"%("same" if iHisto else ""))
+        h.GetXaxis().SetRangeUser(300,1200)
+        baseOpts = "c" if not isExcl else "]["
+        h.Draw("%s%s"%(baseOpts, "same" if iHisto else ""))
         h.SetLineColor(1+iHisto)
         h.SetMarkerColor(1+iHisto)
-        entry = " ".join([com.replace("TeV", " TeV"), h.GetName().replace("_"," "), "pair"])
+        entry = " ".join([com.replace("TeV", " TeV"),
+                          h.GetName().replace("_"," "),
+                          "pair" if not isExcl else ""])
         leg.AddEntry(h, entry, "lp")
     leg.Draw()
     canvas.SetLogy()
