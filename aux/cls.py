@@ -135,7 +135,9 @@ nToys = 8000
 go("oneBin_varying_s_obs1",
    #[foo(sList = [ 2.0], bList = [0.01], obsList = [1], tsIndex = 2, nToys = nToys),
    #[foo(sList = [ 3.0], bList = [1.0], obsList = [0], tsIndex = 2, nToys = nToys),
-   [foo(sList = [ 2.0], bList = [0.2], obsList = [0], tsIndex = 0, nToys = nToys),
+   #[foo(sList = [ 2.0], bList = [0.2], obsList = [0], tsIndex = 0, nToys = nToys),
+   [#foo(sList = [ 9.0], bList = [58.0], obsList = [52], tsIndex = 0, nToys = nToys),
+    foo(sList = [ 9.0, 5.0], bList = [58.0, 30.0], obsList = [52, 20], tsIndex = 0, nToys = nToys),
     ])
 #go("oneBin_varying_s_obs1",
 #   [foo(sList = [60.0], bList = [3.0], obsList = [1], tsIndex = 2, nToys = nToys),
