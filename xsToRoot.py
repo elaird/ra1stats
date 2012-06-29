@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import ROOT as r
+from collections import defaultdict
 from utils import threeToTwo
 
 def parsed(fileName = "") :
@@ -22,8 +23,7 @@ def parsed(fileName = "") :
     return dct
 
 def histos() :
-    histosOut = []
-    comsOut = []
+    histosOut = defaultdict(dict)
     for fileName,histName in {#"sms_xs/gluglu_decoupled7TeV.txt":"gluino",
                               "sms_xs/sqsq_decoupled7TeV.txt":"squark",
                               #"sms_xs/stst_decoupled7TeV.txt":"stop_or_sbottom",
@@ -42,83 +42,83 @@ def histos() :
         histo = r.TH1D(histName, "%s; mass (GeV);#sigma (pb)"%histName, nMasses, minMass-binWidth/2.0, maxMass+binWidth/2.0)
         for mass,(xs,xsErr) in dct.iteritems() :
             histo.SetBinContent(histo.FindBin(mass), xs)
-        histosOut.append(histo)
-        comsOut.append(fileName[-8:-4])
-    return histosOut,comsOut
+        histosOut[histName]['hist'] = histo
+        histosOut[histName]['com'] = fileName[-8:-4]
+    return histosOut
 
 
-def exclusionHisto(xsFile,
-                   yMinMax=(50,50),
-                   xsHistoDict=None,
-                   ):
-    if xsHistoDict is None:
-        xsHistoDict = {
-            'UpperLimit': {
-                'com': 'Upper Limit',
-                'lineStyle': 0,
-                'lineColor': r.kPink,
-                },
-            'ExpectedUpperLimit': {
-                'com': 'Expected Upper Limit',
-                'lineStyle': 1,
-                'lineColor': 46,
-                },
-            'ExpectedUpperLimit_-1_Sigma': {
-                'com': 'Expected Upper Limit (-1 #sigma)',
-                'lineStyle': 2,
-                'lineColor': 48,
-                },
-            'ExpectedUpperLimit_+1_Sigma': {
-                'com': 'Expected Upper Limit (+1 #sigma)',
-                'lineStyle': 2,
-                'lineColor': 48,
-                },
-            }
+def exclusionHisto(xsFile, yMinMax=(50,50)):
+    xsHistoDict = {
+        'UpperLimit': {
+            'com': 'Upper Limit',
+            'lineStyle': 0,
+            'lineWidth': 2,
+            'lineColor': r.kPink,
+            },
+        'ExpectedUpperLimit': {
+            'com': 'Expected Upper Limit',
+            'lineStyle': 1,
+            'lineColor': 46,
+            },
+        'ExpectedUpperLimit_-1_Sigma': {
+            'com': 'Expected Upper Limit (-1 #sigma)',
+            'lineStyle': 2,
+            'lineColor': 48,
+            },
+        'ExpectedUpperLimit_+1_Sigma': {
+            'com': 'Expected Upper Limit (+1 #sigma)',
+            'lineStyle': 2,
+            'lineColor': 48,
+            },
+        }
 
     rfile = r.TFile(xsFile,'READ')
-    xsProj = []
-    coms = []
     for xsHistoName, opts in xsHistoDict.iteritems():
         xsHisto = threeToTwo(rfile.Get(xsHistoName))
         minYBin = xsHisto.GetYaxis().FindBin(yMinMax[0])
         maxYBin = xsHisto.GetYaxis().FindBin(yMinMax[1])
 
-        xsProj.append(xsHisto.ProjectionX('T2tt',minYBin,maxYBin).Clone())
-        xsProj[-1].SetDirectory(0)
-        xsProj[-1].SetLineStyle(opts['lineStyle'])
-        xsProj[-1].SetLineWidth(2)
-        coms.append(opts['com'])
+        opts['hist'] = xsHisto.ProjectionX('T2tt',minYBin,maxYBin).Clone()
+        opts['hist'].SetDirectory(0)
 
     rfile.Close()
-    return xsProj,coms
+    return xsHistoDict
 
 
 def makeRootFile(fileName = "", xsFile=None) :
-    xsH, xsC = exclusionHisto(xsFile=xsFile)
+    xsHistos = exclusionHisto(xsFile=xsFile)
 
     outFile = r.TFile(fileName, "RECREATE")
 
     canvas = r.TCanvas()
     pdfFile = "sms_xs/sms_xs.pdf"
 
-    hs,coms = histos()
-    hs += xsH
-    coms += xsC
+    hs = histos()
+    hs.update(xsHistos)
 
     leg = r.TLegend(0.5, 0.7, 0.88, 0.88)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
-    for iHisto,(h,com) in enumerate(zip(hs,coms)) :
-        isExcl = ("Limit" in com)
+    for iHisto,(hname,props) in enumerate(sorted(hs.iteritems(), reverse=True)) :
+        h = props['hist']
+        isExcl = ("Limit" in hname)
         h.Write()
         h.SetStats(False)
         h.SetTitle("")
         h.GetXaxis().SetRangeUser(300,1200)
+        h.SetMinimum(2e-4)
+        h.SetMaximum(2e+1)
         baseOpts = "c" if not isExcl else "]["
         h.Draw("%s%s"%(baseOpts, "same" if iHisto else ""))
-        h.SetLineColor(1+iHisto)
-        h.SetMarkerColor(1+iHisto)
-        entry = " ".join([com.replace("TeV", " TeV"),
+        lineColor = props.get('lineColor',4+iHisto)
+        markerColor = props.get('markerColor',1+iHisto)
+        lineStyle = props.get('lineStyle',1)
+        lineWidth = props.get('lineWidth',1)
+        h.SetLineColor(lineColor)
+        h.SetMarkerColor(markerColor)
+        h.SetLineStyle(lineStyle)
+        h.SetLineWidth(lineWidth)
+        entry = " ".join([props['com'].replace("TeV", " TeV"),
                           h.GetName().replace("_"," "),
                           "pair" if not isExcl else ""])
         leg.AddEntry(h, entry, "lp")
