@@ -12,6 +12,21 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::pair<std::string,std::vector<double> >","string;vector")
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
 #####################################
+def threeToTwo(h3) :
+    name = h3.GetName()
+    h2 = r.TH2D(name+"_2D",h3.GetTitle(),
+                h3.GetNbinsX(), h3.GetXaxis().GetXmin(), h3.GetXaxis().GetXmax(),
+                h3.GetNbinsY(), h3.GetYaxis().GetXmin(), h3.GetYaxis().GetXmax(),
+                )
+
+    for iX in range(1, 1+h3.GetNbinsX()) :
+        for iY in range(1, 1+h3.GetNbinsY()) :
+            content = h3.GetBinContent(iX, iY, 1)
+            h2.SetBinContent(iX, iY, content)
+    h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
+    h2.SetDirectory(0)
+    return h2
+#####################################
 def histoMax(h) :
     i = h.GetMaximumBin()
     return (h.GetBinContent(i)+h.GetBinError(i))

@@ -4,6 +4,7 @@ import histogramSpecs as hs
 import refXsProcessing as rxs
 from histogramProcessing import printHoles,fillPoints,killPoints
 from pickling import mergedFile
+from utils import threeToTwo
 import ROOT as r
 
 def setupRoot() :
@@ -16,20 +17,6 @@ def setupRoot() :
 
 setupRoot()
 
-def threeToTwo(h3) :
-    name = h3.GetName()
-    h2 = r.TH2D(name+"_2D",h3.GetTitle(),
-                h3.GetNbinsX(), h3.GetXaxis().GetXmin(), h3.GetXaxis().GetXmax(),
-                h3.GetNbinsY(), h3.GetYaxis().GetXmin(), h3.GetYaxis().GetXmax(),
-                )
-
-    for iX in range(1, 1+h3.GetNbinsX()) :
-        for iY in range(1, 1+h3.GetNbinsY()) :
-            content = h3.GetBinContent(iX, iY, 1)
-            h2.SetBinContent(iX, iY, content)
-    h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
-    h2.SetDirectory(0)
-    return h2
 
 def modifyHisto(h, s) :
     fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
