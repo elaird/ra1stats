@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import ROOT as r
+from utils import threeToTwo
 
 def parsed(fileName = "") :
     dct = {}
@@ -23,9 +24,9 @@ def parsed(fileName = "") :
 def histos() :
     histosOut = []
     comsOut = []
-    for fileName,histName in {#"gluglu_decoupled7TeV.txt":"gluino",
-                              "sqsq_decoupled7TeV.txt":"squark",
-                              #"stst_decoupled7TeV.txt":"stop_or_sbottom",
+    for fileName,histName in {#"sms_xs/gluglu_decoupled7TeV.txt":"gluino",
+                              "sms_xs/sqsq_decoupled7TeV.txt":"squark",
+                              #"sms_xs/stst_decoupled7TeV.txt":"stop_or_sbottom",
                               }.iteritems() :
         dct = parsed(fileName)
         masses = sorted(dct.keys())
@@ -45,7 +46,7 @@ def histos() :
         comsOut.append(fileName[-8:-4])
     return histosOut,comsOut
 
-def exclusionHisto(xsFile='T2tt_xs.root', xsHistoName='UpperLimit_2D',
+def exclusionHisto(xsFile, xsHistoName='UpperLimit_2D',
                    yMinMax=(50,50)) :
 
     rfile = r.TFile(xsFile,'READ')
@@ -67,7 +68,7 @@ def makeRootFile(fileName = "", xsFile=None) :
     outFile = r.TFile(fileName, "RECREATE")
 
     canvas = r.TCanvas()
-    pdfFile = "sms_xs.pdf"
+    pdfFile = "sms_xs/sms_xs.pdf"
 
     hs,coms = histos()
     hs.append(xsH)
@@ -105,4 +106,4 @@ setup()
 xsFile = ('~/Projects/ra1ToyResults/2011/1000_toys/T2tt/CLs_frequentist_TS3_'
           'T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_0b-1hx2p_55_1b-1hx2p_55_2b-'
           '1hx2p_55_gt2b-1h_xsLimit.root')
-makeRootFile(fileName = "sms_xs.root", xsFile=xsFile)
+makeRootFile(fileName = "sms_xs/sms_xs.root", xsFile=xsFile)
