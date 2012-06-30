@@ -65,14 +65,18 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
 
 def compareXs(refProcess, refXsFile="sms_xs/sms_xs.root",
               limitFile="xsLimit.root", pdfFile="sms_xs/compareXs.pdf",
-              plotOpts=None) :
-    if plotOpts is None:
-        plotOpts = {
-            'yMax': 2e+1,
-            'yMin': 2e-4,
-            'xMin': 300,
-            'xMax': 1200,
-            }
+              plotOptOverrides=None) :
+    plotOpts = {
+        'yMax': 2e+1,
+        'yMin': 2e-4,
+        'xMin': 300,
+        'xMax': 1200,
+        'xLabel': "{p} mass [GeV/c^{{2}}]".format(
+            p=refProcess.capitalize().replace('_',' ')),
+        'yLabel': '#sigma [pb]',
+        }
+    if plotOptOverrides is not None:
+        plotOpts.update(plotOptOverrides)
 
     refHisto = getReferenceXsHisto(refProcess, refXsFile)
     exclusionHistos = getExclusionHistos(limitFile)
@@ -104,6 +108,8 @@ def compareXs(refProcess, refXsFile="sms_xs/sms_xs.root",
                 eval('h.Set{attr}(props.get("{attr}",1))'.format(attr=attr))
         if "Sigma" not in hname:
             leg.AddEntry(h, props['label'], "lf")
+        h.GetXaxis().SetTitle(plotOpts['xLabel'])
+        h.GetYaxis().SetTitle(plotOpts['yLabel'])
     leg.Draw()
     r.gPad.RedrawAxis()
     canvas.SetLogy()
@@ -120,7 +126,9 @@ def main():
     limitFile = ('~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
                  'CLs_frequentist_TS3_T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root')
-    compareXs(refProcess='squark', refXsFile="sms_xs/sms_xs.root", limitFile=limitFile)
+    xLabel = 'm_{#tilde{q}} [GeV/c^{2}]'
+    compareXs(refProcess='squark', refXsFile="sms_xs/sms_xs.root",
+              limitFile=limitFile, plotOptOverrides={'xLabel': xLabel})
 
 if __name__=="__main__":
     main()
