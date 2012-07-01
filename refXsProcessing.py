@@ -51,7 +51,7 @@ def graph(h = None, model = "", interBin = "", printXs = False, spec = {}) :
     d["graph"] = excludedGraph(h, factor = d["factor"], variation = d["variation"],
                                model = model, interBin = interBin, printXs = printXs)
     stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
-    d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin)
+    d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin, variation = d["variation"])
     return d
 
 def binWidth(h, axisString) :
@@ -65,13 +65,12 @@ def allMatch(value, y, threshold, iStart, N) :
             count +=1
     return count==(N-iStart)
 
-def contentAndError(h, *coords) :
+def content(h = None, coords = (0.0,), variation = 0.0) :
     assert h.ClassName()[:2]=="TH"
     dim = int(h.ClassName()[2])
     args = tuple(coords[:dim])
     bin = h.FindBin(*args)
-    return (h.GetBinContent(bin), h.GetBinError(bin))
-
+    return h.GetBinContent(bin) + variation*h.GetBinError(bin)
 
 def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "CenterOrLowEdge", prune = False, printXs = False) :
     def fail(xs, xsLimit) :
@@ -83,10 +82,10 @@ def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "C
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
-            c,cErr = contentAndError(refHisto, x, y)
+            c = content(h = refHisto, coords = (x, y), variation = variation)
             if not c : continue
-            if printXs : print "x=%g, y=%g, xs*1.0 = %g +/- %g"%(x,y,c,cErr)
-            xs = factor*(c + variation*cErr)
+            if printXs : print "x=%g, y=%g, xs*1.0 = %g"%(x,y,c)
+            xs = factor*c
             xsLimit     = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
@@ -114,7 +113,7 @@ def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "C
 
     return out
 
-def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge") :
+def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge", variation = 0.0) :
     refHisto = refXsHisto(model)
     out = h.Clone("%s_excludedHistoSimple"%h.GetName())
     out.Reset()
@@ -125,7 +124,7 @@ def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowE
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             if not xsLimit : continue
-            xs = factor*contentAndError(refHisto, x, y)[0]
+            xs = factor*content(h = refHisto, coords = (x, y), variation = variation)
             out.SetBinContent(iBinX, iBinY, 2*(xsLimit<xs)-1)
     return out
 
