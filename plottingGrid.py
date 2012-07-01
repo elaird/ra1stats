@@ -97,7 +97,7 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
              {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "color": r.kViolet, "label":""},
              {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "color": r.kBlack,  "label":"#sigma^{NLO+NLL} #pm1 #sigma theory"},
              {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "color": r.kBlue,   "label":"", "variation":-1.0},
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "color": r.kRed,    "label":"", "variation": 1.0},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "color": r.kYellow, "label":"", "variation": 1.0},
              ]
 
     for i,spec in enumerate(specs) :
