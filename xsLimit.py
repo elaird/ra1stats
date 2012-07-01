@@ -3,6 +3,7 @@
 import plottingGrid
 
 plottingGrid.makeXsUpperLimitPlots(logZ = True,
+                                   shiftBins = (True, True),
                                    #simpleExcl = True,
                                    #exclusionCurves = False,
                                    #mDeltaFuncs = {"mDeltaMin":0.0, "mDeltaMax":400.0, "nSteps":4, "mGMax":1250.},
