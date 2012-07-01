@@ -101,9 +101,10 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
              ]
 
     for i,spec in enumerate(specs) :
-        name = spec["name"]
-        h = histos[name]
+        h = histos[spec["name"]]
         graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
+
+        name = spec["name"]+("_%+1d_Sigma"%spec["variation"] if ("variation" in spec and spec["variation"]) else "")
         if name in graphBlackLists :
             pruneGraph(graph['graph'], lst = graphBlackLists[name][signalModel], debug = False)
         graphs.append(graph)
