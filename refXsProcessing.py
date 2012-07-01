@@ -65,12 +65,12 @@ def allMatch(value, y, threshold, iStart, N) :
             count +=1
     return count==(N-iStart)
 
-def content(h = None, coords = (0.0,), variation = 0.0) :
+def content(h = None, coords = (0.0,), variation = 0.0, factor = 1.0) :
     assert h.ClassName()[:2]=="TH"
     dim = int(h.ClassName()[2])
     args = tuple(coords[:dim])
     bin = h.FindBin(*args)
-    return h.GetBinContent(bin) + variation*h.GetBinError(bin)
+    return factor*(h.GetBinContent(bin) + variation*h.GetBinError(bin))
 
 def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "CenterOrLowEdge", prune = False, printXs = False) :
     def fail(xs, xsLimit) :
@@ -82,10 +82,11 @@ def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "C
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
-            c = content(h = refHisto, coords = (x, y), variation = variation)
-            if not c : continue
-            if printXs : print "x=%g, y=%g, xs*1.0 = %g"%(x,y,c)
-            xs = factor*c
+            xs = content(h = refHisto, coords = (x, y), variation = variation, factor = factor)
+            if not xs : continue
+            if printXs :
+                xsPlain = content(h = refHisto, coords = (x, y))
+                print "x=%g, y=%g, xs(plain) = %g, xs(varied) = %g"%(x,y, xsPlain, xs)
             xsLimit     = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
@@ -124,7 +125,7 @@ def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowE
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             if not xsLimit : continue
-            xs = factor*content(h = refHisto, coords = (x, y), variation = variation)
+            xs = content(h = refHisto, coords = (x, y), variation = variation, factor = factor)
             out.SetBinContent(iBinX, iBinY, 2*(xsLimit<xs)-1)
     return out
 
