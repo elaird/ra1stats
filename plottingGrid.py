@@ -75,6 +75,20 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
     latex.DrawLatex(x, y, text)
     return latex
 
+def pointsAtYMin(graph) :
+    out = []
+    x = graph.GetX()
+    y = graph.GetY()
+    yMin = min([y[i] for i in range(graph.GetN())])
+    xsAtYMin = []
+    for i in range(graph.GetN()) :
+        if y[i]==yMin :
+            out.append((x[i], y[i]))
+    if len(out) :
+        xMax = max([coords[0] for coords in out])
+        out.remove((xMax,yMin))
+    return out
+
 def pruneGraph( graph, lst=[], debug=False ):
     if debug: graph.Print()
     for p in lst:
@@ -89,7 +103,8 @@ def pruneGraph( graph, lst=[], debug=False ):
             graph.RemovePoint(i)
     if debug: graph.Print()
 
-def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False) :
+def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
+               pruneYMin = False) :
     graphs = []
 
     specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
@@ -112,7 +127,10 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
 
         name = spec["name"]+("_%+1d_Sigma"%spec["variation"] if ("variation" in spec and spec["variation"]) else "")
         if name in graphBlackLists :
-            pruneGraph(graph['graph'], lst = graphBlackLists[name][signalModel], debug = False)
+            lst = graphBlackLists[name][signalModel]
+            if pruneYMin :
+                lst += pointsAtYMin(graph['graph'])
+            pruneGraph(graph['graph'], lst = lst, debug = False)
         graphs.append(graph)
 
     if writeDir :
@@ -163,7 +181,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     return histos
 
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit",
-                          shiftX = False, shiftY = False, interBin = "LowEdge", debug = False) :
+                          shiftX = False, shiftY = False, interBin = "LowEdge", pruneYMin = False, debug = False) :
 
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
@@ -196,6 +214,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
                             graphBlackLists = s["graphBlackLists"],
                             interBin = interBin,
                             printXs = printXs,
+                            pruneYMin = pruneYMin,
                             debug = debug)
         stuff = rxs.drawGraphs(graphs)
 
