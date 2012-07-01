@@ -46,7 +46,10 @@ def overwriteOutput() :
 
 def graphBlackLists() :
     out = {}
-    for key in [ "UpperLimit", "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ] :
+    keys  = [ "UpperLimit", "ExpectedUpperLimit" ]
+    keys += [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]
+    keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
+    for key in keys :
         out[key] = collections.defaultdict(list)
         
     out["UpperLimit"].update({"T1" : [ (1000,125), (1000,175) ]})
@@ -56,6 +59,10 @@ def graphBlackLists() :
 
     out["UpperLimit"].update({"T2bb" : [ (500,100), (500,250),
         (575,125), (500, 150), (525,200), (500,200) ]})
+
+    out["UpperLimit_-1_Sigma"].update({"T2bb" : [ (525,150), (475, 200)]})
+    out["UpperLimit_+1_Sigma"].update({"T2bb" : [ (575,125), (500, 250), (550, 200), (575, 200), (500,150), (525,200)]})
+
     out["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (500,250),
         (525,225), (525,100), (525,200)]})
     out["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (475, 75), ]})
