@@ -1,19 +1,25 @@
 from configuration import locations
 
 def ranges(model) :
-    x = {"":     ( 50.0, 1499.9), #(min, max)
-         "T1":   ( 50.0, 1224.9),
+    x = {"T1":   ( 50.0, 1224.9), #(min, max)
          "T5zz": (400.0, 1224.9),
+         "T2bb": (325.0, 1224.9),
          }
-    y = {"":     ( 50.0, 1224.9), #(min, max)
-         "T5zz": ( 50.0,  999.9),
+    y = {"T5zz": ( 50.0,  999.9), #(min, max)
+         "T2bb": ( 50.0,  999.9),
          "T1tttt_2012": (25.0, 1149.9),
          }
 
-    d = {}
+    xDivisions = {"T2bb": 410}
+    yDivisions = {"T2bb": 410}
 
-    d["xRange"] = x[model if model in x else ""]
-    d["yRange"] = y[model if model in y else ""]
+    d = {}
+    d["xRange"] = x.get(model, (50.0, 1499.9))
+    d["yRange"] = y.get(model, (50.0, 1224.9))
+
+    d["xDivisions"] = xDivisions.get(model, None)
+    d["yDivisions"] = yDivisions.get(model, None)
+
     d["xsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
     d["xsZRangeLog"] = (1.0e-3, 100.0, 20)
     d["effZRange"]   = (0.0, 0.35, 35)
