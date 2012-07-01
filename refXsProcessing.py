@@ -45,7 +45,7 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
 
     return out
 
-def graph(h, model, interBin, printXs = False, spec = {}) :
+def graph(h = None, model = "", interBin = "", printXs = False, spec = {}) :
     d = {"color":r.kBlack, "lineStyle":1, "lineWidth":3, "markerStyle":20, "factor":1.0, "variation":0.0, "label":"a curve"}
     d.update(spec)
     d["graph"] = excludedGraph(h, factor = d["factor"], variation = d["variation"],
