@@ -42,6 +42,7 @@ def overwriteOutput() :
                 (27, 11, 1)
                 ],
                 })
+    return out
 
 def graphBlackLists() :
     out = {}
