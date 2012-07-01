@@ -89,7 +89,7 @@ def pruneGraph( graph, lst=[], debug=False ):
             graph.RemovePoint(i)
     if debug: graph.Print()
 
-def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None) :
+def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge") :
     graphs = []
 
     specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "color": r.kViolet, "label":"Expected Limit #pm1 #sigma exp."},
@@ -103,7 +103,7 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
     for i,spec in enumerate(specs) :
         name = spec["name"]
         h = histos[name]
-        graph = rxs.graph(h, signalModel, "LowEdge", printXs = printXs, spec = spec)
+        graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
         if name in graphBlackLists :
             pruneGraph(graph['graph'], lst = graphBlackLists[name][signalModel], debug = False)
         graphs.append(graph)
@@ -115,7 +115,22 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
         writeDir.Close()
     return graphs
 
-def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
+def shifted(h = None, shiftX = False, shiftY = False) :
+    binWidthX = (h.GetXaxis().GetXmax() - h.GetXaxis().GetXmin())/h.GetNbinsX() if shiftX else 0.0
+    binWidthY = (h.GetYaxis().GetXmax() - h.GetYaxis().GetXmin())/h.GetNbinsY() if shiftY else 0.0
+
+    if binWidthX or binWidthY : print "INFO: shifting %s by (%g, %g)"%(h.GetName(), binWidthX, binWidthY)
+    out = r.TH2D(h.GetName()+"_shifted","",
+                 h.GetNbinsX(), h.GetXaxis().GetXmin() - binWidthX/2.0, h.GetXaxis().GetXmax() - binWidthX/2.0,
+                 h.GetNbinsY(), h.GetYaxis().GetXmin() - binWidthY/2.0, h.GetYaxis().GetXmax() - binWidthY/2.0,
+                 )
+    out.SetDirectory(0)
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            out.SetBinContent(iBinX, iBinY, h.GetBinContent(iBinX, iBinY))
+    return out
+
+def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
     assert len(switches["CL"])==1
     cl = switches["CL"][0]
     model = switches["signalModel"]
@@ -126,7 +141,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
     for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
         h3 = f.Get(name)
         if not h3 : continue
-        h = threeToTwo(h3)
+        h = shifted(threeToTwo(h3), shiftX = shiftX, shiftY = shiftY)
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
         title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
@@ -138,14 +153,16 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
     f.Close()
     return histos
 
-def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit") :
+def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit",
+                          shiftX = False, shiftY = False, interBin = "LowEdge") :
+
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
 
     inFile = mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFileEps  = inFile.replace(".root", "_xsLimit.eps")
-    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges)
+    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY)
 
     #output a root file
     g = r.TFile(outFileRoot, "RECREATE")
@@ -168,6 +185,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         graphs = exclusions(histos = histos, writeDir = g,
                             signalModel = s["signalModel"],
                             graphBlackLists = s["graphBlackLists"],
+                            interBin = interBin,
                             printXs = printXs)
         stuff = rxs.drawGraphs(graphs)
 
