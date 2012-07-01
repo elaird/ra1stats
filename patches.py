@@ -12,29 +12,17 @@ def cutFunc() :
             }
 
 def nEventsIn() :
-    return {""       :(9900., 10100.),
-            "T1"   :(1, None),
-            "T2"   :(1, None),
-            "T2bb"   :(1, None),
-            "T2tt"   :(1, None),
-            "T1bbbb"   :(1, None),
-            "T1tttt"   :(1, None),
+    return {""       :(1,     None),
             "T5zz"   :(5.0e3, None),
-            "TGQ_0p0":(1, None),
-            "TGQ_0p2":(1, None),
-            "TGQ_0p4":(1, None),
-            "TGQ_0p8":(1, None),
-            "T1tttt_2012"   :(1, None),}
+            }
 
 def overwriteInput() :
     return collections.defaultdict(list)
 
 def overwriteOutput() :
     out = collections.defaultdict(list)
-    out.update({"T1": [],
-                "T2": [(9,2,1)],
-                "T2tt": [],
-                "T2bb":   [
+    out.update({"T2": [(9,2,1)],
+                "T2bb": [
                 (16, 9, 1), (18, 2, 1), (20, 3, 1), (20, 14, 1), (21, 1, 1),
                 (22, 5, 1), (22, 15, 1), (23, 12, 1), (25, 17, 1), (26, 14, 1),
                 (27, 13, 1), (28, 13, 1), (28, 19, 1), (29, 7, 1), (29, 9, 1),
@@ -53,7 +41,6 @@ def overwriteOutput() :
                 (37, 7, 1), (29, 13, 1), (40, 24, 1), (44, 28, 1),
                 (27, 11, 1)
                 ],
-                "T5zz": [],
                 })
 
 def graphBlackLists() :
