@@ -89,15 +89,21 @@ def pruneGraph( graph, lst=[], debug=False ):
             graph.RemovePoint(i)
     if debug: graph.Print()
 
-def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge") :
+def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False) :
     graphs = []
 
-    specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "color": r.kViolet, "label":"Expected Limit #pm1 #sigma exp."},
-             {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "color": r.kViolet, "label":""},
-             {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "color": r.kViolet, "label":""},
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "color": r.kBlack,  "label":"#sigma^{NLO+NLL} #pm1 #sigma theory"},
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "color": r.kBlue,   "label":"", "variation":-1.0},
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "color": r.kYellow, "label":"", "variation": 1.0},
+    specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
+              "color": r.kViolet},
+             {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+              "color": r.kViolet},
+             {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+              "color": r.kViolet},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+              "color": r.kBlack},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+              "color": r.kBlue if debug else r.kBlack},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+              "color": r.kYellow if debug else r.kBlack},
              ]
 
     for i,spec in enumerate(specs) :
@@ -157,7 +163,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     return histos
 
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit",
-                          shiftX = False, shiftY = False, interBin = "LowEdge") :
+                          shiftX = False, shiftY = False, interBin = "LowEdge", debug = False) :
 
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
@@ -189,7 +195,8 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
                             signalModel = s["signalModel"],
                             graphBlackLists = s["graphBlackLists"],
                             interBin = interBin,
-                            printXs = printXs)
+                            printXs = printXs,
+                            debug = debug)
         stuff = rxs.drawGraphs(graphs)
 
         if simpleExcl :
