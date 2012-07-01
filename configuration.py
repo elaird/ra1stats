@@ -36,7 +36,7 @@ def signal() :
             "overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
-            "smsCutFunc": patches.cutFunc(),
+            "cutFunc": patches.cutFunc(),
             "nEventsIn": patches.nEventsIn(),
             "nlo": True,
             "nloToLoRatios": False,

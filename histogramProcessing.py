@@ -91,7 +91,7 @@ def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
     if not s["isSms"] : return cmssmNloXsHisto(model) if s["nlo"] else cmssmLoXsHisto(model)
-    else : return smsXsHisto(model, cutFunc = s["smsCutFunc"][s["signalModel"]])
+    else : return smsXsHisto(model, cutFunc = s["cutFunc"][s["signalModel"]])
 
 def nEventsInHisto() :
     s = conf.switches()

@@ -33,7 +33,7 @@ def threeToTwo(h3) :
 
 def modifyHisto(h, s) :
     fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
-    killPoints(h, cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None)
+    killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
 
 def squareCanvas(margin = 0.18, ticks = True) :
     canvas = r.TCanvas("canvas","canvas",2)
