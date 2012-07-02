@@ -174,7 +174,13 @@ def getHistoBinRange(h, minimums = None, maximums = None):
 def shifted(h = None, shiftX=False, shiftY=False,
             shiftZ=False, shiftErrors=True) :
     axes = [ 'X', 'Y', 'Z' ]
-    dim = int(h.ClassName()[2])
+    try:
+        dim = int(h.ClassName()[2])
+    except ValueError as e:
+        print "Tried shifting h w/ dim>3 or non-histo:", h.ClassName(), "=>", e
+        print "Object will remain unshifted"
+        return h
+
     htype = h.ClassName()[-1]
 
     binWidths = []
