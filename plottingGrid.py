@@ -79,6 +79,7 @@ def pointsAtYMin(graph) :
     out = []
     x = graph.GetX()
     y = graph.GetY()
+    if not graph.GetN() : return out
     yMin = min([y[i] for i in range(graph.GetN())])
     xsAtYMin = []
     for i in range(graph.GetN()) :
