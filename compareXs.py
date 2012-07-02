@@ -57,7 +57,7 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             'opts': 'c',
-            'Smooth': True,
+            'Smooth': False,
             },
         'ExpectedUpperLimit': {
             'label': 'Median Expected Limit #pm 1 #sigma (exp)',
@@ -113,7 +113,7 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
         'xLabel': "{p} mass [GeV/c^{{2}}]".format(
             p=refProcess.capitalize().replace('_',' ')),
         'yLabel': '#sigma [pb]',
-        'legendPosition': [0.12, 0.12, 0.50, 0.30],
+        'legendPosition': [0.12, 0.12, 0.47, 0.30],
         }
     if plotOptOverrides is not None:
         plotOpts.update(plotOptOverrides)
@@ -127,12 +127,8 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
     leg = r.TLegend(*plotOpts['legendPosition'])
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
-    histosToDraw = [ 'ExpectedUpperLimit_+1_Sigma',
-                     'ExpectedUpperLimit',
-                     'ExpectedUpperLimit_-1_Sigma',
-                     'refHisto',
-                     'UpperLimit',
-                   ]
+    histosToDraw = ['ExpectedUpperLimit_+1_Sigma', 'ExpectedUpperLimit',
+                    'ExpectedUpperLimit_-1_Sigma', 'refHisto', 'UpperLimit']
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
         h = props['hist']
