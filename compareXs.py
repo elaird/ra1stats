@@ -2,12 +2,16 @@
 
 import ROOT as r
 from utils import threeToTwo, shifted
+from refXsProcessing import histoSpec
 import utils
 
+model = 'T2tt'
+hSpec = histoSpec(model)
+
 options = {
-    'refProcess': 'stop_or_sbottom',
+    'refProcess': hSpec['histo'],
+    'refXsFile': hSpec['file'],
     'refName': '#tilde{t} #tilde{t}',
-    'refXsFile': 'sms_xs/sms_xs.root',
     'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
                  'CLs_frequentist_TS3_T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
