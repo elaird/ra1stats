@@ -208,8 +208,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
                 d["graph"].Draw("psame")
                 c.Print(pdf)
             c.Print(pdf+"]")
-            return
-
+            return #FIXME: prevents xsLimit getting updated when simpleExcl is on
     #draw curves of iso-mDelta
     if mDeltaFuncs :
         outFileEps = outFileEps.replace(".eps", "_mDelta.eps")
