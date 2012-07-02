@@ -74,10 +74,14 @@ def pointsAtYMin(graph) :
             out.append((x[i], y[i]))
     if len(out) :
         xMax = max([coords[0] for coords in out])
-        out.remove((xMax,yMin))
+        xMin = min([coords[0] for coords in out])
+        while (xMax,yMin) in out:
+            out.remove((xMax,yMin))
+        while (xMin,yMin) in out:
+            out.remove((xMin,yMin))
     return out
 
-def pruneGraph( graph, lst=[], debug=False ):
+def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
     if debug: graph.Print()
     for p in lst:
         x = graph.GetX()
@@ -89,6 +93,8 @@ def pruneGraph( graph, lst=[], debug=False ):
         for i in bad:
             print "WARNING: Removing point %d = (%g,%g) from graph %s" % (i, x[i], y[i], graph.GetName())
             graph.RemovePoint(i)
+    if breakLink:
+        graph.RemovePoint(graph.GetN()-1)
     if debug: graph.Print()
 
 def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
@@ -118,7 +124,7 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
             lst = graphBlackLists[name][signalModel]
             if pruneYMin :
                 lst += pointsAtYMin(graph['graph'])
-            pruneGraph(graph['graph'], lst = lst, debug = False)
+            pruneGraph(graph['graph'], lst = lst, debug = False, breakLink=pruneYMin)
         graphs.append(graph)
 
     if writeDir :
