@@ -31,6 +31,45 @@ def histoMax(h) :
     i = h.GetMaximumBin()
     return (h.GetBinContent(i)+h.GetBinError(i))
 #####################################
+def shifted(h = None, shift = (False, False), shiftErrors = True) :
+    assert len(shift) in range(1,4),shift
+
+    axes = [ 'X', 'Y', 'Z' ]
+    try:
+        dim = int(h.ClassName()[2])
+    except ValueError as e:
+        print "Tried shifting h w/ dim>3 or non-histo:", h.ClassName(), "=>", e
+        print "Object will remain unshifted"
+        return h
+
+    htype = h.ClassName()[-1]
+
+    args = []
+    shiftWidths = []
+    for i in range(dim) :
+        axis = getattr(h, "Get%saxis"%axes[i])()
+        nBins = getattr(h, "GetNbins%s"%axes[i])()
+        max = axis.GetXmax()
+        min = axis.GetXmin()
+        shiftWidths.append((max - min)/(2.0*nBins) if shift[i] else 0.0)
+        args += [nBins, min - shiftWidths[-1], max - shiftWidths[-1]]
+
+    hname = h.GetName()
+    if any(shiftWidths):
+        print "INFO: shifting {0} by {1}".format(hname,shiftWidths)
+
+    histoConstructor= getattr(r,'TH%d%s'%(dim,htype))
+    out = histoConstructor( hname+"_shifted", h.GetTitle(), *args)
+    out.SetDirectory(0)
+
+    for iBinX in range(1, 1 + h.GetNbinsX()) :
+        for iBinY in range(1, 1 + h.GetNbinsY()) :
+            for iBinZ in range(1, 1 + h.GetNbinsZ()) :
+                out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
+            if shiftErrors:
+                out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
+    return out
+#####################################
 class thstack(object) :
     """work-around for buggy THStacks in ROOT 5.30.00"""
     def __init__(self, name = "") :

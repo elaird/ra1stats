@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 import ROOT as r
-from utils import threeToTwo
-from plottingGrid import shifted
+from utils import threeToTwo, shifted
 import utils
 
 options = {
@@ -186,11 +185,10 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
     histosToDraw = ['ExpectedUpperLimit_+1_Sigma', 'ExpectedUpperLimit',
                     'ExpectedUpperLimit_-1_Sigma', 'refHisto', 'UpperLimit']
     for hname in histosToDraw:
-        hs[hname]['hist'] = shifted(hs[hname]['hist'],shiftX=shiftX, shiftErrors=hs[hname].get('hasErrors',False))
+        hs[hname]['hist'] = shifted(hs[hname]['hist'],shift=(shiftX,), shiftErrors=hs[hname].get('hasErrors',False))
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
         h = props['hist']
-        #h = shifted(props['hist'],shiftX=shiftX)
         h.SetStats(False)
         h.SetTitle(plotTitle)
         h.GetXaxis().SetRangeUser(plotOpts['xMin'],plotOpts['xMax'])
