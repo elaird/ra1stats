@@ -200,10 +200,12 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
             h.Smooth(1,'R')
         h.Draw("%s%s"%(props.get('opts','c'), "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
-            eval('h.Set{attr}(props.get("{attr}",1))'.format(attr=attr))
+            setAttr = getattr(h,'Set{attr}'.format(attr=attr))
+            setAttr(props.get(attr,1))
         for attr in ['FillStyle', 'FillColor']:
             if attr in props:
-                eval('h.Set{attr}(props.get("{attr}",1))'.format(attr=attr))
+                setAttr = getattr(h,'Set{attr}'.format(attr=attr))
+                setAttr(props.get(attr,1))
         if "Sigma" not in hname:
             leg.AddEntry(h, props['label'], "lf")
         h.GetXaxis().SetTitle(plotOpts['xLabel'])
