@@ -51,7 +51,7 @@ def graphBlackLists() :
     keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
     for key in keys :
         out[key] = collections.defaultdict(list)
-        
+
     out["UpperLimit"].update({"T1" : [ (1000,125), (1000,175) ]})
 
     out["UpperLimit"].update({"T2" : [ (800,200) ]})
