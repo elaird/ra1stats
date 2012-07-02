@@ -68,6 +68,9 @@ def graphBlackLists() :
     out["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (475, 75), ]})
 
     out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50), (475,100) ]})
+    out["UpperLimit_-1_Sigma"].update({"T2tt":[ (550, 100) ]})
+    out["UpperLimit_+1_Sigma"].update({"T2tt":[ (550, 100), (575,125),
+        (525,150), (475,125) ]})
     out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
 
     out["UpperLimit"].update({"T1bbbb" : [ (1050,200), (1050,250),
