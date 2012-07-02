@@ -2,7 +2,7 @@
 
 import ROOT as r
 from utils import threeToTwo
-from plottingGrid import _shifted_gen as shifted
+from plottingGrid import shifted
 
 options = {
     'refProcess': 'stop_or_sbottom',
@@ -47,7 +47,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
             'FillStyle': 3002,
             'hasErrors': True,
             'opts': 'e3c',
-            'label': '#sigma_{{NLO-QCD}}({rn}) #pm 1#sigma (th)'.format(rn=refName),
+            'label': '#sigma_{{NLO+NLL}}({rn}) #pm 1#sigma (th)'.format(rn=refName),
             }
         }
     return histoD
