@@ -183,7 +183,7 @@ def shifted(h = None, shiftX=False, shiftY=False,
 
     htype = h.ClassName()[-1]
 
-    binWidths = []
+    shiftWidths = []
     mins = []
     maxs = []
     nBins = []
@@ -191,16 +191,16 @@ def shifted(h = None, shiftX=False, shiftY=False,
         maxs.append(eval('h.Get{ax}axis().GetXmax()'.format(ax=axis)))
         mins.append(eval('h.Get{ax}axis().GetXmin()'.format(ax=axis)))
         nBins.append(eval('h.GetNbins{ax}()'.format(ax=axis)))
-        binWidths.append( (maxs[-1]-mins[-1])/nBins[-1] if
+        shiftWidths.append( (maxs[-1]-mins[-1])/(2.*nBins[-1]) if
                           eval('shift{ax}'.format(ax=axis)) else 0.0 )
 
     hname = h.GetName()
-    if any(binWidths):
-        print "INFO: shifting {0} by {1}".format(hname,binWidths)
+    if any(shiftWidths):
+        print "INFO: shifting {0} by {1}".format(hname,shiftWidths)
 
     args = []
-    for nb, bw, min, max in zip(nBins, binWidths, mins, maxs) :
-        args.extend( [ nb, min-bw/2.0, max-bw/2.0 ] )
+    for nb, bw, min, max in zip(nBins, shiftWidths, mins, maxs) :
+        args.extend( [ nb, min-bw, max-bw ] )
 
     title = ""
     out = eval('r.TH%d%s( hname+"_shifted", title, *args )' % (dim, htype))
