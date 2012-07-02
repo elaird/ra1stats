@@ -2,17 +2,20 @@
 
 import ROOT as r
 from utils import threeToTwo
+from plottingGrid import _shifted_gen as shifted
 
 options = {
     'refProcess': 'stop_or_sbottom',
     'refName': '#tilde{t} #tilde{t}',
-    'refXsFile':  'sms_xs/sms_xs.root',
+    'refXsFile': 'sms_xs/sms_xs.root',
     'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
                  'CLs_frequentist_TS3_T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
     'plotTitle': 'pp#rightarrow#tilde{t} #tilde{t}#; #tilde{t}#rightarrow t+'
                  '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV/c^{2}',
-    'refYRange':    (50.,50.),
+    'refYRange': (50.,50.),
+    # bin width
+    'shiftX': True,
     }
 
 plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} [GeV/c^{2}]' }
@@ -24,10 +27,10 @@ def drawStamp(canvas):
     tl.SetNDC()
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
-    tl.DrawLatex(0.35,0.8,'CMS Prelimary')
-    tl.DrawLatex(0.55,0.8,'#sqrt{s} = 7 TeV, #int L dt = 4.98 fb^{-1}')
+    tl.DrawLatex(0.25,0.8,'CMS Preliminary')
+    tl.DrawLatex(0.50,0.793,'#sqrt{s} = 7 TeV, #int L dt = 4.98 fb^{-1}')
     tl.SetTextSize(0.1)
-    tl.DrawLatex(0.55,0.72,'#alpha_{T}')
+    tl.DrawLatex(0.50,0.72,'#alpha_{T}')
     return tl
 
 def getReferenceXsHisto(refHistoName, refName, filename):
@@ -43,6 +46,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
             'LineColor': r.kBlack,
             'FillColor': r.kGray+2,
             'FillStyle': 3002,
+            'hasErrors': True,
             'opts': 'e3c',
             'label': '#sigma_{{NLO-QCD}}({rn}) #pm 1#sigma (th)'.format(rn=refName),
             }
@@ -95,7 +99,7 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
         minYBin = limitHisto.GetYaxis().FindBin(yMinMax[0])
         maxYBin = limitHisto.GetYaxis().FindBin(yMinMax[1])
 
-        opts['hist'] = limitHisto.ProjectionX('T2tt',minYBin,maxYBin).Clone()
+        opts['hist'] = limitHisto.ProjectionX(limitHistoName+"_",minYBin,maxYBin).Clone()
         opts['hist'].SetDirectory(0)
 
     rfile.Close()
@@ -104,7 +108,8 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
 
 def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
               limitFile="xsLimit.root", pdfFile="sms_xs/compareXs.pdf",
-              refYRange=(50,50), plotTitle="", plotOptOverrides=None) :
+              refYRange=(50,50), plotTitle="", plotOptOverrides=None,
+              shiftX=False) :
     plotOpts = {
         'yMax': 2e+1,
         'yMin': 2e-4,
@@ -121,7 +126,7 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
     refHisto = getReferenceXsHisto(refProcess, refName, refXsFile)
     exclusionHistos = getExclusionHistos(limitFile)
 
-    canvas = r.TCanvas()
+    canvas = r.TCanvas('c1','c1',700,600)
     hs = dict(refHisto.items() + exclusionHistos.items())
 
     leg = r.TLegend(*plotOpts['legendPosition'])
@@ -129,9 +134,13 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
     leg.SetBorderSize(0)
     histosToDraw = ['ExpectedUpperLimit_+1_Sigma', 'ExpectedUpperLimit',
                     'ExpectedUpperLimit_-1_Sigma', 'refHisto', 'UpperLimit']
+    for hname in histosToDraw:
+        print "shifting", hname
+        hs[hname]['hist'] = shifted(hs[hname]['hist'],shiftX=shiftX, shiftErrors=hs[hname].get('hasErrors',False))
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
         h = props['hist']
+        #h = shifted(props['hist'],shiftX=shiftX)
         h.SetStats(False)
         h.SetTitle(plotTitle)
         h.GetXaxis().SetRangeUser(plotOpts['xMin'],plotOpts['xMax'])
