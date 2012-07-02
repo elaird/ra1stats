@@ -4,6 +4,7 @@ import histogramSpecs as hs
 import refXsProcessing as rxs
 from histogramProcessing import printHoles,fillPoints,killPoints
 from pickling import mergedFile
+from utils import threeToTwo, shifted
 import ROOT as r
 
 def setupRoot() :
@@ -16,20 +17,6 @@ def setupRoot() :
 
 setupRoot()
 
-def threeToTwo(h3) :
-    name = h3.GetName()
-    h2 = r.TH2D(name+"_2D",h3.GetTitle(),
-                h3.GetNbinsX(), h3.GetXaxis().GetXmin(), h3.GetXaxis().GetXmax(),
-                h3.GetNbinsY(), h3.GetYaxis().GetXmin(), h3.GetYaxis().GetXmax(),
-                )
-
-    for iX in range(1, 1+h3.GetNbinsX()) :
-        for iY in range(1, 1+h3.GetNbinsY()) :
-            content = h3.GetBinContent(iX, iY, 1)
-            h2.SetBinContent(iX, iY, content)
-    h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
-    h2.SetDirectory(0)
-    return h2
 
 def modifyHisto(h, s) :
     fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
@@ -140,21 +127,6 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
         writeDir.Close()
     return graphs
 
-def shifted(h = None, shiftX = False, shiftY = False) :
-    binWidthX = (h.GetXaxis().GetXmax() - h.GetXaxis().GetXmin())/h.GetNbinsX() if shiftX else 0.0
-    binWidthY = (h.GetYaxis().GetXmax() - h.GetYaxis().GetXmin())/h.GetNbinsY() if shiftY else 0.0
-
-    if binWidthX or binWidthY : print "INFO: shifting %s by (%g, %g)"%(h.GetName(), binWidthX, binWidthY)
-    out = r.TH2D(h.GetName()+"_shifted","",
-                 h.GetNbinsX(), h.GetXaxis().GetXmin() - binWidthX/2.0, h.GetXaxis().GetXmax() - binWidthX/2.0,
-                 h.GetNbinsY(), h.GetYaxis().GetXmin() - binWidthY/2.0, h.GetYaxis().GetXmax() - binWidthY/2.0,
-                 )
-    out.SetDirectory(0)
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            out.SetBinContent(iBinX, iBinY, h.GetBinContent(iBinX, iBinY))
-    return out
-
 def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
     assert len(switches["CL"])==1
     cl = switches["CL"][0]
@@ -166,7 +138,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
         h3 = f.Get(name)
         if not h3 : continue
-        h = shifted(threeToTwo(h3), shiftX = shiftX, shiftY = shiftY)
+        h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
         title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
