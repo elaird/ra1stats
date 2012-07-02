@@ -3,6 +3,7 @@
 import ROOT as r
 from utils import threeToTwo
 from plottingGrid import shifted
+import utils
 
 options = {
     'refProcess': 'stop_or_sbottom',
@@ -15,6 +16,7 @@ options = {
                  '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV/c^{2}',
     'refYRange': (50.,50.),
     'shiftX': True,
+    'showRatio': True,
     }
 
 plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} [GeV/c^{2}]' }
@@ -105,10 +107,40 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
     return limitHistoDict
 
 
+def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs'):
+    h1 = hd1['hist']
+    h2 = hd2['hist']
+    pad = canvas.cd(padNum)
+    pad.SetTickx()
+    pad.SetTicky()
+    ratio  = h2.Clone()
+    ratio.SetTitle('')
+    ratio.GetXaxis().SetTitle('')
+    ratio.GetYaxis().SetTitle(title)
+    for h2Bin in range(1, h2.GetNbinsX()+1):
+        val = h2.GetBinLowEdge(h2Bin)
+        h1Bin = h1.FindBin(val)
+        num = h1.GetBinContent(h1Bin)
+        denom = h2.GetBinContent(h2Bin)
+
+        if denom > 0.:
+            binRatio = num / denom
+        else:
+            binRatio = 0.
+        ratio.SetBinContent(h2Bin,binRatio)
+    ratio.SetLineWidth(1)
+    ratio.Draw('pe')
+    ratio.SetMaximum(2.)
+    #ratio.Print('all')
+    line = None
+    return ratio, line
+
+
+
 def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
               limitFile="xsLimit.root", pdfFile="sms_xs/compareXs.pdf",
               refYRange=(50,50), plotTitle="", plotOptOverrides=None,
-              shiftX=False) :
+              shiftX=False, showRatio=False) :
     plotOpts = {
         'yMax': 2e+1,
         'yMin': 2e-4,
@@ -126,6 +158,11 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
     exclusionHistos = getExclusionHistos(limitFile)
 
     canvas = r.TCanvas('c1','c1',700,600)
+    utils.divideCanvas(canvas)
+    if showRatio:
+        pad = canvas.cd(1)
+    else:
+        pad = canvas.cd(0)
     hs = dict(refHisto.items() + exclusionHistos.items())
 
     leg = r.TLegend(*plotOpts['legendPosition'])
@@ -158,10 +195,16 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
         h.GetYaxis().SetTitle(plotOpts['yLabel'])
     leg.Draw()
     tl = drawStamp(canvas)
-    r.gPad.RedrawAxis()
-    canvas.SetLogy()
-    canvas.SetTickx()
-    canvas.SetTicky()
+    pad.RedrawAxis()
+    pad.SetLogy()
+    pad.SetTickx()
+    pad.SetTicky()
+
+    ref = hs['refHisto']
+    obs = hs['UpperLimit']
+    if showRatio:
+        ratio = drawRatio(ref, obs, canvas, 2)
+
     print "Saving to {file}".format(file=pdfFile)
     canvas.Print(pdfFile)
 
