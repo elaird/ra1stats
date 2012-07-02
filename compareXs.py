@@ -4,7 +4,7 @@ import ROOT as r
 from utils import threeToTwo
 
 options = {
-    'refProcess': 'squark',
+    'refProcess': 'stop_or_sbottom',
     'refXsFile':  'sms_xs/sms_xs.root',
     'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
                  'CLs_frequentist_TS3_T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_'
@@ -14,7 +14,7 @@ options = {
     'refYRange':    (50.,50.),
     }
 
-plotOptOverrides = { 'xLabel': 'm_{#tilde{q}} [GeV/c^{2}]' }
+plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} [GeV/c^{2}]' }
 
 
 def drawStamp(canvas):
@@ -38,8 +38,11 @@ def getReferenceXsHisto(refHistoName, filename):
         'refHisto': {
             'hist': refHisto,
             'LineWidth': 2,
-            'LineStyle': 2,
+            'LineStyle': 7,
             'LineColor': r.kBlack,
+            'FillColor': r.kGray+2,
+            'FillStyle': 3002,
+            'opts': 'e3c',
             'label': '{0} pair production'.format(refHistoName.capitalize())
             }
         }
@@ -49,7 +52,7 @@ def getReferenceXsHisto(refHistoName, filename):
 def getExclusionHistos(limitFile, yMinMax=(50,50)):
     limitHistoDict = {
         'UpperLimit': {
-            'label': 'Upper Limit',
+            'label': 'Observed Upper Limit',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             'opts': 'c',
@@ -126,8 +129,9 @@ def compareXs(refProcess, refXsFile="sms_xs/sms_xs.root",
     histosToDraw = [ 'ExpectedUpperLimit_+1_Sigma',
                      'ExpectedUpperLimit',
                      'ExpectedUpperLimit_-1_Sigma',
+                     'refHisto',
                      'UpperLimit',
-                     'refHisto' ]
+                     ]
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
         h = props['hist']
