@@ -4,22 +4,22 @@ from configuration import locations
 
 def histoSpec(model) :
     base = locations()["xs"]
+    seven = "%s/v5/7TeV.root"%base
+    eight = "%s/v4/sms_xs.root"%base
     tgqFile = "%s/v1/TGQ_xSec.root"%base
-    tgqHisto = "clone"
-    tgqFactor = 1.0
-    d = {"T1":          {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T2":          {"histo": "squark", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T5zz":        {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T1bbbb":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T1tttt":      {"histo": "gluino", "factor": 1.0,  "file": "%s/v3/sms_xs.root"%base},
-         "T1tttt_2012": {"histo": "gluino", "factor": 1.0,  "file": "%s/v4/sms_xs.root"%base},
-         "TGQ_0p0":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
-         "TGQ_0p2":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
-         "TGQ_0p4":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
-         "TGQ_0p8":     {"histo": tgqHisto, "factor": tgqFactor, "file": tgqFile},
+
+    d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": seven},
+         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
+         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
+         "T1tttt_2012": {"histo": "gluino", "factor": 1.0,  "file": eight},
          }
+
+    for item in ["T1", "T1bbbb", "T1tttt", "T5zz"] :
+        d[item] = {"histo":"gluino", "factor":1.0,  "file":seven}
+
+    for item in ["TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
+        d[item] = {"histo":"clone", "factor":1.0, "file":tgqFile}
+
     assert model in d,"model=%s"%model
     return d[model]
 
@@ -45,26 +45,14 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
 
     return out
 
-def graphs(h, model, interBin, pruneAndExtrapolate = False, yValueToPrune =
-           None, noOneThird = True, timesTen = False, printXs = False, lineStyle=1,
-           label="#sigma^{prod} = #sigma^{NLO-QCD}") :
-    out = [{"factor": 1.0 , "label": label , "color": r.kBlack, "lineStyle": lineStyle, "lineWidth": 3, "markerStyle": 20},
-           #{"factor": 3.0 , "label": "#sigma^{prod} = 3 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},
-           ] if not timesTen else [
-        {"factor": 10.0 , "label": "#sigma^{prod} = 10 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": lineStyle, "lineWidth": 3, "markerStyle": 20},
-        {"factor": 30.0 , "label": "#sigma^{prod} = 30 #sigma^{NLO-QCD}",   "color": r.kBlack, "lineStyle": 2, "lineWidth": 3, "markerStyle": 20},]
-
-    if not noOneThird :
-        if not timesTen :
-            out.append({"factor": 1/3., "label": "#sigma^{prod} = 1/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
-        else :
-            out.append({"factor": 10/3., "label": "#sigma^{prod} = 10/3 #sigma^{NLO-QCD}", "color": r.kBlack, "lineStyle": 3, "lineWidth": 3, "markerStyle": 20})
-
-    for d in out :
-        d["graph"] = excludedGraph(h, d["factor"], model, interBin, printXs = printXs)
-        stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
-        d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin)
-    return out
+def graph(h = None, model = "", interBin = "", printXs = False, spec = {}) :
+    d = {"color":r.kBlack, "lineStyle":1, "lineWidth":3, "markerStyle":20, "factor":1.0, "variation":0.0, "label":"a curve"}
+    d.update(spec)
+    d["graph"] = excludedGraph(h, factor = d["factor"], variation = d["variation"],
+                               model = model, interBin = interBin, printXs = printXs)
+    stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
+    d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin, variation = d["variation"])
+    return d
 
 def binWidth(h, axisString) :
     a = getattr(h, "Get%saxis"%axisString)()
@@ -77,28 +65,28 @@ def allMatch(value, y, threshold, iStart, N) :
             count +=1
     return count==(N-iStart)
 
-def content(h, *coords) :
+def content(h = None, coords = (0.0,), variation = 0.0, factor = 1.0) :
     assert h.ClassName()[:2]=="TH"
     dim = int(h.ClassName()[2])
     args = tuple(coords[:dim])
-    return h.GetBinContent(h.FindBin(*args))
+    bin = h.FindBin(*args)
+    return factor*(h.GetBinContent(bin) + variation*h.GetBinError(bin))
 
-
-def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", prune = False, printXs = False) :
+def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "CenterOrLowEdge", prune = False, printXs = False) :
     def fail(xs, xsLimit) :
         return xs<=xsLimit or not xsLimit
 
     refHisto = refXsHisto(model)
-
     d = collections.defaultdict(list)
     for iBinX in range(1, 1+h.GetNbinsX()) :
         x = getattr(h.GetXaxis(),"GetBin%s"%interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()) :
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
-            c = content(refHisto, x, y)
-            if not c : continue
-            if printXs : print "x=%g, y=%g, xs*1.0 = %g"%(x,y,c)
-            xs = factor*c
+            xs = content(h = refHisto, coords = (x, y), variation = variation, factor = factor)
+            if not xs : continue
+            if printXs :
+                xsPlain = content(h = refHisto, coords = (x, y))
+                print "x=%g, y=%g, xs(plain) = %g, xs(varied) = %g"%(x,y, xsPlain, xs)
             xsLimit     = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
@@ -126,7 +114,7 @@ def excludedGraph(h, factor = None, model = None, interBin = "CenterOrLowEdge", 
 
     return out
 
-def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge") :
+def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge", variation = 0.0) :
     refHisto = refXsHisto(model)
     out = h.Clone("%s_excludedHistoSimple"%h.GetName())
     out.Reset()
@@ -137,7 +125,7 @@ def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowE
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             if not xsLimit : continue
-            xs = factor*content(refHisto, x, y)
+            xs = content(h = refHisto, coords = (x, y), variation = variation, factor = factor)
             out.SetBinContent(iBinX, iBinY, 2*(xsLimit<xs)-1)
     return out
 
@@ -181,7 +169,9 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
     return
 
 def drawGraphs(graphs, legendTitle="") :
-    legend = r.TLegend(0.2, 0.64, 0.7, 0.64+0.04*len(graphs), legendTitle)
+    count = len(filter(lambda x:x["label"],graphs))
+    yMax = 0.80
+    legend = r.TLegend(0.2, yMax-0.04*count, 0.7, yMax, legendTitle)
     legend.SetBorderSize(0)
     legend.SetFillStyle(0)
     for d in graphs :

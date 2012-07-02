@@ -39,8 +39,9 @@ def histos() :
         maxMass = max(masses)
         binWidth = (maxMass - minMass + 0.0) / (nMasses-1)
         histo = r.TH1D(histName, "%s; mass (GeV);#sigma (pb)"%histName, nMasses, minMass-binWidth/2.0, maxMass+binWidth/2.0)
-        for mass,(xs,xsErr) in dct.iteritems() :
+        for mass,(xs,xsRelUnc) in dct.iteritems() :
             histo.SetBinContent(histo.FindBin(mass), xs)
+            histo.SetBinError(histo.FindBin(mass), xs*xsRelUnc)
         histosOut[histName]['hist'] = histo
         histosOut[histName]['com'] = fileName[-8:-4]
     return histosOut

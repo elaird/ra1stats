@@ -20,7 +20,7 @@ setupRoot()
 
 def modifyHisto(h, s) :
     fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
-    killPoints(h, cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None)
+    killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
 
 def squareCanvas(margin = 0.18, ticks = True) :
     canvas = r.TCanvas("canvas","canvas",2)
@@ -62,6 +62,20 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
     latex.DrawLatex(x, y, text)
     return latex
 
+def pointsAtYMin(graph) :
+    out = []
+    x = graph.GetX()
+    y = graph.GetY()
+    yMin = min([y[i] for i in range(graph.GetN())])
+    xsAtYMin = []
+    for i in range(graph.GetN()) :
+        if y[i]==yMin :
+            out.append((x[i], y[i]))
+    if len(out) :
+        xMax = max([coords[0] for coords in out])
+        out.remove((xMax,yMin))
+    return out
+
 def pruneGraph( graph, lst=[], debug=False ):
     if debug: graph.Print()
     for p in lst:
@@ -76,18 +90,35 @@ def pruneGraph( graph, lst=[], debug=False ):
             graph.RemovePoint(i)
     if debug: graph.Print()
 
-def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None) :
+def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
+               pruneYMin = False) :
     graphs = []
-    for i,(name,label) in enumerate([("UpperLimit", "#sigma^{prod} = #sigma^{NLO-QCD}"),
-                                     ("ExpectedUpperLimit", "Expected Limit"),
-                                     ("ExpectedUpperLimit_-1_Sigma", "Expected Limit #pm1 #sigma"),
-                                     ("ExpectedUpperLimit_+1_Sigma", ""),
-                                     ]) :
-        h = histos[name]
-        graph = rxs.graphs(h, signalModel, "LowEdge", printXs = printXs, lineStyle = {0:1, 1:2, 2:3, 3:3}[i], label = label)
+
+    specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
+              "color": r.kViolet},
+             {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+              "color": r.kViolet},
+             {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+              "color": r.kViolet},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+              "color": r.kBlack},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+              "color": r.kBlue if debug else r.kBlack},
+             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+              "color": r.kYellow if debug else r.kBlack},
+             ]
+
+    for i,spec in enumerate(specs) :
+        h = histos[spec["name"]]
+        graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
+
+        name = spec["name"]+("_%+1d_Sigma"%spec["variation"] if ("variation" in spec and spec["variation"]) else "")
         if name in graphBlackLists :
-            pruneGraph(graph[0]['graph'], lst = graphBlackLists[name][signalModel], debug = False)
-        graphs += graph
+            lst = graphBlackLists[name][signalModel]
+            if pruneYMin :
+                lst += pointsAtYMin(graph['graph'])
+            pruneGraph(graph['graph'], lst = lst, debug = False)
+        graphs.append(graph)
 
     if writeDir :
         writeDir.cd()
@@ -96,7 +127,22 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
         writeDir.Close()
     return graphs
 
-def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
+def shifted(h = None, shiftX = False, shiftY = False) :
+    binWidthX = (h.GetXaxis().GetXmax() - h.GetXaxis().GetXmin())/h.GetNbinsX() if shiftX else 0.0
+    binWidthY = (h.GetYaxis().GetXmax() - h.GetYaxis().GetXmin())/h.GetNbinsY() if shiftY else 0.0
+
+    if binWidthX or binWidthY : print "INFO: shifting %s by (%g, %g)"%(h.GetName(), binWidthX, binWidthY)
+    out = r.TH2D(h.GetName()+"_shifted","",
+                 h.GetNbinsX(), h.GetXaxis().GetXmin() - binWidthX/2.0, h.GetXaxis().GetXmax() - binWidthX/2.0,
+                 h.GetNbinsY(), h.GetYaxis().GetXmin() - binWidthY/2.0, h.GetYaxis().GetXmax() - binWidthY/2.0,
+                 )
+    out.SetDirectory(0)
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            out.SetBinContent(iBinX, iBinY, h.GetBinContent(iBinX, iBinY))
+    return out
+
+def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
     assert len(switches["CL"])==1
     cl = switches["CL"][0]
     model = switches["signalModel"]
@@ -107,26 +153,30 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}) :
     for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
         h3 = f.Get(name)
         if not h3 : continue
-        h = threeToTwo(h3)
+        h = shifted(threeToTwo(h3), shiftX = shiftX, shiftY = shiftY)
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
         title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
+        if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(ranges["xDivisions"])
+        if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(ranges["yDivisions"])
         histos[name] = h
 
     f.Close()
     return histos
 
-def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit") :
+def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit",
+                          shiftX = False, shiftY = False, interBin = "LowEdge", pruneYMin = False, debug = False) :
+
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
 
     inFile = mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFileEps  = inFile.replace(".root", "_xsLimit.eps")
-    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges)
+    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY)
 
     #output a root file
     g = r.TFile(outFileRoot, "RECREATE")
@@ -149,7 +199,10 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         graphs = exclusions(histos = histos, writeDir = g,
                             signalModel = s["signalModel"],
                             graphBlackLists = s["graphBlackLists"],
-                            printXs = printXs)
+                            interBin = interBin,
+                            printXs = printXs,
+                            pruneYMin = pruneYMin,
+                            debug = debug)
         stuff = rxs.drawGraphs(graphs)
 
         if simpleExcl :
@@ -173,11 +226,10 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
             func.Draw("same")
 
     #stamp plot
-    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.50, factor = 1.3)
+    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
     #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
-    #s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
-    s3 = stamp(text = "%s,  5.0 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
+    s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.22, y = 0.65, factor = 0.7)
 
     printOnce(c, outFileEps)
     printHoles(histos[name])

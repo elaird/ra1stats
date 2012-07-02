@@ -1,4 +1,4 @@
-import collections,socket
+import socket,patches
 
 batchHost = [ "FNAL", "IC" ][1]
 
@@ -20,113 +20,29 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
             "fiftyGeVStepsOnly": False,
             }
 
 def signal() :
-    overwriteInput = collections.defaultdict(list)
-    overwriteOutput = collections.defaultdict(list)
-    overwriteOutput.update({"T1": [],
-                            "T2": [(9,2,1)],
-                            "T2tt": [],
-                            "T2bb":   [
-                                (16, 9, 1), (18, 2, 1), (20, 3, 1), (20, 14, 1), (21, 1, 1),
-                                (22, 5, 1), (22, 15, 1), (23, 12, 1), (25, 17, 1), (26, 14, 1),
-                                (27, 13, 1), (28, 13, 1), (28, 19, 1), (29, 7, 1), (29, 9, 1),
-                                (29, 18, 1), (30, 4, 1), (31, 4, 1), (31, 6, 1), (31, 20, 1),
-                                (31, 23, 1), (33, 4, 1), (33, 5, 1), (33, 16, 1), (33, 20, 1),
-                                (33, 21, 1), (33, 22, 1), (33, 25, 1), (33, 26, 1), (35, 17, 1),
-                                (36, 13, 1), (36, 26, 1), (39, 9, 1), (39, 32, 1), (40, 5, 1),
-                                (40, 34, 1), (41, 11, 1), (41, 16, 1), (41, 20, 1), (41, 23, 1),
-                                (41, 27, 1), (42, 21, 1), (42, 29, 1), (42, 31, 1), (42, 33, 1),
-                                (43, 13, 1), (44, 6, 1), (44, 9, 1), (44, 17, 1), (44, 26, 1),
-                                (44, 31, 1), (44, 33, 1), (20, 12, 1), (31,2,1)
-                                ],
-                            "T1bbbb": [ (36, 29, 1) ],
-                            "T1tttt": [
-                                (37, 2, 1), (37, 3, 1), (37, 4, 1), (37, 5, 1), (37, 6, 1),
-                                (37, 7, 1), (29, 13, 1), (40, 24, 1), (44, 28, 1),
-                                (27, 11, 1)
-                                ],
-                            "T5zz": [],
-                            })
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_2012"]
 
-    graphBlackLists = {}
-    for key in [ "UpperLimit", "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ] :
-        graphBlackLists[key] = collections.defaultdict(list)
-
-    graphBlackLists["UpperLimit"].update({"T1" : [ (1000,125), (1000,175) ]})
-
-    graphBlackLists["UpperLimit"].update({"T2" : [ (800,200) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (875,150) ]})
-
-    graphBlackLists["UpperLimit"].update({"T2bb" : [ (500,100), (500,250),
-        (575,125), (500, 150), (525,200), (500,200) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2bb" : [ (500,250),
-        (525,225), (525,100), (525,200)]})
-    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (475, 75), ]})
-
-    graphBlackLists["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50), (475,100) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
-
-    graphBlackLists["UpperLimit"].update({"T1bbbb" : [ (1050,200), (1050,250),
-        (1075,650), (1050,400), (1025,475), (975,650), (1050,450), (950,625),
-        (975,550), (1000,525), (1025,525), (1050,475), (1000,575), (1000,625),
-        (1025,625), (1050,600)]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T1bbbb" :
-        [(1050,75), (1100,200), (975,625), (875, 625), (925,575), (900,575),
-        (875,575), (850,575), (825,575), (1025,575), (1050,450) ]})
-    graphBlackLists["ExpectedUpperLimit"].update({"T1bbbb" : [ (1025,475),
-        (1025,450) ]})
-
-    graphBlackLists["UpperLimit"].update({"T1tttt" : [ (550,150), (800,350),
-        (750,300), (800,300), (800,250), (825,200), (825,250), (875,300) ]})
-    graphBlackLists["ExpectedUpperLimit"].update({"T1tttt" : [(825,175)] })
-    graphBlackLists["ExpectedUpperLimit_+1_Sigma"].update({"T1tttt" :
-        [(675,175), (750, 125) ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T1tttt" :
-        [(875,350), (900,150), (900,200), (1000,225), (925,225), (950,275),
-        (950,300), (900,325), (850,325)]})
-
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
-            "overwriteInput": overwriteInput,
-            "overwriteOutput": overwriteOutput,
-            "graphBlackLists": graphBlackLists,
-            "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
-                           "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T1tttt_2012":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           },
-            "nEventsIn":{""       :(9900., 10100.),
-                         "T1"   :(1, None),
-                         "T2"   :(1, None),
-                         "T2bb"   :(1, None),
-                         "T2tt"   :(1, None),
-                         "T1bbbb"   :(1, None),
-                         "T1tttt"   :(1, None),
-                         "T5zz"   :(5.0e3, None),
-                         "TGQ_0p0":(1, None),
-                         "TGQ_0p2":(1, None),
-                         "TGQ_0p4":(1, None),
-                         "TGQ_0p8":(1, None),
-                         "T1tttt_2012"   :(1, None),},
+            "overwriteInput": patches.overwriteInput(),
+            "overwriteOutput": patches.overwriteOutput(),
+            "graphBlackLists": patches.graphBlackLists(),
+            "cutFunc": patches.cutFunc(),
+            "nEventsIn": patches.nEventsIn(),
             "nlo": True,
             "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
-
-            "signalModel": dict(zip(models, models))["T2tt"]
+            "signalModel": dict(zip(models, models))["T2bb"]
             }
 
 def listOfTestPoints() :
