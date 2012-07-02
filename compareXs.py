@@ -14,7 +14,6 @@ options = {
     'plotTitle': 'pp#rightarrow#tilde{t} #tilde{t}#; #tilde{t}#rightarrow t+'
                  '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV/c^{2}',
     'refYRange': (50.,50.),
-    # bin width
     'shiftX': True,
     }
 
