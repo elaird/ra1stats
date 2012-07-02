@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import ROOT as r
-from collections import defaultdict
 
 def parsed(fileName = "") :
     dct = {}
@@ -22,7 +21,8 @@ def parsed(fileName = "") :
     return dct
 
 def histos() :
-    histosOut = defaultdict(dict)
+    histosOut = []
+    comsOut = []
     for fileName,histName in {"gluglu_decoupled7TeV.txt":"gluino",
                               "sqsq_decoupled7TeV.txt":"squark",
                               "stst_decoupled7TeV.txt":"stop_or_sbottom",
@@ -42,44 +42,28 @@ def histos() :
         for mass,(xs,xsRelUnc) in dct.iteritems() :
             histo.SetBinContent(histo.FindBin(mass), xs)
             histo.SetBinError(histo.FindBin(mass), xs*xsRelUnc)
-        histosOut[histName]['hist'] = histo
-        histosOut[histName]['com'] = fileName[-8:-4]
-    return histosOut
+        histosOut.append(histo)
+        comsOut.append(fileName[-8:-4])
+    return histosOut,comsOut
 
-
-def makeRootFile(fileName = "", xsFile=None) :
+def makeRootFile(fileName = "") :
     outFile = r.TFile(fileName, "RECREATE")
-
+    
     canvas = r.TCanvas()
     pdfFile = "sms_xs.pdf"
-
-    hs = histos()
-
+    hs,coms = histos()
     leg = r.TLegend(0.5, 0.7, 0.88, 0.88)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
-    for iHisto,(hname,props) in enumerate(hs.iteritems()):
-        h = props['hist']
+    for iHisto,(h,com) in enumerate(zip(hs,coms)) :
         h.Write()
         h.SetStats(False)
         h.SetTitle("")
-        h.GetXaxis().SetRangeUser(300,1200)
-        h.SetMinimum(2e-4)
-        h.SetMaximum(2e+1)
-        baseOpts = "c"
-        h.Draw("%s%s"%(baseOpts, "same" if iHisto else ""))
-        lineColor = props.get('lineColor',4+iHisto)
-        markerColor = props.get('markerColor',1+iHisto)
-        lineStyle = props.get('lineStyle',1)
-        lineWidth = props.get('lineWidth',1)
-        h.SetLineColor(lineColor)
-        h.SetMarkerColor(markerColor)
-        h.SetLineStyle(lineStyle)
-        h.SetLineWidth(lineWidth)
-        entry = " ".join([props['com'].replace("TeV", " TeV"),
-                          h.GetName().replace("_"," "),
-                          "pair"])
-        leg.AddEntry(h, entry, "l")
+        h.Draw("p%s"%("same" if iHisto else ""))
+        h.SetLineColor(1+iHisto)
+        h.SetMarkerColor(1+iHisto)
+        entry = " ".join([com.replace("TeV", " TeV"), h.GetName().replace("_"," "), "pair"])
+        leg.AddEntry(h, entry, "lp")
     leg.Draw()
     canvas.SetLogy()
     canvas.SetTickx()
