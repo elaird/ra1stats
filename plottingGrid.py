@@ -154,9 +154,9 @@ def shifted(h = None, shift = (False, False), shiftErrors = True) :
     if any(shiftWidths):
         print "INFO: shifting {0} by {1}".format(hname,shiftWidths)
 
-    title = ""
     histoConstructor= getattr(r,'TH%d%s'%(dim,htype))
-    out = histoConstructor( hname+"_shifted", title, *args)
+    out = histoConstructor( hname+"_shifted", h.GetTitle(), *args)
+    out.SetDirectory(0)
 
     for iBinX in range(1, 1 + h.GetNbinsX()) :
         for iBinY in range(1, 1 + h.GetNbinsY()) :
@@ -164,7 +164,6 @@ def shifted(h = None, shift = (False, False), shiftErrors = True) :
                 out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
             if shiftErrors:
                 out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
-
     return out
 
 def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
@@ -178,7 +177,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
         h3 = f.Get(name)
         if not h3 : continue
-        h = shifted(threeToTwo(h3), shiftX = shiftX, shiftY = shiftY)
+        h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
         title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
