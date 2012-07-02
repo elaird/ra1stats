@@ -16,7 +16,7 @@ options = {
                  '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV/c^{2}',
     'refYRange': (50.,50.),
     'shiftX': True,
-    'showRatio': True,
+    'showRatio': False,
     }
 
 plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} [GeV/c^{2}]' }
@@ -48,7 +48,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
             'FillColor': r.kGray+2,
             'FillStyle': 3002,
             'hasErrors': True,
-            'opts': 'e3c',
+            'opts': 'e3l',
             'label': '#sigma_{{NLO+NLL}}({rn}) #pm 1#sigma (th)'.format(rn=refName),
             }
         }
@@ -107,7 +107,8 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
     return limitHistoDict
 
 
-def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs'):
+def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
+              xMin=None, xMax=None):
     h1 = hd1['hist']
     h2 = hd2['hist']
     pad = canvas.cd(padNum)
@@ -117,6 +118,8 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs'):
     ratio.SetTitle('')
     ratio.GetXaxis().SetTitle('')
     ratio.GetYaxis().SetTitle(title)
+    ratio.GetXaxis().SetLabelSize(10.)
+    ratio.GetYaxis().SetNdivisions(203)
     for h2Bin in range(1, h2.GetNbinsX()+1):
         val = h2.GetBinLowEdge(h2Bin)
         h1Bin = h1.FindBin(val)
@@ -129,10 +132,22 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs'):
             binRatio = 0.
         ratio.SetBinContent(h2Bin,binRatio)
     ratio.SetLineWidth(1)
-    ratio.Draw('pe')
+    ratio.SetLineColor(r.kBlack)
     ratio.SetMaximum(2.)
+    ratio.DrawCopy('h')
+    for iBin in range(1, ratio.GetNbinsX()+1):
+        if ratio.GetBinContent(iBin) > 1:
+            ratio.SetLineColor(r.kRed)
+            ratio.SetLineWidth(2)
+            ratio.GetXaxis().SetRange(iBin, iBin)
+            ratio.DrawCopy('][same')
     #ratio.Print('all')
-    line = None
+    if xMax == None:
+        xMax = ratio.GetXaxis().GetXmax()
+    if xMin == None:
+        xMin = ratio.GetXaxis().GetXmin()
+    line = r.TLine()
+    line.DrawLine(xMin, 1., xMax, 1.)
     return ratio, line
 
 
@@ -203,7 +218,8 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
     ref = hs['refHisto']
     obs = hs['UpperLimit']
     if showRatio:
-        ratio = drawRatio(ref, obs, canvas, 2)
+        ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
+                                #xMax=plotOpts['xMax'])
 
     print "Saving to {file}".format(file=pdfFile)
     canvas.Print(pdfFile)
