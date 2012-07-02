@@ -16,13 +16,13 @@ options = {
                  'CLs_frequentist_TS3_T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
     'plotTitle': 'pp#rightarrow#tilde{t} #tilde{t}#; #tilde{t}#rightarrow t+'
-                 '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV/c^{2}',
+                 '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV',
     'refYRange': (50.,50.),
     'shiftX': True,
     'showRatio': False,
     }
 
-plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} [GeV/c^{2}]' }
+plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} (GeV)' }
 
 
 def drawStamp(canvas):
@@ -31,10 +31,10 @@ def drawStamp(canvas):
     tl.SetNDC()
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
-    tl.DrawLatex(0.25,0.8,'CMS Preliminary')
-    tl.DrawLatex(0.50,0.793,'#sqrt{s} = 7 TeV, #int L dt = 4.98 fb^{-1}')
-    tl.SetTextSize(0.1)
-    tl.DrawLatex(0.50,0.72,'#alpha_{T}')
+    tl.DrawLatex(0.14,0.84,'CMS Preliminary')
+    tl.DrawLatex(0.51,0.603,'#sqrt{s} = 7 TeV, L = 4.98 fb^{-1}')
+    tl.SetTextSize(0.07)
+    tl.DrawLatex(0.23,0.78,'#alpha_{T}')
     return tl
 
 def getReferenceXsHisto(refHistoName, refName, filename):
@@ -52,7 +52,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
             'FillStyle': 3002,
             'hasErrors': True,
             'opts': 'e3l',
-            'label': '#sigma_{{NLO+NLL}}({rn}) #pm 1#sigma (th)'.format(rn=refName),
+            'label': '#sigma^{{NLO+NLL}}({rn}) #pm th. unc.'.format(rn=refName),
             }
         }
     return histoD
@@ -61,14 +61,14 @@ def getReferenceXsHisto(refHistoName, refName, filename):
 def getExclusionHistos(limitFile, yMinMax=(50,50)):
     limitHistoDict = {
         'UpperLimit': {
-            'label': 'Observed Limit',
+            'label': 'Observed Limit (95% C.L.)',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             'opts': 'c',
-            'Smooth': False,
+            'Smooth': True,
             },
         'ExpectedUpperLimit': {
-            'label': 'Median Expected Limit #pm 1 #sigma (exp)',
+            'label': 'Median Expected Limit #pm 1#sigma exp.',
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'LineStyle': 9,
@@ -79,7 +79,7 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'FillColor': r.kBlue-10,
             },
         'ExpectedUpperLimit_+1_Sigma': {
-            'label': 'Expected Upper Limit (+1 #sigma)',
+            'label': 'Expected Upper Limit (+1#sigma)',
             'FillStyle': 3001,
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
@@ -88,12 +88,13 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'Smooth': True,
             },
         'ExpectedUpperLimit_-1_Sigma': {
-            'label': 'Expected Upper Limit (-1 #sigma)',
+            'label': 'Expected Upper Limit (-1#sigma)',
             'LineColor': r.kOrange+7,
             'LineWidth': 2,
             'FillColor': 10,
             'opts': 'c',
             'Smooth': True,
+            'nSmooth': 5,
             },
         }
 
@@ -160,14 +161,14 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
               refYRange=(50,50), plotTitle="", plotOptOverrides=None,
               shiftX=False, showRatio=False) :
     plotOpts = {
-        'yMax': 2e+1,
-        'yMin': 2e-4,
+        'yMax': 1e+1,
+        'yMin': 1e-3,
         'xMin': 300,
         'xMax': 1200,
-        'xLabel': "{p} mass [GeV/c^{{2}}]".format(
+        'xLabel': "{p} mass (GeV)".format(
             p=refProcess.capitalize().replace('_',' ')),
-        'yLabel': '#sigma [pb]',
-        'legendPosition': [0.12, 0.12, 0.47, 0.30],
+        'yLabel': '#sigma (pb)',
+        'legendPosition': [0.40, 0.65, 0.85, 0.88],
         }
     if plotOptOverrides is not None:
         plotOpts.update(plotOptOverrides)
@@ -199,7 +200,7 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
         h.SetMinimum(plotOpts['yMin'])
         h.SetMaximum(plotOpts['yMax'])
         if props.get('Smooth', False):
-            h.Smooth(1,'R')
+            h.Smooth(props.get('nSmooth',1),'R')
         h.Draw("%s%s"%(props.get('opts','c'), "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
             setAttr = getattr(h,'Set{attr}'.format(attr=attr))
