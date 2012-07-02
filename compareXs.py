@@ -132,7 +132,7 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
                      'ExpectedUpperLimit_-1_Sigma',
                      'refHisto',
                      'UpperLimit',
-                     ]
+                   ]
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
         h = props['hist']
