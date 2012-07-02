@@ -127,53 +127,9 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
         writeDir.Close()
     return graphs
 
-def getHistoBinRange(h, minimums = None, maximums = None):
-    dim = int(h.ClassName()[2])
-    axes = ["X", "Y", "Z"]
+def shifted(h = None, shift = (False, False), shiftErrors = True) :
+    assert len(shift) in range(1,4),shift
 
-    if maximums is None:
-        maximums = []
-        for axis in axes[0:dim]:
-            rAxis = getattr(h,'Get{ax}axis'.format(ax=axis))()
-            axis_nbins = rAxis.GetNbins()
-            maximums.append(rAxis.GetBinUpEdge(axis_nbins))
-    if minimums is None:
-        minimums = [0]*len(maximums)
-    first_bin = h.FindBin(*minimums)
-    last_bin = h.FindBin(*maximums)
-    return first_bin, last_bin
-
-#def shifted1d(h = None, shiftX = False, shiftY = False, shiftErrors = True) :
-    #binWidthX = (h.GetXaxis().GetXmax() - h.GetXaxis().GetXmin())/h.GetNbinsX() if shiftX else 0.0
-
-    #if binWidthX : print "INFO: shifting %s by %g"%(h.GetName(), binWidthX)
-    #out = r.TH1D(h.GetName()+"_shifted","", h.GetNbinsX(),
-                 #h.GetXaxis().GetXmin() - binWidthX/2.0,
-                 #h.GetXaxis().GetXmax() - binWidthX/2.0,)
-    #out.SetDirectory(0)
-    #for iBinX in range(1, 1+h.GetNbinsX()) :
-        #out.SetBinContent(iBinX, h.GetBinContent(iBinX))
-        #if shiftErrors:
-            #out.SetBinError(iBinX, h.GetBinError(iBinX))
-    #return out
-
-#def shifted(h = None, shiftX = False, shiftY = False) :
-    #binWidthX = (h.GetXaxis().GetXmax() - h.GetXaxis().GetXmin())/h.GetNbinsX() if shiftX else 0.0
-    #binWidthY = (h.GetYaxis().GetXmax() - h.GetYaxis().GetXmin())/h.GetNbinsY() if shiftY else 0.0
-
-    #if binWidthX or binWidthY : print "INFO: shifting %s by (%g, %g)"%(h.GetName(), binWidthX, binWidthY)
-    #out = r.TH2D(h.GetName()+"_shifted","",
-                 #h.GetNbinsX(), h.GetXaxis().GetXmin() - binWidthX/2.0, h.GetXaxis().GetXmax() - binWidthX/2.0,
-                 #h.GetNbinsY(), h.GetYaxis().GetXmin() - binWidthY/2.0, h.GetYaxis().GetXmax() - binWidthY/2.0,
-                 #)
-    #out.SetDirectory(0)
-    #for iBinX in range(1, 1+h.GetNbinsX()) :
-        #for iBinY in range(1, 1+h.GetNbinsY()) :
-            #out.SetBinContent(iBinX, iBinY, h.GetBinContent(iBinX, iBinY))
-    #return out
-
-def shifted(h = None, shiftX=False, shiftY=False,
-            shiftZ=False, shiftErrors=True) :
     axes = [ 'X', 'Y', 'Z' ]
     try:
         dim = int(h.ClassName()[2])
@@ -184,39 +140,31 @@ def shifted(h = None, shiftX=False, shiftY=False,
 
     htype = h.ClassName()[-1]
 
+    args = []
     shiftWidths = []
-    mins = []
-    maxs = []
-    nBins = []
-    for axis in axes[:dim]:
-        rAxis = getattr(h,'Get{ax}axis'.format(ax=axis))()
-        maxs.append(rAxis.GetXmax())
-        mins.append(rAxis.GetXmin())
-        nb = getattr(h,'GetNbins{ax}'.format(ax=axis))()
-        nBins.append(nb)
-        shiftWidths.append( (maxs[-1]-mins[-1])/(2.*nBins[-1]) if
-                          locals()['shift{ax}'.format(ax=axis)] else 0.0 )
+    for i in range(dim) :
+        axis = getattr(h, "Get%saxis"%axes[i])()
+        nBins = getattr(h, "GetNbins%s"%axes[i])()
+        max = axis.GetXmax()
+        min = axis.GetXmin()
+        shiftWidths.append((max - min)/(2.0*nBins) if shift[i] else 0.0)
+        args += [nBins, min - shiftWidths[-1], max - shiftWidths[-1]]
 
     hname = h.GetName()
     if any(shiftWidths):
         print "INFO: shifting {0} by {1}".format(hname,shiftWidths)
 
-    args = []
-    for nb, bw, min, max in zip(nBins, shiftWidths, mins, maxs) :
-        args.extend( [ nb, min-bw, max-bw ] )
-
-    title = ""
     histoConstructor= getattr(r,'TH%d%s'%(dim,htype))
-    out = histoConstructor( hname+"_shifted", title, *args)
+    out = histoConstructor( hname+"_shifted", h.GetTitle(), *args)
+    out.SetDirectory(0)
 
-    firstBin, lastBin = getHistoBinRange(h)
-    for i in range(firstBin,lastBin+1) :
-        if not h.IsBinUnderflow(i) and not h.IsBinOverflow(i) :
-            out.SetBinContent(i,h.GetBinContent(i))
+    for iBinX in range(1, 1 + h.GetNbinsX()) :
+        for iBinY in range(1, 1 + h.GetNbinsY()) :
+            for iBinZ in range(1, 1 + h.GetNbinsZ()) :
+                out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
             if shiftErrors:
-                out.SetBinError(i, h.GetBinError(i))
+                out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
     return out
-
 
 def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
     assert len(switches["CL"])==1
@@ -229,7 +177,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
         h3 = f.Get(name)
         if not h3 : continue
-        h = shifted(threeToTwo(h3), shiftX = shiftX, shiftY = shiftY)
+        h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
         title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
