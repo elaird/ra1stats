@@ -40,8 +40,8 @@ def getReferenceXsHisto(refHistoName, refName, filename):
     histoD = {
         'refHisto': {
             'hist': refHisto,
-            'LineWidth': 3,
-            'LineStyle': 7,
+            'LineWidth': 2,
+            'LineStyle': 1,
             'LineColor': r.kBlack,
             'FillColor': r.kGray+2,
             'FillStyle': 3002,
@@ -134,7 +134,6 @@ def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
     histosToDraw = ['ExpectedUpperLimit_+1_Sigma', 'ExpectedUpperLimit',
                     'ExpectedUpperLimit_-1_Sigma', 'refHisto', 'UpperLimit']
     for hname in histosToDraw:
-        print "shifting", hname
         hs[hname]['hist'] = shifted(hs[hname]['hist'],shiftX=shiftX, shiftErrors=hs[hname].get('hasErrors',False))
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
