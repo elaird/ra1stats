@@ -39,8 +39,10 @@ def overwriteOutput() :
                 "T1tttt": [
                 (37, 2, 1), (37, 3, 1), (37, 4, 1), (37, 5, 1), (37, 6, 1),
                 (37, 7, 1), (29, 13, 1), (40, 24, 1), (44, 28, 1),
-                (27, 11, 1)
+                (27, 11, 1),
                 ],
+                "T2tt": [ (19,3,1), (20,5,1), (20,4,1), (17,4,1) ],
+
                 })
     return out
 
@@ -51,7 +53,7 @@ def graphBlackLists() :
     keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
     for key in keys :
         out[key] = collections.defaultdict(list)
-        
+
     out["UpperLimit"].update({"T1" : [ (1000,125), (1000,175) ]})
 
     out["UpperLimit"].update({"T2" : [ (800,200) ]})
