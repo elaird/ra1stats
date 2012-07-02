@@ -7,11 +7,12 @@ def histoSpec(model) :
     seven = "%s/v5/7TeV.root"%base
     eight = "%s/v4/sms_xs.root"%base
     tgqFile = "%s/v1/TGQ_xSec.root"%base
-
+    tanBeta10 = "%s/v5/7TeV_cmssm.root"%base
     d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": seven},
          "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
          "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
          "T1tttt_2012": {"histo": "gluino", "factor": 1.0,  "file": eight},
+         "tanBeta10":   {"histo": "total",  "factor": 1.0,  "file": tanBeta10},
          }
 
     for item in ["T1", "T1bbbb", "T1tttt", "T5zz"] :
