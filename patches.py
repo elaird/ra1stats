@@ -53,8 +53,16 @@ def graphBlackLists() :
         out[key] = collections.defaultdict(list)
 
     out["UpperLimit"].update({"T1" : [ (1000,125), (1000,175) ]})
+    out["UpperLimit_-1_Sigma"].update({"T1":[ (950, 350) ]})
+    out["UpperLimit_+1_Sigma"].update({"T1":[ (1050,50), (1025, 375),
+        (1025, 400), (1000,425) ]})
 
     out["UpperLimit"].update({"T2" : [ (800,200) ]})
+    out["UpperLimit_-1_Sigma"].update({"T2":[ (750, 200), (675,300),
+        (525,300) ]})
+    out["UpperLimit_+1_Sigma"].update({"T2":[ (575,400), (725,325), (700,300),
+        (750,250), (775,200), (825,275), (800,250), (850,225), (850,75),
+        (875,75), (725,250)]})
     out["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (875,150) ]})
 
     out["UpperLimit"].update({"T2bb" : [ (500,100), (500,250),
@@ -85,6 +93,11 @@ def graphBlackLists() :
 
     out["UpperLimit"].update({"T1tttt" : [ (550,150), (800,350),
         (750,300), (800,300), (800,250), (825,200), (825,250), (875,300) ]})
+    out["UpperLimit_-1_Sigma"].update({"T1tttt" : [ (550,150), (600,100),
+        (600,150), (725,200), (750,200), (875,175) ]})
+    out["UpperLimit_+1_Sigma"].update({"T1tttt" : [ (550,150), (825,200),
+        (825,250), (875,350), (900,350), (925,300), (900,300)]})
+
     out["ExpectedUpperLimit"].update({"T1tttt" : [(825,175)] })
     out["ExpectedUpperLimit_+1_Sigma"].update({"T1tttt" :
         [(675,175), (750, 125) ]})
