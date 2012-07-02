@@ -13,7 +13,7 @@ options = {
     'refXsFile': hSpec['file'],
     'refName': '#tilde{t} #tilde{t}',
     'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
-                 'CLs_frequentist_TS3_T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_'
+                 'CLs_frequentist_TS3_T2tt_lo_2011_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
     'plotTitle': 'pp#rightarrow#tilde{t} #tilde{t}#; #tilde{t}#rightarrow t+'
                  '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV',
@@ -156,10 +156,9 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 
 
-def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
-              limitFile="xsLimit.root", pdfFile="sms_xs/compareXs.pdf",
-              refYRange=(50,50), plotTitle="", plotOptOverrides=None,
-              shiftX=False, showRatio=False) :
+def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
+              pdfFile="xs/compareXs.pdf", refYRange=(50,50), plotTitle="",
+              plotOptOverrides=None, shiftX=False, showRatio=False) :
     plotOpts = {
         'yMax': 1e+1,
         'yMin': 1e-3,
