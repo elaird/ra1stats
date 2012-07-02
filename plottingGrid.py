@@ -134,8 +134,9 @@ def getHistoBinRange(h, minimums = None, maximums = None):
     if maximums is None:
         maximums = []
         for axis in axes[0:dim]:
-            axis_nbins = eval("h.Get{axis}axis().GetNbins()".format(axis=axis))
-            maximums.append(eval("h.Get{axis}axis().GetBinUpEdge({abin})".format(axis=axis,abin=axis_nbins)))
+            rAxis = getattr(h,'Get{ax}axis'.format(ax=axis))()
+            axis_nbins = rAxis.GetNbins()
+            maximums.append(rAxis.GetBinUpEdge(axis_nbins))
     if minimums is None:
         minimums = [0]*len(maximums)
     first_bin = h.FindBin(*minimums)
@@ -188,11 +189,13 @@ def shifted(h = None, shiftX=False, shiftY=False,
     maxs = []
     nBins = []
     for axis in axes[:dim]:
-        maxs.append(eval('h.Get{ax}axis().GetXmax()'.format(ax=axis)))
-        mins.append(eval('h.Get{ax}axis().GetXmin()'.format(ax=axis)))
-        nBins.append(eval('h.GetNbins{ax}()'.format(ax=axis)))
+        rAxis = getattr(h,'Get{ax}axis'.format(ax=axis))()
+        maxs.append(rAxis.GetXmax())
+        mins.append(rAxis.GetXmin())
+        nb = getattr(h,'GetNbins{ax}'.format(ax=axis))()
+        nBins.append(nb)
         shiftWidths.append( (maxs[-1]-mins[-1])/(2.*nBins[-1]) if
-                          eval('shift{ax}'.format(ax=axis)) else 0.0 )
+                          locals()['shift{ax}'.format(ax=axis)] else 0.0 )
 
     hname = h.GetName()
     if any(shiftWidths):
@@ -203,7 +206,8 @@ def shifted(h = None, shiftX=False, shiftY=False,
         args.extend( [ nb, min-bw, max-bw ] )
 
     title = ""
-    out = eval('r.TH%d%s( hname+"_shifted", title, *args )' % (dim, htype))
+    histoConstructor= getattr(r,'TH%d%s'%(dim,htype))
+    out = histoConstructor( hname+"_shifted", title, *args)
 
     firstBin, lastBin = getHistoBinRange(h)
     for i in range(firstBin,lastBin+1) :
