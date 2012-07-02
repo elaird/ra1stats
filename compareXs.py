@@ -5,6 +5,7 @@ from utils import threeToTwo
 
 options = {
     'refProcess': 'stop_or_sbottom',
+    'refName': '#tilde{t} #tilde{t}',
     'refXsFile':  'sms_xs/sms_xs.root',
     'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
                  'CLs_frequentist_TS3_T2tt_lo_RQcdFallingExpExt_fZinvTwo_55_'
@@ -29,7 +30,7 @@ def drawStamp(canvas):
     tl.DrawLatex(0.55,0.72,'#alpha_{T}')
     return tl
 
-def getReferenceXsHisto(refHistoName, filename):
+def getReferenceXsHisto(refHistoName, refName, filename):
     refFile = r.TFile(filename,'READ')
     refHisto = refFile.Get(refHistoName).Clone()
     refHisto.SetDirectory(0)
@@ -37,13 +38,13 @@ def getReferenceXsHisto(refHistoName, filename):
     histoD = {
         'refHisto': {
             'hist': refHisto,
-            'LineWidth': 2,
+            'LineWidth': 3,
             'LineStyle': 7,
             'LineColor': r.kBlack,
             'FillColor': r.kGray+2,
             'FillStyle': 3002,
             'opts': 'e3c',
-            'label': '{0} pair production'.format(refHistoName.capitalize())
+            'label': '#sigma_{{NLO-QCD}}({rn}) #pm 1#sigma (th)'.format(rn=refName),
             }
         }
     return histoD
@@ -52,14 +53,14 @@ def getReferenceXsHisto(refHistoName, filename):
 def getExclusionHistos(limitFile, yMinMax=(50,50)):
     limitHistoDict = {
         'UpperLimit': {
-            'label': 'Observed Upper Limit',
+            'label': 'Observed Limit',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             'opts': 'c',
             'Smooth': True,
             },
         'ExpectedUpperLimit': {
-            'label': 'Expected Upper Limit (#pm 1 #sigma)',
+            'label': 'Median Expected Limit #pm 1 #sigma (exp)',
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'LineStyle': 9,
@@ -101,7 +102,7 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
     return limitHistoDict
 
 
-def compareXs(refProcess, refXsFile="sms_xs/sms_xs.root",
+def compareXs(refProcess, refName=None, refXsFile="sms_xs/sms_xs.root",
               limitFile="xsLimit.root", pdfFile="sms_xs/compareXs.pdf",
               refYRange=(50,50), plotTitle="", plotOptOverrides=None) :
     plotOpts = {
@@ -117,7 +118,7 @@ def compareXs(refProcess, refXsFile="sms_xs/sms_xs.root",
     if plotOptOverrides is not None:
         plotOpts.update(plotOptOverrides)
 
-    refHisto = getReferenceXsHisto(refProcess, refXsFile)
+    refHisto = getReferenceXsHisto(refProcess, refName, refXsFile)
     exclusionHistos = getExclusionHistos(limitFile)
 
     canvas = r.TCanvas()
