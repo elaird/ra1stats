@@ -66,8 +66,8 @@ def shifted(h = None, shift = (False, False), shiftErrors = True) :
         for iBinY in range(1, 1 + h.GetNbinsY()) :
             for iBinZ in range(1, 1 + h.GetNbinsZ()) :
                 out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
-            if shiftErrors:
-                out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
+                if shiftErrors:
+                    out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
     return out
 #####################################
 class thstack(object) :
