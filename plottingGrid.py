@@ -152,8 +152,8 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
-        if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(ranges["xDivisions"])
-        if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(ranges["yDivisions"])
+        if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(*ranges["xDivisions"])
+        if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(*ranges["yDivisions"])
         histos[name] = h
 
     f.Close()
