@@ -112,4 +112,7 @@ def graphBlackLists() :
         [(875,350), (900,150), (900,200), (1000,225), (925,225), (950,275),
         (950,300), (900,325), (850,325)]})
 
+    out["UpperLimit"].update({"T1tttt_2012" : [ (850,200) ]})
+    out["UpperLimit_-1_Sigma"].update({"T1tttt_2012" : [ (450,50) ]})
+
     return out
