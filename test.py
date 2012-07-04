@@ -9,7 +9,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                                                            separateSystObs = not ensemble,
                                                            ),
                       #signalToTest = signals.t2tt2,
-                      signalExampleToStack = signals.t2tt,
+                      signalExampleToStack = signals.t1tttt_2012_2 if year==2012 else signals.t2tt,
                       #signalToInject = signals.t1,
                       #trace = True
                       #rhoSignalMin = 0.1,
@@ -33,8 +33,9 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #
     #f.profile()
     #f.writeMlTable()
-    f.bestFit(drawMc = False, printValues = True, errorsFromToys = nToys, pullPlotMax = 4.0, pullThreshold = 5.0)
-    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
+    #f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
+    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
+    f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
     #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
