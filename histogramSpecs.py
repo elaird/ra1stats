@@ -1,19 +1,45 @@
 from configuration import locations
 
 def ranges(model) :
-    x = {"T1":   ( 50.0, 1224.9), #(min, max)
-         "T5zz": (400.0, 1224.9),
-         "T2bb": (325.0, 1224.9),
+    x = {"T1":   ( 312.5, 1200.0), #(min, max)
+         "T2":   ( 312.5, 1200.0),
+         "T2tt": ( 312.5, 1200.0),
+         "T2bb": ( 312.5, 1200.0),
+         "T1bbbb": ( 312.5, 1200.0),
+         "T1tttt": ( 440.0, 1200.0),
+         "T1tttt_2012": ( 375.0, 1200.0),
          "tanBeta10": (0.0, 4000.0),
          }
     y = {"T5zz": ( 50.0,  999.9), #(min, max)
-         "T2bb": ( 50.0,  999.9),
-         "T1tttt_2012": (25.0, 1149.9),
+         "T1":   ( 50.0, 1000.0),
+         "T2":   ( 50.0, 1000.0),
+         "T2tt": ( 50.0, 1000.0),
+         "T2bb": ( 50.0, 1000.0),
+         "T1bbbb": ( 50.0, 1000.0),
+         "T1tttt": ( 50.0, 800.0),
+         "T1tttt_2012": ( 50.0, 800.0),
          "tanBeta10": (0.0, 4000.0),
          }
 
-    xDivisions = {"T2bb": 410}
-    yDivisions = {"T2bb": 410}
+    # [ primary, secondary, tertiary ] divisions
+    xDivisions = {
+            "T1": [ 10, 4, 0 ],
+            "T2": [ 10, 4, 0 ],
+            "T2bb": [ 10, 4, 0 ],
+            "T2tt": [ 10, 4, 0 ],
+            "T1bbbb": [ 10, 4, 0 ],
+            "T1tttt": [ 8, 4, 0 ],
+            "T1tttt_2012": [ 8, 4, 0 ],
+            }
+
+    yDivisions = {
+            "T1": [ 10, 4, 0 ],
+            "T2": [ 10, 4, 0 ],
+            "T2bb": [ 10, 4, 0 ],
+            "T2tt": [ 10, 4, 0 ],
+            "T1bbbb": [ 10, 4, 0 ],
+            "T1tttt_2012": [ 8, 4, 0 ]
+            }
 
     d = {}
     d["xRange"] = x.get(model, (50.0, 1499.9))
@@ -29,6 +55,7 @@ def ranges(model) :
     d["effUncExpZRange"] = (0.0, 0.20, 20)
     d["effUncThZRange"] = (0.0, 0.40, 40)
     return d
+
 
 def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None) :
     assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"

@@ -22,8 +22,8 @@ def modifyHisto(h, s) :
     fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
     killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
 
-def squareCanvas(margin = 0.18, ticks = True) :
-    canvas = r.TCanvas("canvas","canvas",2)
+def squareCanvas(margin = 0.18, ticks = True, name = "canvas") :
+    canvas = r.TCanvas(name, name, 2)
     for side in ["Left", "Right", "Top", "Bottom"] :
         getattr(canvas, "Set%sMargin"%side)(margin)
     canvas.SetTickx(ticks)
@@ -152,12 +152,26 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
-        if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(ranges["xDivisions"])
-        if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(ranges["yDivisions"])
+        if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(*ranges["xDivisions"])
+        if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(*ranges["yDivisions"])
         histos[name] = h
 
     f.Close()
     return histos
+
+def makeSimpleExclPdf(graphs = [], outFileEps = "") :
+    c = squareCanvas(name = "canvas_simpleExcl")
+    pdf = outFileEps.replace(".eps","_simpleExcl.pdf")
+    c.Print(pdf+"[")
+    for d in graphs :
+        d["histo"].Draw("colz")
+        d["histo"].SetMaximum(1.0)
+        d["histo"].SetMinimum(-1.0)
+        d["histo"].SetTitle(d["label"])
+        d["graph"].Draw("psame")
+        c.Print(pdf)
+    c.Print(pdf+"]")
+    print "INFO: %s has been written."%pdf
 
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit",
                           shiftX = False, shiftY = False, interBin = "LowEdge", pruneYMin = False, debug = False) :
@@ -198,18 +212,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         stuff = rxs.drawGraphs(graphs)
 
         if simpleExcl :
-            pdf = outFileEps.replace(".eps","_simpleExcl.pdf")
-            c.Print(pdf+"[")
-            for d in graphs :
-                d["histo"].Draw("colz")
-                d["histo"].SetMaximum(1.0)
-                d["histo"].SetMinimum(-1.0)
-                d["histo"].SetTitle(d["label"])
-                d["graph"].Draw("psame")
-                c.Print(pdf)
-            c.Print(pdf+"]")
-            return
-
+            makeSimpleExclPdf(graphs = graphs, outFileEps = outFileEps)
     #draw curves of iso-mDelta
     if mDeltaFuncs :
         outFileEps = outFileEps.replace(".eps", "_mDelta.eps")
