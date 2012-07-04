@@ -123,9 +123,9 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDi
 
     canvas.Print(fileName+"]")
 
-def ensemblePlotsAndTables(note = "", plotsDir = "", stdout = False) :
+def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = False) :
     #open results
-    obs,tfile = ensemble.results(note)
+    obs,tfile = ensemble.results(note, nToys)
 
     #collect histos and quantiles
     fHistos,fQuantiles = ensemble.histosAndQuantiles(tfile, "funcs")
@@ -271,7 +271,7 @@ class validationPlotter(object) :
         self.quantiles = {}
         if self.errorsFromToys :
             print "drawing error bands from previously generated toys"
-            self.quantiles = ensemble.functionQuantiles(self.note)
+            self.quantiles = ensemble.functionQuantiles(self.note, nToys = self.errorsFromToys)
 
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
