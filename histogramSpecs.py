@@ -104,6 +104,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     if nbTag is not None     : out["afterDir"] += "_btag_==_%s"%nbTag
     if bTagLower is not None : out["afterDir"] += "_btag_>_%s"%bTagLower
+# eventually for upper b slices
     #if box == "muon":
         #if alphaTLower    : out["afterDir"] += "_NoAlphaT"
     #else:
