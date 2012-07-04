@@ -171,8 +171,8 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
 
 def drawGraphs(graphs, legendTitle="") :
     count = len(filter(lambda x:x["label"],graphs))
-    yMax = 0.80
-    legend = r.TLegend(0.2, yMax-0.04*count, 0.7, yMax, legendTitle)
+    yMax = 0.76
+    legend = r.TLegend(0.19, yMax-0.04*count, 0.69, yMax, legendTitle)
     legend.SetBorderSize(0)
     legend.SetFillStyle(0)
     for d in graphs :
