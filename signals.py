@@ -181,7 +181,9 @@ t1tttt_2012.insert( "55_gt2b", {
         "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
         })
 
-t1tttt_2012_2 = common.signal(xs=0.157399, label="T1tttt m_{gluino} = 800 GeV; m_{LSP} = 100 GeV (xs = 157 fb)")
+ttch = "t#bar{t} #tilde{#chi}^{0}"
+t1ttttLabel = "#tilde{g}#tilde{g} #rightarrow %s %s"%(ttch, ttch)
+t1tttt_2012_2 = common.signal(xs=0.157399, label = "#lower[0.35]{#splitline{SM + SUSY  ( %s )}{(m_{gluino} = 800 GeV, m_{LSP} = 100 GeV)}}"%t1ttttLabel)
 t1tttt_2012_2.insert( "55_0b", {
         "effHad":[0.000040, 0.000000, 0.000189, 0.000429, 0.001074, 0.000405, 0.000323, 0.000367],
         "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],

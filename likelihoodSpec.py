@@ -55,7 +55,7 @@ class spec(object) :
 
     def __init2012__(self) :
         self._constrainQcdSlope = True
-        self.legendTitle = "CMS, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
+        self.legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module
         #self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 8 TeV"
         #from inputData.data2012 import take6_unweighted as module
@@ -110,7 +110,7 @@ class spec(object) :
 
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
-        self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
+        self.legendTitle = "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
         else :

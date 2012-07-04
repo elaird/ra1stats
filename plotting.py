@@ -286,8 +286,11 @@ class validationPlotter(object) :
         self.width1 = 2
         self.width2 = 3
 
+        self.smDesc = "Standard Model%s"%(" #pm Expected Unc." if self.errorsFromToys else "")
+        self.bandInLegend = True
         self.sm = r.kAzure+6
         self.smError = r.kAzure
+        self.smBandStyle = 1001
         self.sig = r.kPink+7
         self.ewk = r.kBlue+1
         self.qcd = r.kGreen+3
@@ -344,8 +347,8 @@ class validationPlotter(object) :
     def hadPlots(self) :
         if "had" not in self.lumi : return
         vars = [
-            {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "Standard Model",
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
+            {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else self.smDesc,
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle},
             #"color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True, "errorsFrom":"ewk"},#for test when removing had sample from likelihood
             {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
@@ -392,7 +395,8 @@ class validationPlotter(object) :
     def muonPlots(self) :
         if "muon" not in self.lumi : return
         vars = [
-            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":"Standard Model", "stack":"total", "errorBand":self.smError, "repeatNoBand":True},
+            {"var":"muonB",   "type":"function", "color":self.sm, "style":1, "width":self.width2, "desc":self.smDesc, "stack":"total",
+             "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle},
             {"var":"mcMuon",  "type":None,       "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -425,7 +429,7 @@ class validationPlotter(object) :
                 {"var":"mcPhot", "type":None, "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
                 {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2,
-                 "desc":"Standard Model", "stack":None, "errorBand":self.smError},
+                 "desc":self.smDesc, "stack":None, "errorBand":self.smError, "bandStyle":self.smBandStyle},
                 ])
 
     def mumuPlots(self) :
@@ -441,7 +445,8 @@ class validationPlotter(object) :
                       logY = logY, ratioDenom = "mumuExp", otherVars = [
                 {"var":"mcMumu", "type":None, "color":r.kGray+2, "style":2, "width":2,
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
-                {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":"Standard Model", "stack":None, "errorBand":self.smError},
+                {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":self.smDesc, "stack":None,
+                 "errorBand":self.smError, "bandStyle":self.smBandStyle},
                 ])
 
     def ewkPlots(self) :
@@ -485,7 +490,7 @@ class validationPlotter(object) :
 
         specs = [
             {"var":"hadB",  "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True,
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle,
              "dens":["nHadBulk"], "denTypes":["var"]},
             ]
         if self.drawComponents :
@@ -979,7 +984,15 @@ class validationPlotter(object) :
                     for den,denType in zip(d["dens"], d["denTypes"]) :
                         h.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
 
-            legEntries.append( (histos["value"], "%s %s"%(d["desc"], inDict(d, "desc2", "")), inDict(d, "legSpec", "l")) )
+            legHisto = histos["value"]
+            legGopts = "l"
+
+            if d.get("errorBand") and self.bandInLegend :
+                legHisto = histos["legend"] = histos["value"].Clone("%s_legendClone"%histos["value"].GetName())
+                legHisto.SetFillColor(d["errorBand"])
+                legHisto.SetFillStyle(d.get("bandStyle",1001))
+                legGopts += "f"
+            legEntries.append( (legHisto, "%s %s"%(d["desc"], d.get("desc2", "")), d.get("legSpec", legGopts)) )
 
             stack = inDict(d, "stack", "")
             if not stack : stack = "_".join(["NONE","%03d"%iSpec]+[d["var"]]*3) #hacky default stack name
