@@ -74,7 +74,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
            "T5zz":        {"had": "v1", "muon": "v1"},
            "T1bbbb":      {"had": "rw_fix", "muon": "rw_fix"},
            "T1tttt":      {"had": "v3", "muon": "v3"},
-           "T1tttt_2012": {"had": "2012full", "muon": "2012full"},
+           "T1tttt_2012": {"had": "2012full_newIDs", "muon": "2012full_newIDs"},
            "TGQ_0p0":     {"had": "v1"},
            "TGQ_0p2":     {"had": "v1"},
            "TGQ_0p4":     {"had": "v1"},
@@ -104,6 +104,10 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     if nbTag is not None     : out["afterDir"] += "_btag_==_%s"%nbTag
     if bTagLower is not None : out["afterDir"] += "_btag_>_%s"%bTagLower
+    #if box == "muon":
+        #if alphaTLower    : out["afterDir"] += "_NoAlphaT"
+    #else:
+        #if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
     if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
     if htLower        : out["afterDir"] += "_%d"%htLower
