@@ -598,9 +598,6 @@ def makePlots() :
         for cl in s["CL"] :
             clsValidation(tag = "clsValidation", cl = cl, masterKey = "xs")
 
-    #pg.makeEfficiencyUncertaintyPlots()
-    #pg.makeTopologyXsLimitPlots()
-
 def expectedLimit(obsFile, expFile) :
     def histo(file, name) :
         f = r.TFile(file)
