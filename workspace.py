@@ -865,7 +865,7 @@ class foo(object) :
             ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
         else :
             print "WARNING: ensemble plots/tables are being created from previous results."
-        plotting.ensemblePlotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
+        plotting.ensemblePlotsAndTables(note = self.note(), nToys = nToys, plotsDir = "plots", stdout = stdout)
 
     def bestFitToy(self, nToys = 200) :
         #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
@@ -884,7 +884,7 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
-                errorsFromToys = False, drawRatios = False, pullPlotMax = 3.5, pullThreshold = 2.0) :
+                errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5, pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)

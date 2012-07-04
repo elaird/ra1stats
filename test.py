@@ -17,8 +17,9 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                       #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                       )
 
+    nToys = 1000 if year==2012 else 300
     if ensemble :
-        f.ensemble(nToys = 1000, stdout = True)
+        f.ensemble(nToys = nToys, stdout = True)
         return
 
     #cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
@@ -32,7 +33,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #
     #f.profile()
     #f.writeMlTable()
-    f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
+    f.bestFit(drawMc = False, printValues = True, errorsFromToys = nToys, pullPlotMax = 4.0, pullThreshold = 5.0)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = True)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
@@ -40,7 +41,7 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #f.debug()
     #f.cppDrive(tool = "")
 
-year2012 = False
+year2012 = True
 
 if year2012 :
     for iLower in range(4) :

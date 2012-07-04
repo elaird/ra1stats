@@ -119,15 +119,15 @@ def latex(quantiles = {}, bestDict = {}, stdout = False) :
     ltxResults( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
     ltxSummary( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
 
-def rootFileName(note = "") :
-    return "ensemble_%s.root"%note
+def rootFileName(note = "", nToys = None) :
+    return "ensemble_%s_%dtoys.root"%(note, nToys)
 
-def pickledFileName(note = "") :
-    return rootFileName(note).replace(".root", ".obs")
+def pickledFileName(note = "", nToys = None) :
+    return rootFileName(note, nToys).replace(".root", ".obs")
 
 def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
-    pickling.writeNumbers(pickledFileName(note), d = obs)
+    pickling.writeNumbers(pickledFileName(note, nToys), d = obs)
 
     graphs = pValueGraphs(obs, toys)
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
@@ -135,7 +135,7 @@ def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
-    tfile = r.TFile(rootFileName(note), "RECREATE")
+    tfile = r.TFile(rootFileName(note, nToys), "RECREATE")
     for dir,dct in [("graphs", graphs),
                     ("pars",   pHistos),
                     ("funcs",  fHistos),
@@ -156,13 +156,13 @@ def histosAndQuantiles(tfile = None, dir = "") :
         quantiles[key] = utils.quantiles(histos[key], sigmaList = [-1.0, 0.0, 1.0])
     return histos,quantiles
 
-def functionQuantiles(note = "") :
-    tfile = r.TFile(rootFileName(note))
+def functionQuantiles(note = "", nToys = None) :
+    tfile = r.TFile(rootFileName(note, nToys))
     fHistos,fQuantiles = histosAndQuantiles(tfile, "funcs")
     tfile.Close()
     return fQuantiles
 
-def results(note = "") :
-    obs = pickling.readNumbers(pickledFileName(note))
-    tfile = r.TFile(rootFileName(note))
+def results(note = "", nToys = None) :
+    obs = pickling.readNumbers(pickledFileName(note, nToys))
+    tfile = r.TFile(rootFileName(note, nToys))
     return obs,tfile
