@@ -23,7 +23,7 @@ def method() :
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
-            "fiftyGeVStepsOnly": False,
+            "multiplesInGeV": 0.0,
             }
 
 def signal() :
