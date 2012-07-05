@@ -41,6 +41,23 @@ def printOnce(canvas, fileName) :
     text.SetNDC()
     text.SetTextAlign(22)
     text.DrawText(0.5, 0.85, "CMS Preliminary")
+
+    if False :
+        latex = r.TLatex()
+        latex.SetNDC()
+        latex.SetTextAlign(22)
+
+        T2     = "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})"
+        T2bb   = "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})"
+        T2tt   = "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})"
+
+        T1     = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})"
+        T1bbbb = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})"
+        T1tttt = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})"
+
+        latex.SetTextSize(0.6*latex.GetTextSize())
+        latex.DrawLatex(0.45, 0.79, T2tt)
+
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
     #canvas.Print(fileName.replace(".eps",".C"))
@@ -224,7 +241,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
     #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
-    s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.22, y = 0.65, factor = 0.7)
+    s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
 
     printOnce(c, outFileEps)
     printHoles(histos[name])
