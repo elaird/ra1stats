@@ -9,6 +9,7 @@ def cutFunc() :
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
             "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
             "T1tttt_2012":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+            "tanBeta10":lambda iX,x,iY,y,iZ,z:True,
             }
 
 def nEventsIn() :
