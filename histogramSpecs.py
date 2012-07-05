@@ -90,7 +90,9 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     out = {}
     if model in cmssm :
         assert box in ["had", "muon"]
-        assert scale in ["1", "05", "2"]
+        if scale not in ["1", "05", "2"] :
+            print "WARNING: assuming scale=1"
+            scale="1"
         d = cmssm[model]
         out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+"%s.root"%thresh])
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
