@@ -192,7 +192,7 @@ def fullPoints() :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 content = h.GetBinContent(iBinX, iBinY, iBinZ)
                 if not content : continue
-                if s["fiftyGeVStepsOnly"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/50.0)%1 != 0.0) : continue
+                if s["multiplesInGeV"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/s["multiplesInGeV"])%1 != 0.0) : continue
                 x = h.GetXaxis().GetBinLowEdge(iBinX)
                 y = h.GetYaxis().GetBinLowEdge(iBinY)
                 z = h.GetZaxis().GetBinLowEdge(iBinZ)
