@@ -110,7 +110,8 @@ def effHisto(**args) :
         return None
     if not s["isSms"] :
         return cmssmNloEffHisto(model = model, **args)#cmssmLoEffHisto(model = model, **args)
-    else : return smsEffHisto(model = model, **args)
+    else :
+        return smsEffHisto(model = model, **args)
 
 def cmssmNEventsInHisto(model, box = "had", scale = "1") :
     s = hs.histoSpec(model = model, box = box, scale = scale)
@@ -153,7 +154,6 @@ def cmssmNloEffHisto(**args) :
     return out
 
 def xsHistoAllOne(model, cutFunc = None) :
-    assert False,"hello"
     h = smsEffHisto(model = model, box = "had", scale = None,
                     htLower = 875, htUpper = None,
                     alphaTLower = "55", alphaTUpper = None)
