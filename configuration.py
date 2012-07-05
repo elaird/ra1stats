@@ -38,11 +38,9 @@ def signal() :
             "graphBlackLists": patches.graphBlackLists(),
             "cutFunc": patches.cutFunc(),
             "nEventsIn": patches.nEventsIn(),
-            "nlo": True,
-            "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
-            "signalModel": dict(zip(models, models))["T1tttt_2012"]
+            "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 
 def listOfTestPoints() :
@@ -53,9 +51,10 @@ def listOfTestPoints() :
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
     #out = [(19,5,1)]
+    out = [(26,26,1)]
     #out = [(15,3,1)]
     #out = [(13,1,1)]
-    out = []
+    #out = []
     return out
 
 def xWhiteList() :
@@ -92,10 +91,8 @@ def getSubCmds() :
     }[batchHost]
 
 def checkAndAdjust(d) :
+    d["nloToLoRatios"] = False #not supported
     d["isSms"] = "tanBeta" not in d["signalModel"]
-    if d["isSms"] :
-        d["nlo"] = False
-
     binary = d["binaryExclusionRatherThanUpperLimit"]
     d["rhoSignalMin"] = 0.0 if binary else 0.1
     d["fIniFactor"] = 1.0 if binary else 0.05
@@ -113,7 +110,6 @@ def mergedFileStem(outputDir, switches) :
     if "CLs" in switches["method"] :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
     out += "_%s"%switches["signalModel"]
-    out += "_nlo" if switches["nlo"] else "_lo"
     return out
 
 def stringsNoArgs() :
