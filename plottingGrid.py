@@ -119,17 +119,22 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
     graphs = []
 
     specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
-              "color": r.kViolet},
+              "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
+
              {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-              "color": r.kViolet},
+              "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
+
              {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-              "color": r.kViolet},
+              "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+
              {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
-              "color": r.kBlack},
+              "color": r.kBlack,                                            "simpleLabel":"Observed Limit"},
+
              {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
-              "color": r.kBlue if debug else r.kBlack},
+              "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
+
              {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
-              "color": r.kYellow if debug else r.kBlack},
+              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
              ]
 
     for i,spec in enumerate(specs) :
@@ -176,7 +181,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     f.Close()
     return histos
 
-def makeSimpleExclPdf(graphs = [], outFileEps = "") :
+def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
     c = squareCanvas(name = "canvas_simpleExcl")
     pdf = outFileEps.replace(".eps","_simpleExcl.pdf")
     c.Print(pdf+"[")
@@ -184,13 +189,13 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "") :
         d["histo"].Draw("colz")
         d["histo"].SetMaximum(1.0)
         d["histo"].SetMinimum(-1.0)
-        d["histo"].SetTitle(d["label"])
-        d["graph"].Draw("psame")
+        d["histo"].SetTitle(d.get("simpleLabel"))
+        if drawGraphs : d["graph"].Draw("psame")
         c.Print(pdf)
     c.Print(pdf+"]")
     print "INFO: %s has been written."%pdf
 
-def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False, name = "UpperLimit",
+def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "UpperLimit",
                           shiftX = False, shiftY = False, interBin = "LowEdge", pruneYMin = False, debug = False) :
 
     s = conf.switches()
@@ -216,9 +221,9 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     else :
         setRange("xsZRangeLin", ranges, histos[name], "Z")
 
-    #draw exclusion curves
-    if exclusionCurves :
-        outFileEps = outFileEps.replace(".eps", "_refXs.eps")
+
+    #make exclusion histograms and curves
+    try:
         graphs = exclusions(histos = histos, writeDir = g,
                             signalModel = s["signalModel"],
                             graphBlackLists = s["graphBlackLists"],
@@ -226,10 +231,18 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
                             printXs = printXs,
                             pruneYMin = pruneYMin,
                             debug = debug)
+    except:
+        print "ERROR: creation of exclusions has failed."
+        graphs = []
+
+    #draw exclusion curves
+    if exclusionCurves :
+        outFileEps = outFileEps.replace(".eps", "_refXs.eps")
         stuff = rxs.drawGraphs(graphs)
 
-        if simpleExcl :
-            makeSimpleExclPdf(graphs = graphs, outFileEps = outFileEps)
+    if graphs :
+        makeSimpleExclPdf(graphs = graphs, outFileEps = outFileEps, drawGraphs = exclusionCurves)
+
     #draw curves of iso-mDelta
     if mDeltaFuncs :
         outFileEps = outFileEps.replace(".eps", "_mDelta.eps")
