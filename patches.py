@@ -2,10 +2,10 @@ import collections
 
 def cmssmCut(iX, x, iY, y, iZ, z) :
     def yMin(x) :
-        return 500.0 - (300.0)*(x-500.0)/(1200.0-500.0)
+        return 450.0 - (300.0)*(x-500.0)/(1200.0-500.0)
 
     def yMax(x) :
-        return 700.0 - (350.0)*(x-500.0)/(1200.0-500.0)
+        return 750.0 - (250.0)*(x-500.0)/(1200.0-500.0)
 
     if 0.0 <= x <=  500.0 :
         return  500.0 <= y <= 700.0
@@ -13,8 +13,11 @@ def cmssmCut(iX, x, iY, y, iZ, z) :
     if  500.0 <= x <= 1200.0 :
         return yMin(x) <= y <= yMax(x)
 
-    if 1200.0 <= x:
-        return 200.0 <= y <= 350.0
+    if 1200.0 <= x <= 1500.0:
+        return 200.0 <= y <= 450.0
+
+    if 1500.0 <= x:
+        return 200.0 <= y <= 400.0
 
 def cutFunc() :
     return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
