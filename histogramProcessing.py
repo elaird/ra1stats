@@ -90,8 +90,12 @@ def killPoints(h, cutFunc = None) :
 def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
-    if not s["isSms"] : return cmssmNloXsHisto(model) if s["nlo"] else cmssmLoXsHisto(model)
-    else : return smsXsHisto(model, cutFunc = s["cutFunc"][s["signalModel"]])
+    if not s["binaryExclusionRatherThanUpperLimit"] :
+        return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
+    else :
+        assert not s["isSms"],model
+        cmssmNloXsHisto(model)
+        #cmssmLoXsHisto(model)
 
 def nEventsInHisto() :
     s = conf.switches()
@@ -104,7 +108,8 @@ def effHisto(**args) :
     if model in ["T1","T2"] and args["box"]=="muon" :
         print "WARNING: ignoring muon efficiency for %s"%model
         return None
-    if not s["isSms"] : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
+    if not s["isSms"] :
+        return cmssmNloEffHisto(model = model, **args)#cmssmLoEffHisto(model = model, **args)
     else : return smsEffHisto(model = model, **args)
 
 def cmssmNEventsInHisto(model, box = "had", scale = "1") :
@@ -147,7 +152,8 @@ def cmssmNloEffHisto(**args) :
     out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
     return out
 
-def smsXsHisto(model, cutFunc = None) :
+def xsHistoAllOne(model, cutFunc = None) :
+    assert False,"hello"
     h = smsEffHisto(model = model, box = "had", scale = None,
                     htLower = 875, htUpper = None,
                     alphaTLower = "55", alphaTUpper = None)
