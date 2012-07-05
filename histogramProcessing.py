@@ -194,7 +194,11 @@ def fullPoints() :
                 if min!=None and content<min : continue
                 if max!=None and content>max : continue
                 if s["fiftyGeVStepsOnly"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/50.0)%1 != 0.0) : continue
-                out.append( (iBinX, iBinY, iBinZ) )
+                x = h.GetXaxis().GetBinLowEdge(iBinX)
+                y = h.GetYaxis().GetBinLowEdge(iBinY)
+                z = h.GetZaxis().GetBinLowEdge(iBinZ)
+                if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
+                    out.append( (iBinX, iBinY, iBinZ) )
     return out
 
 def points() :
