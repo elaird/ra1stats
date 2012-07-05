@@ -31,9 +31,7 @@ def signal() :
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_2012"]
 
-    return {"minSignalXsForConsideration": 1.0e-6,
-            "maxSignalXsForConsideration": None,
-            "overwriteInput": patches.overwriteInput(),
+    return {"overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
             "cutFunc": patches.cutFunc(),

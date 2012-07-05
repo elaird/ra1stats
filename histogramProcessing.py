@@ -163,8 +163,10 @@ def xsHistoAllOne(model, cutFunc = None) :
             y = h.GetYaxis().GetBinLowEdge(iBinY)
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 z = h.GetZaxis().GetBinLowEdge(iBinZ)
-                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
-                h.SetBinContent(iBinX, iBinY, iBinZ, 1.0)
+                content = 1.0
+                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) :
+                    content = 0.0
+                h.SetBinContent(iBinX, iBinY, iBinZ, content)
     return h
 
 def smsNEventsInHisto(model) :
@@ -189,10 +191,7 @@ def fullPoints() :
         for iBinY in range(1, 1+h.GetNbinsY()) :
             for iBinZ in range(1, 1+h.GetNbinsZ()) :
                 content = h.GetBinContent(iBinX, iBinY, iBinZ)
-                min = s["minSignalXsForConsideration"]
-                max = s["maxSignalXsForConsideration"]
-                if min!=None and content<min : continue
-                if max!=None and content>max : continue
+                if not content : continue
                 if s["fiftyGeVStepsOnly"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/50.0)%1 != 0.0) : continue
                 x = h.GetXaxis().GetBinLowEdge(iBinX)
                 y = h.GetYaxis().GetBinLowEdge(iBinY)
