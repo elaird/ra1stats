@@ -1,5 +1,19 @@
 import collections
 
+def cmssmCut(iX, x, iY, y, iZ, z) :
+    def yMin(x) :
+        return 500.0 - (300.0)*(x-500.0)/(1200.0-500.0)
+
+    def yMax(x) :
+        return 700.0 - (250.0)*(x-500.0)/(1200.0-500.0)
+
+    if    0.0 <= x <=  500.0 :
+        return  500.0 <= y <= 700.0
+    if  500.0 <= x <= 1200.0 :
+        return yMin(x) <= x <= yMax(x)
+    else :
+        return 200.0 <= x <= 350.0
+
 def cutFunc() :
     return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
             "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
@@ -9,12 +23,13 @@ def cutFunc() :
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
             "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
             "T1tttt_2012":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-            "tanBeta10":lambda iX,x,iY,y,iZ,z:True,
+            "tanBeta10":cmssmCut,
             }
 
 def nEventsIn() :
-    return {""       :(1,     None),
-            "T5zz"   :(5.0e3, None),
+    return {""         :(1,     None),
+            "T5zz"     :(5.0e3, None),
+            "tanBeta10":(9.0e3, 11.0e3),
             }
 
 def overwriteInput() :
