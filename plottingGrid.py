@@ -187,16 +187,21 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
 def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
     c = squareCanvas(name = "canvas_simpleExcl")
     pdf = outFileEps.replace(".eps","_simpleExcl.pdf")
+    root = pdf.replace(".pdf",".root")
+    tfile = r.TFile(root, "RECREATE")
     c.Print(pdf+"[")
     for d in graphs :
         d["histo"].Draw("colz")
         d["histo"].SetMaximum(1.0)
         d["histo"].SetMinimum(-1.0)
         d["histo"].SetTitle(d.get("simpleLabel"))
+        d["histo"].Write()
         if drawGraphs : d["graph"].Draw("psame")
         c.Print(pdf)
     c.Print(pdf+"]")
+    tfile.Close()
     print "INFO: %s has been written."%pdf
+    print "INFO: %s has been written."%root
 
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "UpperLimit",
                           shiftX = False, shiftY = False, interBin = "LowEdge", pruneYMin = False, debug = False) :
