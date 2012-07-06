@@ -87,7 +87,7 @@ def xsHisto() :
     model = s["signalModel"]
     if s["binaryExclusionRatherThanUpperLimit"] :
         assert not s["isSms"],model
-        return cmssmXsHisto(model)
+        return cmssmXsHisto(model = model, process = "total", xsVariation = s["xsVariation"])
     else :
         return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
 
