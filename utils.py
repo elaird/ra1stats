@@ -27,6 +27,21 @@ def threeToTwo(h3) :
     h2.SetDirectory(0)
     return h2
 #####################################
+def bins(h, interBin = ["LowEdge", "Center"][0]) :
+    out = []
+    funcs = {"X":getattr(h.GetXaxis(),"GetBin%s"%interBin),
+             "Y":getattr(h.GetYaxis(),"GetBin%s"%interBin),
+             "Z":getattr(h.GetZaxis(),"GetBin%s"%interBin),
+             }
+    for iBinX in range(1, 1+h.GetNbinsX()) :
+        x = funcs["X"](iBinX)
+        for iBinY in range(1, 1+h.GetNbinsY()) :
+            y = funcs["Y"](iBinY)
+            for iBinZ in range(1, 1+h.GetNbinsZ()) :
+                z = funcs["Z"](iBinZ)
+                out.append((iBinX, x, iBinY, y, iBinZ, z))
+    return out
+#####################################
 def histoMax(h) :
     i = h.GetMaximumBin()
     return (h.GetBinContent(i)+h.GetBinError(i))
