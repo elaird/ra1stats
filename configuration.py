@@ -31,6 +31,7 @@ def signal() :
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_2012"]
 
+    variations = ["default", "up", "down"]
     return {"overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
@@ -38,6 +39,7 @@ def signal() :
             "nEventsIn": patches.nEventsIn(),
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
+            "xsVariation": dict(zip(variations, variations))["default"],
             "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 

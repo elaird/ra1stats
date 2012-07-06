@@ -57,7 +57,9 @@ def ranges(model) :
     return d
 
 
-def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None) :
+def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None,
+              alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None, xsVariation = None) :
+    #xsVariation is ignored
     assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"
 
     base = locations()["eff"]
