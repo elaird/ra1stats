@@ -94,8 +94,7 @@ def xsHisto() :
         return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
     else :
         assert not s["isSms"],model
-        cmssmNloXsHisto(model)
-        #cmssmLoXsHisto(model)
+        cmssmXsHisto(model)
 
 def nEventsInHisto() :
     s = conf.switches()
@@ -163,7 +162,7 @@ def cmssmXsHisto(model, process = "", xsVariation = "") :
     fileName = "%s/v5/7TeV_cmssm.root"%conf.locations()["xs"]
     h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
 
-    for iX,x,iY,y,iZ,z in utils.bins(h) :
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
 
@@ -183,7 +182,7 @@ def xsHistoAllOne(model, cutFunc = None) :
     h = smsEffHisto(model = model, box = "had", scale = None,
                     htLower = 875, htUpper = None,
                     alphaTLower = "55", alphaTUpper = None)
-    for iX,x,iY,y,iZ,z in utils.bins(h) :
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         content = 1.0
         if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
             content = 0.0
@@ -207,11 +206,11 @@ def fullPoints() :
     out = []
     s = conf.switches()
     h = xsHisto()
-    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h) :
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
         if "xWhiteList" in s and s["xWhiteList"] and iBinX not in s["xWhiteList"] : continue
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content : continue
-        if s["multiplesInGeV"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/s["multiplesInGeV"])%1 != 0.0) : continue
+        if s["multiplesInGeV"] and ((x/s["multiplesInGeV"])%1 != 0.0) : continue
         if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
             out.append( (iBinX, iBinY, iBinZ) )
     return out
@@ -223,26 +222,16 @@ def points() :
 
 ##warnings
 def printHoles(h) :
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                xNeighbors = h.GetBinContent(iBinX+1, iBinY  , iBinZ)!=0.0 and h.GetBinContent(iBinX-1, iBinY  , iBinZ)
-                yNeighbors = h.GetBinContent(iBinX  , iBinY+1, iBinZ)!=0.0 and h.GetBinContent(iBinX  , iBinY-1, iBinZ)
-                if h.GetBinContent(iBinX, iBinY, iBinZ)==0.0 and (xNeighbors or yNeighbors) :
-                    print "WARNING: found hole (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ,
-                                                                             h.GetXaxis().GetBinCenter(iBinX),
-                                                                             h.GetYaxis().GetBinCenter(iBinY),
-                                                                             h.GetZaxis().GetBinCenter(iBinZ))
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "Center") :
+        xNeighbors = h.GetBinContent(iBinX+1, iBinY  , iBinZ)!=0.0 and h.GetBinContent(iBinX-1, iBinY  , iBinZ)
+        yNeighbors = h.GetBinContent(iBinX  , iBinY+1, iBinZ)!=0.0 and h.GetBinContent(iBinX  , iBinY-1, iBinZ)
+        if h.GetBinContent(iBinX, iBinY, iBinZ)==0.0 and (xNeighbors or yNeighbors) :
+            print "WARNING: found hole (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ, x, y, z)
     return
 
 def printMaxes(h) :
     s = conf.switches()
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                if abs(h.GetBinContent(iBinX, iBinY, iBinZ)-s["masterSignalMax"])<2.0 :
-                    print "found max: (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ,
-                                                                    h.GetXaxis().GetBinCenter(iBinX),
-                                                                    h.GetYaxis().GetBinCenter(iBinY),
-                                                                    h.GetZaxis().GetBinCenter(iBinZ))
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "Center") :
+        if abs(h.GetBinContent(iBinX, iBinY, iBinZ)-s["masterSignalMax"])<2.0 :
+            print "found max: (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ, x, y, z)
     return
