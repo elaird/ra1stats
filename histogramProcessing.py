@@ -1,4 +1,4 @@
-import collections
+import collections,utils
 import configuration as conf
 import histogramSpecs as hs
 import ROOT as r
@@ -163,13 +163,8 @@ def cmssmXsHisto(model, process = "", xsVariation = "") :
     fileName = "%s/v5/7TeV_cmssm.root"%conf.locations()["xs"]
     h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
 
-    out = None
-    for process in conf.processes() :
-        h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
-        if out is None : out = h.Clone("nloXsHisto")
-        else :           out.Add(h)
-    out.SetDirectory(0)
-    #see links in loXsHisto
+    for iX,x,iY,y,iZ,z in utils.bins(h) :
+        out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
 
 def cmssmEffHisto(**args) :
@@ -187,16 +182,11 @@ def xsHistoAllOne(model, cutFunc = None) :
     h = smsEffHisto(model = model, box = "had", scale = None,
                     htLower = 875, htUpper = None,
                     alphaTLower = "55", alphaTUpper = None)
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetXaxis().GetBinLowEdge(iBinX)
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            y = h.GetYaxis().GetBinLowEdge(iBinY)
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                z = h.GetZaxis().GetBinLowEdge(iBinZ)
-                content = 1.0
-                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) :
-                    content = 0.0
-                h.SetBinContent(iBinX, iBinY, iBinZ, content)
+    for iX,x,iY,y,iZ,z in utils.bins(h) :
+        content = 1.0
+        if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
+            content = 0.0
+            h.SetBinContent(iX, iY, iZ, content)
     return h
 
 def smsNEventsInHisto(model) :
@@ -216,18 +206,13 @@ def fullPoints() :
     out = []
     s = conf.switches()
     h = xsHisto()
-    for iBinX in range(1, 1+h.GetNbinsX()) :
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h) :
         if "xWhiteList" in s and s["xWhiteList"] and iBinX not in s["xWhiteList"] : continue
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                content = h.GetBinContent(iBinX, iBinY, iBinZ)
-                if not content : continue
-                if s["multiplesInGeV"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/s["multiplesInGeV"])%1 != 0.0) : continue
-                x = h.GetXaxis().GetBinLowEdge(iBinX)
-                y = h.GetYaxis().GetBinLowEdge(iBinY)
-                z = h.GetZaxis().GetBinLowEdge(iBinZ)
-                if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
-                    out.append( (iBinX, iBinY, iBinZ) )
+        content = h.GetBinContent(iBinX, iBinY, iBinZ)
+        if not content : continue
+        if s["multiplesInGeV"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/s["multiplesInGeV"])%1 != 0.0) : continue
+        if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
+            out.append( (iBinX, iBinY, iBinZ) )
     return out
 
 def points() :
