@@ -97,9 +97,9 @@ def xsHisto() :
         return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
 
 def nEventsInHisto() :
-    s = conf.switches()
-    model = s["signalModel"]
-    return cmssmNEventsInHisto(model) if not s["isSms"] else smsNEventsInHisto(model)
+    model = conf.switches()["signalModel"]
+    s = hs.histoSpec(model = model, box = "had")
+    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 def effHisto(**args) :
     s = conf.switches()
@@ -111,10 +111,6 @@ def effHisto(**args) :
         return cmssmEffHisto(model = model, xsVariation = s["xsVariation"], **args)
     else :
         return smsEffHisto(model = model, **args)
-
-def cmssmNEventsInHisto(model, box = "had", scale = "1") :
-    s = hs.histoSpec(model = model, box = box, scale = scale)
-    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 #def cmssmLoXsHisto(model) :
 #    s = hs.histoSpec(model = model, box = "had", scale = "1")
@@ -191,10 +187,6 @@ def xsHistoAllOne(model, cutFunc = None) :
             content = 0.0
             h.SetBinContent(iX, iY, iZ, content)
     return h
-
-def smsNEventsInHisto(model) :
-    s = hs.histoSpec(model = model, box = "had", htLower = 875, htUpper = None)
-    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 def smsEffHisto(**args) :
     switches = conf.switches()
