@@ -77,13 +77,8 @@ def fillPoints(h, points = []) :
                   (h.GetName(), iBinX, iBinY, iBinZ, items.count(0.0), valueOld, value)
 
 def killPoints(h, cutFunc = None) :
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetXaxis().GetBinLowEdge(iBinX)
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            y = h.GetYaxis().GetBinLowEdge(iBinY)
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                z = h.GetZaxis().GetBinLowEdge(iBinZ)
-                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
+        if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
     return h
 
 ##signal-related histograms
