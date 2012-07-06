@@ -77,12 +77,10 @@ def shifted(h = None, shift = (False, False), shiftErrors = True) :
     out = histoConstructor( hname+"_shifted", h.GetTitle(), *args)
     out.SetDirectory(0)
 
-    for iBinX in range(1, 1 + h.GetNbinsX()) :
-        for iBinY in range(1, 1 + h.GetNbinsY()) :
-            for iBinZ in range(1, 1 + h.GetNbinsZ()) :
-                out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
-                if shiftErrors:
-                    out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
+    for iBinX,x,iBinY,y,iBinZ,z in bins(h) :
+        out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
+        if shiftErrors:
+            out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
     return out
 #####################################
 class thstack(object) :

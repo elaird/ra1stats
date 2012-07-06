@@ -114,7 +114,7 @@ def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
         graph.RemovePoint(graph.GetN()-1)
     if debug: graph.Print()
 
-def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
+def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
                pruneYMin = False) :
     graphs = []
 
@@ -129,14 +129,17 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
 
              {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
               "color": r.kBlack,                                            "simpleLabel":"Observed Limit"},
-
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
-              "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
-
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
-              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
              ]
+    if switches["isSms"] :
+        specs += [
+            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+             "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
 
+            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+             "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
+            ]
+
+    signalModel = switches["signalModel"]
     for i,spec in enumerate(specs) :
         h = histos[spec["name"]]
         graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
@@ -225,7 +228,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #make exclusion histograms and curves
     try:
         graphs = exclusions(histos = histos, writeDir = g,
-                            signalModel = s["signalModel"],
+                            switches = s,
                             graphBlackLists = s["graphBlackLists"],
                             interBin = interBin,
                             printXs = printXs,
