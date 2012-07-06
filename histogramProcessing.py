@@ -162,6 +162,7 @@ def cmssmXsHisto(model, process = "", xsVariation = "") :
     fileName = "%s/v5/7TeV_cmssm.root"%conf.locations()["xs"]
     h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
 
+    #Note! Implement some check of the agreement in binning between these histos
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
