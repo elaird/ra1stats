@@ -22,7 +22,7 @@ def method() :
             "testStatistic": 3,
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
-            "binaryExclusionRatherThanUpperLimit": True,
+            "binaryExclusionRatherThanUpperLimit": False,
             "multiplesInGeV": 0.0,
             }
 
@@ -40,7 +40,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["tanBeta10"]
+            "signalModel": dict(zip(models, models))["T1"]
             }
 
 def listOfTestPoints() :
@@ -109,7 +109,7 @@ def mergedFileStem(outputDir, switches) :
     out  = "%s/%s"%(outputDir, switches["method"])
     if "CLs" in switches["method"] :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
-    if "binaryExclusionRatherThanUpperLimit" :
+    if switches["binaryExclusionRatherThanUpperLimit"] :
         out += "_binaryExcl"
     out += "_%s"%switches["signalModel"]
     if not switches["isSms"] :
