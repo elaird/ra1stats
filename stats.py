@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 from optparse import OptionParser
 import os
+from collections import defaultdict
 ############################################
 def opts() :
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N",          help = "split into N jobs and submit to batch queue (N=0 means max splitting)")
     parser.add_option("--pbatch",     dest = "pbatch",     default = False, metavar = "N",          help = "split into maximum number of jobs and submit parametrically to the queue", action="store_true")
+    parser.add_option("--queue",      dest = "queue",      default = None,  metavar = "QUEUE_NAME", help = "choose specific queue for pbatch submission", action="store")
     parser.add_option("--offset",     dest = "offset",     default = 0,     metavar = "N",          help = "offset by N*nJobsMax")
     parser.add_option("--local",      dest = "local",      default = None,  metavar = "N",          help = "loop over events locally using N cores (N>0)")
     parser.add_option("--merge",      dest = "merge",      default = False, action  = "store_true", help = "merge job output")
@@ -14,6 +16,8 @@ def opts() :
     parser.add_option("--output",     dest = "output",     default = False, action  = "store_true", help = "write stdout&stderr to disk rather than to /dev/null")
     options,args = parser.parse_args()
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
+    if options.queue is not None :
+        assert options.pbatch, "Cannot choose queue for non parametric batch submission"
     for pair in [("local", "batch"), ("merge", "batch"), ("pbatch", "batch"), ("local","pbatch"), ("merge","pbatch")] :
         assert (not getattr(options, pair[0])) or (not getattr(options, pair[1])),"Choose only one of (%s, %s)"%pair
     return options
@@ -49,29 +53,44 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
 
     return out,warning
 
-def pjobCmds( filename ) :
-    pwd = os.environ["PWD"]
-    points = histogramProcessing.points()
-    npoints = len(points)
-    njm = conf.switches()["nJobsMax"]
-    pickling.writeSignalFiles(points, outFilesAlso = False)
-    pointsToFile( filename, points )
+def pjobCmds(queue=None) :
+    from socket import gethostname
 
-    logStem = conf.stringsNoArgs()["logStem"]
     switches = conf.switches()
+    utils.mkdir("points")
+    pwd = os.environ["PWD"]
 
-    njobs = (npoints/njm) + 1
-    out = []
-    iStart = 0
-    iFinish = ( npoints /  njm ) + 1
-    if npoints % njm == 0 :
-        iFinish-=1
-    for i in range(iStart, iFinish) :
-        argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:switches["envScript"],
-                   3:"/dev/null" }
-        args = [argDict[key] for key in sorted(argDict.keys())]
-        out.append("%s %s" %(" ".join(args),filename))
-    return out, npoints
+    points = histogramProcessing.points()
+    n_points = len(points)
+
+    njm = switches["nJobsMax"]
+    pickling.writeSignalFiles(points, outFilesAlso = False)
+
+    pos = 0
+    host=gethostname()
+    pid=os.getpid()
+    out = defaultdict(dict)
+    for q_name, num_points in getQueueRanges(n_points,queue).iteritems():
+        out[q_name]["args"] = []
+        out[q_name]["n_points"] = num_points
+        filename = "points/{host}_{queue}_{pid}.points".format(host=host,
+                                                               queue=q_name,
+                                                               pid=pid)
+        pointsToFile( filename, points[pos:pos+num_points] )
+        pos += num_points
+        n_para_jobs = (num_points/njm) + 1
+        iStart = 0
+        iFinish = ( num_points /  njm ) + 1
+        if num_points % njm == 0 :
+            # if they exactly divide we don't need the final job
+            iFinish-=1
+
+        for i in range(iStart, iFinish) :
+            argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:switches["envScript"],
+                       3:"/dev/null" }
+            args = [argDict[key] for key in sorted(argDict.keys())]
+            out[q_name]["args"].append("%s %s" %(" ".join(args),filename))
+    return out, n_points
 
 def pointsToFile( filename, points ) :
     file = open( filename, 'w')
@@ -81,22 +100,45 @@ def pointsToFile( filename, points ) :
         print>>file, out
     file.close()
 
+def getQueueRanges( npoints, queue=None ) :
+    from queueData import qData
+    from math import ceil
+    if queue is not None and queue in qData.keys():
+        # allow override for running on a single queue
+        qData = { queue : qData[queue] }
+    total_cores = sum( [ q["ncores"] for q in qData.values() ] )
+    jobs_per_core = npoints / float(total_cores)
+    jobsPerQueue = {}
+    total_covered = 0
+    for qname, info in qData.iteritems() :
+        n_jobs = int(ceil(info["ncores"]*jobs_per_core))
+        jobsPerQueue[qname] = n_jobs if (total_covered + n_jobs) <= npoints \
+                                     else (npoints - total_covered)
+        total_covered += n_jobs
+
+    return jobsPerQueue
+
 ############################################
-def pbatch() :
-    from socket import gethostname
-    utils.mkdir("points")
-    filename = "points/%s_%d.points" % ( gethostname(), os.getpid() )
-    jcs, npoints = pjobCmds(filename)
-    njm = conf.switches()["nJobsMax"]
-    njobs = (npoints/njm) + 1
+def pbatch(queue=None, debug=False) :
+    queue_job_details, n_points = pjobCmds(queue)
+    switches = conf.switches()
+    n_jobs_max = switches["nJobsMax"]
 
     subCmds = []
-    for i,j in enumerate(jcs) :
-        start = i*njm + 1
-        end   = i*njm + njm
-        if end > npoints :
-            end = npoints
-        subCmds.append( "%s -t %d-%d:1 %s"%(conf.switches()["subCmd"], start, end, j ) )
+    for q_name, details in queue_job_details.iteritems():
+        for i, args in enumerate(details["args"]):
+            #print "{q} => {a}".format( q=q_name, a=args )
+            #continue
+            start = i*n_jobs_max + 1
+            end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
+            base_cmd = switches["subCmdFormat"] % q_name
+            cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
+                                                              start=start, end=end,
+                                                              args=args)
+            subCmds.append(cmd)
+    if debug:
+        for cmd in subCmds:
+            print cmd
     utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
@@ -146,7 +188,7 @@ cpp.compile()
 if options.batch  : batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
 if options.local  : local(nWorkers = int(options.local), skip = options.skip)
 if options.merge  : pickling.mergePickledFiles()
-if options.pbatch : pbatch()
+if options.pbatch : pbatch(options.queue)
 
 if options.merge or options.validation :
     plottingGrid.makePlots()

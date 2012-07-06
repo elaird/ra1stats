@@ -64,6 +64,8 @@ def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
             "subCmd": getSubCmds(),
+            "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
+            "queueSelection" : ["short", "medium", "long"][1:],
             "envScript": "env.sh",
             "nJobsMax": getMaxJobs()}
 
