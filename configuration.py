@@ -22,7 +22,7 @@ def method() :
             "testStatistic": 3,
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
-            "binaryExclusionRatherThanUpperLimit": False,
+            "binaryExclusionRatherThanUpperLimit": True,
             "multiplesInGeV": 0.0,
             }
 
@@ -109,6 +109,8 @@ def mergedFileStem(outputDir, switches) :
     out  = "%s/%s"%(outputDir, switches["method"])
     if "CLs" in switches["method"] :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
+    if "binaryExclusionRatherThanUpperLimit" :
+        out += "_binaryExcl"
     out += "_%s"%switches["signalModel"]
     if not switches["isSms"] :
         out += "_%s"%switches["xsVariation"]
