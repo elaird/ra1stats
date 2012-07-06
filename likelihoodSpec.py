@@ -3,7 +3,7 @@ from common import selection,nb
 
 class spec(object) :
 
-    def separateSystObs(self) : return True
+    def separateSystObs(self) : return self._separateSystObs
     def poi(self) :
         return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
                 {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
@@ -12,11 +12,11 @@ class spec(object) :
     def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return True
+    def constrainQcdSlope(self) : return self._constrainQcdSlope
     def qcdParameterIsYield(self) : return False
 
     def selections(self) :
-        return self._selections
+        return self._selections[self._iLower:self._iUpper]
 
     def poiList(self) :
         return self.poi().keys()
@@ -27,13 +27,23 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self) :
+    def __init__(self, iLower = None, iUpper = None, year = 2012, separateSystObs = True) :
+        self._iLower = iLower
+        self._iUpper = iUpper
+        self._year = year
         self._selections = []
-        #self.__initSimple__()
-        #self.__init2012__()
-        self.__init2011reorg__(updated = True)
+        self._separateSystObs = separateSystObs
+
+        assert self._year in [0, 2011, 2012],self._year
+        if self._year==0 :
+            self.__initSimple__()
+        elif self._year==2011 :
+            self.__init2011reorg__(updated = True)
+        elif self._year==2012 :
+            self.__init2012__()
 
     def __initSimple__(self) :
+        self._constrainQcdSlope = False
         self.legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
@@ -44,8 +54,11 @@ class spec(object) :
                 ])
 
     def __init2012__(self) :
-        self.legendTitle = "CMS, 1.5-2.4 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take4 as module
+        self._constrainQcdSlope = True
+        self.legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
+        from inputData.data2012 import take5_unweighted as module
+        #self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 8 TeV"
+        #from inputData.data2012 import take6_unweighted as module
         self.add([
                 selection(name = "55_0b",
                           note = "%s= 0"%nb,
@@ -55,10 +68,16 @@ class spec(object) :
                           nbTag = "0",
                           fZinvIni = 0.50,
                           AQcdIni = 0.0,
-                          #zeroQcd=True,
-                          universalSystematics = True,
-                          universalKQcd = True,
                           ),
+                #selection(name = "55_0b_no_aT",
+                #          note = "%s= 0"%nb,
+                #          alphaTMinMax = ("55", None),
+                #          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                #          data = module.data_0b_no_aT(),
+                #          nbTag = "0",
+                #          fZinvIni = 0.50,
+                #          AQcdIni = 0.0,
+                #          ),
                 selection(name = "55_1b",
                           note = "%s= 1"%nb,
                           alphaTMinMax = ("55", None),
@@ -68,15 +87,15 @@ class spec(object) :
                           fZinvIni = 0.25,
                           AQcdIni = 0.0,
                           ),
-#                selection(name = "55_2b",
-#                          note = "%s= 2"%nb,
-#                          alphaTMinMax = ("55", None),
-#                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
-#                          data = module.data_2b(),
-#                          nbTag = "2",
-#                          fZinvIni = 0.1,
-#                          AQcdIni = 0.0,
-#                          ),
+                selection(name = "55_2b",
+                          note = "%s= 2"%nb,
+                          alphaTMinMax = ("55", None),
+                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          data = module.data_2b(),
+                          nbTag = "2",
+                          fZinvIni = 0.1,
+                          AQcdIni = 0.0,
+                          ),
                 selection(name = "55_gt2b",
                           note = "%s#geq 3"%nb,
                           alphaTMinMax = ("55", None),
@@ -90,7 +109,8 @@ class spec(object) :
                 ])
 
     def __init2011reorg__(self, updated = True) :
-        self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
+        self._constrainQcdSlope = True
+        self.legendTitle = "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
         else :
@@ -165,6 +185,7 @@ class spec(object) :
                 ])
 
     def __init2011old__(self) :
+        self._constrainQcdSlope = True
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
         args["systMode"] = 3

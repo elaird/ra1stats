@@ -63,6 +63,40 @@ NOTES
 '''
         return out
 
+    def translationFactor(self, tr = ["gZ", "muW", "mumuZ", "muHad"][0], considerLumi = False, afterTrigger = True) :
+        dct = {"gZ":   {"num":"mcPhot", "den":"mcZinv"},
+               "muW":  {"num":"mcMuon", "den":"mcTtw" },
+               "mumuZ":{"num":"mcMumu", "den":"mcZinv"},
+               "muHad":{"num":"mcMuon", "den":"mcHad" },
+               }[tr]
+
+        assert self._constantMcRatioAfterHere == tuple([0]*7+[1]),self._constantMcRatioAfterHere
+        #todo: handle purities
+        value = self.mcExpectations() if afterTrigger else self._mcExpectationsBeforeTrigger
+        error = self.mcStatError()
+        lumi = self.lumi()
+
+        num = value[dct["num"]]
+        den = value[dct["den"]]
+        numErr = error[dct["num"]+"Err"]
+        denErr = error[dct["den"]+"Err"]
+
+        out = []
+        scale = lumi["mcHad"]/lumi[dct["num"]] if considerLumi else 1.0
+        for n,d in zip(num,den) :
+            if (n is None or not d) :
+                out.append(None)
+            else :
+                out.append(scale * n/d)
+
+        outErr = []
+        for n,d,nE,dE,o in zip(num,den,numErr,denErr,out) :
+            if (None in [n,d,nE,dE,o]) or (not n) or (not d) :
+                outErr.append(None)
+            else :
+                outErr.append(o*math.sqrt((nE/n)**2 + (dE/d)**2))
+        return out,outErr
+
     def _fill(self) : raise Exception("NotImplemented", "Implement a member function _fill(self)")
 
     def _checkVars(self) :

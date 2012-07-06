@@ -1,4 +1,4 @@
-import collections,socket
+import socket,patches
 
 batchHost = [ "FNAL", "IC" ][1]
 
@@ -18,78 +18,43 @@ def locations() :
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
-            "nToys": 200,
+            "nToys": 1000,
             "testStatistic": 3,
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
-            "computeExpectedLimit": False,
-            "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
+            "binaryExclusionRatherThanUpperLimit": False,
+            "fiftyGeVStepsOnly": False,
             }
 
 def signal() :
-    overwriteInput = collections.defaultdict(list)
-    overwriteOutput = collections.defaultdict(list)
-    overwriteOutput.update({"T1": [],
-                            "T2": [],
-                            "T2tt": [],
-                            "T1bbbb": [(36,29,1)],
-                            "T1tttt": [(37, 2, 1), (37, 3, 1), (37, 4, 1),
-                                       (37, 5, 1), (37, 6, 1), (37, 7, 1), ],
-                            "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
-                            "T2bb":   [],
-                            "T1bbbb": [],
-                            #"T1tttt": [],
-                            "T5zz": [],
-                            })
-    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
-
-    graphBlackLists = {}
-    for key in [ "UpperLimit", "ExpectedUpperLimit" ] + [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ] :
-        graphBlackLists[key] = collections.defaultdict(list)
-    graphBlackLists["UpperLimit"].update({"T1bbbb" : [ (1075,325), (1050,600), (1025, 475), (1000,525), (975,525), (950,500),
-                                                       (950,550), (1000,625), ]})
-    graphBlackLists["ExpectedUpperLimit_-1_Sigma"].update({"T1bbbb" : [ (1050,250), (1075,350), (1050,350) ]})
+    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
+              "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+              "T1tttt_2012"]
 
     return {"minSignalXsForConsideration": 1.0e-6,
             "maxSignalXsForConsideration": None,
-            "overwriteInput": overwriteInput,
-            "overwriteOutput": overwriteOutput,
-            "graphBlackLists": graphBlackLists,
-            "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
-                           "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           },
-            "nEventsIn":{""       :(9900., 10100.),
-                         "T1"   :(1, None),
-                         "T2"   :(1, None),
-                         "T2bb"   :(1, None),
-                         "T2tt"   :(1, None),
-                         "T1bbbb"   :(1, None),
-                         "T1tttt"   :(1, None),
-                         "T5zz"   :(5.0e3, None),
-                         "TGQ_0p0":(1, None),
-                         "TGQ_0p2":(1, None),
-                         "TGQ_0p4":(1, None),
-                         "TGQ_0p8":(1, None)},
+            "overwriteInput": patches.overwriteInput(),
+            "overwriteOutput": patches.overwriteOutput(),
+            "graphBlackLists": patches.graphBlackLists(),
+            "cutFunc": patches.cutFunc(),
+            "nEventsIn": patches.nEventsIn(),
             "nlo": True,
             "nloToLoRatios": False,
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
-
-            "signalModel": dict(zip(models, models))["T1tttt"]
+            "signalModel": dict(zip(models, models))["T1tttt_2012"]
             }
 
 def listOfTestPoints() :
     #out = [(181, 29, 1)]
     #out = [(33, 53, 1)]
     #out = [(61, 61, 1)]
-    #out = [(13, 1, 1)]
+    #out = [(13, 3, 1)]
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
+    #out = [(19,5,1)]
+    #out = [(15,3,1)]
+    #out = [(13,1,1)]
     out = []
     return out
 
@@ -129,26 +94,20 @@ def getSubCmds() :
     }[batchHost]
 
 def checkAndAdjust(d) :
-    if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
-
-    d["rhoSignalMin"] = 0.0
-    d["plSeedParams"] = {"usePlSeed": False}
-    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
-    d["extraSigEffUncSources"] = []
-
-    d["fIniFactor"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
     if d["isSms"] :
-        d["fIniFactor"] = 0.05
         d["nlo"] = False
-        d["rhoSignalMin"] = 0.1
-        #d["plSeedParams"] = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0}
-        d["plSeedParams"] = {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
-        #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
-    if d["method"]=="feldmanCousins" :
-        d["fiftyGeVStepsOnly"] = True
-    else :
-        d["fiftyGeVStepsOnly"] = False
+
+    binary = d["binaryExclusionRatherThanUpperLimit"]
+    d["rhoSignalMin"] = 0.0 if binary else 0.1
+    d["fIniFactor"] = 1.0 if binary else 0.05
+    d["extraSigEffUncSources"] = [] if binary else [] #["effHadSumUncRelMcStats"]
+
+    d["plSeedParams"] = {"usePlSeed": False} if binary else \
+                        {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
+                        #{"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0}
+
+    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     return
 
 def mergedFileStem(outputDir, switches) :
@@ -157,8 +116,6 @@ def mergedFileStem(outputDir, switches) :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
     out += "_%s"%switches["signalModel"]
     out += "_nlo" if switches["nlo"] else "_lo"
-    for item in ["computeExpectedLimit"] :
-        if switches[item] : out += "_%s"%item
     return out
 
 def stringsNoArgs() :

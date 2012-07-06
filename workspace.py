@@ -865,7 +865,7 @@ class foo(object) :
             ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
         else :
             print "WARNING: ensemble plots/tables are being created from previous results."
-        plotting.ensemblePlotsAndTables(note = self.note(), plotsDir = "plots", stdout = stdout)
+        plotting.ensemblePlotsAndTables(note = self.note(), nToys = nToys, plotsDir = "plots", stdout = stdout)
 
     def bestFitToy(self, nToys = 200) :
         #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
@@ -883,15 +883,13 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True, errorsFromToys = False, drawRatios = False) :
+    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
+                errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5, pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        try:
-            calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)),
-                       note = self.note(), plotsDir = "plots")
-        except:
-            print "ERROR: pull plots failed"
+        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)), note = self.note(), plotsDir = "plots",
+                       yMax = pullPlotMax, threshold = pullThreshold)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)

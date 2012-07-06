@@ -16,7 +16,7 @@ cd ra1stats
 ```
 
 
-2. If at IC, set up the environment:
+2. If needed, set up the environment:
 ```bash
 source env.sh
 ```
@@ -27,7 +27,7 @@ source env.sh
 ```
 
 ## Brief Description
-* The likelihood function is specified in fresh.py.  To fit a set of
+* The likelihood function is specified in workspace.py.  To fit a set of
 data or test a signal model, one uses an instance of the class
 fresh.foo.
 
@@ -42,7 +42,7 @@ in likelihoodSpec.py.
   (`--batch`).  The results are merged into a root file using `--merge`.
 
 ## Requirements
-* ROOT >= v5.30.02
+* ROOT >= v5.32.01
 * python >= v2.6
 
 ## Notes

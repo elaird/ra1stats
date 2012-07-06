@@ -2,6 +2,7 @@
 
 import math,os
 from collections import defaultdict
+import common
 
 quiet = False
 
@@ -242,7 +243,7 @@ def ensembleSplit(d, group = "had") :
 def ensembleSplit2(dct, group = "had") :
     out = defaultdict(list)
     for key,latex in dct.iteritems() :
-        sample,aT,nB,iBin = key.split("_")
+        sample,aT,nB,iBin = common.split(key)
         if sample[:len(group)]!=group : continue
         out[nB] += [(iBin, latex)]
 
@@ -255,7 +256,7 @@ def ensembleRow( data, indices, d ) :
         return d
     return [ d[index] for index in indices ]
 
-def ensembleResultsBySample( d, data, nEmptyPhot = 4 ) :
+def ensembleResultsBySample( d, data, nEmptyPhot = 2 ) :
     samples =  ["had", "muon", "mumu", "phot"]
     samples_long =  [ "Hadronic", "$\mu$+jets",
                       "$\mu\mu$+jets", "$\gamma$+jets"]
@@ -327,7 +328,7 @@ def ensembleResultsBySample( d, data, nEmptyPhot = 4 ) :
     write( doc, "ensemble_bySample.tex" )
 
 
-def ensembleResultsBySelection( d, data, nEmptyPhot = 4 ) :
+def ensembleResultsBySelection( d, data, nEmptyPhot = 2 ) :
     mc_out = {}
     data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]

@@ -12,9 +12,63 @@ def generateDictionaries() :
     r.gInterpreter.GenerateDictionary("std::pair<std::string,std::vector<double> >","string;vector")
     r.gInterpreter.GenerateDictionary("std::map<string,vector<double> >","string;map;vector")
 #####################################
+def threeToTwo(h3) :
+    name = h3.GetName()
+    h2 = r.TH2D(name+"_2D",h3.GetTitle(),
+                h3.GetNbinsX(), h3.GetXaxis().GetXmin(), h3.GetXaxis().GetXmax(),
+                h3.GetNbinsY(), h3.GetYaxis().GetXmin(), h3.GetYaxis().GetXmax(),
+                )
+
+    for iX in range(1, 1+h3.GetNbinsX()) :
+        for iY in range(1, 1+h3.GetNbinsY()) :
+            content = h3.GetBinContent(iX, iY, 1)
+            h2.SetBinContent(iX, iY, content)
+    h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
+    h2.SetDirectory(0)
+    return h2
+#####################################
 def histoMax(h) :
     i = h.GetMaximumBin()
     return (h.GetBinContent(i)+h.GetBinError(i))
+#####################################
+def shifted(h = None, shift = (False, False), shiftErrors = True) :
+    assert len(shift) in range(1,4),shift
+
+    axes = [ 'X', 'Y', 'Z' ]
+    try:
+        dim = int(h.ClassName()[2])
+    except ValueError as e:
+        print "Tried shifting h w/ dim>3 or non-histo:", h.ClassName(), "=>", e
+        print "Object will remain unshifted"
+        return h
+
+    htype = h.ClassName()[-1]
+
+    args = []
+    shiftWidths = []
+    for i in range(dim) :
+        axis = getattr(h, "Get%saxis"%axes[i])()
+        nBins = getattr(h, "GetNbins%s"%axes[i])()
+        max = axis.GetXmax()
+        min = axis.GetXmin()
+        shiftWidths.append((max - min)/(2.0*nBins) if shift[i] else 0.0)
+        args += [nBins, min - shiftWidths[-1], max - shiftWidths[-1]]
+
+    hname = h.GetName()
+    if any(shiftWidths):
+        print "INFO: shifting {0} by {1}".format(hname,shiftWidths)
+
+    histoConstructor= getattr(r,'TH%d%s'%(dim,htype))
+    out = histoConstructor( hname+"_shifted", h.GetTitle(), *args)
+    out.SetDirectory(0)
+
+    for iBinX in range(1, 1 + h.GetNbinsX()) :
+        for iBinY in range(1, 1 + h.GetNbinsY()) :
+            for iBinZ in range(1, 1 + h.GetNbinsZ()) :
+                out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
+                if shiftErrors:
+                    out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
+    return out
 #####################################
 class thstack(object) :
     """work-around for buggy THStacks in ROOT 5.30.00"""
@@ -38,9 +92,9 @@ def inDict(d, key, default) :
     return d[key] if key in d else default
 #####################################
 class thstackMulti(object) :
-    def __init__(self, name = "", errorsFromToys = False) :
+    def __init__(self, name = "", drawErrors = False) :
         self.name = name
-        self.errorsFromToys = errorsFromToys
+        self.drawErrors = drawErrors
         self.histos = []
 
     def Add(self, histos = {}, spec = {}) :
@@ -61,7 +115,7 @@ class thstackMulti(object) :
                 repeat.append( (histos2, spec) )
             self.DrawOne(histos2,
                          goptions = goptions + ("" if "goptions" not in spec else spec["goptions"]),
-                         noErrors = ("type" in spec) and spec["type"]=="function" and not self.errorsFromToys,
+                         noErrors = ("type" in spec) and spec["type"]=="function" and not self.drawErrors,
                          errorBand = inDict(spec, "errorBand", False),
                          bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
 
@@ -129,10 +183,19 @@ def ps2pdf(psFileName, removePs = True, sameDir = False) :
     os.system(cmd)
     if removePs : os.remove(psFileName)
 #####################################
-def epsToPdf(epsFileName, removeEps = True, sameDir = False) :
-    cmd = ("epstopdf %s"%epsFileName) if not sameDir else ("epstopdf %s --outfile=%s"%(epsFileName, epsFileName.replace(".eps", ".pdf")))
-    os.system(cmd)
-    if removeEps : os.remove(epsFileName)
+def epsToPdf(fileName, tight = True, sameDir = False) :
+    if sameDir :
+        print "WARNING: ignoring sameDir argument to utils.epsToPdf"
+    if not tight : #make pdf
+        os.system("epstopdf "+fileName)
+        os.system("rm       "+fileName)
+    else : #make pdf with tight bounding box
+        epsiFile = fileName.replace(".eps",".epsi")
+        os.system("ps2epsi "+fileName+" "+epsiFile)
+        os.system("epstopdf "+epsiFile)
+        os.system("rm       "+epsiFile)
+        os.system("rm       "+fileName)
+    print "INFO: %s has been written."%fileName.replace(".eps", ".pdf")
 #####################################
 def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
     return pdf.fitTo(data, *options)
