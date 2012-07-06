@@ -180,7 +180,7 @@ def xsHistoAllOne(model, cutFunc = None) :
         content = 1.0
         if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
             content = 0.0
-            h.SetBinContent(iX, iY, iZ, content)
+        h.SetBinContent(iX, iY, iZ, content)
     return h
 
 def smsEffHisto(**args) :
