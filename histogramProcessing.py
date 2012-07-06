@@ -171,7 +171,8 @@ def cmssmEffHisto(**args) :
     s = hs.histoSpec(**args)
     out = None
     for process in conf.processes() :
-        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s"%process) #efficiency
+        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s"%process) #efficiency of a process
+        h.Multiply(cmssmXsHisto(model = args["model"], process = process, xsVariation = args["xsVariation"])) #weight by xs of the process
         if out is None : out = h.Clone("effHisto")
         else :           out.Add(h)
     out.SetDirectory(0)
