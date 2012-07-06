@@ -111,6 +111,7 @@ def makeRootFile(fileName = "") :
             r.gPad.SetTicky()
             r.gPad.SetLogz()
             r.gPad.SetRightMargin(0.15)
+            h.Write()
             h.SetStats(False)
             h.Draw("colz")
             h.GetZaxis().SetRangeUser(1.0e-6, 1.0e2)
