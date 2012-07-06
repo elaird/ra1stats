@@ -134,7 +134,7 @@ def exclusions(histos = {}, signalModel = "", graphBlackLists = None, printXs = 
               "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
 
              {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
-              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
+              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
              ]
 
     for i,spec in enumerate(specs) :
