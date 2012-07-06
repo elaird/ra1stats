@@ -16,7 +16,7 @@ def ratio(file, numDir, numHisto, denDir, denHisto) :
     f.Close()
     return h
 
-def oneHisto(file, dir, name) :
+def oneHisto(file = "", dir = "", name = "") :
     f = r.TFile(file)
     assert not f.IsZombie(), file
 
@@ -109,7 +109,7 @@ def effHisto(**args) :
         print "WARNING: ignoring muon efficiency for %s"%model
         return None
     if not s["isSms"] :
-        return cmssmNloEffHisto(model = model, **args)#cmssmLoEffHisto(model = model, **args)
+        return cmssmEffHisto(model = model, xsVariation = s["xsVariation"], **args)
     else :
         return smsEffHisto(model = model, **args)
 
@@ -117,22 +117,52 @@ def cmssmNEventsInHisto(model, box = "had", scale = "1") :
     s = hs.histoSpec(model = model, box = box, scale = scale)
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
-def cmssmLoXsHisto(model) :
-    s = hs.histoSpec(model = model, box = "had", scale = "1")
-    out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi_noweight")
-    out.Scale(conf.switches()["icfDefaultNEventsIn"]/conf.switches()["icfDefaultLumi"])
-    #mData = mEv.GetSusyCrossSection()*mDesiredLumi/10000;
-    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/framework/src/common/Compute_Helpers.cc
-    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
-    return out
+#def cmssmLoXsHisto(model) :
+#    s = hs.histoSpec(model = model, box = "had", scale = "1")
+#    out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi_noweight")
+#    out.Scale(conf.switches()["icfDefaultNEventsIn"]/conf.switches()["icfDefaultLumi"])
+#    #mData = mEv.GetSusyCrossSection()*mDesiredLumi/10000;
+#    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/framework/src/common/Compute_Helpers.cc
+#    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
+#    return out
+#
+#def cmssmLoEffHisto(**args) :
+#    s = hs.histoSpec(**args)
+#    out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
+#    return out
+#
+#def cmssmNloXsHisto(model, scale = "1") :
+#    s = hs.histoSpec(model = model, box = "had", scale = scale)
+#    out = None
+#    for process in conf.processes() :
+#        h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
+#        if out is None : out = h.Clone("nloXsHisto")
+#        else :           out.Add(h)
+#    out.SetDirectory(0)
+#    #see links in loXsHisto
+#    return out
+#
+#def cmssmNloEffHisto(**args) :
+#    s = hs.histoSpec(**args)
+#    out = None
+#    for process in conf.processes() :
+#        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
+#        if out is None : out = h.Clone("nloEffHisto")
+#        else :           out.Add(h)
+#    out.SetDirectory(0)
+#    out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
+#    return out
 
-def cmssmLoEffHisto(**args) :
-    s = hs.histoSpec(**args)
-    out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
-    return out
+def cmssmXsHisto(model, process = "", xsVariation = "") :
+    #get example histo and reset
+    s = hs.histoSpec(model = model, box = "had")
+    out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_gg_noweight")
+    out.Reset()
 
-def cmssmNloXsHisto(model, scale = "1") :
-    s = hs.histoSpec(model = model, box = "had", scale = scale)
+    print "FIXME: hard-coded CMSSM XS version"
+    fileName = "%s/v5/7TeV_cmssm.root"%conf.locations()["xs"]
+    h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
+
     out = None
     for process in conf.processes() :
         h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
@@ -142,15 +172,15 @@ def cmssmNloXsHisto(model, scale = "1") :
     #see links in loXsHisto
     return out
 
-def cmssmNloEffHisto(**args) :
+def cmssmEffHisto(**args) :
     s = hs.histoSpec(**args)
     out = None
     for process in conf.processes() :
-        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
-        if out is None : out = h.Clone("nloEffHisto")
+        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s"%process) #efficiency
+        if out is None : out = h.Clone("effHisto")
         else :           out.Add(h)
     out.SetDirectory(0)
-    out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
+    out.Divide(cmssmXsHisto(model = args["model"], process = "total", xsVariation = args["xsVariation"])) #divide by total xs
     return out
 
 def xsHistoAllOne(model, cutFunc = None) :
