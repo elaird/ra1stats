@@ -90,11 +90,11 @@ def killPoints(h, cutFunc = None) :
 def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
-    if not s["binaryExclusionRatherThanUpperLimit"] :
-        return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
-    else :
+    if s["binaryExclusionRatherThanUpperLimit"] :
         assert not s["isSms"],model
-        cmssmXsHisto(model)
+        return cmssmXsHisto(model)
+    else :
+        return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
 
 def nEventsInHisto() :
     s = conf.switches()
