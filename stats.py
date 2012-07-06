@@ -119,7 +119,7 @@ def getQueueRanges( npoints, queue=None ) :
     return jobsPerQueue
 
 ############################################
-def pbatch(queue=None) :
+def pbatch(queue=None, debug=False) :
     queue_job_details, n_points = pjobCmds(queue)
     switches = conf.switches()
     n_jobs_max = switches["nJobsMax"]
@@ -136,6 +136,9 @@ def pbatch(queue=None) :
                                                               start=start, end=end,
                                                               args=args)
             subCmds.append(cmd)
+    if debug:
+        for cmd in subCmds:
+            print cmd
     utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
