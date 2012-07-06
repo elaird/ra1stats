@@ -38,6 +38,7 @@ def signal() :
             "nEventsIn": patches.nEventsIn(),
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
+            "xsVariation": ["default", "up", "down"][0],
             "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 
@@ -49,10 +50,10 @@ def listOfTestPoints() :
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
     #out = [(19,5,1)]
-    #out = [(26,26,1)]
+    out = [(26,26,1)]
     #out = [(15,3,1)]
     #out = [(13,1,1)]
-    out = []
+    #out = []
     return out
 
 def xWhiteList() :
