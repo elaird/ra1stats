@@ -110,6 +110,8 @@ def mergedFileStem(outputDir, switches) :
     if "CLs" in switches["method"] :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
     out += "_%s"%switches["signalModel"]
+    if not switches["isSms"] :
+        out += "_%s"%switches["xsVariation"]
     return out
 
 def stringsNoArgs() :
