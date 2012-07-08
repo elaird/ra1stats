@@ -126,18 +126,23 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = Non
                pruneYMin = False) :
     graphs = []
 
-    specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
-              "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
+    specs = []
+    if switches["xsVariation"]=="default" :
+        specs += [
+            {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
 
-             {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-              "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
+            {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
 
-             {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-              "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+            {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+            ]
 
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
-              "color": r.kBlack,                                            "simpleLabel":"Observed Limit"},
-             ]
+    specs += [
+        {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+         "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
+        ]
 
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
