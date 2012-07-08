@@ -1,4 +1,4 @@
-import os,math,utils
+import os,sys,math,utils
 from array import array
 
 import configuration as conf
@@ -150,7 +150,9 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = Non
             ]
     elif curves :
         for spec in specs :
-            spec["curve"] = spline(points = curves[(spec["name"], switches["xsVariation"])])
+            key = (spec["name"], switches["xsVariation"])
+            if key in curves :
+                spec["curve"] = spline(points = curves[key])
 
     signalModel = switches["signalModel"]
     for i,spec in enumerate(specs) :
@@ -252,7 +254,8 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         graphs = exclusions(histos = histos, writeDir = g, switches = s, graphBlackLists = s["graphBlackLists"],
                             interBin = interBin, printXs = printXs, pruneYMin = pruneYMin, debug = debug)
     except:
-        print "ERROR: creation of exclusions has failed.",sys.exc_info()[0]
+        print "ERROR: creation of exclusions has failed."
+        sys.excepthook(*sys.exc_info())
         graphs = []
 
     #draw exclusion curves
