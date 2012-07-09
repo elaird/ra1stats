@@ -37,6 +37,7 @@ def signal() :
             "graphBlackLists": patches.graphBlackLists(),
             "cutFunc": patches.cutFunc(),
             "nEventsIn": patches.nEventsIn(),
+            "curves": patches.curves(),
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],

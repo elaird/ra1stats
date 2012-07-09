@@ -1,4 +1,6 @@
-import os,math,utils
+import os,sys,math,utils
+from array import array
+
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
@@ -114,22 +116,35 @@ def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
         graph.RemovePoint(graph.GetN()-1)
     if debug: graph.Print()
 
+def spline(points = [], title = "") :
+    graph = r.TGraph()
+    for i,(x,y) in enumerate(points) :
+        graph.SetPoint(i, x, y)
+    return r.TSpline3(title, graph)
+
 def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
                pruneYMin = False) :
     graphs = []
 
-    specs = [{"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
-              "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
+    specs = []
+    if switches["xsVariation"]=="default" :
+        specs += [
+            {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
 
-             {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-              "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
+            {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
 
-             {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-              "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+            {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+            ]
 
-             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
-              "color": r.kBlack,                                            "simpleLabel":"Observed Limit"},
-             ]
+    specs += [
+        {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+         "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
+        ]
+
+    curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
@@ -138,6 +153,11 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = Non
             {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
             ]
+    elif curves :
+        for spec in specs :
+            key = (spec["name"], switches["xsVariation"])
+            if key in curves :
+                spec["curve"] = spline(points = curves[key])
 
     signalModel = switches["signalModel"]
     for i,spec in enumerate(specs) :
@@ -197,6 +217,10 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
         d["histo"].SetTitle(d.get("simpleLabel"))
         d["histo"].Write()
         if drawGraphs : d["graph"].Draw("psame")
+        if d.get("curve") and d["curve"].GetNp() :
+            d["curve"].SetMarkerStyle(20)
+            d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
+            d["curve"].Draw("lpsame")
         c.Print(pdf)
     c.Print(pdf+"]")
     tfile.Close()
@@ -232,15 +256,11 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     #make exclusion histograms and curves
     try:
-        graphs = exclusions(histos = histos, writeDir = g,
-                            switches = s,
-                            graphBlackLists = s["graphBlackLists"],
-                            interBin = interBin,
-                            printXs = printXs,
-                            pruneYMin = pruneYMin,
-                            debug = debug)
+        graphs = exclusions(histos = histos, writeDir = g, switches = s, graphBlackLists = s["graphBlackLists"],
+                            interBin = interBin, printXs = printXs, pruneYMin = pruneYMin, debug = debug)
     except:
         print "ERROR: creation of exclusions has failed."
+        sys.excepthook(*sys.exc_info())
         graphs = []
 
     #draw exclusion curves
