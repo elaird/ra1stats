@@ -80,7 +80,14 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     expLeg.SetFillStyle(band.GetFillStyle())
     expLeg.SetFillColor(band.GetFillColor())
 
-    #observed limit
+    #observed limit (xs variations)
+    obsD = spline(curves[("UpperLimit", "down")])
+    obsD.Draw("lsame")
+
+    obsU = spline(curves[("UpperLimit", "up")])
+    obsU.Draw("lsame")
+
+    #observed limit (xs = default)
     obs = spline(curves[("UpperLimit", "default")], "Observed Limit (95% C.L.)")
     obs.SetLineWidth(3)
     obs.Draw("lsame")
