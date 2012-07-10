@@ -81,10 +81,12 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     expLeg.SetFillColor(band.GetFillColor())
 
     #observed limit (xs variations)
-    obsD = spline(curves[("UpperLimit", "down")])
+    obsD = spline(curves[("UpperLimit", "down")], title = "Observed Limit #pm 1 #sigma th. unc.")
+    obsD.SetLineStyle(4)
     obsD.Draw("lsame")
 
     obsU = spline(curves[("UpperLimit", "up")])
+    obsU.SetLineStyle(4)
     obsU.Draw("lsame")
 
     #observed limit (xs = default)
@@ -93,13 +95,20 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     obs.Draw("lsame")
 
     #populate and draw legend
-    legend = r.TLegend(0.6, 0.64, 0.9, 0.84)
+    legend = r.TLegend(0.41, 0.55, 0.76, 0.77)
+    legend.SetFillColor(0)
     legend.SetFillStyle(0)
     legend.SetBorderSize(0)
     legend.AddEntry(obs, obs.GetTitle(), "l")
+    legend.AddEntry(obsD, obsD.GetTitle(), "l")
     legend.AddEntry(expLeg, expLeg.GetTitle(), "fl")
     legend.Draw()
 
+    #CMS stamp
+    text = r.TLatex()
+    text.SetNDC()
+    text.SetTextSize(0.8*text.GetTextSize())
+    stamp = text.DrawLatex(0.35, 0.77, "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV")
     #print to file
     canvas.Print(outFile)
 
