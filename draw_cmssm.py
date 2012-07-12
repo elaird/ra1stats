@@ -112,6 +112,13 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     #print to file
     canvas.Print(outFile)
 
+    f = r.TFile(outFile+".root", "RECREATE")
+    obs.SetName("ObservedLimitSpline")
+    obs.Write()
+    obsGraph = tgraph(curves[("UpperLimit", "default")])
+    obsGraph.SetName("ObservedLimitGraph")
+    obsGraph.Write()
+    f.Close()
 
 
 #the points defining the curves are stored in points.py
