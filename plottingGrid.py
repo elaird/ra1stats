@@ -24,8 +24,8 @@ def modifyHisto(h, s) :
     fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
     killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
 
-def squareCanvas(margin = 0.18, ticks = True, name = "canvas") :
-    canvas = r.TCanvas(name, name, 2)
+def squareCanvas(margin = 0.18, ticks = True, name = "canvas", numbered = False) :
+    canvas = (utils.numberedCanvas if numbered else r.TCanvas)(name, name, 2)
     for side in ["Left", "Right", "Top", "Bottom"] :
         getattr(canvas, "Set%sMargin"%side)(margin)
     canvas.SetTickx(ticks)
@@ -505,7 +505,7 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False) :
+def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False, square = False) :
     assert tag
 
     inFile = mergedFile()
@@ -515,8 +515,11 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     fileName = inFile.replace(".root","_%s.pdf"%tag)
     rootFileName = fileName.replace(".pdf", ".root")
 
-    canvas = utils.numberedCanvas()
-    canvas.SetRightMargin(0.15)
+    if square :
+        canvas = squareCanvas(numbered = True)
+    else :
+        canvas = utils.numberedCanvas()
+        canvas.SetRightMargin(0.15)
 
     canvas.Print(fileName+"[")
     canvas.SetTickx()
@@ -645,11 +648,11 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         canvas.Print(fileName+"]")
         print "%s has been written."%fileName
 
-def makePlots() :
-    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
-    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
-    multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
-    multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True)
+def makePlots(square = False) :
+    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], square = square)
+    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
+    multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
+    multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
 
     s = conf.switches()
     if s["isSms"] and s["method"]=="CLs" :
