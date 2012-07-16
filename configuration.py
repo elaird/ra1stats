@@ -44,6 +44,15 @@ def signal() :
             "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 
+def likelihoodSpecArgs() :
+    dct = {}
+    for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
+                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
+        dct[model] = {"iLower":None, "iUpper":None, "year":2011, "separateSystObs": True}
+
+    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "year":2012, "separateSystObs":True}
+    return {"likelihoodSpecArgs":dct}
+
 def listOfTestPoints() :
     #out = [(181, 29, 1)]
     #out = [(33, 53, 1)]
@@ -72,7 +81,7 @@ def other() :
 
 def switches() :
     out = {}
-    lst = [method(), signal(), other()]
+    lst = [method(), signal(), likelihoodSpecArgs(), other()]
     for func in ["xWhiteList", "listOfTestPoints"] :
         lst.append( {func: eval(func)()} )
     keys = sum([dct.keys() for dct in lst], [])
