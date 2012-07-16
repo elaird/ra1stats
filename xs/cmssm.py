@@ -52,6 +52,9 @@ def binning(lst = []) :
     binWidth = (xMax - xMin + 0.0) / (n-1)
     return [n, xMin - binWidth/2.0, xMax + binWidth/2.0]
 
+def hist(key, bins) :
+    return r.TH2D(key, "%s; m_{0} (GeV);m_{1/2} (GeV); #sigma (pb)"%key, *bins)
+
 def histos(fileName = "combined_cross_section_Errmsugra_m0_m12_10_0_1.txt") :
     dct = parsed(fileName)
     coords = sorted(dct.keys())
@@ -62,37 +65,29 @@ def histos(fileName = "combined_cross_section_Errmsugra_m0_m12_10_0_1.txt") :
 
     out = {}
     for (tb,m0,m12),procs in dct.iteritems() :
-        for proc,(xs,xsUnc) in procs.iteritems() :
-            if proc not in out :
-                out[proc] = r.TH2D(proc, "%s; m_{0} (GeV);m_{1/2} (GeV); #sigma (pb)"%proc, *bins)
-            h = out[proc]
-            iBin = h.FindBin(m0, m12)
-            h.SetBinContent(iBin, xs)
-            h.SetBinError(iBin, xsUnc)
-    
-    title = "total";          total      = out.values()[0].Clone(title); total.SetTitle(title)
-    title = "total_+1_Sigma"; totalPlus  = out.values()[0].Clone(title); totalPlus.SetTitle(title)
-    title = "total_-1_Sigma"; totalMinus = out.values()[0].Clone(title); totalMinus.SetTitle(title)
-    for h in [total, totalPlus, totalMinus] :
-        h.Reset()
+        for variation in ["default", "up", "down"] :
+            total = 0.0
+            for proc,(xs,xsUnc) in procs.iteritems() :
+                key = "_".join([proc, variation])
+                if key not in out :
+                    out[key] = hist(key, bins)
 
-    for iBinX in range(1, 1+total.GetNbinsX()) :
-        for iBinY in range(1, 1+total.GetNbinsY()) :
-            content = 0.0
-            contentPlus = 0.0
-            contentMinus = 0.0
-            for proc,h in out.iteritems() :
-                c = h.GetBinContent(iBinX, iBinY)
-                e = h.GetBinError(iBinX, iBinY)
-                content += c
-                contentPlus  += c+e
-                contentMinus += c-e
-            total.SetBinContent(iBinX, iBinY, content)
-            totalPlus.SetBinContent(iBinX, iBinY, contentPlus)
-            totalMinus.SetBinContent(iBinX, iBinY, contentMinus)
-    out["total"] = total
-    out["totalMinus"] = totalMinus
-    out["totalPlus"] = totalPlus
+                content = xs
+                if variation=="up"   : content += xsUnc
+                if variation=="down" : content -= xsUnc
+                if content<0.0 : content = 0.0
+
+                iBin = out[key].FindBin(m0, m12)
+                out[key].SetBinContent(iBin, content)
+                total += content
+
+            #histogram with all processes summed
+            key = "_".join(["total", variation])
+            if key not in out :
+                out[key] = hist(key, bins)
+            iBin = out[key].FindBin(m0, m12)
+            out[key].SetBinContent(iBin, total)
+    
     return out
 
 def makeRootFile(fileName = "") :
@@ -104,21 +99,25 @@ def makeRootFile(fileName = "") :
     canvas.Divide(4,4)
     pdfFile = "cmssm_xs.pdf"
     hs = histos()
-    for i,key in enumerate(sorted(hs.keys())) :
-        h = hs[key]
-        canvas.cd(1+i)
-        r.gPad.SetTickx()
-        r.gPad.SetTicky()
-        r.gPad.SetLogz()
-        r.gPad.SetRightMargin(0.15)
-        h.Write()
-        h.SetStats(False)
-        h.Draw("colz")
-        h.GetZaxis().SetRangeUser(1.0e-6, 1.0e2)
-    canvas.SetLogy()
-    canvas.SetTickx()
-    canvas.SetTicky()
-    canvas.Print(pdfFile)
+    canvas.Print(pdfFile+"[")
+
+    for variation in ["default", "up", "down"] :
+        i = 0
+        for key in sorted(hs.keys()) :
+            if not key.endswith("_"+variation) : continue
+            h = hs[key]
+            canvas.cd(1+i); i += 1
+            r.gPad.SetTickx()
+            r.gPad.SetTicky()
+            r.gPad.SetLogz()
+            r.gPad.SetRightMargin(0.15)
+            h.Write()
+            h.SetStats(False)
+            h.Draw("colz")
+            h.GetZaxis().SetRangeUser(1.0e-6, 1.0e2)
+        canvas.Print(pdfFile)
+
+    canvas.Print(pdfFile+"]")
     outFile.Close()
 
 def setup() :

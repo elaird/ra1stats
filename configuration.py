@@ -20,10 +20,10 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
-            "fiftyGeVStepsOnly": False,
+            "multiplesInGeV": 40.0,
             }
 
 def signal() :
@@ -31,18 +31,17 @@ def signal() :
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_2012"]
 
-    return {"minSignalXsForConsideration": 1.0e-6,
-            "maxSignalXsForConsideration": None,
-            "overwriteInput": patches.overwriteInput(),
+    variations = ["default", "up", "down"]
+    return {"overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
             "cutFunc": patches.cutFunc(),
             "nEventsIn": patches.nEventsIn(),
-            "nlo": True,
-            "nloToLoRatios": False,
+            "curves": patches.curves(),
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
-            "signalModel": dict(zip(models, models))["T1tttt_2012"]
+            "xsVariation": dict(zip(variations, variations))["default"],
+            "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 
 def listOfTestPoints() :
@@ -53,6 +52,7 @@ def listOfTestPoints() :
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
     #out = [(19,5,1)]
+    #out = [(26,26,1)]
     #out = [(15,3,1)]
     #out = [(13,1,1)]
     out = []
@@ -94,10 +94,8 @@ def getSubCmds() :
     }[batchHost]
 
 def checkAndAdjust(d) :
+    d["nloToLoRatios"] = False #not supported
     d["isSms"] = "tanBeta" not in d["signalModel"]
-    if d["isSms"] :
-        d["nlo"] = False
-
     binary = d["binaryExclusionRatherThanUpperLimit"]
     d["rhoSignalMin"] = 0.0 if binary else 0.1
     d["fIniFactor"] = 1.0 if binary else 0.05
@@ -114,8 +112,11 @@ def mergedFileStem(outputDir, switches) :
     out  = "%s/%s"%(outputDir, switches["method"])
     if "CLs" in switches["method"] :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
+    if switches["binaryExclusionRatherThanUpperLimit"] :
+        out += "_binaryExcl"
     out += "_%s"%switches["signalModel"]
-    out += "_nlo" if switches["nlo"] else "_lo"
+    if not switches["isSms"] :
+        out += "_%s"%switches["xsVariation"]
     return out
 
 def stringsNoArgs() :

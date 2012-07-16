@@ -1,4 +1,4 @@
-import collections
+import collections,utils
 import configuration as conf
 import histogramSpecs as hs
 import ROOT as r
@@ -16,7 +16,7 @@ def ratio(file, numDir, numHisto, denDir, denHisto) :
     f.Close()
     return h
 
-def oneHisto(file, dir, name) :
+def oneHisto(file = "", dir = "", name = "") :
     f = r.TFile(file)
     assert not f.IsZombie(), file
 
@@ -77,26 +77,24 @@ def fillPoints(h, points = []) :
                   (h.GetName(), iBinX, iBinY, iBinZ, items.count(0.0), valueOld, value)
 
 def killPoints(h, cutFunc = None) :
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetXaxis().GetBinLowEdge(iBinX)
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            y = h.GetYaxis().GetBinLowEdge(iBinY)
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                z = h.GetZaxis().GetBinLowEdge(iBinZ)
-                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
+        if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
     return h
 
 ##signal-related histograms
 def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
-    if not s["isSms"] : return cmssmNloXsHisto(model) if s["nlo"] else cmssmLoXsHisto(model)
-    else : return smsXsHisto(model, cutFunc = s["cutFunc"][s["signalModel"]])
+    if s["binaryExclusionRatherThanUpperLimit"] :
+        assert not s["isSms"],model
+        return cmssmXsHisto(model = model, process = "total", xsVariation = s["xsVariation"])
+    else :
+        return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
 
 def nEventsInHisto() :
-    s = conf.switches()
-    model = s["signalModel"]
-    return cmssmNEventsInHisto(model) if not s["isSms"] else smsNEventsInHisto(model)
+    model = conf.switches()["signalModel"]
+    s = hs.histoSpec(model = model, box = "had")
+    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 def effHisto(**args) :
     s = conf.switches()
@@ -104,66 +102,86 @@ def effHisto(**args) :
     if model in ["T1","T2"] and args["box"]=="muon" :
         print "WARNING: ignoring muon efficiency for %s"%model
         return None
-    if not s["isSms"] : return cmssmNloEffHisto(model = model, **args) if s["nlo"] else cmssmLoEffHisto(model = model, **args)
-    else : return smsEffHisto(model = model, **args)
+    if not s["isSms"] :
+        return cmssmEffHisto(model = model, xsVariation = s["xsVariation"], **args)
+    else :
+        return smsEffHisto(model = model, **args)
 
-def cmssmNEventsInHisto(model, box = "had", scale = "1") :
-    s = hs.histoSpec(model = model, box = box, scale = scale)
-    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
+#def cmssmLoXsHisto(model) :
+#    s = hs.histoSpec(model = model, box = "had", scale = "1")
+#    out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi_noweight")
+#    out.Scale(conf.switches()["icfDefaultNEventsIn"]/conf.switches()["icfDefaultLumi"])
+#    #mData = mEv.GetSusyCrossSection()*mDesiredLumi/10000;
+#    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/framework/src/common/Compute_Helpers.cc
+#    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
+#    return out
+#
+#def cmssmLoEffHisto(**args) :
+#    s = hs.histoSpec(**args)
+#    out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
+#    return out
+#
+#def cmssmNloXsHisto(model, scale = "1") :
+#    s = hs.histoSpec(model = model, box = "had", scale = scale)
+#    out = None
+#    for process in conf.processes() :
+#        h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
+#        if out is None : out = h.Clone("nloXsHisto")
+#        else :           out.Add(h)
+#    out.SetDirectory(0)
+#    #see links in loXsHisto
+#    return out
+#
+#def cmssmNloEffHisto(**args) :
+#    s = hs.histoSpec(**args)
+#    out = None
+#    for process in conf.processes() :
+#        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
+#        if out is None : out = h.Clone("nloEffHisto")
+#        else :           out.Add(h)
+#    out.SetDirectory(0)
+#    out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
+#    return out
 
-def cmssmLoXsHisto(model) :
-    s = hs.histoSpec(model = model, box = "had", scale = "1")
-    out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi_noweight")
-    out.Scale(conf.switches()["icfDefaultNEventsIn"]/conf.switches()["icfDefaultLumi"])
-    #mData = mEv.GetSusyCrossSection()*mDesiredLumi/10000;
-    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/framework/src/common/Compute_Helpers.cc
-    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
+def cmssmXsHisto(model, process = "", xsVariation = "") :
+    #get example histo and reset
+    s = hs.histoSpec(model = model, box = "had")
+    out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_gg_noweight")
+    out.Reset()
+
+    print "FIXME: hard-coded CMSSM XS version"
+    fileName = "%s/v5/7TeV_cmssm.root"%conf.locations()["xs"]
+    h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
+
+    #Note! Implement some check of the agreement in binning between these histos
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
+        out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
 
-def cmssmLoEffHisto(**args) :
+def cmssmEffHisto(**args) :
     s = hs.histoSpec(**args)
-    out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
-    return out
-
-def cmssmNloXsHisto(model, scale = "1") :
-    s = hs.histoSpec(model = model, box = "had", scale = scale)
     out = None
+
+    #Note! Implement some check of the agreement in sets of processes between yield file and xs file
     for process in conf.processes() :
-        h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
-        if out is None : out = h.Clone("nloXsHisto")
+        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s"%process) #efficiency of a process
+        h.Multiply(cmssmXsHisto(model = args["model"], process = process, xsVariation = args["xsVariation"])) #weight by xs of the process
+        if out is None : out = h.Clone("effHisto")
         else :           out.Add(h)
     out.SetDirectory(0)
-    #see links in loXsHisto
+    out.Divide(cmssmXsHisto(model = args["model"], process = "total", xsVariation = args["xsVariation"])) #divide by total xs
     return out
 
-def cmssmNloEffHisto(**args) :
-    s = hs.histoSpec(**args)
-    out = None
-    for process in conf.processes() :
-        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
-        if out is None : out = h.Clone("nloEffHisto")
-        else :           out.Add(h)
-    out.SetDirectory(0)
-    out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
-    return out
-
-def smsXsHisto(model, cutFunc = None) :
+def xsHistoAllOne(model, cutFunc = None) :
     h = smsEffHisto(model = model, box = "had", scale = None,
                     htLower = 875, htUpper = None,
                     alphaTLower = "55", alphaTUpper = None)
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        x = h.GetXaxis().GetBinLowEdge(iBinX)
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            y = h.GetYaxis().GetBinLowEdge(iBinY)
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                z = h.GetZaxis().GetBinLowEdge(iBinZ)
-                if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : continue
-                h.SetBinContent(iBinX, iBinY, iBinZ, 1.0)
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
+        content = 1.0
+        if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
+            content = 0.0
+        h.SetBinContent(iX, iY, iZ, content)
     return h
-
-def smsNEventsInHisto(model) :
-    s = hs.histoSpec(model = model, box = "had", htLower = 875, htUpper = None)
-    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 def smsEffHisto(**args) :
     switches = conf.switches()
@@ -178,17 +196,13 @@ def fullPoints() :
     out = []
     s = conf.switches()
     h = xsHisto()
-    for iBinX in range(1, 1+h.GetNbinsX()) :
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
         if "xWhiteList" in s and s["xWhiteList"] and iBinX not in s["xWhiteList"] : continue
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                content = h.GetBinContent(iBinX, iBinY, iBinZ)
-                min = s["minSignalXsForConsideration"]
-                max = s["maxSignalXsForConsideration"]
-                if min!=None and content<min : continue
-                if max!=None and content>max : continue
-                if s["fiftyGeVStepsOnly"] and ((h.GetXaxis().GetBinLowEdge(iBinX)/50.0)%1 != 0.0) : continue
-                out.append( (iBinX, iBinY, iBinZ) )
+        content = h.GetBinContent(iBinX, iBinY, iBinZ)
+        if not content : continue
+        if s["multiplesInGeV"] and ((x/s["multiplesInGeV"])%1 != 0.0) : continue
+        if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
+            out.append( (iBinX, iBinY, iBinZ) )
     return out
 
 def points() :
@@ -198,26 +212,16 @@ def points() :
 
 ##warnings
 def printHoles(h) :
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                xNeighbors = h.GetBinContent(iBinX+1, iBinY  , iBinZ)!=0.0 and h.GetBinContent(iBinX-1, iBinY  , iBinZ)
-                yNeighbors = h.GetBinContent(iBinX  , iBinY+1, iBinZ)!=0.0 and h.GetBinContent(iBinX  , iBinY-1, iBinZ)
-                if h.GetBinContent(iBinX, iBinY, iBinZ)==0.0 and (xNeighbors or yNeighbors) :
-                    print "WARNING: found hole (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ,
-                                                                             h.GetXaxis().GetBinCenter(iBinX),
-                                                                             h.GetYaxis().GetBinCenter(iBinY),
-                                                                             h.GetZaxis().GetBinCenter(iBinZ))
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "Center") :
+        xNeighbors = h.GetBinContent(iBinX+1, iBinY  , iBinZ)!=0.0 and h.GetBinContent(iBinX-1, iBinY  , iBinZ)
+        yNeighbors = h.GetBinContent(iBinX  , iBinY+1, iBinZ)!=0.0 and h.GetBinContent(iBinX  , iBinY-1, iBinZ)
+        if h.GetBinContent(iBinX, iBinY, iBinZ)==0.0 and (xNeighbors or yNeighbors) :
+            print "WARNING: found hole (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ, x, y, z)
     return
 
 def printMaxes(h) :
     s = conf.switches()
-    for iBinX in range(1, 1+h.GetNbinsX()) :
-        for iBinY in range(1, 1+h.GetNbinsY()) :
-            for iBinZ in range(1, 1+h.GetNbinsZ()) :
-                if abs(h.GetBinContent(iBinX, iBinY, iBinZ)-s["masterSignalMax"])<2.0 :
-                    print "found max: (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ,
-                                                                    h.GetXaxis().GetBinCenter(iBinX),
-                                                                    h.GetYaxis().GetBinCenter(iBinY),
-                                                                    h.GetZaxis().GetBinCenter(iBinZ))
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "Center") :
+        if abs(h.GetBinContent(iBinX, iBinY, iBinZ)-s["masterSignalMax"])<2.0 :
+            print "found max: (%d, %d, %d) = (%g, %g, %g)"%(iBinX, iBinY, iBinZ, x, y, z)
     return

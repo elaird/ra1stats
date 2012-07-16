@@ -57,7 +57,9 @@ def ranges(model) :
     return d
 
 
-def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None, alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None) :
+def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None,
+              alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None, xsVariation = None) :
+    #xsVariation is ignored
     assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"
 
     base = locations()["eff"]
@@ -90,7 +92,9 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     out = {}
     if model in cmssm :
         assert box in ["had", "muon"]
-        assert scale in ["1", "05", "2"]
+        if scale not in ["1", "05", "2"] :
+            print "WARNING: assuming scale=1"
+            scale="1"
         d = cmssm[model]
         out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+"%s.root"%thresh])
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
