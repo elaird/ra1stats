@@ -115,9 +115,6 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     f = r.TFile(outFile+".root", "RECREATE")
     obs.SetName("ObservedLimitSpline")
     obs.Write()
-    obsGraph = tgraph(curves[("UpperLimit", "default")])
-    obsGraph.SetName("ObservedLimitGraph")
-    obsGraph.Write()
     f.Close()
 
 
