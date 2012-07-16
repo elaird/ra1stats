@@ -4,60 +4,40 @@ hard-coded
 - consider hard-coded CLb_2 in plottingGrid.clsValidation()
 - 0.95 in StandardHypoTestInvDemo.C
 
-specify
--------
-- b-tag efficiency
-- procedure for error determination
-- rho vs. HT
-
-tests
------
-- 4x2 syst. bins
-- remove syst. encouragement
-- signal injection
-
-2011
-----
-- stat. bands: CMSSM
-- theor. band: CMSSM
-- stat. curves: SMS
-- update lumi
-- cosmetics
-- "error reduction" in PAS
-
 one
 ---
 - treatment of global observables
 - range for par f
-- CMSSM error bands
-- debug page 3 of cls plot
-- slope of excl. curve for low LSP mass
-- run T1,T2,CMSSM
-- check SMS xs files
+- gaussian counts
+- errors on translation factors
+- muon efficiency spec.
+- likelihoodSpec constructor
+- view call graph to speed up cmssm initialization
 
 two
 ---
-- upper limit tests toys old/toys new/asympt
-- improve mc ratio
-- mc stats as systematic
-- errors on translation factors
+- signal injection studies
+- SMS combo studies
+- slope of excl. curve for low LSP mass
+- binary vs. upper limit study
 
 three
 -----
+- debug page 3 of cls plot
 - bin-by-bin systematics on signal eff.
-- nlo scale variations
 - upgrade dirac delta
 - lognormal vs. gaussian
 - check signal efficiency merging
 - separate eff unc. for hadrons and muons
 - restore extraSigEffSources
 - mcStatErr before trigger
-- investigate failed strip
 - parHistos 2D ensemble
 
 four
 ----
-- TGraphs in file
+- 4x2 syst. bins
+- remove syst. encouragement
+- rho vs. HT
 - automatic N_bins, N_nuisance
 - store workspace / profile wrapper
 - fix leaks in ensemble() and expectedLimit()
@@ -69,3 +49,22 @@ four
 - (2D) consider seed
 - (2D) consider removing PROD
 
+speed-ups for toys
+------------------
+(options)
+- reduce rate of freaks
+- look around less
+- faster evaluation
+
+(technical)
+- grid
+- qcd parameterization (also document)
+- profile
+- minuit config: strategy, nFCNCallsMax
+- initial values/ranges
+- flatten pdf
+- 10 --> 7
+
+(physics)
+- fewer bins
+- RaT vs. HT
