@@ -628,7 +628,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         canvas.Print(fileName+"]")
         print "%s has been written."%fileName
 
-def makePlots(square = True) :
+def makePlots(square = False) :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], square = square)
     multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
     multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
