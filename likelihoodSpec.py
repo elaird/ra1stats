@@ -1,4 +1,3 @@
-import selections
 from common import selection,nb
 
 class spec(object) :
@@ -185,6 +184,7 @@ class spec(object) :
                 ])
 
     def __init2011old__(self) :
+        import selections
         self._constrainQcdSlope = True
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
