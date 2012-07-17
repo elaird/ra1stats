@@ -256,7 +256,7 @@ def ensembleRow( data, indices, d ) :
         return d
     return [ d[index] for index in indices ]
 
-def ensembleResultsBySample( d, data, nEmptyPhot = 2 ) :
+def ensembleResultsBySample( d, data, note = "", nEmptyPhot = 2 ) :
     samples =  ["had", "muon", "mumu", "phot"]
     samples_long =  [ "Hadronic", "$\mu$+jets",
                       "$\mu\mu$+jets", "$\gamma$+jets"]
@@ -325,10 +325,10 @@ def ensembleResultsBySample( d, data, nEmptyPhot = 2 ) :
                          lastLine = False,
                        )
     doc += endDocument()
-    write( doc, "ensemble_bySample.tex" )
+    write( doc, "ensemble_bySample%s.tex"%note )
 
 
-def ensembleResultsBySelection( d, data, nEmptyPhot = 2 ) :
+def ensembleResultsBySelection( d, data, note = "", nEmptyPhot = 2 ) :
     mc_out = {}
     data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]
@@ -378,7 +378,7 @@ def ensembleResultsBySelection( d, data, nEmptyPhot = 2 ) :
                        )
     doc += endDocument()
 
-    write( doc, "ensemble_bySelection.tex" )
+    write( doc, "ensemble_bySelection_%s.tex"%note )
 
 
 def document() :
