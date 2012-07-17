@@ -325,7 +325,7 @@ def ensembleResultsBySample( d, data, note = "", nEmptyPhot = 2 ) :
                          lastLine = False,
                        )
     doc += endDocument()
-    write( doc, "ensemble_bySample%s.tex"%note )
+    write( doc, "ensemble_bySample_%s.tex"%note )
 
 
 def ensembleResultsBySelection( d, data, note = "", nEmptyPhot = 2 ) :
