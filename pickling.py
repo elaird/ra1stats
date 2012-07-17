@@ -1,6 +1,6 @@
 import configuration as conf
 import histogramProcessing as hp
-import common,utils,likelihoodSpec
+import common,utils
 import cPickle,math,os
 import ROOT as r
 
@@ -19,7 +19,7 @@ def readNumbers(fileName) :
 ##number collection
 def effHistos() :
     out = {}
-    for sel in likelihoodSpec.spec().selections() :
+    for sel in conf.likelihoodSpec().selections() :
         assert sel.data.htBinLowerEdgesInput()==sel.data.htBinLowerEdges(), "merging bins is not yet supported"
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
@@ -119,7 +119,8 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         
 ##merge functions
 def mergedFile() :
-    note = common.note(likelihoodSpec.spec())
+    s = conf.switches()
+    note = common.note(conf.likelihoodSpec())
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
 
 #note: improve this data format
