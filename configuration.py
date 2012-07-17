@@ -106,7 +106,6 @@ def getSubCmds() :
     }[batchHost]
 
 def checkAndAdjust(d) :
-    d["nloToLoRatios"] = False #not supported
     d["isSms"] = "tanBeta" not in d["signalModel"]
     binary = d["binaryExclusionRatherThanUpperLimit"]
     d["rhoSignalMin"] = 0.0 if binary else 0.1
