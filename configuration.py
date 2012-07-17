@@ -27,11 +27,13 @@ def method() :
             }
 
 def signal() :
-    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
-              "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+    variations = ["default", "up", "down"]
+    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb",
+              "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_2012"]
 
-    variations = ["default", "up", "down"]
+    model = dict(zip(models, models))["tanBeta10"]
+
     return {"overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
@@ -41,17 +43,18 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["tanBeta10"]
+            "signalModel": model,
+            "likelihoodSpecArgs": likelihoodSpecArgs(model)
             }
 
-def likelihoodSpecArgs() :
+def likelihoodSpecArgs(model = "") :
     dct = {}
     for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
                   "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
         dct[model] = {"iLower":None, "iUpper":None, "year":2011, "separateSystObs": True}
 
     dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "year":2012, "separateSystObs":True}
-    return {"likelihoodSpecArgs":dct}
+    return dct[model]
 
 def listOfTestPoints() :
     #out = [(181, 29, 1)]
@@ -81,7 +84,7 @@ def other() :
 
 def switches() :
     out = {}
-    lst = [method(), signal(), likelihoodSpecArgs(), other()]
+    lst = [method(), signal(), other()]
     for func in ["xWhiteList", "listOfTestPoints"] :
         lst.append( {func: eval(func)()} )
     keys = sum([dct.keys() for dct in lst], [])
