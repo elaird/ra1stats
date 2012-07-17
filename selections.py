@@ -1,4 +1,4 @@
-from common import selection,nb
+from likelihoodSpec import selection,nb
 
 for item in ["afterAlphaT", "afterAlphaT_b", "afterAlphaT_noMHT_ov_MET",
              "mixedMuons", "mixedMuons_b",
