@@ -97,7 +97,7 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def latex(quantiles = {}, bestDict = {}, stdout = False, selections = []) :
+def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note = "") :
     src = {}
     lst = []
     for key,q in quantiles.iteritems() :
@@ -115,8 +115,8 @@ def latex(quantiles = {}, bestDict = {}, stdout = False, selections = []) :
 
     from makeTables import ensembleResultsBySelection as ltxResults
     from makeTables import ensembleResultsBySample as ltxSummary
-    ltxResults( src, [ x.data for x in selections ] )
-    ltxSummary( src, [ x.data for x in selections ] )
+    ltxResults( src, [ x.data for x in selections ], note = note )
+    ltxSummary( src, [ x.data for x in selections ], note = note )
 
 def rootFileName(note = "", nToys = None) :
     return "ensemble_%s_%dtoys.root"%(note, nToys)

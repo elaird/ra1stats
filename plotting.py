@@ -141,7 +141,7 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
     pValuePlots(**kargs)
 
     #latex yield tables
-    ensemble.latex(quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout, selections = selections)
+    ensemble.latex(quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout, selections = selections, note = note)
 
     #ensemble plots
     canvas = utils.numberedCanvas()
