@@ -88,8 +88,6 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
-
-    import likelihoodSpec
     spec = likelihoodSpec.spec(**s["likelihoodSpecArgs"])
 
     for point in points() :
