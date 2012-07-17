@@ -88,9 +88,13 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
+
+    import likelihoodSpec
+    spec = likelihoodSpec.spec(**s["likelihoodSpecArgs"])
+
     for point in points() :
         pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out",
-                              d = onePoint(switches = s, likelihoodSpec = likelihoodSpec.spec(), point = point))
+                              d = onePoint(switches = s, likelihoodSpec = spec, point = point))
 
 if False :
     import cProfile
