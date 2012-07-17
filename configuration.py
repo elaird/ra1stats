@@ -28,11 +28,11 @@ def method() :
             }
 
 def signal() :
-    variations = ["default", "up", "down"]
-    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb",
-              "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
+              "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_2012"]
 
+    variations = ["default", "up", "down"]
     return {"overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
@@ -42,7 +42,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["tanBeta10"],
+            "signalModel": dict(zip(models, models))["tanBeta10"]
             }
 
 def likelihoodSpec() :
