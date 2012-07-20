@@ -1,4 +1,5 @@
 import socket,patches
+import likelihoodSpec as ls
 
 batchHost = [ "FNAL", "IC" ][1]
 
@@ -43,6 +44,14 @@ def signal() :
             "xsVariation": dict(zip(variations, variations))["default"],
             "signalModel": dict(zip(models, models))["tanBeta10"]
             }
+
+def likelihoodSpec() :
+    dct = {}
+    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "year":2012, "separateSystObs":True}
+    for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
+                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
+        dct[model] = {"iLower":None, "iUpper":None, "year":2011, "separateSystObs": True}
+    return ls.spec(**dct[signal()["signalModel"]])
 
 def listOfTestPoints() :
     #out = [(181, 29, 1)]
@@ -94,7 +103,6 @@ def getSubCmds() :
     }[batchHost]
 
 def checkAndAdjust(d) :
-    d["nloToLoRatios"] = False #not supported
     d["isSms"] = "tanBeta" not in d["signalModel"]
     binary = d["binaryExclusionRatherThanUpperLimit"]
     d["rhoSignalMin"] = 0.0 if binary else 0.1

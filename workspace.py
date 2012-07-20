@@ -861,11 +861,14 @@ class foo(object) :
         return args
 
     def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
+        args = {"note":self.note(), "nToys":nToys}
         if not reuseResults :
-            ensemble.writeHistosAndGraphs(self.wspace, self.data, nToys = nToys, note = self.note())
+            ensemble.writeHistosAndGraphs(self.wspace, self.data, **args)
         else :
             print "WARNING: ensemble plots/tables are being created from previous results."
-        plotting.ensemblePlotsAndTables(note = self.note(), nToys = nToys, plotsDir = "plots", stdout = stdout)
+
+        args.update({"plotsDir":"plots", "stdout":stdout, "selections":self.likelihoodSpec.selections()})
+        plotting.ensemblePlotsAndTables(**args)
 
     def bestFitToy(self, nToys = 200) :
         #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i

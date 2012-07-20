@@ -123,7 +123,7 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDi
 
     canvas.Print(fileName+"]")
 
-def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = False) :
+def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = False, selections = []) :
     #open results
     obs,tfile = ensemble.results(note, nToys)
 
@@ -141,7 +141,7 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
     pValuePlots(**kargs)
 
     #latex yield tables
-    ensemble.latex(quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout)
+    ensemble.latex(quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout, selections = selections, note = note)
 
     #ensemble plots
     canvas = utils.numberedCanvas()

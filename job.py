@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import configuration as conf
-import pickling,workspace,likelihoodSpec
+import pickling,workspace
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
@@ -88,9 +88,11 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
+    spec = conf.likelihoodSpec()
+
     for point in points() :
         pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out",
-                              d = onePoint(switches = s, likelihoodSpec = likelihoodSpec.spec(), point = point))
+                              d = onePoint(switches = s, likelihoodSpec = spec, point = point))
 
 if False :
     import cProfile

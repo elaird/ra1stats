@@ -1,5 +1,20 @@
-import selections
-from common import selection,nb
+nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript b)
+
+class selection(object) :
+    '''Each key appearing in samplesAndSignalEff is used in the likelihood;
+    the corresponding value determines whether signal efficiency is considered for that sample.'''
+
+    def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
+                 alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
+                 fZinvIni = 0.5, fZinvRange = (0.0, 1.0), AQcdIni = 1.0e-2, AQcdMax = 100.0,
+                 zeroQcd = False, muonForFullEwk = False,
+                 universalSystematics = False, universalKQcd = False) :
+        for item in ["name", "note", "samplesAndSignalEff", "data",
+                     "alphaTMinMax","nbTag", "bTagLower",
+                     "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax",
+                     "zeroQcd", "muonForFullEwk",
+                     "universalSystematics", "universalKQcd"] :
+            setattr(self, item, eval(item))
 
 class spec(object) :
 
@@ -185,6 +200,7 @@ class spec(object) :
                 ])
 
     def __init2011old__(self) :
+        import selections
         self._constrainQcdSlope = True
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
