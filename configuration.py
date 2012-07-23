@@ -30,7 +30,7 @@ def method() :
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              "T1tttt_2012"]
+              "T1tttt_2012", "T2bw"]
 
     variations = ["default", "up", "down"]
     return {"overwriteInput": patches.overwriteInput(),
@@ -49,7 +49,8 @@ def likelihoodSpec() :
     dct = {}
     dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "year":2012, "separateSystObs":True}
     for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
-                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
+                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
+                  "TGQ_0p8", "T2bw"] :
         dct[model] = {"iLower":None, "iUpper":None, "year":2011, "separateSystObs": True}
     return ls.spec(**dct[signal()["signalModel"]])
 
