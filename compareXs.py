@@ -12,7 +12,7 @@ options = {
     'refProcess': hSpec['histo'],
     'refXsFile': hSpec['file'],
     'refName': '#tilde{t} #tilde{t}',
-    'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
+    'limitFile': '~/Projects/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
                  'CLs_frequentist_TS3_T2tt_lo_2011_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
     'plotTitle': 'pp#rightarrow#tilde{t} #tilde{t}#; #tilde{t}#rightarrow t+'
@@ -111,6 +111,33 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
     return limitHistoDict
 
 
+def printRatio(hd1, hd2, errSign=None):
+    h1 = hd1['hist']
+    h2 = hd2['hist']
+
+    ratio = h2.Clone()
+    for h2Bin in range(1, h2.GetNbinsX()+1):
+        val = h2.GetBinLowEdge(h2Bin)
+        h1Bin = h1.FindBin(val)
+
+        ratio = h2.Clone()
+        num = h1.GetBinContent(h1Bin)
+        if errSign is None:
+            denom = h2.GetBinContent(h2Bin)
+        elif errSign == '+':
+            denom = h2.GetBinContent(h2Bin) + h2.GetBinError(h2Bin)
+        elif errSign == '-':
+            denom = h2.GetBinContent(h2Bin) - h2.GetBinError(h2Bin)
+
+        if denom > 0.:
+            binRatio = num / denom
+        else:
+            binRatio = 0.
+        binLo = ratio.GetBinLowEdge(h2Bin)
+        binHi = ratio.GetBinLowEdge(h2Bin+1)
+        print('{low},{high},{val}'.format(low=binLo, high=binHi,
+                                          val=binRatio))
+
 def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
               xMin=None, xMax=None):
     h1 = hd1['hist']
@@ -127,6 +154,8 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
     for h2Bin in range(1, h2.GetNbinsX()+1):
         val = h2.GetBinLowEdge(h2Bin)
         h1Bin = h1.FindBin(val)
+
+        ratio = h2.Clone()
         num = h1.GetBinContent(h1Bin)
         denom = h2.GetBinContent(h2Bin)
 
@@ -158,7 +187,8 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
               pdfFile="xs/compareXs.pdf", refYRange=(50,50), plotTitle="",
-              plotOptOverrides=None, shiftX=False, showRatio=False) :
+              plotOptOverrides=None, shiftX=False, showRatio=False,
+              dumpRatio=True) :
     plotOpts = {
         'yMax': 1e+1,
         'yMin': 1e-3,
@@ -221,6 +251,12 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
 
     ref = hs['refHisto']
     obs = hs['UpperLimit']
+
+    if dumpRatio:
+        #printRatio(obs, ref)
+        printRatio(obs, ref, errSign='+')
+        #printRatio(obs, ref, errSign='-')
+
     if showRatio:
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
                                 #xMax=plotOpts['xMax'])
