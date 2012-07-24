@@ -125,7 +125,7 @@ class spec(object) :
 
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
-        self.legendTitle = "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
+        self.legendTitle = "CMS, 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
         else :

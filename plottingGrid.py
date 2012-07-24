@@ -42,7 +42,7 @@ def printOnce(canvas, fileName) :
     text = r.TText()
     text.SetNDC()
     text.SetTextAlign(22)
-    text.DrawText(0.5, 0.85, "CMS Preliminary")
+    text.DrawText(0.5, 0.85, "CMS")
 
     if False :
         latex = r.TLatex()
