@@ -24,7 +24,7 @@ def method() :
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
-            "multiplesInGeV": 40.0,
+            "multiplesInGeV": None,
             }
 
 def signal() :
@@ -42,7 +42,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["tanBeta10"]
+            "signalModel": dict(zip(models, models))["T2tt"]
             }
 
 def likelihoodSpec() :
@@ -60,7 +60,7 @@ def listOfTestPoints() :
     #out = [(13, 3, 1)]
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
-    #out = [(19,5,1)]
+    #out = [(17,5,1)]
     #out = [(26,26,1)]
     #out = [(15,3,1)]
     #out = [(13,1,1)]
