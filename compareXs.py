@@ -12,8 +12,8 @@ options = {
     'refProcess': hSpec['histo'],
     'refXsFile': hSpec['file'],
     'refName': '#tilde{t} #tilde{t}',
-    'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
-                 'CLs_frequentist_TS3_T2tt_lo_2011_RQcdFallingExpExt_fZinvTwo_55_'
+    'limitFile': '/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
+                 'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
     'plotTitle': 'pp#rightarrow#tilde{t} #tilde{t}#; #tilde{t}#rightarrow t+'
                  '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV',
@@ -31,7 +31,7 @@ def drawStamp(canvas):
     tl.SetNDC()
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
-    tl.DrawLatex(0.14,0.84,'CMS Preliminary')
+    tl.DrawLatex(0.14,0.84,'CMS')
     tl.DrawLatex(0.51,0.603,'#sqrt{s} = 7 TeV, L = 4.98 fb^{-1}')
     tl.SetTextSize(0.07)
     tl.DrawLatex(0.23,0.78,'#alpha_{T}')
