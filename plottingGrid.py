@@ -42,23 +42,24 @@ def printOnce(canvas, fileName) :
     text = r.TText()
     text.SetNDC()
     text.SetTextAlign(22)
-    text.DrawText(0.5, 0.85, "CMS")
+    #text.DrawText(0.5, 0.85, "CMS")
 
-    if False :
+    if True :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
 
-        T2     = "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})"
-        T2bb   = "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})"
-        T2tt   = "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})"
-
-        T1     = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})"
-        T1bbbb = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})"
-        T1tttt = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})"
+        process_stamp =  {
+            'T2'     : "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
+            'T2bb'   : "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
+            'T2tt'   : "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
+            'T1'     : "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
+            'T1bbbb' : "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
+            'T1tttt' : "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+            }
 
         latex.SetTextSize(0.6*latex.GetTextSize())
-        latex.DrawLatex(0.45, 0.79, T2tt)
+        latex.DrawLatex(0.45, 0.78, process_stamp[conf.switches()['signalModel']])
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
