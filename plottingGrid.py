@@ -59,7 +59,12 @@ def printOnce(canvas, fileName) :
             }
 
         latex.SetTextSize(0.6*latex.GetTextSize())
-        latex.DrawLatex(0.45, 0.78, process_stamp[conf.switches()['signalModel']])
+# 4325 T1
+# 4250 T2
+# 41 T2tt
+# 425 T2bb
+# 425 T1tttt
+        latex.DrawLatex(0.43, 0.78, process_stamp[conf.switches()['signalModel']])
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
@@ -280,10 +285,11 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
             func.Draw("same")
 
     #stamp plot
-    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
+    s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
     #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
-    s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
+    #s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
+    s3 = stamp(text = "CMS, L = 4.98 fb^{-1},  #sqrt{s}=7 TeV", x = 0.2075, y = 0.64, factor = 0.7)
 
     printOnce(c, outFileEps)
     printHoles(histos[name])
