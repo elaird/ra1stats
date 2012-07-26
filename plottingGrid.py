@@ -49,22 +49,40 @@ def printOnce(canvas, fileName) :
         latex.SetNDC()
         latex.SetTextAlign(22)
 
+        # should this go somewhere else (refXsProcessing?)
+        # i.e. modelSpec = { 'T2': { 'histo': 'squark', 'factor': 1.0, 'file':
+        # seven, 'process': 'pp ....' } }
         process_stamp =  {
-            'T2'     : "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
-            'T2bb'   : "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
-            'T2tt'   : "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
-            'T1'     : "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
-            'T1bbbb' : "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
-            'T1tttt' : "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+            'T2'     : {
+                'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
+                'xpos': 0.4250,
+                },
+            'T2bb'   : {
+                'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
+                'xpos': 0.425,
+                },
+            'T2tt'   : {
+                'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
+                'xpos': 0.41,
+                },
+            'T1'     : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
+                'xpos': 0.4325,
+                },
+            'T1bbbb' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
+                'xpos': 0.43,
+                },
+            'T1tttt' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+                'xpos': 0.425,
+                },
             }
+        current_stamp = process_stamps.get(conf.switches()['signalModel'],None)
 
         latex.SetTextSize(0.6*latex.GetTextSize())
-# 4325 T1
-# 4250 T2
-# 41 T2tt
-# 425 T2bb
-# 425 T1tttt
-        latex.DrawLatex(0.43, 0.78, process_stamp[conf.switches()['signalModel']])
+        if current_stamp:
+            latex.DrawLatex(current_stamp['xpos'], 0.78, current_stamp['text'])
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
