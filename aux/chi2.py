@@ -43,7 +43,7 @@ def go(mus = [], nTerms = 1, nPseudoExperiments = 1000) :
         lst = chi2ProbList(nTerms = nTerms, mu = mu, distribution = "Poisson", nPseudoExperiments = nPseudoExperiments)
         name = "#mu = %g"%mu
         title = ";".join([name,
-                          "Prob(#chi^{2}, %d)#semicolon    #chi^{2} #equiv #Sigma_{i=0}^{%d}(n_{i}-#mu)^{2}/#mu"%(nTerms, nTerms),
+                          "Prob(#chi^{2}, %d)#semicolon    #chi^{2} #equiv #Sigma_{i=1}^{%d}(n_{i}-#mu)^{2}/#mu"%(nTerms, nTerms),
                           "pseudo-experiments / bin"])
         dct[mu] = histo(name = name, title = title, lst = lst)
 
