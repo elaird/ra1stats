@@ -1,7 +1,6 @@
 import ROOT as r
-import math
-import utils,pickling
-from common import pdf,pseudoData
+import math,utils
+import pickling,common
 
 def collect(wspace, results, extraStructure = False) :
     def lMax(results) :
@@ -26,16 +25,16 @@ def collect(wspace, results, extraStructure = False) :
     return out
 
 def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None ) :
-    results = utils.rooFitResults(pdf(wspace), data)
+    results = utils.rooFitResults(common.pdf(wspace), data)
     wspace.saveSnapshot("snap", wspace.allVars())
 
     obs = collect(wspace, results, extraStructure = True)
 
     toys = []
-    for i,dataSet in enumerate(pseudoData(wspace, nToys)) :
+    for i,dataSet in enumerate(common.pseudoData(wspace, nToys)) :
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
-        results = utils.rooFitResults(pdf(wspace), dataSet)
+        results = utils.rooFitResults(common.pdf(wspace), dataSet)
 
         if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
             wspace.allVars().assignValueOnly(dataSet.get())
