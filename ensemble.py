@@ -3,12 +3,9 @@ import math,utils
 import pickling,common
 
 def collect(wspace, results, extraStructure = False) :
-    def lMax(results) :
-        #return math.exp(-results.minNll())
-        return -results.minNll()
-
     out = {}
-    out["lMax"] = lMax(results)
+    out["lMax"] = -results.minNll()
+    out["chi2Prob"] = 0.4
     funcBestFit,funcLinPropError = utils.funcCollect(wspace)
     parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
 
@@ -127,22 +124,26 @@ def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     pickling.writeNumbers(pickledFileName(note, nToys), d = obs)
 
-    graphs = pValueGraphs(obs, toys, key = "lMax")
+    graphs_lMax = pValueGraphs(obs, toys, key = "lMax")
+    graphs_chi2Prob = pValueGraphs(obs, toys, key = "chi2Prob")
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
     fHistos  = histos1D(obs = obs, toys = toys, vars = utils.funcCollect(wspace)[0].keys())
-    oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
+    oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax", "chi2Prob"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
     tfile = r.TFile(rootFileName(note, nToys), "RECREATE")
-    for dir,dct in [("graphs", graphs),
-                    ("pars",   pHistos),
-                    ("funcs",  fHistos),
-                    ("other",  oHistos),
-                    ("pars2D", pHistos2), ] :
+
+    for dir,lst in {"graphs": [graphs_lMax, graphs_chi2Prob],
+                    "pars"  : [pHistos],
+                    "funcs" : [fHistos],
+                    "other" : [oHistos],
+                    "pars2D": [pHistos2],
+                    }.iteritems() :
         tfile.mkdir(dir)
         tfile.cd("/%s"%dir)
-        for obj in dct.values() :
-            obj.Write()
+        for dct in lst :
+            for obj in dct.values() :
+                obj.Write()
     tfile.Close()
 
 def histosAndQuantiles(tfile = None, dir = "") :
