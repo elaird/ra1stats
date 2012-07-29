@@ -80,7 +80,7 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", 
 def pValuePlots(pValue = None, observed = None, pseudo = None, note = "", plotsDir = "", stdout = False,
                 key = "", keyLatex = "") :
     finalPValue = utils.ListFromTGraph(pValue)[-1]
-    if stdout : print "pValue =",finalPValue
+    if stdout : print "pValue (TS = %s) = %g"%(key, finalPValue)
 
     fileName = "%s/pValue_%s_%s.pdf"%(plotsDir, key, note)
     canvas = r.TCanvas("canvas")
@@ -135,7 +135,9 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
 
     #p-value plots
     kargs = {}
-    for key,keyLatex in [("lMax", "log(L_{max})"), ] :
+    for key,keyLatex in [("lMax", "log(L_{max})"),
+                         ("chi2Prob", "#chi^{2} prob."),
+                         ] :
         for item in ["pValue", "observed", "pseudo"] :
             kargs[item] = tfile.Get("/graphs/%s_%s"%(key, item))
         for item in ["note", "plotsDir", "stdout", "key", "keyLatex"] :
