@@ -45,17 +45,17 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
         utils.delete(results)
     return obs,toys
 
-def pValueGraphs(obs = None, toys = None) :
-    lMaxData = obs["lMax"]
-    lMaxs = []
-    ps = []
+def pValueGraphs(obs = None, toys = None, key = "") :
+    observed = obs[key]
+    pseudo = []
+    pvalues = []
     for toy in toys :
-        lMaxs.append(toy["lMax"])
-        ps.append(utils.indexFraction(lMaxData, lMaxs))
+        pseudo.append(toy[key])
+        pvalues.append(utils.indexFraction(observed, pseudo))
     
-    return {"lMaxData": utils.TGraphFromList([lMaxData], name = "lMaxData"),
-            "lMaxs": utils.TGraphFromList(lMaxs, name = "lMaxs"),
-            "pValue": utils.TGraphFromList(ps, name = "pValue")}
+    return {"observed": utils.TGraphFromList([observed], name = "%s_observed"%key),
+            "pseudo": utils.TGraphFromList(pseudo, name = "%s_pseudo"%key),
+            "pValue": utils.TGraphFromList(pvalues, name = "%s_pValue"%key)}
 
 def histos1D(obs = None, toys = None, vars = [], shift = True, style = "") :
     out = {}
@@ -127,7 +127,7 @@ def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
     pickling.writeNumbers(pickledFileName(note, nToys), d = obs)
 
-    graphs = pValueGraphs(obs, toys)
+    graphs = pValueGraphs(obs, toys, key = "lMax")
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
     fHistos  = histos1D(obs = obs, toys = toys, vars = utils.funcCollect(wspace)[0].keys())
     oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
@@ -141,7 +141,7 @@ def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
                     ("pars2D", pHistos2), ] :
         tfile.mkdir(dir)
         tfile.cd("/%s"%dir)
-        for key,obj in dct.iteritems() :
+        for obj in dct.values() :
             obj.Write()
     tfile.Close()
 
