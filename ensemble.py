@@ -1,11 +1,13 @@
 import ROOT as r
 import math,utils
-import pickling,common
+import pickling,common,calc
 
 def collect(wspace, results, extraStructure = False) :
     out = {}
     out["lMax"] = -results.minNll()
-    out["chi2Prob"] = 0.4
+    out["chi2Prob"] = calc.pullStats(pulls = calc.pulls(pdf = common.pdf(wspace), poisKey = "simple"),
+                                     nParams = len(common.floatingVars(wspace)))["prob"]
+
     funcBestFit,funcLinPropError = utils.funcCollect(wspace)
     parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
 
