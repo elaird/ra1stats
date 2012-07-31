@@ -466,7 +466,7 @@ def printPoisPull(dct = {}) :
         lst = [(f%dct[h]).rjust(n(h,f)) for h,f in zip(headers,formats)]
         print "  ".join(lst)
 
-def pulls(pdf = None) :
+def pullsRaw(pdf = None) :
     out = {}
     className = pdf.ClassName()
     pdfName = pdf.GetName()
@@ -474,7 +474,7 @@ def pulls(pdf = None) :
     if className=="RooProdPdf" :
         pdfList = pdf.pdfList()
         for i in range(pdfList.getSize()) :
-            out.update(pulls(pdfList[i]))
+            out.update(pullsRaw(pdfList[i]))
     elif className=="RooPoisson" :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
@@ -525,12 +525,8 @@ def pullHisto(termType = "", pulls = {}, title = "") :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
-              poisKey = ["simple", "nSigma", "nSigmaPrime"][0],
-              gausKey = "simple", debug = False,
-              note = "", plotsDir = "") :
-
-    pRaw = pulls(pdf)
+def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple", debug = False) :
+    pRaw = pullsRaw(pdf)
 
     if debug :
         printPoisPull()
@@ -538,6 +534,7 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
             if key[0]!="Pois" : continue
             printPoisPull(pRaw[key])
 
+    assert poisKey,poisKey
     p = {}
     for key,value in pRaw.iteritems() :
         if key[0]=="Pois" :
@@ -546,6 +543,27 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
             p[key] = value[gausKey]
         else :
             assert False,key
+    return p
+
+def pullStats(pulls = {}, nParams = None) :
+    chi2 = 0
+    nTerms = 0
+
+    for key,value in pulls.iteritems() :
+        chi2 += value*value
+        nTerms += 1
+
+    out = {}
+    nDof = nTerms - nParams
+    out["chi2"]    = chi2
+    out["nTerms"]  = nTerms
+    out["nParams"] = nParams
+    out["nDof"]    = nDof
+    out["prob"]    = r.TMath.Prob(chi2, nDof)
+    return out
+
+def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
+    p = pulls
 
     canvas = r.TCanvas()
     canvas.SetTickx()
@@ -560,8 +578,7 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
     line.SetLineColor(r.kBlue)
 
     total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
-    chi2 = 0
-    nTerms = 0
+
     for termType in ["Pois", "Gaus"] :
         h = pullHisto(termType, p)
         h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
@@ -580,8 +597,6 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
         lines = []
         for iBin in range(1, 1+h.GetNbinsX()) :
             content = h.GetBinContent(iBin)
-            chi2 += content*content
-            nTerms += 1
             total.Fill(content)
             if abs(content)>threshold :
                 hx = h.GetXaxis()
@@ -595,12 +610,6 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
         h2.Draw("psame")
         canvas.Print(fileName)
 
-    nDof = nTerms-nParams
-    print "\"chi2\"  =",chi2
-    print "nTerms  =",nTerms
-    print "nParams =",nParams
-    print "nDof    =",nDof
-    print "prob    =",r.TMath.Prob(chi2, nDof)
     total.Draw()
     canvas.Print(fileName)
     canvas.Print(fileName+"]")

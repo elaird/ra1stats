@@ -43,9 +43,10 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #f.cppDrive(tool = "")
 
 year2012 = False
+ensemble = False
 
 if year2012 :
     for iLower in range(4) :
-        go(iLower = iLower, iUpper = 1+iLower, year = 2012, ensemble = False)
+        go(iLower = iLower, iUpper = 1+iLower, year = 2012, ensemble = ensemble)
 else :
-    go(year = 2011, ensemble = False)
+    go(year = 2011, ensemble = ensemble)
