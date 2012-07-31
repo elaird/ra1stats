@@ -24,7 +24,7 @@ def collect(wspace, results, extraStructure = False) :
             out[key] = value
     return out
 
-def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None, printToyNumber = True) :
+def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None, toyNumberMod = 5) :
     results = utils.rooFitResults(common.pdf(wspace), data)
     wspace.saveSnapshot("snap", wspace.allVars())
 
@@ -32,7 +32,7 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
 
     toys = []
     for i,dataSet in enumerate(common.pseudoData(wspace, nToys)) :
-        if printToyNumber : print "iToy = %d"%i
+        if not (i%toyNumberMod) : print "iToy = %d"%i
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
         results = utils.rooFitResults(common.pdf(wspace), dataSet)
