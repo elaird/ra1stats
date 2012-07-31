@@ -6,7 +6,8 @@ def collect(wspace, results, extraStructure = False) :
     out = {}
     out["lMax"] = -results.minNll()
     out["chi2Prob"] = calc.pullStats(pulls = calc.pulls(pdf = common.pdf(wspace), poisKey = "simple"),
-                                     nParams = len(common.floatingVars(wspace)))["prob"]
+                                     nParams = len(common.floatingVars(wspace))
+                                     )["prob"]
 
     funcBestFit,funcLinPropError = utils.funcCollect(wspace)
     parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
@@ -23,7 +24,7 @@ def collect(wspace, results, extraStructure = False) :
             out[key] = value
     return out
 
-def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None ) :
+def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None, printToyNumber = True) :
     results = utils.rooFitResults(common.pdf(wspace), data)
     wspace.saveSnapshot("snap", wspace.allVars())
 
@@ -31,12 +32,13 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
 
     toys = []
     for i,dataSet in enumerate(common.pseudoData(wspace, nToys)) :
+        if printToyNumber : print "iToy = %d"%i
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
         results = utils.rooFitResults(common.pdf(wspace), dataSet)
 
+        wspace.allVars().assignValueOnly(dataSet.get()) #store this toy's observations, needed for (a) computing chi2 in collect(); (b) making "snapA"
         if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
-            wspace.allVars().assignValueOnly(dataSet.get())
             wspace.saveSnapshot("snapA", wspace.allVars())
             return obs,results,i
         
