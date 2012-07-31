@@ -82,6 +82,11 @@ def pValuePlots(pValue = None, observed = None, pseudo = None, note = "", plotsD
     finalPValue = utils.ListFromTGraph(pValue)[-1]
     if stdout : print "pValue (TS = %s) = %g"%(key, finalPValue)
 
+    observedList = utils.ListFromTGraph(observed)
+    assert len(observedList)==1,len(observedList)
+    observedValue = observedList[0]
+    toyValues = utils.ListFromTGraph(pseudo)
+
     fileName = "%s/pValue_%s_%s.pdf"%(plotsDir, key, note)
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
@@ -91,16 +96,13 @@ def pValuePlots(pValue = None, observed = None, pseudo = None, note = "", plotsD
     pValue.SetMarkerStyle(20)
     pValue.SetTitle(";toy number;p-value")
     pValue.Draw("ap")
+
     Tl = r.TLatex()
     Tl.SetNDC(True)
     Tl.SetTextSize(0.05)
-    Tl.DrawLatex(0.9, 0.9, str(finalPValue))
+    Tl.DrawLatex(0.05, 0.92, "obs. value of TS = %g"%observedValue)
+    Tl.DrawLatex(0.55, 0.92, "quantile of obs. = %g"%finalPValue)
     canvas.Print(fileName)
-
-    observedList = utils.ListFromTGraph(observed)
-    assert len(observedList)==1,len(observedList)
-    observedValue = observedList[0]
-    toyValues = utils.ListFromTGraph(pseudo)
 
     histo = r.TH1D("%sHisto"%key,";%s;pseudo experiments / bin"%keyLatex, 100, 0.0, max(toyValues + observedList)*1.1)
     for value in toyValues :
