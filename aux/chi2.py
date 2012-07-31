@@ -52,7 +52,7 @@ def go(mus = [], nTerms = 1, nPseudoExperiments = 1000) :
     [h.SetMaximum(histoMax) for h in dct.values()]
         
     canvas = r.TCanvas("canvas","",2)
-    utils.cyclePlot(d = dct, canvas = canvas, fileName = "chi2.pdf", divide = (2,2), goptions = "", ticks = True)
+    utils.cyclePlot(d = dct, canvas = canvas, fileName = "chi2.pdf", divide = (2,2), goptions = "e0", ticks = True)
 
 go(mus = [0.5, 3.0, 16.0, 400.0], nTerms = 100, nPseudoExperiments = 10000)
 #go(mus = [0.5])
