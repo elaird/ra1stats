@@ -2,14 +2,23 @@
 
 import common,workspace,likelihoodSpec,signals
 
-def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
-    f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(iLower = iLower,
-                                                           iUpper = iUpper,
-                                                           year = year,
-                                                           separateSystObs = not ensemble,
-                                                           ),
+def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
+    spec = likelihoodSpec.spec(iLower = iLower, iUpper = iUpper,
+                               dataset = dataset, separateSystObs = not ensemble)
+
+    signalExampleToStack = {"2011": [signals.t2bb, signals.t1][0],
+                            "2012ichep": signals.t1tttt_2012_3,
+                            "2012dev": signals.t1tttt_2012_3,
+                            }[dataset]
+
+    nToys = {"2011":3000,
+             "2012ichep":1000,
+             "2012dev":30,
+             }[dataset]
+
+    f = workspace.foo(likelihoodSpec = spec,
                       #signalToTest = signals.t2tt2,
-                      signalExampleToStack = signals.t1tttt_2012_3 if year==2012 else [signals.t2bb, signals.t1][0],
+                      signalExampleToStack = signalExampleToStack,
                       #signalToInject = signals.t1,
                       #trace = True
                       #rhoSignalMin = 0.1,
@@ -17,7 +26,6 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                       #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                       )
 
-    nToys = 1000 if year==2012 else 3000
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
         return
@@ -42,11 +50,14 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #f.debug()
     #f.cppDrive(tool = "")
 
-year2012 = False
-ensemble = False
+kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][0],
+         "ensemble": False,
+         }
 
-if year2012 :
-    for iLower in range(4) :
-        go(iLower = iLower, iUpper = 1+iLower, year = 2012, ensemble = ensemble)
+if kargs["dataset"]=="2011" :
+    go(**kargs)
 else :
-    go(year = 2011, ensemble = ensemble)
+    for iLower in range(4) :
+        args = {"iLower":iLower, "iUpper":1+iLower}
+        args.update(kargs)
+        go(**args)
