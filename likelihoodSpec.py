@@ -42,20 +42,22 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None, year = 2011, separateSystObs = True) :
+    def __init__(self, iLower = None, iUpper = None, dataset = "2011", separateSystObs = True) :
         self._iLower = iLower
         self._iUpper = iUpper
-        self._year = year
+        self._dataset = dataset
         self._selections = []
         self._separateSystObs = separateSystObs
 
-        assert self._year in [0, 2011, 2012],self._year
-        if self._year==0 :
+        assert self._dataset in ["", "2011", "2012ichep", "2012dev"],self._dataset
+        if self._dataset=="" :
             self.__initSimple__()
-        elif self._year==2011 :
+        elif self._dataset=="2011" :
             self.__init2011reorg__(updated = True)
-        elif self._year==2012 :
-            self.__init2012__()
+        elif self._dataset=="2012ichep" :
+            self.__init2012ichep__()
+        elif self._dataset=="2012dev" :
+            self.__init2012dev__()
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
@@ -68,7 +70,7 @@ class spec(object) :
                           ),
                 ])
 
-    def __init2012__(self) :
+    def __init2012ichep__(self) :
         self._constrainQcdSlope = True
         self.legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module

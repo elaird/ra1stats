@@ -47,10 +47,10 @@ def signal() :
 
 def likelihoodSpec() :
     dct = {}
-    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "year":2012, "separateSystObs":True}
+    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "dataset":"2012ichep", "separateSystObs":True}
     for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
                   "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
-        dct[model] = {"iLower":None, "iUpper":None, "year":2011, "separateSystObs": True}
+        dct[model] = {"iLower":None, "iUpper":None, "dataset":"2011", "separateSystObs": True}
     return ls.spec(**dct[signal()["signalModel"]])
 
 def listOfTestPoints() :
