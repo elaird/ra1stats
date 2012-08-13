@@ -72,15 +72,16 @@ for tag,fileName in files.iteritems() :
     dsf = DF.DataSliceFactory({fullName: std_selections})
     slices[tag] = dsf.makeSlice("x",55.5,55.6)
 
-for name,slice in slices.iteritems() :
-    print "="*len(name)
-    print name
-    print "="*len(name)
+for name in sorted(slices.keys()) :
+    slice = slices[name]
+    print "class data_%s(data) :"%name
+    print "    def _fill(self) :"
     mems = dir( slice )
     for attr_name in mems :
         if not "__" in attr_name :
             attr_data = getattr( slice, attr_name )
-            print "{classname}.{obj} = ".format(classname="self", obj=attr_name),
+            print "{space}{classname}.{obj} = ".format(space=" "*8, classname="self", obj=attr_name),
             print_unpack( attr_data,1 )
             print
+    print "%scommon(self)"%(" "*8)
     print "\n"
