@@ -24,7 +24,7 @@ def method() :
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
-            "multiplesInGeV": 40.0,
+            "multiplesInGeV": 0.0,
             }
 
 def signal() :
@@ -42,7 +42,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["T2bw"]
+            "signalModel": dict(zip(models, models))["T2tt"]
             }
 
 def likelihoodSpec() :
@@ -76,7 +76,7 @@ def other() :
             "icfDefaultNEventsIn": 10000,
             "subCmd": getSubCmds(),
             "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
-            "queueSelection" : ["short", "medium", "long"][1:],
+            "queueSelection" : ["short", "medium", "long"][1:2],
             "envScript": "env.sh",
             "nJobsMax": getMaxJobs()}
 
@@ -99,7 +99,7 @@ def getMaxJobs() :
 
 def getSubCmds() :
     return {
-        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
+        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][1]),
         "FNAL": "condor_submit"
     }[batchHost]
 
