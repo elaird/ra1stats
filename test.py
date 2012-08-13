@@ -8,12 +8,12 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
 
     signalExampleToStack = {"2011": [signals.t2bb, signals.t1][0],
                             "2012ichep": signals.t1tttt_2012_3,
-                            "2012dev": signals.t1tttt_2012_3,
+                            "2012dev": {},
                             }[dataset]
 
     nToys = {"2011":3000,
              "2012ichep":1000,
-             "2012dev":30,
+             "2012dev":0,
              }[dataset]
 
     f = workspace.foo(likelihoodSpec = spec,
@@ -50,14 +50,14 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     #f.debug()
     #f.cppDrive(tool = "")
 
-kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][0],
+kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][2],
          "ensemble": False,
          }
-
 if kargs["dataset"]=="2011" :
     go(**kargs)
 else :
-    for iLower in range(4) :
+    nSelections = len(likelihoodSpec.spec(dataset = kargs["dataset"]).selections())
+    for iLower in range(nSelections) :
         args = {"iLower":iLower, "iUpper":1+iLower}
         args.update(kargs)
         go(**args)
