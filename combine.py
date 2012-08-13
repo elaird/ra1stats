@@ -1,6 +1,7 @@
 import ROOT as r
 r.gROOT.SetBatch(True)
 import utils
+import math
 
 #bulk_file_name = 'tmp/bulk.root'
 #slice_file_name = 'tmp/slice.root'
@@ -32,11 +33,11 @@ files = [
 #slice_file = r.TFile.Open(slice_file_name)
 
 
-x_range = [0, 1200]
-y_range = [0, 1200]
-bin_size = 25
-nbinsx = (x_range[1]-x_range[0])/bin_size
-nbinsy = (y_range[1]-y_range[0])/bin_size
+x_range = [0., 1200.]
+y_range = [0., 1200.]
+bin_size = 25.
+nbinsx = int(math.ceil((x_range[1]-x_range[0])/bin_size))
+nbinsy = int(math.ceil((y_range[1]-y_range[0])/bin_size))
 
 
 
