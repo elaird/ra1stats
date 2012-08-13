@@ -1,4 +1,5 @@
-nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript b)
+nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript)
+nj = "n_{j}^{#color[0]{j}}" #graphical hack (white superscript)
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -69,6 +70,45 @@ class spec(object) :
                           data = module.data_simple(),
                           ),
                 ])
+
+    def __init2012dev__(self) :
+        self._constrainQcdSlope = True
+        self.legendTitle = ""
+        from inputData.data2012 import take7 as module
+
+        lst = []
+        for b in ["0", "1", "2", "3", "ge4"] :
+            fZinvIni = {"0"  : 0.50,
+                        "1"  : 0.25,
+                        "2"  : 0.10,
+                        "3"  : 0.05,
+                        "ge4": 0.01,
+                        }[b]
+
+            for j in ["ge2", "le3", "ge4"] :
+                if b=="ge4" and j!="ge4" : continue
+
+                name  = "%sb_%sj"%(b,j)
+                note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
+                note += "; %s#%s"%(nj, j)
+                note = note.replace("ge","geq ").replace("le","leq ")
+
+                samplesAndSignalEff = {"had":True, "muon":True}
+                if b in ["0", "1", "2"] :
+                    samplesAndSignalEff.update({"phot":False, "mumu":False})
+
+                sel = selection(name = name,
+                                note = note,
+                                alphaTMinMax = ("55", None),
+                                samplesAndSignalEff = samplesAndSignalEff,
+                                muonForFullEwk = len(samplesAndSignalEff)==2,
+                                data = getattr(module, "data_%s"%name)(),
+                                #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
+                                fZinvIni = fZinvIni,
+                                AQcdIni = 0.0,
+                                )
+                lst.append(sel)
+        self.add(lst)
 
     def __init2012ichep__(self) :
         self._constrainQcdSlope = True
