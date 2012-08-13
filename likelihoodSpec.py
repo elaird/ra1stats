@@ -29,7 +29,7 @@ class spec(object) :
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
     def constrainQcdSlope(self) : return self._constrainQcdSlope
-    def qcdParameterIsYield(self) : return False
+    def qcdParameterIsYield(self) : return self._qcdParameterIsYield
 
     def selections(self) :
         return self._selections[self._iLower:self._iUpper]
@@ -62,6 +62,7 @@ class spec(object) :
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
+        self._qcdParameterIsYield = False
         self.legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
@@ -73,6 +74,7 @@ class spec(object) :
 
     def __init2012dev__(self) :
         self._constrainQcdSlope = True
+        self._qcdParameterIsYield = True
         self.legendTitle = ""
         from inputData.data2012 import take7 as module
 
@@ -112,6 +114,7 @@ class spec(object) :
 
     def __init2012ichep__(self) :
         self._constrainQcdSlope = True
+        self._qcdParameterIsYield = False
         self.legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module
         #self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 8 TeV"
@@ -167,6 +170,7 @@ class spec(object) :
 
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
+        self._qcdParameterIsYield = False
         self.legendTitle = "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
@@ -244,6 +248,7 @@ class spec(object) :
     def __init2011old__(self) :
         import selections
         self._constrainQcdSlope = True
+        self._qcdParameterIsYield = False
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
         args["systMode"] = 3
