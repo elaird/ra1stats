@@ -13,7 +13,7 @@ def ranges(model) :
     y = {"T5zz": ( 50.0,  999.9), #(min, max)
          "T1":   ( 50.0, 1000.0),
          "T2":   ( 50.0, 1000.0),
-         "T2tt": ( 50.0, 1000.0),
+         "T2tt": ( 00.0, 1000.0),
          "T2bb": ( 50.0, 1000.0),
          "T1bbbb": ( 50.0, 1000.0),
          "T1tttt": ( 50.0, 800.0),
@@ -71,9 +71,9 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     sms = {"T1":          {"had": "rw_fix"},
            "T2":          {"had": "rw_fix"},
-           "T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
+           "T2tt":        {"had": "strip", "muon": "strip"},
            "T2bb":        {"had": "rw_fix", "muon": "rw_fix"},
-           "T2bw":        {"had": "v1", "muon": "v1"},
+           "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
            "T5zz":        {"had": "v1", "muon": "v1"},
            "T1bbbb":      {"had": "rw_fix", "muon": "rw_fix"},
            "T1tttt":      {"had": "v3", "muon": "v3"},
