@@ -838,7 +838,7 @@ class foo(object) :
 
         args = {}
         args["activeBins"] = activeBins(selection)
-        args["legendXSub"] = 0.35 if "55" not in selection.name else 0.0
+        args["legendXSub"] = 0.0
         args["systematicsLabel"] = self.systematicsLabel(selection.name)
 
         for item in ["smOnly", "note"] :
