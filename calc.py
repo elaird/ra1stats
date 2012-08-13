@@ -479,6 +479,8 @@ def pullsRaw(pdf = None) :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
         mu = p.mean.arg().getVal()
+        if not mu :
+            print "ERROR: mu=0.0 for",pdfName
         out[("Pois", pdfName)] = poisPull(x, mu)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
