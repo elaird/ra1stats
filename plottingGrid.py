@@ -52,7 +52,7 @@ def printOnce(canvas, fileName) :
         # should this go somewhere else (refXsProcessing?)
         # i.e. modelSpec = { 'T2': { 'histo': 'squark', 'factor': 1.0, 'file':
         # seven, 'process': 'pp ....' } }
-        process_stamp =  {
+        process_stamps =  {
             'T2'     : {
                 'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
                 'xpos': 0.4250,
