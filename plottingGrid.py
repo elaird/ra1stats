@@ -284,7 +284,8 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
     print "INFO: %s has been written."%root
 
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "UpperLimit",
-                          shiftX = False, shiftY = False, interBin = "LowEdge", pruneYMin = False, debug = False) :
+                          shiftX = False, shiftY = False, interBin = "LowEdge",
+                          pruneYMin = False, debug = False, stampPrelim = True) :
 
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
@@ -342,7 +343,8 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
     #s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
     s3 = stamp(text = "CMS, L = 4.98 fb^{-1},  #sqrt{s}=7 TeV", x = 0.2075, y = 0.64, factor = 0.7)
-    #s4 = stamp(text = "Preliminary", x = 0.2075, y = 0.595, factor = 0.7)
+    if stampPrelim:
+        s4 = stamp(text = "Preliminary", x = 0.2075, y = 0.595, factor = 0.7)
 
     printOnce(c, outFileEps)
     printHoles(histos[name])
