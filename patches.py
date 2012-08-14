@@ -22,7 +22,7 @@ def cmssmCut(iX, x, iY, y, iZ, z) :
 def cutFunc() :
     return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
             "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             #"T2tt":lambda iX,x,iY,y,iZ,z:(y<50 and iZ==1 and x>299.9),
             "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
             "T2bw":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
@@ -120,7 +120,7 @@ def overwriteOutput() :
                 "T2tt": [ (13,2,1), (14,1,1), (13,1,1), (19,1,1), (24,1,1),
                     (26,1,1), (27,2,1), (29,1,1), (31,1,1), (34,1,1), (36,1,1),
                     (37,2,1), (39,1,1), (42,2,1), (44,1,1,), (46,1,1), (47,2,1)
-                    ]
+                    ],
                 })
     return out
 
@@ -202,5 +202,17 @@ def graphBlackLists() :
 
     out["UpperLimit"].update({"T1tttt_2012" : [ (850,200) ]})
     out["UpperLimit_-1_Sigma"].update({"T1tttt_2012" : [ (450,50) ]})
+
+    return out
+
+def ridiculousGraphHack():
+    out = {}
+    keys  = [ "UpperLimit", "ExpectedUpperLimit" ]
+    keys += [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]
+    keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
+    for key in keys :
+        out[key] = collections.defaultdict(list)
+
+    out["ExpectedUpperLimit"].update({"T2tt" : [ (350, 0) ]})
 
     return out
