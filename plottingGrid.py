@@ -42,23 +42,47 @@ def printOnce(canvas, fileName) :
     text = r.TText()
     text.SetNDC()
     text.SetTextAlign(22)
-    text.DrawText(0.5, 0.85, "CMS Preliminary")
+    #text.DrawText(0.5, 0.85, "CMS")
 
-    if False :
+    if True :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
 
-        T2     = "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})"
-        T2bb   = "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})"
-        T2tt   = "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})"
-
-        T1     = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})"
-        T1bbbb = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})"
-        T1tttt = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})"
+        # should this go somewhere else (refXsProcessing?)
+        # i.e. modelSpec = { 'T2': { 'histo': 'squark', 'factor': 1.0, 'file':
+        # seven, 'process': 'pp ....' } }
+        process_stamp =  {
+            'T2'     : {
+                'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
+                'xpos': 0.4250,
+                },
+            'T2bb'   : {
+                'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
+                'xpos': 0.425,
+                },
+            'T2tt'   : {
+                'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
+                'xpos': 0.41,
+                },
+            'T1'     : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
+                'xpos': 0.4325,
+                },
+            'T1bbbb' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
+                'xpos': 0.43,
+                },
+            'T1tttt' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+                'xpos': 0.425,
+                },
+            }
+        current_stamp = process_stamps.get(conf.switches()['signalModel'],None)
 
         latex.SetTextSize(0.6*latex.GetTextSize())
-        latex.DrawLatex(0.45, 0.79, T2tt)
+        if current_stamp:
+            latex.DrawLatex(current_stamp['xpos'], 0.78, current_stamp['text'])
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
@@ -279,10 +303,11 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
             func.Draw("same")
 
     #stamp plot
-    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
+    s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
     #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
-    s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
+    #s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
+    s3 = stamp(text = "CMS, L = 4.98 fb^{-1},  #sqrt{s}=7 TeV", x = 0.2075, y = 0.64, factor = 0.7)
 
     printOnce(c, outFileEps)
     printHoles(histos[name])

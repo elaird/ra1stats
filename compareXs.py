@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 import ROOT as r
 from utils import threeToTwo, shifted
 from refXsProcessing import histoSpec
@@ -12,11 +14,11 @@ options = {
     'refProcess': hSpec['histo'],
     'refXsFile': hSpec['file'],
     'refName': '#tilde{t} #tilde{t}',
-    'limitFile': '~/Projects/ra1ToyResults/2011/1000_toys/T2tt/'
-                 'CLs_frequentist_TS3_T2tt_lo_2011_RQcdFallingExpExt_fZinvTwo_55_'
+    'limitFile': '/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
+                 'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
-    'plotTitle': 'pp#rightarrow#tilde{t} #tilde{t}#; #tilde{t}#rightarrow t+'
-                 '#tilde{#chi}    m_{#tilde{#chi}} = 50 GeV',
+    'processName': 'pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t '
+        '+ LSP; m(#tilde{g})>>m(#tilde{t})',
     'refYRange': (50.,50.),
     'shiftX': True,
     'showRatio': False,
@@ -25,16 +27,19 @@ options = {
 plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} (GeV)' }
 
 
-def drawStamp(canvas):
+def drawStamp(canvas, processName=None):
     canvas.cd()
     tl = r.TLatex()
     tl.SetNDC()
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
-    tl.DrawLatex(0.14,0.84,'CMS Preliminary')
-    tl.DrawLatex(0.51,0.603,'#sqrt{s} = 7 TeV, L = 4.98 fb^{-1}')
+    #tl.DrawLatex(0.16,0.84,'CMS')
+    tl.DrawLatex(0.42,0.603,'CMS, #sqrt{s} = 7 TeV, L = 4.98 fb^{-1}')
     tl.SetTextSize(0.07)
-    tl.DrawLatex(0.23,0.78,'#alpha_{T}')
+    tl.DrawLatex(0.20,0.75,'#alpha_{T}')
+    if processName is not None:
+        tl.SetTextSize(0.04)
+        tl.DrawLatex(0.42,0.550,processName)
     return tl
 
 def getReferenceXsHisto(refHistoName, refName, filename):
@@ -157,7 +162,7 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
-              pdfFile="xs/compareXs.pdf", refYRange=(50,50), plotTitle="",
+              epsFile="xs/compareXs.eps", refYRange=(50,50), processName="",
               plotOptOverrides=None, shiftX=False, showRatio=False) :
     plotOpts = {
         'yMax': 1e+1,
@@ -194,7 +199,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         props = hs[hname]
         h = props['hist']
         h.SetStats(False)
-        h.SetTitle(plotTitle)
+        #h.SetTitle(processName)
         h.GetXaxis().SetRangeUser(plotOpts['xMin'],plotOpts['xMax'])
         h.SetMinimum(plotOpts['yMin'])
         h.SetMaximum(plotOpts['yMax'])
@@ -213,7 +218,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         h.GetXaxis().SetTitle(plotOpts['xLabel'])
         h.GetYaxis().SetTitle(plotOpts['yLabel'])
     leg.Draw()
-    tl = drawStamp(canvas)
+    tl = drawStamp(canvas,processName)
     pad.RedrawAxis()
     pad.SetLogy()
     pad.SetTickx()
@@ -225,8 +230,14 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
                                 #xMax=plotOpts['xMax'])
 
-    print "Saving to {file}".format(file=pdfFile)
-    canvas.Print(pdfFile)
+    print "Saving to {file}".format(file=epsFile)
+    canvas.Print(epsFile)
+
+    epsiFile = epsFile.replace(".eps",".epsi")
+    os.system("ps2epsi "+epsFile+" "+epsiFile)
+    os.system("epstopdf "+epsiFile)
+    os.system("rm       "+epsiFile)
+    os.system("rm       "+epsFile)
 
 def setup() :
     r.gROOT.SetBatch(True)

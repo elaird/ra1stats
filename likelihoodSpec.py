@@ -1,5 +1,5 @@
-nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript)
-nj = "n_{j}^{#color[0]{j}}" #graphical hack (white superscript)
+nb = "n^{reco}_{b}^{#color[0]{b}}" #graphical hack (white superscript)
+nj = "n^{reco}_{j}^{#color[0]{j}}" #graphical hack (white superscript)
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -171,7 +171,7 @@ class spec(object) :
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
-        self.legendTitle = "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
+        self.legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
         else :

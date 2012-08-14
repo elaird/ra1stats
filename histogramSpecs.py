@@ -49,7 +49,7 @@ def ranges(model) :
     d["yDivisions"] = yDivisions.get(model, None)
 
     d["xsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
-    d["xsZRangeLog"] = (1.0e-3, 100.0, 20)
+    d["xsZRangeLog"] = (1.0e-3,  10.0, 20)
     d["effZRange"]   = (0.0, 0.35, 35)
 
     d["effUncExpZRange"] = (0.0, 0.20, 20)
