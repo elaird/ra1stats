@@ -140,14 +140,43 @@ def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
         graph.RemovePoint(graph.GetN()-1)
     if debug: graph.Print()
 
+def insertPoints( graph, lst=[], mode="prepend" ) :
+    npoints = len(lst)
+    ngraph = graph.GetN()
+
+    total_points = npoints + ngraph
+    graph.Expand(total_points)
+
+    print "expanding graph", graph.GetName(), "with", graph.GetN(),
+    print "points to have", total_points
+    if mode=="prepend":
+        for p in reversed(range(total_points)):
+            if p < npoints:
+                graph.SetPoint(p, lst[p][0], lst[p][1])
+            else:
+                x = r.Double(0.)
+                y = r.Double(0.)
+                graph.GetPoint(p-npoints,x,y)
+                graph.SetPoint(p,x,y)
+    elif mode=="append":
+        for p in range(total_points):
+            if p < ngraph:
+                x = r.Double(0.)
+                y = r.Double(0.)
+                graph.GetPoint(p,x,y)
+                graph.SetPoint(p,x,y)
+            else:
+                graph.SetPoint(p, *lst[p-ngraph])
+
 def spline(points = [], title = "") :
     graph = r.TGraph()
     for i,(x,y) in enumerate(points) :
         graph.SetPoint(i, x, y)
     return r.TSpline3(title, graph)
 
-def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
-               pruneYMin = False) :
+def exclusions(histos = {}, switches = {}, graphBlackLists = None,
+        printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
+        pruneYMin = False, additionalPoints=None) :
     graphs = []
 
     specs = []
@@ -194,6 +223,9 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = Non
             if pruneYMin :
                 lst += pointsAtYMin(graph['graph'])
             pruneGraph(graph['graph'], lst = lst, debug = False, breakLink=pruneYMin)
+        if name in additionalPoints :
+            lst = additionalPoints[name][signalModel]
+            insertPoints(graph['graph'], lst = lst)
         graphs.append(graph)
 
     if writeDir :
@@ -280,8 +312,10 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     #make exclusion histograms and curves
     try:
-        graphs = exclusions(histos = histos, writeDir = g, switches = s, graphBlackLists = s["graphBlackLists"],
-                            interBin = interBin, printXs = printXs, pruneYMin = pruneYMin, debug = debug)
+        graphs = exclusions(histos = histos, writeDir = g, switches = s,
+                graphBlackLists = s["graphBlackLists"], interBin = interBin,
+                printXs = printXs, pruneYMin = pruneYMin, debug = debug,
+                additionalPoints = s["additionalPoints"])
     except:
         print "ERROR: creation of exclusions has failed."
         sys.excepthook(*sys.exc_info())
