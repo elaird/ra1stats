@@ -43,39 +43,45 @@ std_selections = { "had"  : base_histos,
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
 
-base_dir = { 'phosphorus' : '~/117_2012_5fb/weighted/',
+base_dir = { 'phosphorus' : '~/132_2012_categories/',
              'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
            }[gethostname()]
 
 d_set = ""
-file_names = [ "RA1_Stats_Zero_btags_noAlphaT.root",
-               "RA1_Stats_Zero_btags.root",
-               "RA1_Stats_One_btag.root",
-               "RA1_Stats_Two_btags.root",
-               "RA1_Stats_More_Than_Two_btag.root",
-               ]
 
-fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]
+files = {"ge4b_le3j": "RA1_Stats_More_Than_Three_btag_category_2.root",
+         "ge4b_ge4j": "RA1_Stats_More_Than_Three_btag_category_3.root",
+         "ge4b_ge2j": "RA1_Stats_More_Than_Three_btag_category_all.root",
+         "3b_le3j": "RA1_Stats_More_Than_Two_btag_category_2.root",
+         "3b_ge4j": "RA1_Stats_More_Than_Two_btag_category_3.root",
+         "3b_ge2j": "RA1_Stats_More_Than_Two_btag_category_all.root",
+         "2b_le3j": "RA1_Stats_Two_btags_category_2.root",
+         "2b_ge4j": "RA1_Stats_Two_btags_category_3.root",
+         "2b_ge2j": "RA1_Stats_Two_btags_category_all.root",
+         "1b_le3j": "RA1_Stats_One_btag_category_2.root",
+         "1b_ge4j": "RA1_Stats_One_btag_category_3.root",
+         "1b_ge2j": "RA1_Stats_One_btag_category_all.root",
+         "0b_le3j": "RA1_Stats_Zero_btags_category_2.root",
+         "0b_ge4j": "RA1_Stats_Zero_btags_category_3.root",
+         "0b_ge2j": "RA1_Stats_Zero_btags_category_all.root",
+         }
 
+slices = {}
+for tag,fileName in files.iteritems() :
+    fullName = "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=fileName)
+    dsf = DF.DataSliceFactory({fullName: std_selections})
+    slices[tag] = dsf.makeSlice("x",55.5,55.6)
 
-names = [ "btag0_noAT", "btag0_wAT", "btag1", "btag2", "btag3" ]
-
-selections  = [ { rfile : std_selections } for rfile in fullfiles ]
-
-dsfs = [ DF.DataSliceFactory( selection ) for selection in selections ]
-dss  = [ dsf.makeSlice("x",55.5,55.6) for dsf in dsfs ]
-
-slices = dict( zip( names, dss ) )
-
-for name,slice in slices.iteritems() :
-    print "="*len(name)
-    print name
-    print "="*len(name)
+for name in sorted(slices.keys()) :
+    slice = slices[name]
+    print "class data_%s(data) :"%name
+    print "    def _fill(self) :"
     mems = dir( slice )
     for attr_name in mems :
         if not "__" in attr_name :
             attr_data = getattr( slice, attr_name )
-            print "{classname}.{obj} = ".format(classname="self", obj=attr_name),
+            print "{space}{classname}.{obj} = ".format(space=" "*8, classname="self", obj=attr_name),
             print_unpack( attr_data,1 )
             print
+    print "%scommon(self)"%(" "*8)
     print "\n"
