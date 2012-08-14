@@ -838,7 +838,7 @@ class foo(object) :
 
         args = {}
         args["activeBins"] = activeBins(selection)
-        args["legendXSub"] = 0.35 if "55" not in selection.name else 0.0
+        args["legendXSub"] = 0.0
         args["systematicsLabel"] = self.systematicsLabel(selection.name)
 
         for item in ["smOnly", "note"] :
@@ -891,8 +891,16 @@ class foo(object) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
-        calc.pullPlots(pdf = pdf(self.wspace), nParams = len(floatingVars(self.wspace)), note = self.note(), plotsDir = "plots",
-                       yMax = pullPlotMax, threshold = pullThreshold)
+
+        poisKey = "simple"
+        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey)
+
+        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
+        for key in sorted(stats.keys()) :
+            print "%s = %g"%(key.ljust(7), stats[key])
+
+        calc.pullPlots(pulls = pulls, poisKey = poisKey, note = self.note(),
+                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)

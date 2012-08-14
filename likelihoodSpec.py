@@ -1,4 +1,5 @@
-nb = "n^{reco}_{b}^{#color[0]{b}}" #graphical hack (white superscript b)
+nb = "n^{reco}_{b}^{#color[0]{b}}" #graphical hack (white superscript)
+nj = "n^{reco}_{j}^{#color[0]{j}}" #graphical hack (white superscript)
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -28,7 +29,7 @@ class spec(object) :
     def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
     def nFZinv(self) : return ["All", "One", "Two"][2]
     def constrainQcdSlope(self) : return self._constrainQcdSlope
-    def qcdParameterIsYield(self) : return False
+    def qcdParameterIsYield(self) : return self._qcdParameterIsYield
 
     def selections(self) :
         return self._selections[self._iLower:self._iUpper]
@@ -42,23 +43,26 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None, year = 2011, separateSystObs = True) :
+    def __init__(self, iLower = None, iUpper = None, dataset = "2011", separateSystObs = True) :
         self._iLower = iLower
         self._iUpper = iUpper
-        self._year = year
+        self._dataset = dataset
         self._selections = []
         self._separateSystObs = separateSystObs
 
-        assert self._year in [0, 2011, 2012],self._year
-        if self._year==0 :
+        assert self._dataset in ["", "2011", "2012ichep", "2012dev"],self._dataset
+        if self._dataset=="" :
             self.__initSimple__()
-        elif self._year==2011 :
+        elif self._dataset=="2011" :
             self.__init2011reorg__(updated = True)
-        elif self._year==2012 :
-            self.__init2012__()
+        elif self._dataset=="2012ichep" :
+            self.__init2012ichep__()
+        elif self._dataset=="2012dev" :
+            self.__init2012dev__()
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
+        self._qcdParameterIsYield = False
         self.legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
@@ -68,8 +72,49 @@ class spec(object) :
                           ),
                 ])
 
-    def __init2012__(self) :
+    def __init2012dev__(self) :
         self._constrainQcdSlope = True
+        self._qcdParameterIsYield = True
+        self.legendTitle = ""
+        from inputData.data2012 import take7 as module
+
+        lst = []
+        for b in ["0", "1", "2", "3", "ge4"] :
+            fZinvIni = {"0"  : 0.50,
+                        "1"  : 0.25,
+                        "2"  : 0.10,
+                        "3"  : 0.05,
+                        "ge4": 0.01,
+                        }[b]
+
+            for j in ["ge2", "le3", "ge4"] :
+                if b=="ge4" and j!="ge4" : continue
+
+                name  = "%sb_%sj"%(b,j)
+                note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
+                note += "; %s#%s"%(nj, j)
+                note = note.replace("ge","geq ").replace("le","leq ")
+
+                samplesAndSignalEff = {"had":True, "muon":True}
+                if b in ["0", "1", "2"] :
+                    samplesAndSignalEff.update({"phot":False, "mumu":False})
+
+                sel = selection(name = name,
+                                note = note,
+                                alphaTMinMax = ("55", None),
+                                samplesAndSignalEff = samplesAndSignalEff,
+                                muonForFullEwk = len(samplesAndSignalEff)==2,
+                                data = getattr(module, "data_%s"%name)(),
+                                #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
+                                fZinvIni = fZinvIni,
+                                AQcdIni = 0.0,
+                                )
+                lst.append(sel)
+        self.add(lst)
+
+    def __init2012ichep__(self) :
+        self._constrainQcdSlope = True
+        self._qcdParameterIsYield = False
         self.legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module
         #self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 8 TeV"
@@ -125,6 +170,7 @@ class spec(object) :
 
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
+        self._qcdParameterIsYield = False
         self.legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
@@ -202,6 +248,7 @@ class spec(object) :
     def __init2011old__(self) :
         import selections
         self._constrainQcdSlope = True
+        self._qcdParameterIsYield = False
         self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
         args = {}
         args["systMode"] = 3
