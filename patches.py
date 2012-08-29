@@ -157,22 +157,22 @@ def graphBlackLists() :
         (525,225), (525,100), (525,200)]})
     out["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (475, 75), ]})
 
-    #out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,25),
-        #(475,100), (375,25), (400,25), (450, 50), (425,25) ]})
-    #out["UpperLimit_-1_Sigma"].update({"T2tt":[ (375,25), (425,25), (450,25),
-        #(350,25), (400,50), (425,25), (450,25), (475,25), (525,50), (550,100) ]})
-    #out["UpperLimit_+1_Sigma"].update({"T2tt":[ (400,25), (425,25), (475,125),
-        #(475,50), (525, 150), (550,100), (575,125) ]})
-    #out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (350,25), (375,0),
-        #(375,50), (450,50) ]})
+    out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,25),
+        (475,100), (375,25), (400,25), (450, 50), (425,25) ]})
+    out["UpperLimit_-1_Sigma"].update({"T2tt":[ (375,25), (425,25), (450,25),
+        (350,25), (400,50), (425,25), (450,25), (475,25), (525,50), (550,100) ]})
+    out["UpperLimit_+1_Sigma"].update({"T2tt":[ (400,25), (425,25), (475,125),
+        (475,50), (525, 150), (550,100), (575,125) ]})
+    out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (350,25), (375,0),
+        (375,50), (450,50) ]})
 
 # BULK REGION ONLY
-    out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50),
-        (475,100), (400,75) ]})
-    out["UpperLimit_-1_Sigma"].update({"T2tt":[ (550, 100), (350,50) ]})
-    out["UpperLimit_+1_Sigma"].update({"T2tt":[ (550, 100), (575,125),
-        (525,150), (475,125) ]})
-    out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
+    #out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50),
+        #(475,100), (400,75) ]})
+    #out["UpperLimit_-1_Sigma"].update({"T2tt":[ (550, 100), (350,50) ]})
+    #out["UpperLimit_+1_Sigma"].update({"T2tt":[ (550, 100), (575,125),
+        #(525,150), (475,125) ]})
+    #out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
 ##################
 
     out["UpperLimit"].update({"T1bbbb" : [ (1050,200), (1050,250),
