@@ -34,7 +34,8 @@ def drawStamp(canvas, processName=None):
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
     #tl.DrawLatex(0.16,0.84,'CMS')
-    tl.DrawLatex(0.42,0.603,'CMS, #sqrt{s} = 7 TeV, L = 4.98 fb^{-1}')
+    tl.DrawLatex(0.42,0.49,'m_{LSP} = 50 GeV')
+    tl.DrawLatex(0.42,0.603,'CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV')
     tl.SetTextSize(0.07)
     tl.DrawLatex(0.20,0.75,'#alpha_{T}')
     if processName is not None:
@@ -217,6 +218,14 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
             leg.AddEntry(h, props['label'], "lf")
         h.GetXaxis().SetTitle(plotOpts['xLabel'])
         h.GetYaxis().SetTitle(plotOpts['yLabel'])
+        if hname == 'refHisto':
+            h2 = h.Clone()
+            brange = range(h2.GetXaxis().GetNbins())
+            h2.Reset()
+            for iBin in brange:
+                h2.SetBinContent(iBin,h.GetBinContent(iBin))
+            h2.SetFillStyle(0)
+            h2.Draw('csame')
     leg.Draw()
     tl = drawStamp(canvas,processName)
     pad.RedrawAxis()
