@@ -31,7 +31,7 @@ def q0q1(inputData, factor, A_ewk_ini) :
 
 def initialkQcd(inputData, factor, A_ewk_ini) :
     obs = inputData.observations()
-    htMeans = inputData.htMeans()    
+    htMeans = inputData.htMeans()
     out = q0q1(inputData, factor, A_ewk_ini)
     out *= obs["nHadBulk"][1]/float(obs["nHadBulk"][0])
     out = math.log(out)
@@ -44,7 +44,7 @@ def initialAQcd(inputData, factor, A_ewk_ini, kQcd) :
     out = math.exp(kQcd)
     out *= (obs["nHad"][0]/float(obs["nHadBulk"][0]) - A_ewk_ini*factor)
     return out
-                     
+
 def parametrizedExpViaYield(w = None, name = "", label = "", kLabel = "", i = None) :
     assert i,i
     yield0 = ni("%s"%name, label, 0)
@@ -65,7 +65,7 @@ def parametrizedExp(w = None, name = "", label = "", kLabel = "", i = None) :
     mean = ni("htMean", label, i)
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
-    
+
 def parametrizedExpA(w = None, name = "", label = "", kLabel = "", i = None) :
     A = ni("A_%s"%name, label)
     k = ni("k_%s"%name, kLabel)
@@ -73,7 +73,7 @@ def parametrizedExpA(w = None, name = "", label = "", kLabel = "", i = None) :
     mean = ni("htMean", label, i)
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
-    
+
 def parametrizedLinear(w = None, name = "", label = "", kLabel = "", i = None, iFirst = None, iLast = None) :
     def mean(j) : return ni("htMean", label, j)
     A = ni("A_%s"%name, label)
@@ -94,7 +94,7 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iFirst = N
     if REwk=="Constant" and not i :
         w.var(k).setVal(0.0)
         w.var(k).setConstant()
-    
+
     if REwk=="Linear" : wimport(w, parametrizedLinear(w = w, name = name, label = label, kLabel = label, i = i, iFirst = iFirst, iLast = iLast))
     elif (REwk=="FallingExp" or  REwk=="Constant") : wimport(w, parametrizedExp(w = w, name = name, label = label, kLabel = label, i = i))
     else :
@@ -107,7 +107,7 @@ def importEwk(w = None, REwk = None, name = "", label = "", i = None, iFirst = N
 def importFZinv(w = None, nFZinv = "", name = "", label = "", i = None, iFirst = None, iLast = None, iniVal = None, minMax = None) :
     def mean(j) : return ni("htMean", label, j)
     def fz(j) : return ni(name, label, j)
-    
+
     if nFZinv=="All" :
         wimport(w, r.RooRealVar(fz(i), fz(i), iniVal, *minMax))
     elif nFZinv=="One" :
@@ -598,7 +598,7 @@ def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], ter
 class foo(object) :
     def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
                  signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
-                 
+
         for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin",
                      "signalToTest", "signalExampleToStack", "signalToInject"] :
             setattr(self, item, eval(item))
@@ -672,7 +672,7 @@ class foo(object) :
                 if sel.name not in dct : continue
                 for key,value in dct[sel.name].iteritems() :
                     if type(value) is list : assert len(value)==len(bins)
-            
+
     def smOnly(self) :
         return not self.signalToTest
 
@@ -695,7 +695,7 @@ class foo(object) :
 
     def note(self) :
         return note(likelihoodSpec = self.likelihoodSpec)
-    
+
     def debug(self) :
         self.wspace.Print("v")
         plotting.writeGraphVizTree(self.wspace)
@@ -787,7 +787,7 @@ class foo(object) :
             else :
                 break
         return d
-    
+
     def intervalSimple(self, cl = None, method = "", makePlots = None) :
         if method=="profileLikelihood" :
             return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(),
@@ -819,7 +819,7 @@ class foo(object) :
             s = self.wspace.set("poi"); assert s.getSize()==1
             if s.first().getMin() : s.first().setMin(0.0)
             if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
-            
+
         out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
                         cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
                         plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
@@ -887,7 +887,8 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
-                errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5, pullThreshold = 2.0) :
+                errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5,
+                pullThreshold = 2.0, signalLineStyle = 1) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
@@ -909,7 +910,8 @@ class foo(object) :
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
                          "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
-                         "drawRatios" : drawRatios,
+                         "drawRatios" : drawRatios, "signalLineStyle" :
+                         signalLineStyle,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
