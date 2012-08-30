@@ -6,7 +6,7 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     spec = likelihoodSpec.spec(iLower = iLower, iUpper = iUpper,
                                dataset = dataset, separateSystObs = not ensemble)
 
-    signalExampleToStack = {"2011": [signals.t2bb, signals.t1][0],
+    signalExampleToStack = {"2011": [signals.t2bb, signals.t1][1],
                             "2012ichep": signals.t1tttt_2012_3,
                             "2012dev": {},
                             }[dataset]
@@ -42,7 +42,8 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     #f.profile()
     #f.writeMlTable()
     #f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
-    f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
+    f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys,
+            signalLineStyle = 2)
     #f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
@@ -50,7 +51,7 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     #f.debug()
     #f.cppDrive(tool = "")
 
-kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][2],
+kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][0],
          "ensemble": False,
          }
 if kargs["dataset"]=="2011" :
