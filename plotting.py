@@ -266,6 +266,7 @@ def obsString(label = "", other = "", lumi = 0.0) :
 class validationPlotter(object) :
     def __init__(self, args) :
         for key,value in args.iteritems() :
+            print key, value
             setattr(self,key,value)
         if self.signalExampleToStack : assert self.smOnly
         if not hasattr(self,"drawRatios") : setattr(self,"drawRatios",False)
@@ -341,7 +342,7 @@ class validationPlotter(object) :
             vars += [{"var":"sSimple", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif self.signalExampleToStack :
             vars += [{"example":self.signalExampleToStack, "box":"simple", "desc":self.signalExampleToStack.label,
-                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                      "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Simple Sample%s"%(" (logY)" if logY else "")
@@ -374,7 +375,7 @@ class validationPlotter(object) :
             vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif self.signalExampleToStack :
             vars += [{"example":self.signalExampleToStack, "box":"had", "desc":self.signalExampleToStack.label,
-                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                      "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
@@ -410,7 +411,7 @@ class validationPlotter(object) :
             vars += [{"var":"muonS",   "type":"function", "color":self.sig, "style":1, "width":self.width1, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
         elif self.signalExampleToStack :
             vars += [{"example":self.signalExampleToStack, "box":"muon", "desc":self.signalExampleToStack.label,
-                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                      "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
@@ -513,7 +514,7 @@ class validationPlotter(object) :
                        "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif self.signalExampleToStack :
             specs += [{"example":self.signalExampleToStack, "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalExampleToStack.label,
-                       "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                       "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         self.plot(fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
                   obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},
