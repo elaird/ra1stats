@@ -1,5 +1,5 @@
-nb = "n^{reco}_{b}^{#color[0]{b}}" #graphical hack (white superscript)
-nj = "n^{reco}_{j}^{#color[0]{j}}" #graphical hack (white superscript)
+nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript)
+nj = "n_{j}^{#color[0]{j}}" #graphical hack (white superscript)
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
