@@ -225,7 +225,8 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
             for iBin in brange:
                 h2.SetBinContent(iBin,h.GetBinContent(iBin))
             h2.SetFillStyle(0)
-            h2.Draw('csame')
+            h2.SetLineWidth(1)
+            h2.Draw('lsame')
     leg.Draw()
     tl = drawStamp(canvas,processName)
     pad.RedrawAxis()
