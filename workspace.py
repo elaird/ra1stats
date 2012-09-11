@@ -473,7 +473,6 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
     signalEffVariables(w, inputData, label, signalToTest)
 
     out = collections.defaultdict(list)
-    #print "HACK"; return out
     if label==systematicsLabel :
         for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
             #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalToTest[item] for item in extraSigEffUncSources])
@@ -763,7 +762,7 @@ class foo(object) :
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
                  nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
 
-        hack = True
+        hack = False
         if hack :
             print "HACK!"
             d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
