@@ -1,15 +1,14 @@
 import ROOT as r
-import math
-import utils,pickling
-from common import pdf,pseudoData
+import math,utils
+import pickling,common,calc
 
 def collect(wspace, results, extraStructure = False) :
-    def lMax(results) :
-        #return math.exp(-results.minNll())
-        return -results.minNll()
-
     out = {}
-    out["lMax"] = lMax(results)
+    out["lMax"] = -results.minNll()
+    out["chi2Prob"] = calc.pullStats(pulls = calc.pulls(pdf = common.pdf(wspace), poisKey = "simple"),
+                                     nParams = len(common.floatingVars(wspace))
+                                     )["prob"]
+
     funcBestFit,funcLinPropError = utils.funcCollect(wspace)
     parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
 
@@ -25,20 +24,21 @@ def collect(wspace, results, extraStructure = False) :
             out[key] = value
     return out
 
-def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None ) :
-    results = utils.rooFitResults(pdf(wspace), data)
+def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None, toyNumberMod = 5) :
+    results = utils.rooFitResults(common.pdf(wspace), data)
     wspace.saveSnapshot("snap", wspace.allVars())
 
     obs = collect(wspace, results, extraStructure = True)
 
     toys = []
-    for i,dataSet in enumerate(pseudoData(wspace, nToys)) :
+    for i,dataSet in enumerate(common.pseudoData(wspace, nToys)) :
+        if not (i%toyNumberMod) : print "iToy = %d"%i
         wspace.loadSnapshot("snap")
         #dataSet.Print("v")
-        results = utils.rooFitResults(pdf(wspace), dataSet)
+        results = utils.rooFitResults(common.pdf(wspace), dataSet)
 
+        wspace.allVars().assignValueOnly(dataSet.get()) #store this toy's observations, needed for (a) computing chi2 in collect(); (b) making "snapA"
         if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
-            wspace.allVars().assignValueOnly(dataSet.get())
             wspace.saveSnapshot("snapA", wspace.allVars())
             return obs,results,i
         
@@ -46,17 +46,17 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
         utils.delete(results)
     return obs,toys
 
-def pValueGraphs(obs = None, toys = None) :
-    lMaxData = obs["lMax"]
-    lMaxs = []
-    ps = []
+def pValueGraphs(obs = None, toys = None, key = "") :
+    observed = obs[key]
+    pseudo = []
+    pvalues = []
     for toy in toys :
-        lMaxs.append(toy["lMax"])
-        ps.append(utils.indexFraction(lMaxData, lMaxs))
+        pseudo.append(toy[key])
+        pvalues.append(utils.indexFraction(observed, pseudo))
     
-    return {"lMaxData": utils.TGraphFromList([lMaxData], name = "lMaxData"),
-            "lMaxs": utils.TGraphFromList(lMaxs, name = "lMaxs"),
-            "pValue": utils.TGraphFromList(ps, name = "pValue")}
+    return {"observed": utils.TGraphFromList([observed], name = "%s_observed"%key),
+            "pseudo": utils.TGraphFromList(pseudo, name = "%s_pseudo"%key),
+            "pValue": utils.TGraphFromList(pvalues, name = "%s_pValue"%key)}
 
 def histos1D(obs = None, toys = None, vars = [], shift = True, style = "") :
     out = {}
@@ -97,7 +97,7 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def latex(quantiles = {}, bestDict = {}, stdout = False) :
+def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note = "") :
     src = {}
     lst = []
     for key,q in quantiles.iteritems() :
@@ -115,36 +115,39 @@ def latex(quantiles = {}, bestDict = {}, stdout = False) :
 
     from makeTables import ensembleResultsBySelection as ltxResults
     from makeTables import ensembleResultsBySample as ltxSummary
-    import likelihoodSpec
-    ltxResults( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
-    ltxSummary( src, [ x.data for x in likelihoodSpec.spec().selections() ] )
+    ltxResults( src, [ x.data for x in selections ], note = note )
+    ltxSummary( src, [ x.data for x in selections ], note = note )
 
-def rootFileName(note = "") :
-    return "ensemble_%s.root"%note
+def rootFileName(note = "", nToys = None) :
+    return "ensemble_%s_%dtoys.root"%(note, nToys)
 
-def pickledFileName(note = "") :
-    return rootFileName(note).replace(".root", ".obs")
+def pickledFileName(note = "", nToys = None) :
+    return rootFileName(note, nToys).replace(".root", ".obs")
 
 def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
-    pickling.writeNumbers(pickledFileName(note), d = obs)
+    pickling.writeNumbers(pickledFileName(note, nToys), d = obs)
 
-    graphs = pValueGraphs(obs, toys)
+    graphs_lMax = pValueGraphs(obs, toys, key = "lMax")
+    graphs_chi2Prob = pValueGraphs(obs, toys, key = "chi2Prob")
     pHistos  = histos1D(obs = obs, toys = toys, vars = utils.parCollect(wspace)[0].keys())
     fHistos  = histos1D(obs = obs, toys = toys, vars = utils.funcCollect(wspace)[0].keys())
-    oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax"])
+    oHistos  = histos1D(obs = obs, toys = toys, vars = ["lMax", "chi2Prob"])
     pHistos2 = parHistos2D(obs = obs, toys = toys, pairs = [("A_qcd","k_qcd"), ("A_ewk","A_qcd"), ("A_ewk","k_qcd"), ("A_ewk","fZinv0")])
 
-    tfile = r.TFile(rootFileName(note), "RECREATE")
-    for dir,dct in [("graphs", graphs),
-                    ("pars",   pHistos),
-                    ("funcs",  fHistos),
-                    ("other",  oHistos),
-                    ("pars2D", pHistos2), ] :
+    tfile = r.TFile(rootFileName(note, nToys), "RECREATE")
+
+    for dir,lst in {"graphs": [graphs_lMax, graphs_chi2Prob],
+                    "pars"  : [pHistos],
+                    "funcs" : [fHistos],
+                    "other" : [oHistos],
+                    "pars2D": [pHistos2],
+                    }.iteritems() :
         tfile.mkdir(dir)
         tfile.cd("/%s"%dir)
-        for key,obj in dct.iteritems() :
-            obj.Write()
+        for dct in lst :
+            for obj in dct.values() :
+                obj.Write()
     tfile.Close()
 
 def histosAndQuantiles(tfile = None, dir = "") :
@@ -156,13 +159,13 @@ def histosAndQuantiles(tfile = None, dir = "") :
         quantiles[key] = utils.quantiles(histos[key], sigmaList = [-1.0, 0.0, 1.0])
     return histos,quantiles
 
-def functionQuantiles(note = "") :
-    tfile = r.TFile(rootFileName(note))
+def functionQuantiles(note = "", nToys = None) :
+    tfile = r.TFile(rootFileName(note, nToys))
     fHistos,fQuantiles = histosAndQuantiles(tfile, "funcs")
     tfile.Close()
     return fQuantiles
 
-def results(note = "") :
-    obs = pickling.readNumbers(pickledFileName(note))
-    tfile = r.TFile(rootFileName(note))
+def results(note = "", nToys = None) :
+    obs = pickling.readNumbers(pickledFileName(note, nToys))
+    tfile = r.TFile(rootFileName(note, nToys))
     return obs,tfile

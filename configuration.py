@@ -1,94 +1,74 @@
-import collections,socket
+import socket,patches
+import likelihoodSpec as ls
+
+batchHost = [ "FNAL", "IC" ][1]
 
 def locations() :
-    s = "/vols/cms02/samr/" if "ic.ac.uk" in socket.gethostname() else "/home/elaird/71_stats_files/"
+    dct = {
+        "ic.ac.uk"   : "/vols/cms02/samr",
+        "phosphorus" : "/home/elaird/71_stats_files/",
+        "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
+        "fnal.gov"   : "/uscms_data/d1/samr/",
+    }
+    lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
+    assert len(lst) == 1, lst
+    s = dct[ lst[0] ]
+
     return {"eff": "%s/20_yieldHistograms/2011/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
 def method() :
     return {"CL": [0.95, 0.90][:1],
-            "nToys": 2000,
+            "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
-            "computeExpectedLimit": False,
-            "expectedPlusMinus": {"OneSigma": 1.0},#, "TwoSigma": 2.0}
+            "binaryExclusionRatherThanUpperLimit": False,
+            "multiplesInGeV": None,
             }
 
 def signal() :
-    overwriteInput = collections.defaultdict(list)
-    overwriteOutput = collections.defaultdict(list)
-    overwriteOutput.update({"T1": [],
-                            "T2": [ (34, 15, 1), (38, 9, 1), (29, 7, 1), ( 35, 11, 1) ],
-                            "T2tt": [],
-                            "T2bb": [(10, 1, 1),  (15, 6, 1),  (16, 2, 1),  (16, 9, 1),  (18, 2, 1),  (20, 3, 1),
-                                     (20, 11, 1), (20, 12, 1), (20, 14, 1), (21, 1, 1),  (21, 4, 1),  (22, 5, 1),
-                                     (22, 15, 1), (23, 12, 1), (24, 10, 1), (24, 16, 1), (25, 9, 1),  (25, 15, 1),
-                                     (25, 17, 1), (25, 19, 1), (26, 4, 1),  (26, 6, 1),  (26, 14, 1), (27, 10, 1),
-                                     (28, 1, 1),  (28, 3, 1),  (28, 13, 1), (28, 15, 1), (28, 19, 1), (28, 22, 1),
-                                     (29, 3, 1),  (29, 7, 1),  (29, 9, 1),  (29, 11, 1), (29, 15, 1), (29, 18, 1),
-                                     (29, 21, 1), (31, 6, 1),  (31, 17, 1), (31, 20, 1), (31, 23, 1), (32, 5, 1),
-                                     (32, 22, 1), (32, 26, 1), (33, 4, 1),  (33, 16, 1), (33, 20, 1), (33, 21, 1),
-                                     (33, 25, 1), (34, 1, 1),  (34, 6, 1),  (34, 24, 1), (35, 2, 1),  (35, 5, 1),
-                                     (35, 17, 1), (35, 22, 1), (36, 13, 1), (36, 19, 1), (36, 26, 1), (37, 1, 1),
-                                     (37, 6, 1),  (38, 6, 1),  (38, 30, 1), (39, 5, 1),  (39, 9, 1),  (39, 13, 1),
-                                     (39, 32, 1), (40, 3, 1),  (40, 5, 1),  (40, 11, 1), (40, 28, 1), (40, 32, 1),
-                                     (40, 34, 1), (41, 11, 1), (41, 16, 1), (41, 20, 1), (41, 22, 1), (41, 23, 1),
-                                     (41, 25, 1), (41, 27, 1), (41, 35, 1), (42, 21, 1), (42, 29, 1), (42, 31, 1),
-                                     (42, 33, 1), (43, 13, 1), (43, 21, 1), (43, 31, 1), (44, 2, 1),  (44, 9, 1),
-                                     (44, 17, 1), (44, 26, 1), (44, 31, 1), (44, 33, 1), (27, 13, 1), (29, 19, 1),
-                                     (33, 5, 1),  (33, 22, 1), (33, 26, 1), (41, 28, 1), (26, 11, 1), (27, 11, 1),
-                                     (26, 12, 1), (27, 12, 1), (30, 3, 1),  (31, 3, 1),  (30, 4, 1),  (31, 4, 1),
-                                     (41, 1, 1),  (42, 1, 1),  (44, 6, 1),  (44, 7, 1),  (44, 12, 1), (44, 13, 1) ],
-                            "T1bbbb": [(36, 29, 1)],
-                            "T1tttt": [(37, 2, 1), (37, 3, 1), (37, 4, 1),
-                                       (37, 5, 1), (37, 6, 1), (37, 7, 1), ],
-                            "T5zz": [(20, 9, 1), (21, 4, 1), (28, 6, 1), (35, 25, 1), (42, 22, 1), (37, 3, 1)],
-                            })
+    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
+              "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+              "T1tttt_2012", "T2bw"]
 
-    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]
-
-    return {"minSignalXsForConsideration": 1.0e-6,
-            "maxSignalXsForConsideration": None,
-            "overwriteInput": overwriteInput,
-            "overwriteOutput": overwriteOutput,
-            "smsCutFunc": {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
-                           "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-                           },
-            "nEventsIn":{""       :(9900., 10100.),
-                         "T2tt"   :(1, None),
-                         "T5zz"   :(5.0e3, None),
-                         "T1bbbb"   :(1, None),
-                         "T1tttt"   :(1, None),
-                         "TGQ_0p0":(1, None),
-                         "TGQ_0p2":(1, None),
-                         "TGQ_0p4":(1, None),
-                         "TGQ_0p8":(1, None)},
-            "nlo": True,
-            "nloToLoRatios": False,
+    variations = ["default", "up", "down"]
+    return {"overwriteInput": patches.overwriteInput(),
+            "overwriteOutput": patches.overwriteOutput(),
+            "graphBlackLists": patches.graphBlackLists(),
+            "graphAdditionalPoints": patches.graphAdditionalPoints(),
+            "cutFunc": patches.cutFunc(),
+            "nEventsIn": patches.nEventsIn(),
+            "curves": patches.curves(),
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
-
-            "signalModel": dict(zip(models, models))["T1"]
+            "xsVariation": dict(zip(variations, variations))["default"],
+            "signalModel": dict(zip(models, models))["T2tt"]
             }
+
+def likelihoodSpec() :
+    dct = {}
+    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "dataset":"2012ichep",
+            "separateSystObs":True}
+    for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
+                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
+                  "TGQ_0p8", "T2bw"] :
+        dct[model] = {"iLower":None, "iUpper":None, "dataset":"2011",
+                "separateSystObs": True}
+    return ls.spec(**dct[signal()["signalModel"]])
 
 def listOfTestPoints() :
     #out = [(181, 29, 1)]
     #out = [(33, 53, 1)]
     #out = [(61, 61, 1)]
-    #out = [(13, 1, 1)]
+    #out = [(13, 3, 1)]
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
-    out =  [(30,1,1),
-            (34,1,1),  (35,1,1),
-            (43,17,1), (44,17,1),
-            (43,18,1), (44,18,1), ]
-    #out = []
+    #out = [(17,5,1)]
+    #out = [(26,26,1)]
+    #out = [(15,3,1)]
+    #out = [(13,1,1)]
+    out = []
     return out
 
 def xWhiteList() :
@@ -97,9 +77,11 @@ def xWhiteList() :
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
-            "subCmd": "qsub -o /dev/null -e /dev/null -q hep%s.q"%(["short", "medium", "long"][0]),
+            "subCmd": getSubCmds(),
+            "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
+            "queueSelection" : ["short", "medium", "long"][1:2],
             "envScript": "env.sh",
-            "nJobsMax": 2000}
+            "nJobsMax": getMaxJobs()}
 
 def switches() :
     out = {}
@@ -112,39 +94,41 @@ def switches() :
     checkAndAdjust(out)
     return out
 
+def getMaxJobs() :
+    return {
+        "IC": 2000,
+        "FNAL": 0,
+    }[batchHost]
+
+def getSubCmds() :
+    return {
+        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][1]),
+        "FNAL": "condor_submit"
+    }[batchHost]
+
 def checkAndAdjust(d) :
-    if d["computeExpectedLimit"] : assert d["method"]=="profileLikelihood"
-
-    d["rhoSignalMin"] = 0.0
-    d["nIterationsMax"] = 1
-    d["plSeedForCLs"] = False
-    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
-    d["extraSigEffUncSources"] = []
-
-    d["fIniFactor"] = 1.0
     d["isSms"] = "tanBeta" not in d["signalModel"]
-    if d["isSms"] :
-        d["fIniFactor"] = 0.05
-        d["nlo"] = False
-        d["rhoSignalMin"] = 0.1
-        if d["method"]!="profileLikelihood": # if PL and nIterations>1, then limit is suspect (range for f may not include 0)
-            d["nIterationsMax"] = 10
-        d["plSeedForCLs"] = True
-        #d["extraSigEffUncSources"] = ["effHadSumUncRelMcStats"]
-    if d["method"]=="feldmanCousins" :
-        d["fiftyGeVStepsOnly"] = True
-    else :
-        d["fiftyGeVStepsOnly"] = False
+    binary = d["binaryExclusionRatherThanUpperLimit"]
+    d["rhoSignalMin"] = 0.0 if binary else 0.1
+    d["fIniFactor"] = 1.0 if binary else 0.05
+    d["extraSigEffUncSources"] = [] if binary else [] #["effHadSumUncRelMcStats"]
+
+    d["plSeedParams"] = {"usePlSeed": False} if binary else \
+                        {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
+                        #{"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0}
+
+    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     return
 
 def mergedFileStem(outputDir, switches) :
     out  = "%s/%s"%(outputDir, switches["method"])
     if "CLs" in switches["method"] :
         out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
+    if switches["binaryExclusionRatherThanUpperLimit"] :
+        out += "_binaryExcl"
     out += "_%s"%switches["signalModel"]
-    out += "_nlo" if switches["nlo"] else "_lo"
-    for item in ["computeExpectedLimit"] :
-        if switches[item] : out += "_%s"%item
+    if not switches["isSms"] :
+        out += "_%s"%switches["xsVariation"]
     return out
 
 def stringsNoArgs() :

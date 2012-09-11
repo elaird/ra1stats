@@ -1,6 +1,6 @@
 import configuration as conf
 import histogramProcessing as hp
-import common,utils,likelihoodSpec
+import common,utils
 import cPickle,math,os
 import ROOT as r
 
@@ -17,9 +17,9 @@ def readNumbers(fileName) :
     return d
 
 ##number collection
-def effHistos(nloToLoRatios = False) :
+def effHistos() :
     out = {}
-    for sel in likelihoodSpec.spec().selections() :
+    for sel in conf.likelihoodSpec().selections() :
         assert sel.data.htBinLowerEdgesInput()==sel.data.htBinLowerEdges(), "merging bins is not yet supported"
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
@@ -30,12 +30,9 @@ def effHistos(nloToLoRatios = False) :
             item = "eff%s"%(box.capitalize())
             if not considerSignal :
                 d[item] = [0.0]*len(bins)
-                if nloToLoRatios : d["_LO"%item] = out[item]
                 continue
 
     	    d[item] = [hp.effHisto(box = box, scale = "1", htLower = l, htUpper = u, **kargs) for l,u in htThresholds]
-    	    if not nloToLoRatios : continue
-            d[item+"_LO"] = [hp.loEffHisto(box = box, scale = "1", htLower = l, htUpper = u, **kargs) for l,u in htThresholds]
         out[sel.name] = d
     return out
 
@@ -76,23 +73,8 @@ def signalModel(point = None, eff = None, xs = None, xsLo = None, nEventsIn = No
         out[selName] = d
     return out
 
-def broken() :
-    if switches["nloToLoRatios"] :
-        for selName,dct in out.iteritems() :
-            for box,effs in dct.iteritems() :
-                if box+"_LO" in dct :
-                    pass
-        remove = []
-        for key,value in out.iteritems() :
-            if key+"_LO" in out :
-                out[item+"_NLO_over_LO"] = [nlo/lo if lo else 0.0 for nlo,lo in zip(out[item], out[item+"_LO"])]
-                remove.append(key+"_LO")
-        for item in remove : del out[item]
-    return out
-
 def stuffVars(switches = None, binsMerged = None, signal = None) :
     titles = {"xs": "#sigma (pb)",
-              "xs_NLO_over_LO": "#sigma (NLO) / #sigma (LO)",
               "nEventsIn": "N events in",
               "effHadSum": "eff. of hadronic selection (all bins summed)",
               "nEventsHad": "N events after selection (all bins summed)",
@@ -111,15 +93,13 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
         for sel in sels :
             if sel not in signal : continue
             out["%s%d"%(sel, bin)] = (signal[sel][i], "#epsilon of %s %d selection"%(sel.replace("eff", ""), bin))
-            if switches["nloToLoRatios"] :
-                out["%s_NLO_over_LO%d"%(sel, bin)] = (signal[sel+"_NLO_over_LO"][i], "#epsilon (NLO) / #epsilon (LO)")
     return out
 
 def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
     
     args = {"switches": switches,
-            "eff": effHistos(nloToLoRatios = switches["nloToLoRatios"]),
+            "eff": effHistos(),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
             }
@@ -139,7 +119,8 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         
 ##merge functions
 def mergedFile() :
-    note = common.note(likelihoodSpec.spec())
+    s = conf.switches()
+    note = common.note(conf.likelihoodSpec())
     return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
 
 #note: improve this data format

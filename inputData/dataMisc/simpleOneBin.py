@@ -5,6 +5,17 @@ class data_simple(data) :
     """one bin test data"""
 
     def _fill(self) :
+        self._observations = {
+            "nSimple": (9.0,),
+            }
+
+        self._mcExpectationsBeforeTrigger = {
+            "mcSimple": (10.0,),
+            }
+
+
+
+
         self._htBinLowerEdges = (875.0, )
         self._htMaxForPlot = 975.0
 
@@ -15,16 +26,9 @@ class data_simple(data) :
         self._lumi = {
             "simple": 1.0
             }
-        self._observations = {
-            "nSimple": (9.0,),
-            }
 
         self._triggerEfficiencies = {
             "simple" : (1.0,),
-            }
-
-        self._mcExpectationsBeforeTrigger = {
-            "mcSimple": (10.0,),
             }
 
         for item in ["mcStatError", "purities", "mcExtraBeforeTrigger"] :

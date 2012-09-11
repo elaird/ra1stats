@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import configuration as conf
-import pickling,workspace,likelihoodSpec
+import pickling,workspace
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
@@ -43,7 +43,7 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
                 break
         if switches["method"] and eff : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
     else :
-        print "WARNING nEventsIn = %d not in allowed range[ %d, %d ] " % ( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
+        print "WARNING nEventsIn = {0} not in allowed range[ {1}, {2} ] ".format( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
     return out
 
 def results(switches = None, likelihoodSpec = None, signal = None) :
@@ -54,12 +54,12 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
                           rhoSignalMin = switches["rhoSignalMin"], fIniFactor = switches["fIniFactor"])
 
         if switches["method"]=="CLs" :
-            results = f.cls(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"],
+            results = f.cls(cl = cl, nToys = switches["nToys"],# plusMinus = switches["expectedPlusMinus"],
                             testStatType = switches["testStatistic"], calculatorType = switches["calculatorType"],
-                            plSeed = switches["plSeedForCLs"], plNIterationsMax = switches["nIterationsMax"])
+                            plSeedParams = switches["plSeedParams"])
             for key,value in results.iteritems() :
                 out[key] = (value, description(key))
-                if switches["plSeedForCLs"] : continue
+                if switches["plSeedParams"]["usePlSeed"] : continue
                 if key=="CLs" or ("Median" in key) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
@@ -70,16 +70,17 @@ def results(switches = None, likelihoodSpec = None, signal = None) :
                 if key=="CLs" or ("Median" in key) :
                     threshold = 1.0 - cl
                     out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
-        elif not switches["computeExpectedLimit"] :
-            results = f.interval(cl = cl, method = switches["method"], nIterationsMax = switches["nIterationsMax"])
+        else :
+            results = f.interval(cl = cl, method = switches["method"], nIterationsMax = 1)
             for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
             out["excluded%g"%cl2] = (compare(results["upperLimit"], 1.0), "is (%g%% upper limit on XS factor)<1?"%cl2)
-        else :
-            d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
-            for key,value in d.iteritems() :
-                out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-                out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
-            out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
+        #old expected limit code
+        #else :
+        #    d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
+        #    for key,value in d.iteritems() :
+        #        out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+        #        out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
+        #    out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
     return out
 
 def compare(item, threshold) :
@@ -87,9 +88,11 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
+    spec = conf.likelihoodSpec()
+
     for point in points() :
         pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out",
-                              d = onePoint(switches = s, likelihoodSpec = likelihoodSpec.spec(), point = point))
+                              d = onePoint(switches = s, likelihoodSpec = spec, point = point))
 
 if False :
     import cProfile

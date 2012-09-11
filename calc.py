@@ -1,7 +1,7 @@
 import math,array,copy,collections
 import utils,cpp,plotting
 import ROOT as r
-from common import obs,pdf,wimport,pseudoData
+import common
 
 cpp.compile()
 
@@ -71,12 +71,12 @@ def fcExcl(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = Tr
 
 def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapSb)
-        nll = pdf(wspace).createNLL(data)
+        nll = common.pdf(wspace).createNLL(data)
         sbLl = -nll.getVal()
         utils.delete(nll)
 
         wspace.loadSnapshot(snapB)
-        nll = pdf(wspace).createNLL(data)
+        nll = common.pdf(wspace).createNLL(data)
         bLl = -nll.getVal()
         utils.delete(nll)
 
@@ -84,7 +84,7 @@ def ts1(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None
 
 def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapSb)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         if verbose :
             print "S+B"
             print "---"
@@ -93,7 +93,7 @@ def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = Non
         utils.delete(results)
 
         wspace.loadSnapshot(snapB)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         if verbose :
             print " B "
             print "---"
@@ -107,14 +107,14 @@ def ts10(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = Non
 
 def ts4(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapB)
-        nll = pdf(wspace).createNLL(data)
+        nll = common.pdf(wspace).createNLL(data)
         bLl = -nll.getVal()
         utils.delete(nll)
         return bLl
 
 def ts40(wspace = None, data = None, snapSb = None, snapB = None, snapfHat = None, verbose = False) :
         wspace.loadSnapshot(snapB)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         if verbose :
             print " B "
             print "---"
@@ -142,9 +142,9 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
         else :
             wspace.var("f").setVal(1.0)
             wspace.var("f").setConstant(False)
-        results = utils.rooFitResults(pdf(wspace), data)
+        results = utils.rooFitResults(common.pdf(wspace), data)
         wspace.saveSnapshot("snap_%s"%label, wspace.allVars())
-        toys[label] = pseudoData(wspace, nToys)
+        toys[label] = common.pseudoData(wspace, nToys)
         utils.delete(results)
 
     args = {"wspace": wspace, "testStatType": testStatType, "snapSb": "snap_sb", "snapB": "snap_b", "snapfHat": "snap_fHat"}
@@ -163,11 +163,11 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
 
 def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
         plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints =
-        1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") : # FIXME encoding default calc in two places (here and workspace)
+        1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") :
     assert not smOnly
 
-    wimport(wspace, dataset)
-    wimport(wspace, modelconfig)
+    common.wimport(wspace, dataset)
+    common.wimport(wspace, modelconfig)
 
     #from StandardHypoTestInvDemo.C
     opts = {
@@ -201,16 +201,6 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         "NCKW"  : r.RooStats.asROOT
     }
 
-#    if False : # run alternative implementation of AsymptoticCalculator
-#        r.RooStats.asROOT(wspace)
-#        print "\n\n\n\n\n\n\n\n\n"
-#    result = hypoTestInvTool.RunInverter(wspace, #RooWorkspace * w,
-#                                         "modelConfig", "", #const char * modelSBName, const char * modelBName,
-#                                         "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
-#                                         True, nPoints, poiMin, poiMax, #bool useCLs, int npoints, double poimin, double poimax,
-#                                         nToys, #int ntoys,
-#                                         True, #bool useNumberCounting = false,
-#                                         "") #const char * nuisPriorName = 0);
     result = calcs[calcToUse](wspace, #RooWorkspace * w,
                              "modelConfig", "", #const char * modelSBName, const char * modelBName,
                              "dataName", ctd[calculatorType], testStatType, #const char * dataName, int type,  int testStatType,
@@ -259,8 +249,8 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = N
         out["LowerLimit"] = result.LowerLimit()
         out["LowerLimitError"] = result.LowerLimitEstimatedError()
         for i in range(-2,3) :
-        #for i in range(-7,8) :
-            out["ExpectedUpperLimit_%dSigma"%i] = result.GetExpectedUpperLimit(i)
+            key = "ExpectedUpperLimit" if i==0 else "ExpectedUpperLimit_%+d_Sigma"%i
+            out[key] = result.GetExpectedUpperLimit(i)
 
     return out
 
@@ -425,10 +415,10 @@ def expectedLimit(dataset, modelConfig, wspace, smOnly, cl, nToys, plusMinus, no
     #fit to SM-only
     wspace.var("f").setVal(0.0)
     wspace.var("f").setConstant(True)
-    results = utils.rooFitResults(pdf(wspace), dataset)
+    results = utils.rooFitResults(common.pdf(wspace), dataset)
 
     #generate toys
-    toys = pseudoData(wspace, nToys)
+    toys = common.pseudoData(wspace, nToys)
 
     #restore signal model
     wspace.var("f").setVal(1.0)
@@ -495,7 +485,7 @@ def printPoisPull(dct = {}) :
         lst = [(f%dct[h]).rjust(n(h,f)) for h,f in zip(headers,formats)]
         print "  ".join(lst)
 
-def pulls(pdf = None) :
+def pullsRaw(pdf = None) :
     out = {}
     className = pdf.ClassName()
     pdfName = pdf.GetName()
@@ -503,11 +493,13 @@ def pulls(pdf = None) :
     if className=="RooProdPdf" :
         pdfList = pdf.pdfList()
         for i in range(pdfList.getSize()) :
-            out.update(pulls(pdfList[i]))
+            out.update(pullsRaw(pdfList[i]))
     elif className=="RooPoisson" :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
         mu = p.mean.arg().getVal()
+        if not mu :
+            print "ERROR: mu=0.0 for",pdfName
         out[("Pois", pdfName)] = poisPull(x, mu)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
@@ -542,11 +534,7 @@ def pullHisto(termType = "", pulls = {}, title = "") :
     for i,key in enumerate(sorted(p.keys())) :
         h.SetBinContent(1+i, p[key])
         if termType=="Pois" :
-            try:
-                sample,sel,nB,iHt = key.split("_")
-            except:
-                print key
-                exit()
+            sample,sel,nB,iHt = common.split(key)
             sample = sample.replace(termType,"")
             nB = nB.replace("gt2","3")
             if not int(iHt)%2 :
@@ -558,12 +546,8 @@ def pullHisto(termType = "", pulls = {}, title = "") :
             h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
-              poisKey = ["simple", "nSigma", "nSigmaPrime"][0],
-              gausKey = "simple", debug = False,
-              note = "", plotsDir = "") :
-
-    pRaw = pulls(pdf)
+def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple", debug = False) :
+    pRaw = pullsRaw(pdf)
 
     if debug :
         printPoisPull()
@@ -571,6 +555,7 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
             if key[0]!="Pois" : continue
             printPoisPull(pRaw[key])
 
+    assert poisKey,poisKey
     p = {}
     for key,value in pRaw.iteritems() :
         if key[0]=="Pois" :
@@ -579,6 +564,27 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
             p[key] = value[gausKey]
         else :
             assert False,key
+    return p
+
+def pullStats(pulls = {}, nParams = None) :
+    chi2 = 0
+    nTerms = 0
+
+    for key,value in pulls.iteritems() :
+        chi2 += value*value
+        nTerms += 1
+
+    out = {}
+    nDof = nTerms - nParams
+    out["chi2"]    = chi2
+    out["nTerms"]  = nTerms
+    out["nParams"] = nParams
+    out["nDof"]    = nDof
+    out["prob"]    = r.TMath.Prob(chi2, nDof)
+    return out
+
+def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
+    p = pulls
 
     canvas = r.TCanvas()
     canvas.SetTickx()
@@ -593,8 +599,7 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
     line.SetLineColor(r.kBlue)
 
     total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
-    chi2 = 0
-    nTerms = 0
+
     for termType in ["Pois", "Gaus"] :
         h = pullHisto(termType, p)
         h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
@@ -602,8 +607,10 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
         h.SetMarkerStyle(20)
         h.Draw("p")
 
-        assert abs(h.GetMinimum())<yMax,h.GetMinimum()
-        assert abs(h.GetMaximum())<yMax,h.GetMaximum()
+        if abs(h.GetMinimum())>yMax :
+            print "ERROR: minimum pull=",h.GetMinimum()
+        if abs(h.GetMaximum())>yMax :
+            print "ERROR: maximum pull=",h.GetMaximum()
         h.GetYaxis().SetRangeUser(-yMax, yMax)
 
         h2 = h.Clone("%s_outliers")
@@ -611,10 +618,10 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
         lines = []
         for iBin in range(1, 1+h.GetNbinsX()) :
             content = h.GetBinContent(iBin)
-            chi2 += content*content
-            nTerms += 1
             total.Fill(content)
             if abs(content)>threshold :
+                hx = h.GetXaxis()
+                hx.SetBinLabel(iBin, "#color[4]{%s}"%hx.GetBinLabel(iBin))
                 h2.SetBinContent(iBin, content)
                 l2 = line.DrawLine(iBin, -yMax, iBin, content)
                 lines.append(l2)
@@ -624,12 +631,6 @@ def pullPlots(pdf = None, nParams = None, threshold = 2.0, yMax = 3.5,
         h2.Draw("psame")
         canvas.Print(fileName)
 
-    nDof = nTerms-nParams
-    print "\"chi2\"  =",chi2
-    print "nTerms  =",nTerms
-    print "nParams =",nParams
-    print "nDof    =",nDof
-    print "prob    =",r.TMath.Prob(chi2, nDof)
     total.Draw()
     canvas.Print(fileName)
     canvas.Print(fileName+"]")

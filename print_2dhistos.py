@@ -3,10 +3,11 @@
 import ROOT as r
 from collections import Iterable
 from array import array
+from socket import gethostname
 import DataFactory as DF
 
 def print_unpack( item, level = 0, ending_comma = False ) :
-    if not isinstance( item, dict) : 
+    if not isinstance( item, dict) :
         if not isinstance( item, Iterable ) :
             print "\t"*level,"{item:.4}".format(item=item),
             if ending_comma :
@@ -14,8 +15,8 @@ def print_unpack( item, level = 0, ending_comma = False ) :
             else:
                 print
         else :
-            s = "(" if isinstance( item,tuple ) else "[" 
-            e = ")" if isinstance( item,tuple ) else "]" 
+            s = "(" if isinstance( item,tuple ) else "["
+            e = ")" if isinstance( item,tuple ) else "]"
             print "\t"*level,s,
             for i in item :
                 print "{i:.4},".format(i=i),
@@ -33,60 +34,54 @@ def print_unpack( item, level = 0, ending_comma = False ) :
 
 r.gROOT.SetBatch(1)
 
-std_selections = { "had"  : [ "lumiData", "lumiMc", "WW", "WJets", "Zinv", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                   "muon" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
-                   "mumu" : [ "lumiData", "lumiMc", "Zinv", "WW", "WJets", "t", "ZZ",
-                         "DY", "tt", "obs", "WZ" ],
+base_histos = [ "lumiData", "lumiMc", "WJets", "Zinv", "t", "ZZ",
+                "DY", "tt", "obs" ] #"WW", "WZ" ]
+
+std_selections = { "had"  : base_histos,
+                   "muon" : base_histos,
+                   "mumu" : base_histos,
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
-#phot_selections = { "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ] }
 
-base_dir = "~/public_html/03_RA1/07_ra1stats_numbers/"
-d_set = "03_01_06_2012"
-#file_names = [  #"RA1_Stats_More_Than_One_btags.root",
-#                "RA1_Stats_More_Than_Two_btag.root",
-#                #"RA1_Stats_More_Than_Zero_btags.root",
-#                "RA1_Stats_One_btag.root",
-#                "RA1_Stats_Two_btags.root",
-#                "RA1_Stats_Zero_btags.root",
-#                #"RA1_Stats_Zero_btags_AlphaT_Cut.root",
-#             ]
-#
-#phot_files = [ "g_barrel_caloJet_ge2__0b.root",
-#               "g_barrel_caloJet_ge2__1b.root",
-#               "g_barrel_caloJet_ge2__2b.root",
-#               "g_barrel_caloJet_ge2__3b.root",
-#             ]
+base_dir = { 'phosphorus' : '~/132_2012_categories/',
+             'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
+           }[gethostname()]
 
-file_names = [ "june_{0}b.root".format(i) for i in range(0,4) ]
+d_set = ""
 
-fullfiles = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in file_names ]
-#fullphots = [ "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=f) for f in phot_files ]
+files = {"ge4b_le3j": "RA1_Stats_More_Than_Three_btag_category_2.root",
+         "ge4b_ge4j": "RA1_Stats_More_Than_Three_btag_category_3.root",
+         "ge4b_ge2j": "RA1_Stats_More_Than_Three_btag_category_all.root",
+         "3b_le3j": "RA1_Stats_More_Than_Two_btag_category_2.root",
+         "3b_ge4j": "RA1_Stats_More_Than_Two_btag_category_3.root",
+         "3b_ge2j": "RA1_Stats_More_Than_Two_btag_category_all.root",
+         "2b_le3j": "RA1_Stats_Two_btags_category_2.root",
+         "2b_ge4j": "RA1_Stats_Two_btags_category_3.root",
+         "2b_ge2j": "RA1_Stats_Two_btags_category_all.root",
+         "1b_le3j": "RA1_Stats_One_btag_category_2.root",
+         "1b_ge4j": "RA1_Stats_One_btag_category_3.root",
+         "1b_ge2j": "RA1_Stats_One_btag_category_all.root",
+         "0b_le3j": "RA1_Stats_Zero_btags_category_2.root",
+         "0b_ge4j": "RA1_Stats_Zero_btags_category_3.root",
+         "0b_ge2j": "RA1_Stats_Zero_btags_category_all.root",
+         }
 
+slices = {}
+for tag,fileName in files.iteritems() :
+    fullName = "{base}/{set}/{file}".format(base=base_dir, set=d_set, file=fileName)
+    dsf = DF.DataSliceFactory({fullName: std_selections})
+    slices[tag] = dsf.makeSlice("x",55.5,55.6)
 
-#names = [ "btag_gt1", "btag_gt2", "btag_gt0", "btag1", "btag2", "btag0", "btag0_aT" ]
-#names = [ "btag_gt2", "btag1", "btag2", "btag0_aT", "btag0_phot", "btag1_phot", "btag2_phot", "btag3_phot", ]
-names = [ "btag0", "btag1", "btag2", "btag3", ]
-
-selections  = [ { rfile : std_selections } for rfile in fullfiles ]
-#selections = [ { rfile : phot_selections } for rfile in fullphots ]
-
-dsfs = [ DF.DataSliceFactory( selection ) for selection in selections ]
-dss  = [ dsf.makeSlice("x",55.5,55.6) for dsf in dsfs ]
-
-slices = dict( zip( names, dss ) )
-
-for name,slice in slices.iteritems() :
-    print "="*len(name)
-    print name
-    print "="*len(name)
+for name in sorted(slices.keys()) :
+    slice = slices[name]
+    print "class data_%s(data) :"%name
+    print "    def _fill(self) :"
     mems = dir( slice )
     for attr_name in mems :
         if not "__" in attr_name :
             attr_data = getattr( slice, attr_name )
-            print "{classname}.{obj} = ".format(classname="self", obj=attr_name),
+            print "{space}{classname}.{obj} = ".format(space=" "*8, classname="self", obj=attr_name),
             print_unpack( attr_data,1 )
             print
+    print "%scommon(self)"%(" "*8)
     print "\n"

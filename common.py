@@ -1,24 +1,5 @@
 import ROOT as r
 
-#graphical hack (white superscript b)
-nb = "n_{b}^{#color[0]{b}}"
-
-class selection(object) :
-    '''Each key appearing in samplesAndSignalEff is used in the likelihood;
-    the corresponding value determines whether signal efficiency is considered for that sample.'''
-
-    def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
-                 alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
-                 fZinvIni = 0.5, fZinvRange = (0.0, 1.0), AQcdIni = 1.0e-2,
-                 zeroQcd = False, muonForFullEwk = False,
-                 universalSystematics = False, universalKQcd = False) :
-        for item in ["name", "note", "samplesAndSignalEff", "data",
-                     "alphaTMinMax","nbTag", "bTagLower",
-                     "fZinvIni", "fZinvRange", "AQcdIni",
-                     "zeroQcd", "muonForFullEwk",
-                     "universalSystematics", "universalKQcd"] :
-            setattr(self, item, eval(item))
-
 class signal(dict) :
     def __init__(self, xs = None, label = "") :
         for item in ["xs", "label"] :
@@ -91,7 +72,7 @@ def sampleCode(samples) :
 
 def note(likelihoodSpec = {}) :
     l = likelihoodSpec
-    out = ""
+    out = "%s_"%l._dataset
     
     if l.REwk() : out += "REwk%s_"%l.REwk()
     out += "RQcd%s"%l.RQcd()
@@ -103,3 +84,19 @@ def note(likelihoodSpec = {}) :
     for selection in l.selections() :
         out += "_%s-%s"%(selection.name, sampleCode(selection.samplesAndSignalEff))
     return out
+
+def split(key) :
+    try:
+        fields = key.split("_")
+        if len(fields)==4 :
+            sample,sel,nB,iHt = fields
+        elif len(fields)==6 :
+            sample,sel,nB,s1,s2,iHt = fields
+            assert s1=="no",s1
+            assert s2=="aT",s2
+        else :
+            assert False,"unsupported length %d"%len(fields)
+        return sample,sel,nB,iHt
+    except:
+        print key
+        exit()

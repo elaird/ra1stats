@@ -1,9 +1,12 @@
-import os,math,utils
+import os,sys,math,utils
+from array import array
+
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
 from histogramProcessing import printHoles,fillPoints,killPoints
 from pickling import mergedFile
+from utils import threeToTwo, shifted
 import ROOT as r
 
 def setupRoot() :
@@ -16,43 +19,18 @@ def setupRoot() :
 
 setupRoot()
 
-def threeToTwo(h3) :
-    name = h3.GetName()
-    h2 = r.TH2D(name+"_2D",h3.GetTitle(),
-                h3.GetNbinsX(), h3.GetXaxis().GetXmin(), h3.GetXaxis().GetXmax(),
-                h3.GetNbinsY(), h3.GetYaxis().GetXmin(), h3.GetYaxis().GetXmax(),
-                )
-
-    for iX in range(1, 1+h3.GetNbinsX()) :
-        for iY in range(1, 1+h3.GetNbinsY()) :
-            content = h3.GetBinContent(iX, iY, 1)
-            h2.SetBinContent(iX, iY, content)
-    h2.GetZaxis().SetTitle(h3.GetZaxis().GetTitle())
-    return h2
 
 def modifyHisto(h, s) :
     fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
-    killPoints(h, cutFunc = s["smsCutFunc"][s["signalModel"]] if s["signalModel"] in s["smsCutFunc"] else None)
+    killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
 
-def squareCanvas(margin = 0.18, ticks = True) :
-    canvas = r.TCanvas("canvas","canvas",2)
+def squareCanvas(margin = 0.18, ticks = True, name = "canvas", numbered = False) :
+    canvas = (utils.numberedCanvas if numbered else r.TCanvas)(name, name, 2)
     for side in ["Left", "Right", "Top", "Bottom"] :
         getattr(canvas, "Set%sMargin"%side)(margin)
     canvas.SetTickx(ticks)
     canvas.SetTicky(ticks)
     return canvas
-
-def epsToPdf(fileName, tight = True) :
-    if not tight : #make pdf
-        os.system("epstopdf "+fileName)
-        os.system("rm       "+fileName)
-    else : #make pdf with tight bounding box
-        epsiFile = fileName.replace(".eps",".epsi")
-        os.system("ps2epsi "+fileName+" "+epsiFile)
-        os.system("epstopdf "+epsiFile)
-        os.system("rm       "+epsiFile)
-        os.system("rm       "+fileName)
-    print "%s has been written."%fileName.replace(".eps",".pdf")
 
 def adjustHisto(h, title = "") :
     h.SetStats(False)
@@ -64,10 +42,51 @@ def printOnce(canvas, fileName) :
     text = r.TText()
     text.SetNDC()
     text.SetTextAlign(22)
-    text.DrawText(0.5, 0.85, "CMS Preliminary")
+    #text.DrawText(0.5, 0.85, "CMS")
+
+    if True :
+        latex = r.TLatex()
+        latex.SetNDC()
+        latex.SetTextAlign(22)
+
+        # should this go somewhere else (refXsProcessing?)
+        # i.e. modelSpec = { 'T2': { 'histo': 'squark', 'factor': 1.0, 'file':
+        # seven, 'process': 'pp ....' } }
+        process_stamps =  {
+            'T2'     : {
+                'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
+                'xpos': 0.4250,
+                },
+            'T2bb'   : {
+                'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
+                'xpos': 0.425,
+                },
+            'T2tt'   : {
+                'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
+                'xpos': 0.41,
+                },
+            'T1'     : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
+                'xpos': 0.4325,
+                },
+            'T1bbbb' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
+                'xpos': 0.43,
+                },
+            'T1tttt' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+                'xpos': 0.425,
+                },
+            }
+        current_stamp = process_stamps.get(conf.switches()['signalModel'],None)
+
+        latex.SetTextSize(0.6*latex.GetTextSize())
+        if current_stamp:
+            latex.DrawLatex(current_stamp['xpos'], 0.78, current_stamp['text'])
+
     canvas.Print(fileName)
-    canvas.Print(fileName.replace(".eps",".C"))
-    epsToPdf(fileName)
+    utils.epsToPdf(fileName)
+    #canvas.Print(fileName.replace(".eps",".C"))
 
 def setRange(var, ranges, histo, axisString) :
     if var not in ranges : return
@@ -86,91 +105,254 @@ def stamp(text = "#alpha_{T}, P.L., 1.1 fb^{-1}", x = 0.25, y = 0.55, factor = 1
     latex.DrawLatex(x, y, text)
     return latex
 
-def makeTopologyXsLimitPlots(logZ = False, names = [], drawGraphs = True, mDeltaFuncs = {}, simpleExcl = False, printXs = False) :
-    s = conf.switches()
-    if not s["isSms"] : return
-    
-    inFile = mergedFile()
-    f = r.TFile(inFile)
-    fileName = inFile.replace(".root","_xsLimit.eps")
+def pointsAtYMin(graph) :
+    out = []
+    x = graph.GetX()
+    y = graph.GetY()
+    if not graph.GetN() : return out
+    yMin = min([y[i] for i in range(graph.GetN())])
+    xsAtYMin = []
+    for i in range(graph.GetN()) :
+        if y[i]==yMin :
+            out.append((x[i], y[i]))
+    if len(out) :
+        xMax = max([coords[0] for coords in out])
+        xMin = min([coords[0] for coords in out])
+        while (xMax,yMin) in out:
+            out.remove((xMax,yMin))
+        while (xMin,yMin) in out:
+            out.remove((xMin,yMin))
+    return out
 
-    c = squareCanvas()
-    h2 = None
-    for iName,name in enumerate(names) :
+def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
+    if debug: graph.Print()
+    for p in lst:
+        x = graph.GetX()
+        y = graph.GetY()
+        bad = []
+        for i in range(graph.GetN()):
+            if abs(p[0]-x[i]) < 1.0e-6 and abs(p[1]-y[i]) < 1.0e-6:
+                bad.append(i-len(bad))
+        for i in bad:
+            print "WARNING: Removing point %d = (%g,%g) from graph %s" % (i, x[i], y[i], graph.GetName())
+            graph.RemovePoint(i)
+    if breakLink:
+        graph.RemovePoint(graph.GetN()-1)
+    if debug: graph.Print()
+
+def insertPoints( graph, lst=[], mode="prepend" ) :
+    npoints = len(lst)
+    ngraph = graph.GetN()
+
+    total_points = npoints + ngraph
+    graph.Expand(total_points)
+
+    print "expanding graph", graph.GetName(), "with", graph.GetN(),
+    print "points to have", total_points
+    if mode=="prepend":
+        for p in reversed(range(total_points)):
+            if p < npoints:
+                graph.SetPoint(p, lst[p][0], lst[p][1])
+            else:
+                x = r.Double(0.)
+                y = r.Double(0.)
+                graph.GetPoint(p-npoints,x,y)
+                graph.SetPoint(p,x,y)
+    elif mode=="append":
+        for p in range(total_points):
+            if p < ngraph:
+                x = r.Double(0.)
+                y = r.Double(0.)
+                graph.GetPoint(p,x,y)
+                graph.SetPoint(p,x,y)
+            else:
+                graph.SetPoint(p, *lst[p-ngraph])
+
+def spline(points = [], title = "") :
+    graph = r.TGraph()
+    for i,(x,y) in enumerate(points) :
+        graph.SetPoint(i, x, y)
+    return r.TSpline3(title, graph)
+
+def exclusions(histos = {}, switches = {}, graphBlackLists = None,
+        printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
+        pruneYMin = False, graphAdditionalPoints=None) :
+    graphs = []
+
+    specs = []
+    if switches["xsVariation"]=="default" :
+        specs += [
+            {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
+
+            {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
+
+            {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+            ]
+
+    specs += [
+        {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+         "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
+        ]
+
+    curves = switches["curves"].get(switches["signalModel"])
+    if switches["isSms"] :
+        specs += [
+            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+             "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
+
+            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+             "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
+            ]
+    elif curves :
+        for spec in specs :
+            key = (spec["name"], switches["xsVariation"])
+            if key in curves :
+                spec["curve"] = spline(points = curves[key])
+
+    signalModel = switches["signalModel"]
+    for i,spec in enumerate(specs) :
+        h = histos[spec["name"]]
+        graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
+
+        name = spec["name"]+("_%+1d_Sigma"%spec["variation"] if ("variation" in spec and spec["variation"]) else "")
+        if name in graphBlackLists :
+            lst = graphBlackLists[name][signalModel]
+            if pruneYMin :
+                lst += pointsAtYMin(graph['graph'])
+            pruneGraph(graph['graph'], lst = lst, debug = False, breakLink=pruneYMin)
+        if name in graphAdditionalPoints :
+            lst = graphAdditionalPoints[name][signalModel]
+            insertPoints(graph['graph'], lst = lst)
+        graphs.append(graph)
+
+    if writeDir :
+        writeDir.cd()
+        for dct in graphs :
+            dct["graph"].Write()#dct["graph"].GetName()+str(dct.get("variation","")))
+        writeDir.Close()
+    return graphs
+
+def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
+    assert len(switches["CL"])==1
+    cl = switches["CL"][0]
+    model = switches["signalModel"]
+
+    f = r.TFile(fileName)
+    histos = {}
+
+    for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
         h3 = f.Get(name)
         if not h3 : continue
-        h2 = threeToTwo(h3)
-        if iName :
-            print "WARNING: used name %d (%s)"%(iName, name)
-        break
+        h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
+        modifyHisto(h, switches)
+        title = hs.histoTitle(model = model)
+        title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
+        adjustHisto(h, title = title)
+        setRange("xRange", ranges, h, "X")
+        setRange("yRange", ranges, h, "Y")
+        if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(*ranges["xDivisions"])
+        if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(*ranges["yDivisions"])
+        histos[name] = h
 
-    assert h2,names
-    modifyHisto(h2, s)
-    
-    assert len(s["CL"])==1
-    title = hs.histoTitle(model = s["signalModel"])
-    title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*s["CL"][0])
-    adjustHisto(h2, title = title)
+    f.Close()
+    return histos
+
+def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
+    c = squareCanvas(name = "canvas_simpleExcl")
+    pdf = outFileEps.replace(".eps","_simpleExcl.pdf")
+    root = pdf.replace(".pdf",".root")
+    tfile = r.TFile(root, "RECREATE")
+    c.Print(pdf+"[")
+    for d in graphs :
+        d["histo"].Draw("colz")
+        d["histo"].SetMaximum(1.0)
+        d["histo"].SetMinimum(-1.0)
+        d["histo"].SetTitle(d.get("simpleLabel"))
+        d["histo"].Write()
+        if drawGraphs : d["graph"].Draw("psame")
+        if d.get("curve") and d["curve"].GetNp() :
+            d["curve"].SetMarkerStyle(20)
+            d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
+            d["curve"].Draw("lpsame")
+        c.Print(pdf)
+    c.Print(pdf+"]")
+    tfile.Close()
+    print "INFO: %s has been written."%pdf
+    print "INFO: %s has been written."%root
+
+def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "UpperLimit",
+                          shiftX = False, shiftY = False, interBin = "LowEdge",
+                          pruneYMin = False, debug = False, stampPrelim = True) :
+
+    s = conf.switches()
+    ranges = hs.ranges(s["signalModel"])
+
+    inFile = mergedFile()
+    outFileRoot = inFile.replace(".root", "_xsLimit.root")
+    outFileEps  = inFile.replace(".root", "_xsLimit.eps")
+    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY)
 
     #output a root file
-    g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
-    h2.Write()
-    
-    ranges = hs.smsRanges(s["signalModel"])
-    setRange("smsXRange", ranges, h2, "X")
-    setRange("smsYRange", ranges, h2, "Y")
-    
-    h2.Draw("colz")
-    graphs = rxs.graphs(h2, s["signalModel"], "LowEdge", printXs = printXs)
+    g = r.TFile(outFileRoot, "RECREATE")
+    for h in histos.values() :
+        h.Write()
 
-    g.cd()
-    for dct in graphs :
-        dct["graph"].Write("graph_%5.3f_xs"%dct["factor"])
-    g.Close()
-
-    if simpleExcl :
-        ps = fileName.replace(".eps","_simpleExcl.ps")
-        c.Print(ps+"[")
-        for d in graphs :
-            d["histo"].Draw("colz")
-            d["histo"].SetMaximum(1.0)
-            d["histo"].SetMinimum(-1.0)
-            d["histo"].SetTitle(d["label"])
-            d["graph"].Draw("psame")
-            c.Print(ps)
-        c.Print(ps+"]")
-        utils.ps2pdf(ps, sameDir = True)
-        return
-
-    printName = fileName
-    if not logZ :
-        setRange("smsXsZRangeLin", ranges, h2, "Z")
-        if drawGraphs : stuff = rxs.drawGraphs(graphs)
-        printName = fileName.replace(".eps", "_refXs.eps")
-    else :
+    #draw observed limit
+    c = squareCanvas()
+    histos[name].Draw("colz")
+    if logZ :
         c.SetLogz()
-        setRange("smsXsZRangeLog", ranges, h2, "Z")
-        if drawGraphs :
-            stuff = rxs.drawGraphs(graphs)
-            fileName = fileName.replace(".eps", "_refXs.eps")
-        if mDeltaFuncs :
-            fileName = fileName.replace(".eps", "_mDelta.eps")
-            funcs = rxs.mDeltaFuncs(**mDeltaFuncs)
-            for func in funcs :
-                func.Draw("same")
-        printName = fileName.replace(".eps", "_logZ.eps")
+        setRange("xsZRangeLog", ranges, histos[name], "Z")
+        outFileEps = outFileEps.replace(".eps", "_logZ.eps")
+    else :
+        setRange("xsZRangeLin", ranges, histos[name], "Z")
 
-    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
+
+    #make exclusion histograms and curves
+    try:
+        graphs = exclusions(histos = histos, writeDir = g, switches = s,
+                graphBlackLists = s["graphBlackLists"], interBin = interBin,
+                printXs = printXs, pruneYMin = pruneYMin, debug = debug,
+                graphAdditionalPoints = s["graphAdditionalPoints"])
+    except:
+        print "ERROR: creation of exclusions has failed."
+        sys.excepthook(*sys.exc_info())
+        graphs = []
+
+    #draw exclusion curves
+    if exclusionCurves :
+        outFileEps = outFileEps.replace(".eps", "_refXs.eps")
+        stuff = rxs.drawGraphs(graphs)
+
+    if graphs :
+        makeSimpleExclPdf(graphs = graphs, outFileEps = outFileEps, drawGraphs = exclusionCurves)
+
+    #draw curves of iso-mDelta
+    if mDeltaFuncs :
+        outFileEps = outFileEps.replace(".eps", "_mDelta.eps")
+        funcs = rxs.mDeltaFuncs(**mDeltaFuncs)
+        for func in funcs :
+            func.Draw("same")
+
+    #stamp plot
+    stamp_text = conf.likelihoodSpec().legendTitle
+
+    #s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    s3 = stamp(text = "%s, 4.6 fb^{-1}"%textMap[conf.switches()["method"]], x = 0.22, y = 0.62, factor = 0.7)
-    
-    printOnce(c, printName)
-    printHoles(h2)
-    
+    s3 = stamp(text = stamp_text, x = 0.2075, y = 0.64, factor = 0.65)
+    if stampPrelim:
+        s4 = stamp(text = "Preliminary", x = 0.2075, y = 0.595, factor = 0.7)
+
+    printOnce(c, outFileEps)
+    printHoles(histos[name])
+
 def makeEfficiencyPlot() :
     s = conf.switches()
     if not s["isSms"] : return
-    
+
     inFile = mergedFile()
     f = r.TFile(inFile)
     fileName = inFile.replace(".root","_efficiency.eps")
@@ -181,8 +363,8 @@ def makeEfficiencyPlot() :
     for item in f.GetListOfKeys() :
         h = f.Get(item.GetName())
         if "effHadSum" not in h.GetName() : continue
-        
-        if not h3 : 
+
+        if not h3 :
             h3 = h.Clone("eff")
             h3.SetDirectory(0)
         else :
@@ -193,7 +375,7 @@ def makeEfficiencyPlot() :
 
     assert h2
     modifyHisto(h2, s)
-    
+
     title = hs.histoTitle(model = s["signalModel"])
     title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
@@ -202,28 +384,28 @@ def makeEfficiencyPlot() :
     g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
     h2.Write()
     g.Close()
-    
-    ranges = hs.smsRanges(s["signalModel"])
-    setRange("smsXRange", ranges, h2, "X")
-    setRange("smsYRange", ranges, h2, "Y")
-    
+
+    ranges = hs.ranges(s["signalModel"])
+    setRange("xRange", ranges, h2, "X")
+    setRange("yRange", ranges, h2, "Y")
+
     h2.Draw("colz")
 
     printName = fileName
-    setRange("smsEffZRange", ranges, h2, "Z")
+    setRange("effZRange", ranges, h2, "Z")
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
-    
+
     printOnce(c, printName)
     printHoles(h2)
-    
+
 def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
     if not s["isSms"] : return
 
     inFile = mergedFile()
     f = r.TFile(inFile)
-    ranges = hs.smsRanges(s["signalModel"])
+    ranges = hs.ranges(s["signalModel"])
 
     def go(name, suffix, zTitle, zRangeKey) :
         fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
@@ -231,8 +413,8 @@ def makeEfficiencyUncertaintyPlots() :
         h2 = threeToTwo(f.Get(name))
         xyTitle = hs.histoTitle(model = s["signalModel"])
         adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
-        setRange("smsXRange", ranges, h2, "X")
-        setRange("smsYRange", ranges, h2, "Y")
+        setRange("xRange", ranges, h2, "X")
+        setRange("yRange", ranges, h2, "Y")
         h2.Draw("colz")
         setRange(zRangeKey, ranges, h2, "Z")
 
@@ -240,15 +422,15 @@ def makeEfficiencyUncertaintyPlots() :
         g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
         h2.Write()
         g.Close()
-        
+
         printOnce(c, fileName)
 
-    go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncExpZRange")
-    go(name = "effUncRelTheoretical", suffix = "effUncRelTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncThZRange")
-    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelIsrZRange")
-    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelPdfZRange")
-    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelJesZRange")
-    go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "smsEffUncRelMcStatsZRange")
+    go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "effUncExpZRange")
+    go(name = "effUncRelTheoretical", suffix = "effUncRelTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon", zRangeKey = "effUncThZRange")
+    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon", zRangeKey = "effUncRelIsrZRange")
+    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon", zRangeKey = "effUncRelPdfZRange")
+    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon", zRangeKey = "effUncRelJesZRange")
+    go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "effUncRelMcStatsZRange")
 
 def printTimeStamp() :
     #l = conf.likelihood()
@@ -297,7 +479,7 @@ def drawBenchmarks() :
     if not switches["drawBenchmarkPoints"] : return
     if not (switches["signalModel"] in parameters) : return
     params = parameters[switches["signalModel"]]
-        
+
     text = r.TText()
     out = []
     for label,coords in conf.benchmarkPoints().iteritems() :
@@ -332,16 +514,18 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
     stuff = drawBenchmarks()
 
     if "excluded" in name and switches["isSms"] : return
-    
+
     printSinglePage  = (not switches["isSms"]) and "excluded" in name
     printSinglePage |= switches["isSms"] and "upperLimit" in name
-    
+
     if printSinglePage :
         title = h2.GetTitle()
         h2.SetTitle("")
-        eps = fileName.replace(".ps","_%s.eps"%name)
-        super(utils.numberedCanvas, canvas).Print(eps)
-        utils.epsToPdf(eps)
+#        eps = fileName.replace(".ps","_%s.eps"%name)
+#        super(utils.numberedCanvas, canvas).Print(eps)
+#        utils.epsToPdf(eps)
+        pdf_fileName = fileName.replace(".pdf","_%s.pdf"%name)
+        super(utils.numberedCanvas, canvas).Print(pdf_fileName)
         h2.SetTitle(title)
 
     canvas.Print(fileName)
@@ -383,19 +567,22 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False) :
+def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False, square = False) :
     assert tag
-    
+
     inFile = mergedFile()
     f = r.TFile(inFile)
     r.gROOT.cd()
-    
+
     fileName = inFile.replace(".root","_%s.pdf"%tag)
     rootFileName = fileName.replace(".pdf", ".root")
-    
-    canvas = utils.numberedCanvas()
-    canvas.SetRightMargin(0.15)
-    
+
+    if square :
+        canvas = squareCanvas(numbered = True)
+    else :
+        canvas = utils.numberedCanvas()
+        canvas.SetRightMargin(0.15)
+
     canvas.Print(fileName+"[")
     canvas.SetTickx()
     canvas.SetTicky()
@@ -412,12 +599,12 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     if outputRootFile :
         outFile = r.TFile(rootFileName, "RECREATE")
         r.gROOT.cd()
-    
+
     suppressed = []
     for name in names :
         if whiteListMatch and not any([item in name for item in whiteListMatch]) : continue
         if any([item in name for item in blackListMatch]) : continue
-        
+
         h2 = threeToTwo(f.Get(name))
         if modify : modifyHisto(h2, s)
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
@@ -434,7 +621,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     canvas.Clear()
     text3 = printSuppressed(suppressed)
     canvas.Print(fileName)
-    
+
     canvas.Print(fileName+"]")
 
     print "%s has been written."%fileName
@@ -494,7 +681,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
             limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
             limLine.SetLineColor(r.kBlue)
             graphs[name] = [graph, clLine, limLine]
-            
+
             if not whiteList :
                 xLimPl = histos["PlUpperLimit"].GetBinContent(iBinX, iBinY)
                 plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
@@ -522,20 +709,17 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
     else :
         canvas.Print(fileName+"]")
         print "%s has been written."%fileName
-    
-def makePlots() :
-    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"])
-    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
-    multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True)
-    multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True)
+
+def makePlots(square = False) :
+    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], square = square)
+    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
+    multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
+    multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
 
     s = conf.switches()
     if s["isSms"] and s["method"]=="CLs" :
         for cl in s["CL"] :
             clsValidation(tag = "clsValidation", cl = cl, masterKey = "xs")
-    
-    #pg.makeEfficiencyUncertaintyPlots()
-    #pg.makeTopologyXsLimitPlots()
 
 def expectedLimit(obsFile, expFile) :
     def histo(file, name) :
@@ -552,7 +736,7 @@ def expectedLimit(obsFile, expFile) :
         for x in ["X", "Y"] :
             for attr in ["GetXmin", "GetXmax", "GetNbins"] :
                 assert getattr(a(h1, x)(), attr)()==getattr(a(h2, x)(), attr)()
-        
+
     def compare(h1, h2) :
         check(h1, h2)
         out = h2.Clone(h1.GetName()+h2.GetName())
@@ -574,7 +758,7 @@ def expectedLimit(obsFile, expFile) :
         for key in keys :
             out += ["MedianPlus%s"%key, "MedianMinus%s"%key]
         return out
-    
+
     psFileName = expFile.replace(".root", "_results.ps")
     rootFileName = psFileName.replace(".ps", ".root")
     outFile = r.TFile(rootFileName, "RECREATE")
