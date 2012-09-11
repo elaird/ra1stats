@@ -117,6 +117,33 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
     return limitHistoDict
 
 
+def printRatio(hd1, hd2, errSign=None):
+    h1 = hd1['hist']
+    h2 = hd2['hist']
+
+    ratio = h2.Clone()
+    for h2Bin in range(1, h2.GetNbinsX()+1):
+        val = h2.GetBinLowEdge(h2Bin)
+        h1Bin = h1.FindBin(val)
+
+        ratio = h2.Clone()
+        num = h1.GetBinContent(h1Bin)
+        if errSign is None:
+            denom = h2.GetBinContent(h2Bin)
+        elif errSign == '+':
+            denom = h2.GetBinContent(h2Bin) + h2.GetBinError(h2Bin)
+        elif errSign == '-':
+            denom = h2.GetBinContent(h2Bin) - h2.GetBinError(h2Bin)
+
+        if denom > 0.:
+            binRatio = num / denom
+        else:
+            binRatio = 0.
+        binLo = ratio.GetBinLowEdge(h2Bin)
+        binHi = ratio.GetBinLowEdge(h2Bin+1)
+        print('{low},{high},{val}'.format(low=binLo, high=binHi,
+                                          val=binRatio))
+
 def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
               xMin=None, xMax=None):
     h1 = hd1['hist']
@@ -133,6 +160,8 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
     for h2Bin in range(1, h2.GetNbinsX()+1):
         val = h2.GetBinLowEdge(h2Bin)
         h1Bin = h1.FindBin(val)
+
+        ratio = h2.Clone()
         num = h1.GetBinContent(h1Bin)
         denom = h2.GetBinContent(h2Bin)
 
@@ -164,7 +193,8 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
               epsFile="xs/compareXs.eps", refYRange=(50,50), processName="",
-              plotOptOverrides=None, shiftX=False, showRatio=False) :
+              plotOptOverrides=None, shiftX=False, showRatio=False,
+              dumpRatio=True) :
     plotOpts = {
         'yMax': 1e+1,
         'yMin': 1e-3,
@@ -236,6 +266,12 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
 
     ref = hs['refHisto']
     obs = hs['UpperLimit']
+
+    if dumpRatio:
+        #printRatio(obs, ref)
+        printRatio(obs, ref, errSign='+')
+        #printRatio(obs, ref, errSign='-')
+
     if showRatio:
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
                                 #xMax=plotOpts['xMax'])
