@@ -211,7 +211,7 @@ def graphBlackLists() :
 
     return out
 
-def ridiculousGraphHack():
+def graphAdditionalPoints():
     out = {}
     keys  = [ "UpperLimit", "ExpectedUpperLimit" ]
     keys += [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]

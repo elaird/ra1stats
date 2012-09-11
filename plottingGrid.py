@@ -176,7 +176,7 @@ def spline(points = [], title = "") :
 
 def exclusions(histos = {}, switches = {}, graphBlackLists = None,
         printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
-        pruneYMin = False, additionalPoints=None) :
+        pruneYMin = False, graphAdditionalPoints=None) :
     graphs = []
 
     specs = []
@@ -223,15 +223,15 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
             if pruneYMin :
                 lst += pointsAtYMin(graph['graph'])
             pruneGraph(graph['graph'], lst = lst, debug = False, breakLink=pruneYMin)
-        if name in additionalPoints :
-            lst = additionalPoints[name][signalModel]
+        if name in graphAdditionalPoints :
+            lst = graphAdditionalPoints[name][signalModel]
             insertPoints(graph['graph'], lst = lst)
         graphs.append(graph)
 
     if writeDir :
         writeDir.cd()
         for dct in graphs :
-            dct["graph"].Write()#"graph_%5.3f_xs"%dct["factor"])
+            dct["graph"].Write(dct["graph"].GetName()+str(dct.get("variation","")))#"graph_%5.3f_xs"%dct["factor"])
         writeDir.Close()
     return graphs
 
@@ -316,7 +316,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         graphs = exclusions(histos = histos, writeDir = g, switches = s,
                 graphBlackLists = s["graphBlackLists"], interBin = interBin,
                 printXs = printXs, pruneYMin = pruneYMin, debug = debug,
-                additionalPoints = s["additionalPoints"])
+                graphAdditionalPoints = s["graphAdditionalPoints"])
     except:
         print "ERROR: creation of exclusions has failed."
         sys.excepthook(*sys.exc_info())
@@ -340,7 +340,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #stamp plot
     stamp_text = conf.likelihoodSpec().legendTitle
 
-    s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
+    #s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
     #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
     #s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)

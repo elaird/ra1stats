@@ -36,7 +36,7 @@ def signal() :
     return {"overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
-            "additionalPoints": patches.ridiculousGraphHack(),
+            "graphAdditionalPoints": patches.graphAdditionalPoints(),
             "cutFunc": patches.cutFunc(),
             "nEventsIn": patches.nEventsIn(),
             "curves": patches.curves(),
