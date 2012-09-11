@@ -37,7 +37,7 @@ def drawStamp(canvas, processName=None):
     tl.DrawLatex(0.42,0.49,'m_{LSP} = 50 GeV')
     tl.DrawLatex(0.42,0.603,'CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV')
     tl.SetTextSize(0.07)
-    tl.DrawLatex(0.20,0.75,'#alpha_{T}')
+    #tl.DrawLatex(0.20,0.75,'#alpha_{T}')
     if processName is not None:
         tl.SetTextSize(0.04)
         tl.DrawLatex(0.42,0.550,processName)
