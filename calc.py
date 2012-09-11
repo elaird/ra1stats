@@ -161,9 +161,10 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
     out["CLs"] = out["CLsb"]/out["CLb"] if out["CLb"] else 9.9
     return out
 
-def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None, cl = None, nToys = None, calculatorType = None, testStatType = None,
-        plusMinus = {}, note = "", makePlots = None, nWorkers = None, nPoints =
-        1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") :
+def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None,
+        cl = None, nToys = None, calculatorType = None, testStatType = None,
+        plusMinus = {}, note = "", makePlots = None, nWorkers = None,
+        nPoints = 1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") :
     assert not smOnly
 
     common.wimport(wspace, dataset)
