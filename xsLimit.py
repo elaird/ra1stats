@@ -8,7 +8,8 @@ plottingGrid.makeXsUpperLimitPlots(logZ = True,
                                    #exclusionCurves = False,
                                    #mDeltaFuncs = {"mDeltaMin":0.0, "mDeltaMax":400.0, "nSteps":4, "mGMax":1250.},
                                    #printXs = True,
-                                   #**{"shiftX":True, "shiftY":True, "interBin":"Center"}
+                                   stampPrelim = False,
+                                   **{"shiftX":True, "shiftY":True, "interBin":"Center"}
                                    #**{"shiftX":False, "shiftY":False, "interBin":"LowEdge"}
                                    )
 
