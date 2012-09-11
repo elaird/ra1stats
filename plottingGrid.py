@@ -200,10 +200,10 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+            {"name":"UpperLimit_-1_Sigma_xs",      "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
              "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
 
-            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+            {"name":"UpperLimit_+1_Sigma_xs",      "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
             ]
     elif curves :
@@ -214,10 +214,14 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
 
     signalModel = switches["signalModel"]
     for i,spec in enumerate(specs) :
-        h = histos[spec["name"]]
+        histoName = spec["name"]
+        if "UpperLimit" in histoName :
+            histoName = histoName.replace("_-1_Sigma_xs","").replace("_+1_Sigma_xs","")
+        h = histos[histoName]
         graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
+        graph["graph"].SetName(graph["graph"].GetName().replace(histoName, spec["name"]))
 
-        name = spec["name"]+("_%+1d_Sigma"%spec["variation"] if ("variation" in spec and spec["variation"]) else "")
+        name = spec["name"]
         if name in graphBlackLists :
             lst = graphBlackLists[name][signalModel]
             if pruneYMin :
@@ -231,7 +235,7 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
     if writeDir :
         writeDir.cd()
         for dct in graphs :
-            dct["graph"].Write()#dct["graph"].GetName()+str(dct.get("variation","")))
+            dct["graph"].Write()
         writeDir.Close()
     return graphs
 
