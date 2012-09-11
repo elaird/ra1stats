@@ -164,7 +164,7 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
 def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None,
         cl = None, nToys = None, calculatorType = None, testStatType = None,
         plusMinus = {}, note = "", makePlots = None, nWorkers = None,
-        nPoints = 1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID") :
+        nPoints = 1, poiMin = 1.0, poiMax = 1.0, calcToUse="SHTID", debug = False) :
     assert not smOnly
 
     common.wimport(wspace, dataset)
@@ -210,18 +210,14 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None,
                              True, #bool useNumberCounting = false,
                              "") #const char * nuisPriorName = 0);
 
-    sigma_values = [ 0, -1, 1, -2, 2 ]
-
-    upperLimit = result.UpperLimit();
-    ulError = result.UpperLimitEstimatedError();
-    print "{cal}::{pmin}->{pmax}:{steps}".format(cal=calcToUse,pmin=poiMin,pmax=poiMax,steps=nPoints)
-    print "The computed upper limit is: {ul} +/- {ul_e}".format(ul=upperLimit,
-                                                                ul_e=ulError)
-    for value in sigma_values :
-        print "  expected limit ({val:+}sigma) = {res}".format(val=value,
-                                                            res=result.GetExpectedUpperLimit(value))
-
-    #hypoTestInvTool.AnalyzeResult( result, ctd[calculatorType], testStatType, True, nPoints, "lulz.root" )
+    if debug :
+        upperLimit = result.UpperLimit();
+        ulError = result.UpperLimitEstimatedError();
+        print "{cal}::{pmin}->{pmax}:{steps}".format(cal=calcToUse,pmin=poiMin,pmax=poiMax,steps=nPoints)
+        print "The computed upper limit is: {ul} +/- {ul_e}".format(ul=upperLimit, ul_e=ulError)
+        for value in [ 0, -1, 1, -2, 2 ] :
+            print "  expected limit ({val:+}sigma) = {res}".format(val=value, res=result.GetExpectedUpperLimit(value))
+        hypoTestInvTool.AnalyzeResult( result, ctd[calculatorType], testStatType, True, nPoints, "debug.root")
 
     out = {}
     args = {}
