@@ -266,7 +266,6 @@ def obsString(label = "", other = "", lumi = 0.0) :
 class validationPlotter(object) :
     def __init__(self, args) :
         for key,value in args.iteritems() :
-            print key, value
             setattr(self,key,value)
         if self.signalExampleToStack : assert self.smOnly
         if not hasattr(self,"drawRatios") : setattr(self,"drawRatios",False)
