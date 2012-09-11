@@ -342,9 +342,6 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     #s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
-    #s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
-    #s3 = stamp(text = "CMS, L = 4.98 fb^{-1},  #sqrt{s}=7 TeV", x = 0.2075, y = 0.64, factor = 0.7)
     s3 = stamp(text = stamp_text, x = 0.2075, y = 0.64, factor = 0.65)
     if stampPrelim:
         s4 = stamp(text = "Preliminary", x = 0.2075, y = 0.595, factor = 0.7)
