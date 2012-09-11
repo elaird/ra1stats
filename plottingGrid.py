@@ -231,7 +231,7 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
     if writeDir :
         writeDir.cd()
         for dct in graphs :
-            dct["graph"].Write(dct["graph"].GetName()+str(dct.get("variation","")))#"graph_%5.3f_xs"%dct["factor"])
+            dct["graph"].Write()#dct["graph"].GetName()+str(dct.get("variation","")))
         writeDir.Close()
     return graphs
 
