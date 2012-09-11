@@ -806,7 +806,7 @@ class foo(object) :
                }[tool]
         os.system(cmd+" cpp/drive %s"%fileName)
 
-    def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1, plSeed = False, plNIterationsMax = None, calcToUse="") :
+    def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1, plSeedParams = {}) :
         args = {}
         out = {}
         if plSeedParams["usePlSeed"] :
@@ -820,12 +820,9 @@ class foo(object) :
             if s.first().getMin() : s.first().setMin(0.0)
             if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
 
-        out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig,
-                wspace = self.wspace, smOnly = self.smOnly(), cl = cl,
-                nToys = nToys, calculatorType = calculatorType,
-                testStatType = testStatType, plusMinus = plusMinus,
-                nWorkers = nWorkers, note = self.note(), makePlots = makePlots,
-                 calcToUse=calcToUse, **args)
+        out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
+                        cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
+                        plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
         out.update(out2)
         return out
 
