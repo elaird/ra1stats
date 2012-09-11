@@ -42,23 +42,47 @@ def printOnce(canvas, fileName) :
     text = r.TText()
     text.SetNDC()
     text.SetTextAlign(22)
-    text.DrawText(0.5, 0.85, "CMS Preliminary")
+    #text.DrawText(0.5, 0.85, "CMS")
 
-    if False :
+    if True :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
 
-        T2     = "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})"
-        T2bb   = "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})"
-        T2tt   = "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})"
-
-        T1     = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})"
-        T1bbbb = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})"
-        T1tttt = "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})"
+        # should this go somewhere else (refXsProcessing?)
+        # i.e. modelSpec = { 'T2': { 'histo': 'squark', 'factor': 1.0, 'file':
+        # seven, 'process': 'pp ....' } }
+        process_stamps =  {
+            'T2'     : {
+                'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
+                'xpos': 0.4250,
+                },
+            'T2bb'   : {
+                'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
+                'xpos': 0.425,
+                },
+            'T2tt'   : {
+                'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
+                'xpos': 0.41,
+                },
+            'T1'     : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
+                'xpos': 0.4325,
+                },
+            'T1bbbb' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
+                'xpos': 0.43,
+                },
+            'T1tttt' : {
+                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+                'xpos': 0.425,
+                },
+            }
+        current_stamp = process_stamps.get(conf.switches()['signalModel'],None)
 
         latex.SetTextSize(0.6*latex.GetTextSize())
-        latex.DrawLatex(0.45, 0.79, T2tt)
+        if current_stamp:
+            latex.DrawLatex(current_stamp['xpos'], 0.78, current_stamp['text'])
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
@@ -116,14 +140,43 @@ def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
         graph.RemovePoint(graph.GetN()-1)
     if debug: graph.Print()
 
+def insertPoints( graph, lst=[], mode="prepend" ) :
+    npoints = len(lst)
+    ngraph = graph.GetN()
+
+    total_points = npoints + ngraph
+    graph.Expand(total_points)
+
+    print "expanding graph", graph.GetName(), "with", graph.GetN(),
+    print "points to have", total_points
+    if mode=="prepend":
+        for p in reversed(range(total_points)):
+            if p < npoints:
+                graph.SetPoint(p, lst[p][0], lst[p][1])
+            else:
+                x = r.Double(0.)
+                y = r.Double(0.)
+                graph.GetPoint(p-npoints,x,y)
+                graph.SetPoint(p,x,y)
+    elif mode=="append":
+        for p in range(total_points):
+            if p < ngraph:
+                x = r.Double(0.)
+                y = r.Double(0.)
+                graph.GetPoint(p,x,y)
+                graph.SetPoint(p,x,y)
+            else:
+                graph.SetPoint(p, *lst[p-ngraph])
+
 def spline(points = [], title = "") :
     graph = r.TGraph()
     for i,(x,y) in enumerate(points) :
         graph.SetPoint(i, x, y)
     return r.TSpline3(title, graph)
 
-def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
-               pruneYMin = False) :
+def exclusions(histos = {}, switches = {}, graphBlackLists = None,
+        printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
+        pruneYMin = False, graphAdditionalPoints=None) :
     graphs = []
 
     specs = []
@@ -170,12 +223,15 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, printXs = Non
             if pruneYMin :
                 lst += pointsAtYMin(graph['graph'])
             pruneGraph(graph['graph'], lst = lst, debug = False, breakLink=pruneYMin)
+        if name in graphAdditionalPoints :
+            lst = graphAdditionalPoints[name][signalModel]
+            insertPoints(graph['graph'], lst = lst)
         graphs.append(graph)
 
     if writeDir :
         writeDir.cd()
         for dct in graphs :
-            dct["graph"].Write()#"graph_%5.3f_xs"%dct["factor"])
+            dct["graph"].Write()#dct["graph"].GetName()+str(dct.get("variation","")))
         writeDir.Close()
     return graphs
 
@@ -228,7 +284,8 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
     print "INFO: %s has been written."%root
 
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "UpperLimit",
-                          shiftX = False, shiftY = False, interBin = "LowEdge", pruneYMin = False, debug = False) :
+                          shiftX = False, shiftY = False, interBin = "LowEdge",
+                          pruneYMin = False, debug = False, stampPrelim = True) :
 
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
@@ -256,8 +313,10 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     #make exclusion histograms and curves
     try:
-        graphs = exclusions(histos = histos, writeDir = g, switches = s, graphBlackLists = s["graphBlackLists"],
-                            interBin = interBin, printXs = printXs, pruneYMin = pruneYMin, debug = debug)
+        graphs = exclusions(histos = histos, writeDir = g, switches = s,
+                graphBlackLists = s["graphBlackLists"], interBin = interBin,
+                printXs = printXs, pruneYMin = pruneYMin, debug = debug,
+                graphAdditionalPoints = s["graphAdditionalPoints"])
     except:
         print "ERROR: creation of exclusions has failed."
         sys.excepthook(*sys.exc_info())
@@ -279,10 +338,13 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
             func.Draw("same")
 
     #stamp plot
-    s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
+    stamp_text = conf.likelihoodSpec().legendTitle
+
+    #s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
-    #s3 = stamp(text = "%s,  3.9 fb^{-1},  #sqrt{s}=8 TeV"%textMap[s["method"]], x = 0.22, y = 0.55, factor = 0.7)
-    s3 = stamp(text = "%s,  4.98 fb^{-1},  #sqrt{s}=7 TeV"%textMap[s["method"]], x = 0.21, y = 0.64, factor = 0.7)
+    s3 = stamp(text = stamp_text, x = 0.2075, y = 0.64, factor = 0.65)
+    if stampPrelim:
+        s4 = stamp(text = "Preliminary", x = 0.2075, y = 0.595, factor = 0.7)
 
     printOnce(c, outFileEps)
     printHoles(histos[name])

@@ -20,14 +20,16 @@ def cmssmCut(iX, x, iY, y, iZ, z) :
         return 200.0 <= y <= 400.0
 
 def cutFunc() :
-    return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-            "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+    return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            #"T2tt":lambda iX,x,iY,y,iZ,z:(y<50 and iZ==1 and x>299.9),
+            "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T2bw":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
-            "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-            "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
-            "T1tttt_2012":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>299.9),
+            "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T1tttt_2012":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "tanBeta10":cmssmCut,
             }
 
@@ -95,7 +97,7 @@ def overwriteInput() :
 
 def overwriteOutput() :
     out = collections.defaultdict(list)
-    out.update({"T2": [(9,2,1)],
+    out.update({"T2": [(9,2,1)], # need to hack histoProc to only use vert neighbors
                 "T2bb": [
                 (16, 9, 1), (18, 2, 1), (20, 3, 1), (20, 14, 1), (21, 1, 1),
                 (22, 5, 1), (22, 15, 1), (23, 12, 1), (25, 17, 1), (26, 14, 1),
@@ -115,6 +117,10 @@ def overwriteOutput() :
                 (37, 7, 1), (29, 13, 1), (40, 24, 1), (44, 28, 1),
                 (27, 11, 1)
                 ],
+                "T2tt": [ (13,2,1), (14,1,1), (13,1,1), (19,1,1), (24,1,1),
+                    (26,1,1), (27,2,1), (29,1,1), (31,1,1), (34,1,1), (36,1,1),
+                    (37,2,1), (39,1,1), (42,2,1), (44,1,1,), (46,1,1), (47,2,1)
+                    ],
                 })
     return out
 
@@ -131,13 +137,15 @@ def graphBlackLists() :
     out["UpperLimit_+1_Sigma"].update({"T1":[ (1050,50), (1025, 375),
         (1025, 400), (1000,425) ]})
 
-    out["UpperLimit"].update({"T2" : [ (800,200) ]})
+    out["UpperLimit"].update({"T2" : [ (800,200), (325,125), (300,100) ]})
     out["UpperLimit_-1_Sigma"].update({"T2":[ (750, 200), (675,300),
-        (525,300) ]})
+        (525,300), (300,100) ]})
     out["UpperLimit_+1_Sigma"].update({"T2":[ (575,400), (725,325), (700,300),
         (750,250), (775,200), (825,275), (800,250), (850,225), (850,75),
-        (875,75), (725,250)]})
-    out["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (875,150) ]})
+        (875,75), (725,250), (300,100)]})
+    out["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (875,150), (300,100) ]})
+    out["ExpectedUpperLimit_+1_Sigma"].update({"T2" : [ (300,100) ]})
+    out["ExpectedUpperLimit"].update({"T2" : [ (300,100) ]})
 
     out["UpperLimit"].update({"T2bb" : [ (500,100), (500,250),
         (575,125), (500, 150), (525,200), (500,200) ]})
@@ -149,11 +157,23 @@ def graphBlackLists() :
         (525,225), (525,100), (525,200)]})
     out["ExpectedUpperLimit_+1_Sigma"].update({"T2bb" : [ (475, 75), ]})
 
-    out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50), (475,100) ]})
-    out["UpperLimit_-1_Sigma"].update({"T2tt":[ (550, 100) ]})
-    out["UpperLimit_+1_Sigma"].update({"T2tt":[ (550, 100), (575,125),
-        (525,150), (475,125) ]})
-    out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
+    out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,25),
+        (475,100), (375,25), (400,25), (450, 50), (425,25) ]})
+    out["UpperLimit_-1_Sigma"].update({"T2tt":[ (375,25), (425,25), (450,25),
+        (350,25), (400,50), (425,25), (450,25), (475,25), (525,50), (550,100) ]})
+    out["UpperLimit_+1_Sigma"].update({"T2tt":[ (400,25), (425,25), (475,125),
+        (475,50), (525, 150), (550,100), (575,125) ]})
+    out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (350,25), (375,0),
+        (375,50), (450,50) ]})
+
+# BULK REGION ONLY
+    #out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50),
+        #(475,100), (400,75) ]})
+    #out["UpperLimit_-1_Sigma"].update({"T2tt":[ (550, 100), (350,50) ]})
+    #out["UpperLimit_+1_Sigma"].update({"T2tt":[ (550, 100), (575,125),
+        #(525,150), (475,125) ]})
+    #out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
+##################
 
     out["UpperLimit"].update({"T1bbbb" : [ (1050,200), (1050,250),
         (1075,650), (1050,400), (1025,475), (975,650), (1050,450), (950,625),
@@ -188,5 +208,18 @@ def graphBlackLists() :
 
     out["UpperLimit"].update({"T1tttt_2012" : [ (850,200) ]})
     out["UpperLimit_-1_Sigma"].update({"T1tttt_2012" : [ (450,50) ]})
+
+    return out
+
+def graphAdditionalPoints():
+    out = {}
+    keys  = [ "UpperLimit", "ExpectedUpperLimit" ]
+    keys += [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]
+    keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
+    for key in keys :
+        out[key] = collections.defaultdict(list)
+
+    out["ExpectedUpperLimit"].update({"T2tt" : [ (350, 0) ]})
+    out["UpperLimit_-1_Sigma"].update({"T2tt" : [ (350,50), (400,75) ]})
 
     return out

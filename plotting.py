@@ -77,11 +77,17 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", 
     canvas.Print(ps+"]")
     utils.ps2pdf(ps, sameDir = True)
 
-def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDir = "", stdout = False) :
+def pValuePlots(pValue = None, observed = None, pseudo = None, note = "", plotsDir = "", stdout = False,
+                key = "", keyLatex = "") :
     finalPValue = utils.ListFromTGraph(pValue)[-1]
-    if stdout : print "pValue =",finalPValue
+    if stdout : print "pValue (TS = %s) = %g"%(key, finalPValue)
 
-    fileName = "%s/pValue_%s.pdf"%(plotsDir, note)
+    observedList = utils.ListFromTGraph(observed)
+    assert len(observedList)==1,len(observedList)
+    observedValue = observedList[0]
+    toyValues = utils.ListFromTGraph(pseudo)
+
+    fileName = "%s/pValue_%s_%s.pdf"%(plotsDir, key, note)
     canvas = r.TCanvas("canvas")
     canvas.SetTickx()
     canvas.SetTicky()
@@ -90,18 +96,15 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDi
     pValue.SetMarkerStyle(20)
     pValue.SetTitle(";toy number;p-value")
     pValue.Draw("ap")
+
     Tl = r.TLatex()
     Tl.SetNDC(True)
     Tl.SetTextSize(0.05)
-    Tl.DrawLatex(0.9, 0.9, str(finalPValue))
+    Tl.DrawLatex(0.05, 0.92, "obs. value of TS = %g"%observedValue)
+    Tl.DrawLatex(0.55, 0.92, "quantile of obs. = %g"%finalPValue)
     canvas.Print(fileName)
 
-    lMaxDataList = utils.ListFromTGraph(lMaxData)
-    assert len(lMaxDataList)==1,len(lMaxDataList)
-    lMaxDataValue = lMaxDataList[0]
-    toyValues = utils.ListFromTGraph(lMaxs)
-
-    histo = r.TH1D("lMaxHisto",";log(L_{max});pseudo experiments / bin", 100, 0.0, max(toyValues + lMaxDataList)*1.1)
+    histo = r.TH1D("%sHisto"%key,";%s;pseudo experiments / bin"%keyLatex, 100, 0.0, max(toyValues + observedList)*1.1)
     for value in toyValues :
         histo.Fill(value)
     histo.SetStats(False)
@@ -111,13 +114,13 @@ def pValuePlots(pValue = None, lMaxData = None, lMaxs = None, note = "", plotsDi
     line = r.TLine()
     line.SetLineColor(r.kBlue)
     line.SetLineWidth(2)
-    line = line.DrawLine(lMaxDataValue, histo.GetMinimum(), lMaxDataValue, histo.GetMaximum())
+    line = line.DrawLine(observedValue, histo.GetMinimum(), observedValue, histo.GetMaximum())
 
     legend = r.TLegend(0.1, 0.7, 0.5, 0.9)
     legend.SetFillStyle(0)
     legend.SetBorderSize(0)
-    legend.AddEntry(histo, "log(L_{max}) in pseudo-experiments", "l")
-    legend.AddEntry(line, "log(L_{max}) observed", "l")
+    legend.AddEntry(histo, "%s in pseudo-experiments"%keyLatex, "l")
+    legend.AddEntry(line, "%s observed"%keyLatex, "l")
     legend.Draw()
     canvas.Print(fileName)
 
@@ -134,11 +137,14 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
 
     #p-value plots
     kargs = {}
-    for item in ["pValue", "lMaxData", "lMaxs"] :
-        kargs[item] = tfile.Get("/graphs/%s"%item)
-    for item in ["note", "plotsDir", "stdout"] :
-        kargs[item] = eval(item)
-    pValuePlots(**kargs)
+    for key,keyLatex in [("lMax", "log(L_{max})"),
+                         ("chi2Prob", "#chi^{2} prob."),
+                         ] :
+        for item in ["pValue", "observed", "pseudo"] :
+            kargs[item] = tfile.Get("/graphs/%s_%s"%(key, item))
+        for item in ["note", "plotsDir", "stdout", "key", "keyLatex"] :
+            kargs[item] = eval(item)
+        pValuePlots(**kargs)
 
     #latex yield tables
     ensemble.latex(quantiles = fQuantiles, bestDict = obs["funcBestFit"], stdout = stdout, selections = selections, note = note)
@@ -335,7 +341,7 @@ class validationPlotter(object) :
             vars += [{"var":"sSimple", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif self.signalExampleToStack :
             vars += [{"example":self.signalExampleToStack, "box":"simple", "desc":self.signalExampleToStack.label,
-                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                      "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Simple Sample%s"%(" (logY)" if logY else "")
@@ -368,7 +374,7 @@ class validationPlotter(object) :
             vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif self.signalExampleToStack :
             vars += [{"example":self.signalExampleToStack, "box":"had", "desc":self.signalExampleToStack.label,
-                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                      "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
@@ -404,7 +410,7 @@ class validationPlotter(object) :
             vars += [{"var":"muonS",   "type":"function", "color":self.sig, "style":1, "width":self.width1, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
         elif self.signalExampleToStack :
             vars += [{"example":self.signalExampleToStack, "box":"muon", "desc":self.signalExampleToStack.label,
-                      "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                      "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
@@ -507,7 +513,7 @@ class validationPlotter(object) :
                        "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
         elif self.signalExampleToStack :
             specs += [{"example":self.signalExampleToStack, "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalExampleToStack.label,
-                       "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
+                       "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
         self.plot(fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
                   obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},

@@ -24,33 +24,37 @@ def method() :
             "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
-            "multiplesInGeV": 40.0,
+            "multiplesInGeV": None,
             }
 
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              "T1tttt_2012"]
+              "T1tttt_2012", "T2bw"]
 
     variations = ["default", "up", "down"]
     return {"overwriteInput": patches.overwriteInput(),
             "overwriteOutput": patches.overwriteOutput(),
             "graphBlackLists": patches.graphBlackLists(),
+            "graphAdditionalPoints": patches.graphAdditionalPoints(),
             "cutFunc": patches.cutFunc(),
             "nEventsIn": patches.nEventsIn(),
             "curves": patches.curves(),
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["tanBeta10"]
+            "signalModel": dict(zip(models, models))["T2tt"]
             }
 
 def likelihoodSpec() :
     dct = {}
-    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "year":2012, "separateSystObs":True}
+    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "dataset":"2012ichep",
+            "separateSystObs":True}
     for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
-                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
-        dct[model] = {"iLower":None, "iUpper":None, "year":2011, "separateSystObs": True}
+                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
+                  "TGQ_0p8", "T2bw"] :
+        dct[model] = {"iLower":None, "iUpper":None, "dataset":"2011",
+                "separateSystObs": True}
     return ls.spec(**dct[signal()["signalModel"]])
 
 def listOfTestPoints() :
@@ -60,7 +64,7 @@ def listOfTestPoints() :
     #out = [(13, 3, 1)]
     #out = [(17, 5, 1)]
     #out = [(37, 19, 1)]
-    #out = [(19,5,1)]
+    #out = [(17,5,1)]
     #out = [(26,26,1)]
     #out = [(15,3,1)]
     #out = [(13,1,1)]
@@ -75,7 +79,7 @@ def other() :
             "icfDefaultNEventsIn": 10000,
             "subCmd": getSubCmds(),
             "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
-            "queueSelection" : ["short", "medium", "long"][1:],
+            "queueSelection" : ["short", "medium", "long"][1:2],
             "envScript": "env.sh",
             "nJobsMax": getMaxJobs()}
 
@@ -98,7 +102,7 @@ def getMaxJobs() :
 
 def getSubCmds() :
     return {
-        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][0]),
+        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][1]),
         "FNAL": "condor_submit"
     }[batchHost]
 

@@ -108,7 +108,8 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     text = r.TLatex()
     text.SetNDC()
     text.SetTextSize(0.8*text.GetTextSize())
-    stamp = text.DrawLatex(0.35, 0.77, "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV")
+    #stamp = text.DrawLatex(0.35, 0.77, "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV")
+    stamp = text.DrawLatex(0.40, 0.77, "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV")
     #print to file
     canvas.Print(outFile)
 

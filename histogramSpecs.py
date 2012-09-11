@@ -1,19 +1,19 @@
 from configuration import locations
 
 def ranges(model) :
-    x = {"T1":   ( 312.5, 1200.0), #(min, max)
-         "T2":   ( 312.5, 1200.0),
-         "T2tt": ( 312.5, 1200.0),
-         "T2bb": ( 312.5, 1200.0),
-         "T1bbbb": ( 312.5, 1200.0),
-         "T1tttt": ( 440.0, 1200.0),
+    x = {"T1":   ( 287.5, 1225), #(min, max)
+         "T2":   ( 287.5, 1212.5),
+         "T2tt": ( 287.5, 1212.5),
+         "T2bb": ( 287.5, 1212.5),
+         "T1bbbb": ( 287.5, 1212.5),
+         "T1tttt": ( 440.0, 1212.5),
          "T1tttt_2012": ( 375.0, 1200.0),
          "tanBeta10": (0.0, 4000.0),
          }
     y = {"T5zz": ( 50.0,  999.9), #(min, max)
          "T1":   ( 50.0, 1000.0),
          "T2":   ( 50.0, 1000.0),
-         "T2tt": ( 50.0, 1000.0),
+         "T2tt": ( -12.5,1000.0),
          "T2bb": ( 50.0, 1000.0),
          "T1bbbb": ( 50.0, 1000.0),
          "T1tttt": ( 50.0, 800.0),
@@ -36,8 +36,9 @@ def ranges(model) :
             "T1": [ 10, 4, 0 ],
             "T2": [ 10, 4, 0 ],
             "T2bb": [ 10, 4, 0 ],
-            "T2tt": [ 10, 4, 0 ],
+            "T2tt": [ 12, 4, 0 ],
             "T1bbbb": [ 10, 4, 0 ],
+            "T1tttt": [ 10, 4, 0 ],
             "T1tttt_2012": [ 8, 4, 0 ]
             }
 
@@ -49,7 +50,7 @@ def ranges(model) :
     d["yDivisions"] = yDivisions.get(model, None)
 
     d["xsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
-    d["xsZRangeLog"] = (1.0e-3, 100.0, 20)
+    d["xsZRangeLog"] = (1.0e-3,  10.0, 20)
     d["effZRange"]   = (0.0, 0.35, 35)
 
     d["effUncExpZRange"] = (0.0, 0.20, 20)
@@ -71,8 +72,10 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     sms = {"T1":          {"had": "rw_fix"},
            "T2":          {"had": "rw_fix"},
-           "T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
+           #"T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
+           "T2tt":        {"had": "strip", "muon": "strip"},
            "T2bb":        {"had": "rw_fix", "muon": "rw_fix"},
+           "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
            "T5zz":        {"had": "v1", "muon": "v1"},
            "T1bbbb":      {"had": "rw_fix", "muon": "rw_fix"},
            "T1tttt":      {"had": "v3", "muon": "v3"},
@@ -126,6 +129,7 @@ def histoTitle(model = "") :
          "T2"           : ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt"         : ";m_{stop} (GeV);m_{LSP} (GeV)",
          "T2bb"         : ";m_{sbottom} (GeV);m_{LSP} (GeV)",
+         "T2bw"         : ";m_{UKNOWN} (GeV);m_{UNKNOWN_2} (GeV)",
          "T5zz"         : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T1bbbb"       : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T1tttt"       : ";m_{gluino} (GeV);m_{LSP} (GeV)",

@@ -2,14 +2,25 @@
 
 import common,workspace,likelihoodSpec,signals
 
-def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
-    f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(iLower = iLower,
-                                                           iUpper = iUpper,
-                                                           year = year,
-                                                           separateSystObs = not ensemble,
-                                                           ),
+def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
+    spec = likelihoodSpec.spec(iLower = iLower, iUpper = iUpper,
+                               dataset = dataset, separateSystObs = not ensemble)
+
+    model_sel = 2
+    signalExampleToStack = {"2011": [signals.t2bb, signals.t1, signals.t2tt2][model_sel],
+                            "2012ichep": signals.t1tttt_2012_3,
+                            "2012dev": {},
+                            }[dataset]
+    signalLineStyle = model_sel+1
+
+    nToys = {"2011":3000,
+             "2012ichep":1000,
+             "2012dev":0,
+             }[dataset]
+
+    f = workspace.foo(likelihoodSpec = spec,
                       #signalToTest = signals.t2tt2,
-                      signalExampleToStack = signals.t1tttt_2012_3 if year==2012 else [signals.t2bb, signals.t1][0],
+                      signalExampleToStack = signalExampleToStack
                       #signalToInject = signals.t1,
                       #trace = True
                       #rhoSignalMin = 0.1,
@@ -17,7 +28,6 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
                       #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                       )
 
-    nToys = 1000 if year==2012 else 3000
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
         return
@@ -34,18 +44,23 @@ def go(iLower = None, iUpper = None, year = 2011, ensemble = False) :
     #f.profile()
     #f.writeMlTable()
     #f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
-    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
-    f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
+    f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys,
+            signalLineStyle = signalLineStyle)
+    #f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
     #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
     #f.debug()
     #f.cppDrive(tool = "")
 
-year2012 = False
-
-if year2012 :
-    for iLower in range(4) :
-        go(iLower = iLower, iUpper = 1+iLower, year = 2012, ensemble = False)
+kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][0],
+         "ensemble": False,
+         }
+if kargs["dataset"]=="2011" :
+    go(**kargs)
 else :
-    go(year = 2011, ensemble = False)
+    nSelections = len(likelihoodSpec.spec(dataset = kargs["dataset"]).selections())
+    for iLower in range(nSelections) :
+        args = {"iLower":iLower, "iUpper":1+iLower}
+        args.update(kargs)
+        go(**args)
