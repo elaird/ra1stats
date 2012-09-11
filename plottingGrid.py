@@ -200,10 +200,10 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            {"name":"UpperLimit_-1_Sigma_xs",      "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+            {"name":"UpperLimit_-1_Sigma_xs", "histoName":"UpperLimit", "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
              "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
 
-            {"name":"UpperLimit_+1_Sigma_xs",      "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+            {"name":"UpperLimit_+1_Sigma_xs", "histoName":"UpperLimit", "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
             ]
     elif curves :
@@ -214,12 +214,8 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
 
     signalModel = switches["signalModel"]
     for i,spec in enumerate(specs) :
-        histoName = spec["name"]
-        if "UpperLimit" in histoName :
-            histoName = histoName.replace("_-1_Sigma_xs","").replace("_+1_Sigma_xs","")
-        h = histos[histoName]
+        h = histos[spec.get("histoName", spec["name"])]
         graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
-        graph["graph"].SetName(graph["graph"].GetName().replace(histoName, spec["name"]))
 
         name = spec["name"]
         if name in graphBlackLists :
