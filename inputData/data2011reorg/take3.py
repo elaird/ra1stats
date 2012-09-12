@@ -31,18 +31,6 @@ def common(x) :
         "mumu":          (     0.83,      0.96,      0.95,      0.95,      0.96,      0.96,      0.96,      0.97),
         }
 
-    x._purities = {
-        "phot":                  (  None,    None,    0.98,   0.99,   0.99,   0.99,   0.99, 0.99),
-        }
-
-    lst = []
-    for purity,mcPhot in zip(x._purities["phot"], x._mcExpectationsBeforeTrigger["mcPhot"]) :
-        if (purity is None) or (mcPhot is None) :
-            lst.append(None)
-        else :
-            lst.append(purity*mcPhot)
-    x._mcExpectationsBeforeTrigger["mcGjets"] = tuple(lst)
-    
     x._mcExtraBeforeTrigger = {}
     x._mcExtraBeforeTrigger["mcHad"] =\
         tuple([(ttw+zinv if ttw!=None and zinv!=None else None) for ttw,zinv in zip(x._mcExpectationsBeforeTrigger["mcTtw"], x._mcExpectationsBeforeTrigger["mcZinv"])])

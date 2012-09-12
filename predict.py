@@ -56,7 +56,7 @@ if mode==1 :
     
     nPhot     = data.observations()["nPhot"]
     mcPhot    = data.mcExtra()["mcPhot"]
-    mcPhotErr = data.mcStatError()["mcGjetsErr"]
+    mcPhotErr = data.mcStatError()["mcPhotErr"]
 
     syst      = data.fixedParameters()["sigmaPhotZ"]
 
@@ -71,7 +71,7 @@ if mode==2 :
     
     nPhot     = data.observations()["nPhot"]
     mcPhot    = data.mcExtra()["mcPhot"]
-    mcPhotErr = data.mcStatError()["mcGjetsErr"]
+    mcPhotErr = data.mcStatError()["mcPhotErr"]
 
     syst      = data.fixedParameters()["sigmaPhotZ"]
 

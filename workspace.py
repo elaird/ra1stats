@@ -325,19 +325,18 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
 
     rFinal = None
     systBin = inputData.systBins()["sigmaPhotZ"]
-    for i,nPhotValue,purity,mcGjetValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
-                                                                    inputData.observations()["nPhot"],
-                                                                    inputData.purities()["phot"],
-                                                                    inputData.mcExpectations()["mcGjets"],
-                                                                    inputData.mcExpectations()["mcZinv"],
-                                                                    inputData.constantMcRatioAfterHere(),
-                                                                    ) :
+    for i,nPhotValue,mcPhotValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
+                                                             inputData.observations()["nPhot"],
+                                                             inputData.mcExpectations()["mcPhot"],
+                                                             inputData.mcExpectations()["mcZinv"],
+                                                             inputData.constantMcRatioAfterHere(),
+                                                             ) :
         if nPhotValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcGjets"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
+        if stopHere : rFinal = sum(inputData.mcExpectations()["mcPhot"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         nPhot = ni("nPhot", label, i)
         rPhot = ni("rPhot", label, i)
         wimport(w, r.RooRealVar(nPhot, nPhot, nPhotValue))
-        wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if rFinal==None else rFinal)/purity))
+        wimport(w, r.RooRealVar(rPhot, rPhot, (mcPhotValue/mcZinvValue if rFinal==None else rFinal)))
 
         rho = ni("rhoPhotZ", systematicsLabel, systBin[i])
         photExp = ni("photExp", label, i)
