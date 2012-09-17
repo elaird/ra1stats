@@ -44,16 +44,15 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     #f.profile()
     #f.writeMlTable()
     #f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
-    f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys,
-            signalLineStyle = signalLineStyle)
-    #f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
+    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys, signalLineStyle = signalLineStyle)
+    f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
     #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
     #f.debug()
     #f.cppDrive(tool = "")
 
-kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][0],
+kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][2],
          "ensemble": False,
          }
 if kargs["dataset"]=="2011" :
