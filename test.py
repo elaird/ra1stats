@@ -15,7 +15,7 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
 
     nToys = {"2011":3000,
              "2012ichep":1000,
-             "2012dev":0,
+             "2012dev":300,
              }[dataset]
 
     f = workspace.foo(likelihoodSpec = spec,
