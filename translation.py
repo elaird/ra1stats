@@ -89,6 +89,7 @@ from inputData.data2011reorg import take3
 #2012
 from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012 import take6,take6_capped,take6_unweighted
+from inputData.data2012 import take9
 
 datasets = [ {"module": take5,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
              {"module": take5a,           "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack,   "label": "2012 (fully weighted; hacked)"},
@@ -101,6 +102,9 @@ datasets = [ {"module": take6,            "slices": ["0b_no_aT", "0b", "1b", "2b
              {"module": take6_capped,     "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kBlue,    "label": "2012 (weights capped at 5)"},
              {"module": take6_unweighted, "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kCyan,    "label": "2012 (unweighted)"},
              #{"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kMagenta, "label": "2011"},
+             ]
+
+datasets = [ {"module": take9,            "slices": ["0b_ge2j", "1b_ge2j", "2b_ge2j", "3b_ge2j", "ge4b_ge2j"], "color":r.kBlue, "label": "2012"},
              ]
 
 #todo: what to minimize in a fit?
