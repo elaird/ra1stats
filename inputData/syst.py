@@ -1,6 +1,6 @@
 import utils
 
-def load(data = None, mode = None, nHtBins = 8) :
+def load(data = None, mode = None) :
 #    lumiLikeValue = utils.quadSum({"lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
 # SMS other than T1, T2
     lumiLikeValue = utils.quadSum({"btagUncert": 0.035, "lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10}.values())
@@ -9,7 +9,7 @@ def load(data = None, mode = None, nHtBins = 8) :
 
 
     if mode==-1 :
-        systBins = tuple([0]*nHtBins)
+        systBins = tuple([0]*8)
         nSyst = 1+max(systBins)
         data._systBins = {
             "sigmaLumiLike": systBins,
@@ -26,7 +26,7 @@ def load(data = None, mode = None, nHtBins = 8) :
             }
 
     if mode==1 :
-        systBins = tuple([0]*nHtBins)
+        systBins = tuple([0]*8)
         nSyst = 1+max(systBins)
         data._systBins = {
             "sigmaLumiLike": systBins,
@@ -140,6 +140,26 @@ def load(data = None, mode = None, nHtBins = 8) :
             "sigmaPhotZ": tuple([0.10, 0.20, 0.40]),
             "sigmaMuonW": tuple([0.10, 0.20, 0.40]),
             "sigmaMumuZ": tuple([0.10, 0.20, 0.40]),
+
+            "k_qcd_nom"     : 2.96e-2,
+            "k_qcd_unc_inp" : utils.quadSum([0.61e-2, 0.463e-2])
+            }
+
+    if mode==12400 :
+        systBins = tuple([0]*4+[1]*2+[2]*2+[3]*2)
+        nSyst = 1+max(systBins)
+        data._systBins = {
+            "sigmaLumiLike": [0]*10,
+            "sigmaPhotZ": systBins,
+            "sigmaMuonW": systBins,
+            "sigmaMumuZ": systBins,
+            }
+
+        data._fixedParameters = {
+            "sigmaLumiLike": tuple([lumiLikeValue]*1),
+            "sigmaPhotZ": tuple([0.10, 0.20, 0.40, 0.40]),
+            "sigmaMuonW": tuple([0.10, 0.20, 0.40, 0.40]),
+            "sigmaMumuZ": tuple([0.10, 0.20, 0.40, 0.40]),
 
             "k_qcd_nom"     : 2.96e-2,
             "k_qcd_unc_inp" : utils.quadSum([0.61e-2, 0.463e-2])
