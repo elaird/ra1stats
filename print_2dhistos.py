@@ -43,7 +43,7 @@ std_selections = { "had"  : base_histos,
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
 
-base_dir = { 'phosphorus' : '~/140_updated_5fb_numbers_from_darren/',
+base_dir = { 'phosphorus' : '~/140_updated_5fb_numbers_from_darren/v2',
              'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
            }[gethostname()]
 
