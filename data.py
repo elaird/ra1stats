@@ -70,7 +70,7 @@ NOTES
                "muHad":{"num":"mcMuon", "den":"mcHad" },
                }[tr]
 
-        assert self._constantMcRatioAfterHere == tuple([0]*7+[1]),self._constantMcRatioAfterHere
+        assert self._constantMcRatioAfterHere == tuple([0]*(len(self._constantMcRatioAfterHere)-1)+[1]),self._constantMcRatioAfterHere
         #todo: handle purities
         value = self.mcExpectations() if afterTrigger else self._mcExpectationsBeforeTrigger
         error = self.mcStatError()
