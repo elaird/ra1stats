@@ -538,11 +538,11 @@ class validationPlotter(object) :
                       otherVars = [{"var":"ttw",   "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML ttW / nHadBulk", "color":r.kGreen}])
 
             self.plot(note = "photon to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2,
-                      obs = {"var":"nPhot", "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * P * (MC Zinv / MC #gamma) / nHadBulk"},
+                      obs = {"var":"nPhot", "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "desc":"nPhot * (MC Zinv / MC #gamma) / nHadBulk"},
                       otherVars = [{"var":"zInv",  "type":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
 
             #self.plot(note = "mumu to Zinv", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", maximum = 10.0e-6,
-            #          obs = {"num":"nMumu", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * P * (MC Zinv / MC Mumu) / nHadBulk"},
+            #          obs = {"num":"nMumu", "dens":["nHadBulk", "rMumu"], "denTypes":["data", "var"], "desc":"nMumu * (MC Zinv / MC Mumu) / nHadBulk"},
             #          otherVars = [{"num":"zInv",  "numType":"function", "dens":["nHadBulk"], "denTypes":["data"], "desc":"ML Zinv / nHadBulk", "color":r.kRed}])
 
 
@@ -551,7 +551,7 @@ class validationPlotter(object) :
                     {"var":"nMuon", "type":"var",      "dens":["nHadBulk", "rMuon"], "denTypes":["data", "var"], "stack":"pred", "goptions":"pe",
                      "desc":"nMuon * (MC ttW / MC mu) / nHadBulk",                       "markerStyle":20, "color":r.kGreen+3, "legSpec":"lpe"},
                     {"var":"nPhot", "type":"var",      "dens":["nHadBulk", "rPhot"], "denTypes":["data", "var"], "stack":"pred", "goptions":"pe",
-                     "desc":" + nPhot * P * (MC Zinv / MC #gamma) / nHadBulk (stacked)", "markerStyle":20, "color":r.kBlue+3,   "legSpec":"lpe"},
+                     "desc":" + nPhot * (MC Zinv / MC #gamma) / nHadBulk (stacked)", "markerStyle":20, "color":r.kBlue+3,   "legSpec":"lpe"},
                     {"var":"ttw",   "type":"function", "dens":["nHadBulk"],          "denTypes":["data"], "stack":"ml",
                      "desc":"ML ttW / nHadBulk", "color":r.kGreen},
                     {"var":"zInv",  "type":"function", "dens":["nHadBulk"],          "denTypes":["data"], "stack":"ml",
@@ -829,7 +829,6 @@ class validationPlotter(object) :
     def varHisto(self, spec = {}, extraName = "", yLabel = "", note = "", lumiString = "") :
         varName = spec["var"]
         wspaceMemberFunc = spec["type"]
-        purityKey   = inDict(spec, "purityKey",   None)
         color       = inDict(spec, "color",       r.kBlack)
         lineStyle   = inDict(spec, "style",       1)
         lineWidth   = inDict(spec, "width",       1)
@@ -914,17 +913,16 @@ class validationPlotter(object) :
                 #else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
             else :
                 value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
-                purity = 1.0 if not purityKey else self.inputData.purities()[purityKey][i]
-                if value!=None and purity :
-                    d["value"].SetBinContent(i+1, value/purity)
-                    d["errors"].SetBinContent(i+1, value/purity)
-                    d["noErrors"].SetBinContent(i+1, value/purity)
+                if value!=None :
+                    d["value"].SetBinContent(i+1, value)
+                    d["errors"].SetBinContent(i+1, value)
+                    d["noErrors"].SetBinContent(i+1, value)
                 key = varName+"Err"
                 if key in self.inputData.mcStatError() :
                     error = self.inputData.mcStatError()[key][i]
-                    if error!=None and purity :
-                        d["value"].SetBinError(i+1, error/purity)
-                        d["errors"].SetBinError(i+1, error/purity)
+                    if error!=None :
+                        d["value"].SetBinError(i+1, error)
+                        d["errors"].SetBinError(i+1, error)
                         d["noErrors"].SetBinError(i+1, 0.0)
 
             toPrint.append(value)
