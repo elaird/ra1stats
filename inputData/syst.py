@@ -200,7 +200,4 @@ def load(data = None, mode = None) :
             "sigmaPhotZ": mode,
             "sigmaMuonW": mode,
             "sigmaMumuZ": mode,
-
-            "k_qcd_nom"     : 2.96e-2,
-            "k_qcd_unc_inp" : utils.quadSum([0.61e-2, 0.463e-2])
             }

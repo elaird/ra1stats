@@ -1,5 +1,6 @@
 from inputData import syst
 from data import data
+import utils
 
 def common(x) :
     name = x.__class__.__name__
@@ -47,6 +48,7 @@ def common(x) :
     x._mcExtraBeforeTrigger = {}
     x._observations["nPhot"] = tuple([None, None]+list(x._observations["nPhot"][2:]))
     syst.load(x, mode = systMode)
+    x._fixedParameters.update({"k_qcd_nom":2.96e-2, "k_qcd_unc_inp":utils.quadSum([0.61e-2, 0.463e-2])})
 
 class data_0b_ge2j(data) :
     def _fill(self) :
