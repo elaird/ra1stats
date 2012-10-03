@@ -110,9 +110,6 @@ NOTES
             assert key in self._fixedParameters, key
             assert len(self._fixedParameters[key])==l, key
 
-    def _stashInput(self) :
-        self._htBinLowerEdgesInput = copy.copy(self._htBinLowerEdges)
-
     def _applyTrigger(self) :
         for s in ["mcExpectations", "mcExtra"] :
             setattr(self, "_%s"%s, {})
@@ -173,7 +170,7 @@ NOTES
         return
 
     #define functions called by outside world
-    for item in vars+["htBinLowerEdgesInput", "mcExpectations", "mcExtra"] :
+    for item in vars+["mcExpectations", "mcExtra"] :
         exec('def %s(self) : return self._%s'%(item, item))
 
     def mergeEfficiency(self, inList) :
