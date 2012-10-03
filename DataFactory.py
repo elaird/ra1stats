@@ -135,7 +135,6 @@ class DataSlice( object ) :
 
         # called from data.py mergeEfficiency
         #self._mergeBins = None
-        #self._constantMcRatioAfterHere =  [ ]
 
 #        try :
 #            self._htMeans = tuple( [ histo_dict["hadBulk"]["Htmeans"].GetXaxis().GetBinContent(bin) for bin in xbins ] )

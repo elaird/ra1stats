@@ -273,20 +273,17 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             out["systObs"].append(one)
             terms.append(gaus)
 
-    rFinal = None
     systBin = inputData.systBins()["sigmaMumuZ"]
-    for i,nMumuValue,mcMumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
-                                                             inputData.observations()["nMumu"],
-                                                             inputData.mcExpectations()["mcMumu"],
-                                                             inputData.mcExpectations()["mcZinv"],
-                                                             inputData.constantMcRatioAfterHere(),
-                                                             ) :
+    for i,nMumuValue,mcMumuValue,mcZinvValue in zip(range(len(inputData.observations()["nMumu"])),
+                                                    inputData.observations()["nMumu"],
+                                                    inputData.mcExpectations()["mcMumu"],
+                                                    inputData.mcExpectations()["mcZinv"],
+                                                    ) :
         if nMumuValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         nMumu = ni("nMumu", label, i)
         rMumu = ni("rMumu", label, i)
         wimport(w, r.RooRealVar(nMumu, nMumu, nMumuValue))
-        wimport(w, r.RooRealVar(rMumu, rMumu, (mcMumuValue/mcZinvValue if rFinal==None else rFinal)))
+        wimport(w, r.RooRealVar(rMumu, rMumu, mcMumuValue/mcZinvValue))
 
         mumuExp = ni("mumuExp", label, i)
         rhoMumuZ = ni("rhoMumuZ", systematicsLabel, systBin[i])
@@ -323,20 +320,17 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             terms.append(gaus)
             out["systObs"].append(one)
 
-    rFinal = None
     systBin = inputData.systBins()["sigmaPhotZ"]
-    for i,nPhotValue,mcPhotValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
-                                                             inputData.observations()["nPhot"],
-                                                             inputData.mcExpectations()["mcPhot"],
-                                                             inputData.mcExpectations()["mcZinv"],
-                                                             inputData.constantMcRatioAfterHere(),
-                                                             ) :
+    for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(inputData.observations()["nPhot"])),
+                                                    inputData.observations()["nPhot"],
+                                                    inputData.mcExpectations()["mcPhot"],
+                                                    inputData.mcExpectations()["mcZinv"],
+                                                    ) :
         if nPhotValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcPhot"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         nPhot = ni("nPhot", label, i)
         rPhot = ni("rPhot", label, i)
         wimport(w, r.RooRealVar(nPhot, nPhot, nPhotValue))
-        wimport(w, r.RooRealVar(rPhot, rPhot, (mcPhotValue/mcZinvValue if rFinal==None else rFinal)))
+        wimport(w, r.RooRealVar(rPhot, rPhot, mcPhotValue/mcZinvValue))
 
         rho = ni("rhoPhotZ", systematicsLabel, systBin[i])
         photExp = ni("photExp", label, i)
@@ -373,31 +367,22 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             terms.append(gaus)
             out["systObs"].append(one)
 
-    rFinal = None
     systBin = inputData.systBins()["sigmaMuonW"]
     signalSystBin = inputData.systBins()["sigmaLumiLike"]
-    for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
-                                                                        inputData.observations()["nMuon"],
-                                                                        inputData.mcExpectations()["mcMuon"],
-                                                                        inputData.mcExpectations()["mcTtw"],
-                                                                        inputData.mcExpectations()["mcZinv"],
-                                                                        inputData.constantMcRatioAfterHere(),
-                                                                        ) :
+    for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue in zip(range(len(inputData.observations()["nMuon"])),
+                                                               inputData.observations()["nMuon"],
+                                                               inputData.mcExpectations()["mcMuon"],
+                                                               inputData.mcExpectations()["mcTtw"],
+                                                               inputData.mcExpectations()["mcZinv"],
+                                                               ) :
         if nMuonValue==None : continue
-        if stopHere :
-            denom = sum(inputData.mcExpectations()["mcTtw"][i:])
-            if muonForFullEwk : denom += sum(inputData.mcExpectations()["mcZinv"][i:])
-            rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/denom
-
         nMuon = ni("nMuon", label, i)
         rMuon = ni("rMuon", label, i)
         wimport(w, r.RooRealVar(nMuon, nMuon, nMuonValue))
-        if rFinal!=None :
-            rValue = rFinal
-        else :
-            denom = mcTtwValue
-            if muonForFullEwk : denom += mcZinvValue
-            rValue = mcMuonValue/denom
+
+        denom = mcTtwValue
+        if muonForFullEwk : denom += mcZinvValue
+        rValue = mcMuonValue/denom
         wimport(w, r.RooRealVar(rMuon, rMuon, rValue))
 
         muonB = ni("muonB", label, i)

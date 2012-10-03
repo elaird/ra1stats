@@ -26,7 +26,7 @@ def _trigKey(sample = "") :
     return d[sample]
 
 
-vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
+vars = ["mergeBins", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
         "observations", "triggerEfficiencies", "mcStatError", "fixedParameters"]
 
 class data(object) :
@@ -65,7 +65,6 @@ NOTES
                "muHad":{"num":"mcMuon", "den":"mcHad" },
                }[tr]
 
-        assert self._constantMcRatioAfterHere == tuple([0]*(len(self._constantMcRatioAfterHere)-1)+[1]),self._constantMcRatioAfterHere
         value = self.mcExpectations() if afterTrigger else self._mcExpectationsBeforeTrigger
         error = self.mcStatError()
         lumi = self.lumi()
@@ -101,9 +100,6 @@ NOTES
         l = len(self._htBinLowerEdges)
         assert len(self._htMeans)==l
         
-        if not self._mergeBins :
-            assert len(self._constantMcRatioAfterHere)==l
-            
         for item in ["observations", "mcExpectationsBeforeTrigger", "mcExtraBeforeTrigger", "mcStatError", "systBins"] :
             for key,value in getattr(self,"_%s"%item).iteritems() :
                 assert len(value)==l,"%s: %s"%(item, key)
@@ -130,7 +126,6 @@ NOTES
             assert a==b,"A non-ascending mergeBins spec is not supported."
 
         l = sorted(list(set(self._mergeBins)))
-        assert len(l)==len(self._constantMcRatioAfterHere),"wrong length of _constantMcRatioAfterHere when using _mergeBins"
         for a,b in zip(l, range(len(l))) :
             assert a==b, "Holes are not allowed."
 

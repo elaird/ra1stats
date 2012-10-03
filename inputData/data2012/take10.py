@@ -19,9 +19,8 @@ def common(x) :
 
     #improve last 3 (also for bulk yields)
     x._htMeans = (298, 348, 416, 517, 617, 719, 819, 919, 1020, 1240)
-
     x._mergeBins = None
-    x._constantMcRatioAfterHere = (0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+    #x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
 
     x._lumi = {
         "mumu"               :   1.139e+04 ,
@@ -42,8 +41,6 @@ def common(x) :
         "mumu":          (0.950, 0.960, 0.960, 0.970, 0.970, 0.970, 0.980, 0.980, 0.980, 0.980),
         }
 
-    x._purities = {"phot": tuple([1.0]*10)}
-    x._mcExpectationsBeforeTrigger["mcGjets"] =  x._mcExpectationsBeforeTrigger["mcPhot"]
     x._mcExtraBeforeTrigger = {}
     x._observations["nPhot"] = tuple([None, None]+list(x._observations["nPhot"][2:]))
     syst.load(x, mode = systMode)

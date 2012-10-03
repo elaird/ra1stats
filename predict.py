@@ -29,7 +29,7 @@ def fill(constantR, h, contents, errors) :
 data = data2011(requireFullImplementation = False)
 
 htBins = data.htBinLowerEdges()
-constantR = data.constantMcRatioAfterHere()
+constantR = tuple([0]*len(htBins)+[1])
 
 mode = 0
 
