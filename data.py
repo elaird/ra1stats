@@ -36,7 +36,6 @@ class data(object) :
         self._fill()
         self._checkVars()
         self._checkLengths()
-        self._stashInput()
         self._applyTrigger()
         self._doBinMerge()
 
@@ -115,59 +114,68 @@ NOTES
             setattr(self, "_%s"%s, {})
             for sample,t in getattr(self, "_%sBeforeTrigger"%s).iteritems() :
                 getattr(self, "_%s"%s)[sample] = itMult(t, self._triggerEfficiencies[_trigKey(sample)])
-        
-    def _doBinMerge(self) :
-        if self._mergeBins is None : return
+
+    def _mergeChecks(self) :
         assert len(self._mergeBins)==len(self._htBinLowerEdges)
         for a,b in zip(self._mergeBins, sorted(self._mergeBins)) :
             assert a==b,"A non-ascending mergeBins spec is not supported."
 
-        l = sorted(list(set(self._mergeBins)))
-        for a,b in zip(l, range(len(l))) :
-            assert a==b, "Holes are not allowed."
+        s = set(self._mergeBins)
+        assert s==set(range(len(s))),"Holes are not supported."
+        return len(s)
 
-        #adjust HT means (before the others are adjusted)
-        newMeans = [0]*len(l)
-        nBulk = [0]*len(l)
-        for index,value in enumerate(self._htMeans) :
-            newMeans[self._mergeBins[index]] += value*self._observations["nHadBulk"][index]
-            nBulk   [self._mergeBins[index]] +=       self._observations["nHadBulk"][index]
-        for i in range(len(l)) :
+    def _mergeHtMeans(self, nBins) :
+        newMeans = [0]*nBins
+        nBulk = [0]*nBins
+        for i,value in enumerate(self._htMeans) :
+            bulk = self._observations["nHadBulk"][i]
+            newMeans[self._mergeBins[i]] += value*bulk
+            nBulk   [self._mergeBins[i]] +=       bulk
+
+        for i in range(nBins) :
             newMeans[i] /= nBulk[i]
-        self._htMeans = newMeans
+        self._htMeans = tuple(newMeans)
 
-        #adjust self._htBinLowerEdges
+    def _mergeHtBinLowerEdges(self, nBins) :
         newBins = []
-        for index in range(len(l)) :
-            htBinLowerIndex = list(self._mergeBins).index(index)
+        for i in range(nBins) :
+            htBinLowerIndex = list(self._mergeBins).index(i)
             newBins.append(self._htBinLowerEdges[htBinLowerIndex])
         self._htBinLowerEdges = tuple(newBins)
 
-        #adjust count dictionaries (review the list)
-        for item in ["observations", "mcExpectationsBeforeTrigger", "mcExpectations"] :
+    def _mergeCounts(self, nBins, items = []) :
+        for item in items :
             d = {}
             for key,t in getattr(self, "_%s"%item).iteritems() :
-                d[key] = [0]*len(l)
+                d[key] = [0]*nBins
                 for index,value in enumerate(t) :
-                    d[key][self._mergeBins[index]]+=value
+                    if value==None :
+                        d[key][self._mergeBins[index]] = None
+                    else :
+                        d[key][self._mergeBins[index]] += value
+
             for key,value in d.iteritems() :
                 getattr(self, "_%s"%item)[key] = tuple(value)
 
-        #adjust errors
-        for item in ["mcStatError"] :
+    def _mergeErrors(self, nBins, items = []) :
+        for item in items :
             d = {}
             for key,t in getattr(self, "_%s"%item).iteritems() :
-                d[key] = [0]*len(l)
+                d[key] = [0]*nBins
                 for index,value in enumerate(t) :
                     d[key][self._mergeBins[index]] += value*value
             for key,value in d.iteritems() :
                 getattr(self, "_%s"%item)[key] = tuple(map(lambda x:math.sqrt(x), value))
 
-        if self.requireFullImplementation :
-            assert False,"Implement trigger efficiency merging."
-        else :
-            print "WARNING: Trigger efficiency merging is not implemented.  Results are nonsense."
-        return
+    def _doBinMerge(self) :
+        if self._mergeBins is None : return
+
+        nBins = self._mergeChecks()
+        self._mergeHtMeans(nBins) #before the others are adjusted
+        self._mergeHtBinLowerEdges(nBins)
+        self._mergeCounts(nBins, items = ["observations", "mcExpectationsBeforeTrigger", "mcExpectations"])
+        self._mergeErrors(nBins, items = ["mcStatError"])
+        print "ERROR: Implement trigger efficiency merging."
 
     #define functions called by outside world
     for item in vars+["mcExpectations"] :
