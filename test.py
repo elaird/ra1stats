@@ -59,9 +59,7 @@ if kargs["dataset"]=="2011" :
     go(**kargs)
 else :
     nSelections = len(likelihoodSpec.spec(dataset = kargs["dataset"]).selections())
-    lst = range(nSelections)[:10]+range(nSelections)[11:]
-    #lst = range(nSelections)[10:11]
-    for iLower in lst :
+    for iLower in range(nSelections) :
         args = {"iLower":iLower, "iUpper":1+iLower}
         args.update(kargs)
         go(**args)
