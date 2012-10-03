@@ -789,7 +789,6 @@ class validationPlotter(object) :
     def hadronicSummaryTable(self) :
         N = len(self.htBinLowerEdges)
         print "HT bins :",pretty(self.htBinLowerEdges)
-        print "MC EWK  :",pretty(self.inputData.mcExtra()["mcHad"])
         print "Data    :",pretty([self.wspace.var("nHad%d"%i).getVal() for i in range(N)])
         print "fit SM  :",pretty([self.wspace.function("hadB%d"%i).getVal() for i in range(N)])
         print "fit EWK :",pretty([self.wspace.function("ewk%d"%i).getVal() for i in range(N)])
@@ -914,7 +913,7 @@ class validationPlotter(object) :
                         d["noErrors"].SetBinError(i+1, 0.0)
                 #else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
             else :
-                value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
+                value = self.inputData.mcExpectations()[varName][i]
                 if value!=None :
                     d["value"].SetBinContent(i+1, value)
                     d["errors"].SetBinContent(i+1, value)

@@ -41,7 +41,6 @@ def common(x) :
         "mumu":          (0.950, 0.960, 0.960, 0.970, 0.970, 0.970, 0.980, 0.980, 0.980, 0.980),
         }
 
-    x._mcExtraBeforeTrigger = {}
     x._observations["nPhot"] = tuple([None, None]+list(x._observations["nPhot"][2:]))
     syst.load(x, mode = systMode)
     x._fixedParameters.update({"k_qcd_nom":2.96e-2, "k_qcd_unc_inp":utils.quadSum([0.61e-2, 0.463e-2])})

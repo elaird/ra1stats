@@ -55,7 +55,7 @@ if mode==1 :
     mcMuonErr = data.mcStatError()["mcMuonErr"]
     
     nPhot     = data.observations()["nPhot"]
-    mcPhot    = data.mcExtra()["mcPhot"]
+    mcPhot    = data.mcExpectations()["mcPhot"]
     mcPhotErr = data.mcStatError()["mcPhotErr"]
 
     syst      = data.fixedParameters()["sigmaPhotZ"]
@@ -66,11 +66,11 @@ if mode==1 :
 if mode==2 :
     print "photon to mumu (n-jet)"
     nMuon     = data.observations()["nMumu"]
-    mcMuon    = data.mcExtra()["mcMumu"]
+    mcMuon    = data.mcExpectations()["mcMumu"]
     mcMuonErr = data.mcStatError()["mcZmumuErr"]
     
     nPhot     = data.observations()["nPhot"]
-    mcPhot    = data.mcExtra()["mcPhot"]
+    mcPhot    = data.mcExpectations()["mcPhot"]
     mcPhotErr = data.mcStatError()["mcPhotErr"]
 
     syst      = data.fixedParameters()["sigmaPhotZ"]

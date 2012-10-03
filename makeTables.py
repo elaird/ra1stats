@@ -150,7 +150,7 @@ def error(obs) :
 def prediction(data, indices, *args) :
     def oneString(obs, ratio, sysFactor = 1.0) :
         return "%5.1f $\pm$ %5.1f$_{stat}$ %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f$_{syst}$"%(obs*ratio*sysFactor))
-    mcPhot = truncate(data.mcExpectations()[args[1]] if args[1] in data.mcExpectations() else data.mcExtra()[args[1]])
+    mcPhot = truncate(data.mcExpectations()[args[1]])
     mcZinv = truncate(data.mcExpectations()[args[2]])
     obs = data.observations()[args[0]]
     print [mcPhot[i] for i in indices]

@@ -107,9 +107,6 @@ class DataSlice( object ) :
     # sense for it
     def __init__( self, histo_dict, suffix = "" ) :
         req_attr = [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations", "_lumi" ]
-#            [ "_mcExpectationsBeforeTrigger", "_mcStatError", "_observations",
-#            "_purities", "_atTriggerEff", "_HtTriggerEff", "_lumi", "_mcExtra",
-#            "_fixedParameters", "_htMeans" ]
         for obj in req_attr :
             setattr(self, obj, {} )
         for dir in histo_dict.keys() :

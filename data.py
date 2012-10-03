@@ -42,7 +42,7 @@ class data(object) :
 
     def __str__(self, notes = False) :
         out = ""
-        for func in ["observations", "mcExpectations", "mcExtra", "mcStatError"] :
+        for func in ["observations", "mcExpectations", "mcStatError"] :
             out += "\n".join(["", func, "-"*20, ""])
             d = getattr(self, func)()
             for key in sorted(d.keys()) :
@@ -93,14 +93,14 @@ NOTES
     def _fill(self) : raise Exception("NotImplemented", "Implement a member function _fill(self)")
 
     def _checkVars(self) :
-        for item in vars+["mcExpectationsBeforeTrigger", "mcExtraBeforeTrigger"] :
+        for item in vars+["mcExpectationsBeforeTrigger"] :
             assert hasattr(self, "_%s"%item),item
 
     def _checkLengths(self) :
         l = len(self._htBinLowerEdges)
         assert len(self._htMeans)==l
         
-        for item in ["observations", "mcExpectationsBeforeTrigger", "mcExtraBeforeTrigger", "mcStatError", "systBins"] :
+        for item in ["observations", "mcExpectationsBeforeTrigger", "mcStatError", "systBins"] :
             for key,value in getattr(self,"_%s"%item).iteritems() :
                 assert len(value)==l,"%s: %s"%(item, key)
 
@@ -111,7 +111,7 @@ NOTES
             assert len(self._fixedParameters[key])==l, key
 
     def _applyTrigger(self) :
-        for s in ["mcExpectations", "mcExtra"] :
+        for s in ["mcExpectations"] :
             setattr(self, "_%s"%s, {})
             for sample,t in getattr(self, "_%sBeforeTrigger"%s).iteritems() :
                 getattr(self, "_%s"%s)[sample] = itMult(t, self._triggerEfficiencies[_trigKey(sample)])
@@ -144,7 +144,7 @@ NOTES
         self._htBinLowerEdges = tuple(newBins)
 
         #adjust count dictionaries (review the list)
-        for item in ["observations", "mcExpectationsBeforeTrigger", "mcExpectations", "mcExtraBeforeTrigger", "mcExtra"] :
+        for item in ["observations", "mcExpectationsBeforeTrigger", "mcExpectations"] :
             d = {}
             for key,t in getattr(self, "_%s"%item).iteritems() :
                 d[key] = [0]*len(l)
@@ -170,7 +170,7 @@ NOTES
         return
 
     #define functions called by outside world
-    for item in vars+["mcExpectations", "mcExtra"] :
+    for item in vars+["mcExpectations"] :
         exec('def %s(self) : return self._%s'%(item, item))
 
     def mergeEfficiency(self, inList) :
