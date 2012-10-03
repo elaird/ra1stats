@@ -76,7 +76,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self.legendTitle = ""
-        from inputData.data2012 import take9 as module
+        from inputData.data2012 import take10 as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
@@ -88,6 +88,9 @@ class spec(object) :
                         }[b]
 
             for j in ["ge2", "le3", "ge4"] :
+                if j=="le3" :
+                    print "skipping %sb, %sj"%(b,j)
+                    continue
                 if b=="ge4" and j!="ge4" : continue
 
                 name  = "%sb_%sj"%(b,j)
