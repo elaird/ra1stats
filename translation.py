@@ -46,10 +46,10 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
 
     return graphs
 
-def plot(datasets = []) :
+def plot(datasets = [], tag = "") :
     canvas = r.TCanvas("canvas", "canvas", 600, 800)
 
-    fileName = "translation_factors.pdf"
+    fileName = "translation_factors_%s.pdf"%tag
     canvas.Print(fileName+"[")
     misc = []
     slices = datasets[0]["slices"] #assume first list of slices contains the subsequent ones
@@ -89,7 +89,7 @@ from inputData.data2011reorg import take3
 #2012
 from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012 import take6,take6_capped,take6_unweighted
-from inputData.data2012 import take9
+from inputData.data2012 import take10
 
 datasets = [ {"module": take5,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
              {"module": take5a,           "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack,   "label": "2012 (fully weighted; hacked)"},
@@ -104,9 +104,8 @@ datasets = [ {"module": take6,            "slices": ["0b_no_aT", "0b", "1b", "2b
              #{"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kMagenta, "label": "2011"},
              ]
 
-datasets = [ {"module": take9,            "slices": ["0b_ge2j", "1b_ge2j", "2b_ge2j", "3b_ge2j", "ge4b_ge2j"], "color":r.kBlue, "label": "2012"},
-             ]
-
-#todo: what to minimize in a fit?
 setup()
-plot(datasets)
+for i,j in enumerate(["ge2j", "ge4j"]) :
+    datasets = [ {"module": take10, "slices": ["%s_%s"%(b,j) for b in ["0b", "1b", "2b", "3b", "ge4b"]], "color":1+i, "label": "2012 (%s)"%j}, ]
+    print datasets
+    plot(datasets, tag = j)
