@@ -89,7 +89,7 @@ from inputData.data2011reorg import take3
 #2012
 from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012 import take6,take6_capped,take6_unweighted
-from inputData.data2012 import take10
+from inputData.data2012 import take11
 
 datasets = [ {"module": take5,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
              {"module": take5a,           "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack,   "label": "2012 (fully weighted; hacked)"},
@@ -105,7 +105,7 @@ datasets = [ {"module": take6,            "slices": ["0b_no_aT", "0b", "1b", "2b
              ]
 
 setup()
-for i,j in enumerate(["ge2j", "ge4j"]) :
-    datasets = [ {"module": take10, "slices": ["%s_%s"%(b,j) for b in ["0b", "1b", "2b", "3b", "ge4b"]], "color":1+i, "label": "2012 (%s)"%j}, ]
+for i,j in enumerate(["ge2j", "ge4j", "le3j"]) :
+    datasets = [ {"module": take11, "slices": ["%s_%s"%(b,j) for b in ["0b", "1b", "2b", "3b", "ge4b"]], "color":1+i, "label": "2012 (%s)"%j}, ]
     print datasets
     plot(datasets, tag = j)
