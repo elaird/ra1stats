@@ -10,10 +10,10 @@ def setup() :
 def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset = 0, color = None, afterTrigger = False) :
     htMeans = data.htMeans()
 
-    if htMeans[-1]<1000. :
-        htMax = 1045.
-        print "WARNING: hacking HT mean %g  -->  %g for dataset %d"%(htMeans[-1], htMax, iDataset)
-        htMeans = tuple(list(htMeans[:-1])+[htMax])
+    #if htMeans[-1]<1000. :
+    #    htMax = 1045.
+    #    print "WARNING: hacking HT mean %g  -->  %g for dataset %d"%(htMeans[-1], htMax, iDataset)
+    #    htMeans = tuple(list(htMeans[:-1])+[htMax])
 
     graphs = []
     for i,tr in enumerate(factors) :
@@ -105,7 +105,14 @@ datasets = [ {"module": take6,            "slices": ["0b_no_aT", "0b", "1b", "2b
              ]
 
 setup()
+
+color = {"ge2j":r.kBlack,
+         "ge4j":r.kRed,
+         "le3j":r.kBlue,
+         }
+
 for i,j in enumerate(["ge2j", "ge4j", "le3j"]) :
-    datasets = [ {"module": take11, "slices": ["%s_%s"%(b,j) for b in ["0b", "1b", "2b", "3b", "ge4b"]], "color":1+i, "label": "2012 (%s)"%j}, ]
+    bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
+    datasets = [ {"module": take11, "slices": ["%s_%s"%(b,j) for b in bs], "color":color[j], "label": "2012 (%s)"%j}, ]
     print datasets
     plot(datasets, tag = j)
