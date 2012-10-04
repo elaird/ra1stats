@@ -4,6 +4,7 @@ import utils
 
 def common(x) :
     name = x.__class__.__name__
+    print "check j"
     if "ge2" in name :
         systMode = (0.10, 0.20, 0.60, 0.60)
         x._observations["nHadBulk"] = (630453600, 286166200, 209611400, 69777150, 26101500, 20182300, 4745175, 4745175/3., 4745175/9., 4745175/9.)
