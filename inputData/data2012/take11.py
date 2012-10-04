@@ -4,13 +4,13 @@ import utils
 
 def common(x) :
     name = x.__class__.__name__
-    if "ge2" in name :
+    if "ge2j" in name :
         systMode = (0.10, 0.20, 0.60)
         x._observations["nHadBulk"] = (630453600, 286166200, 209611400, 69777150, 26101500, 20182300, 4745175, 4776350, 0, 0)
-    elif "le3" in name :
+    elif "le3j" in name :
         systMode = (0.15, 0.30, 0.50)
         x._observations["nHadBulk"] = (487992800, 202369400, 134976100, 36965375, 12292400,  8301900, 1925125, 1768325, 0, 0)
-    elif "ge4" in name :
+    elif "ge4j" in name :
         systMode = (0.25, 0.35, 0.70)
         x._observations["nHadBulk"] = (142460800,  83796800,  74635300, 32811775, 13809100, 11880400, 2820050, 3008025, 0, 0)
 
@@ -18,7 +18,12 @@ def common(x) :
     x._htMaxForPlot    = 1.175e+03
 
     x._htMeans = (298, 348, 416, 517, 617, 719, 819, 1044, 0.0, 0.0)
-    x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
+
+    if "ge4b" in name :
+        x._mergeBins = (0, 1, 2, 2, 2, 2, 2, 2, 2, 2)
+        systMode = (0.25,)
+    else :
+        x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
 
     x._lumi = {
         "mumu"               :   1.139e+04 ,
