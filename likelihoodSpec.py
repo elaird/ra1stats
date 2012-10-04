@@ -76,7 +76,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self.legendTitle = ""
-        from inputData.data2012 import take10 as module
+        from inputData.data2012 import take11 as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
@@ -87,32 +87,28 @@ class spec(object) :
                         "ge4": 0.01,
                         }[b]
 
-            for j in ["ge2", "le3", "ge4"] :
-                if j=="le3" :
-                    print "skipping %sb, %sj"%(b,j)
-                    continue
+            for j in ["ge2", "le3", "ge4"][1:] :
                 if b=="ge4" and j!="ge4" : continue
+                if b=="3"   and j!="ge4" : continue
 
                 name  = "%sb_%sj"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
                 note += "; %s#%s"%(nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
 
-                samplesAndSignalEff = {"had":True, "muon":True}
-                if b in ["0", "1", "2"] :
-                    samplesAndSignalEff.update({"phot":False, "mumu":False})
-
-                sel = selection(name = name,
-                                note = note,
-                                alphaTMinMax = ("55", None),
-                                samplesAndSignalEff = samplesAndSignalEff,
-                                muonForFullEwk = len(samplesAndSignalEff)==2,
-                                data = getattr(module, "data_%s"%name)(),
-                                #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
-                                fZinvIni = fZinvIni,
-                                AQcdIni = 0.0,
-                                )
-                lst.append(sel)
+                options = [{"had":True, "muon":True}]
+                options += [{"had":True, "muon":True, "phot":False, "mumu":False}] if b in ["0", "1", "2"] else []
+                for samplesAndSignalEff in options :
+                    sel = selection(name = name, note = note,
+                                    alphaTMinMax = ("55", None),
+                                    samplesAndSignalEff = samplesAndSignalEff,
+                                    muonForFullEwk = len(samplesAndSignalEff)==2,
+                                    data = getattr(module, "data_%s"%name)(),
+                                    #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
+                                    fZinvIni = fZinvIni,
+                                    AQcdIni = 0.0,
+                                    )
+                    lst.append(sel)
         self.add(lst)
 
     def __init2012ichep__(self) :
