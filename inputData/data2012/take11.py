@@ -1,39 +1,16 @@
-from inputData import syst
 from data import data
 import utils
 
-def common(x) :
-    name = x.__class__.__name__
-    if "ge2j" in name :
-        systMode = (0.10, 0.20, 0.60)
-        x._observations["nHadBulk"] = (630453600, 286166200, 209611400, 69777150, 26101500, 20182300, 4745175, 4776350, 0, 0)
-    elif "le3j" in name :
-        systMode = (0.15, 0.30, 0.50)
-        x._observations["nHadBulk"] = (487992800, 202369400, 134976100, 36965375, 12292400,  8301900, 1925125, 1768325, 0, 0)
-    elif "ge4j" in name :
-        systMode = (0.25, 0.35, 0.70)
-        x._observations["nHadBulk"] = (142460800,  83796800,  74635300, 32811775, 13809100, 11880400, 2820050, 3008025, 0, 0)
-
-    x._htBinLowerEdges = ( 275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0, 975.0, 1.075e+03, )
-    x._htMaxForPlot    = 1.175e+03
-
-    x._htMeans = (298, 348, 416, 517, 617, 719, 819, 1044, 0.0, 0.0)
-
-    if "ge4b" in name :
-        x._mergeBins = (0, 1, 2, 2, 2, 2, 2, 2, 2, 2)
-        systMode = (0.25,)
-    else :
-        x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
-
+def common1(x) :
     x._lumi = {
-        "mumu"               :   1.139e+04 ,
-        "muon"               :   1.139e+04 ,
-        "mcPhot"             :   1.157e+04 ,
-        "phot"               :   1.157e+04 ,
-        "mcHad"              :   5.125e+03 ,
-        "had"                :   5.125e+03 ,
-        "mcMuon"             :   1.139e+04 ,
-        "mcMumu"             :   1.139e+04 ,
+        "mumu"  : 1.139e+04,
+        "muon"  : 1.139e+04,
+        "mcPhot": 1.157e+04,
+        "phot"  : 1.157e+04,
+        "mcHad" : 5.125e+03,
+        "had"   : 5.125e+03,
+        "mcMuon": 1.139e+04,
+        "mcMumu": 1.139e+04,
 	}
 
     x._triggerEfficiencies = {
@@ -44,9 +21,57 @@ def common(x) :
         "mumu":          (0.950, 0.960, 0.960, 0.970, 0.970, 0.970, 0.980, 0.980, 0.980, 0.980),
         }
 
+    x._htBinLowerEdges = ( 275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0, 975.0, 1.075e+03, )
+    x._htMaxForPlot    = 1.175e+03
+    x._htMeans         = ( 298.0, 348.0, 416.0, 517.0, 617.0, 719.0, 819.0, 1044.,   0.0,       0.0, )
+
     x._observations["nPhot"] = tuple([None, None]+list(x._observations["nPhot"][2:]))
-    syst.load(x, mode = systMode)
-    x._fixedParameters.update({"k_qcd_nom":2.96e-2, "k_qcd_unc_inp":utils.quadSum([0.61e-2, 0.463e-2])})
+
+    uncs = {"btagUncert": 0.035, "lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10} # SMS other than T1, T2
+    uncs["btagUncert"] = 0.12 #T1, T2, cMSSM tb10 only
+    return utils.quadSum(uncs.values())
+
+def common(x) :
+    lumiLikeValue = common1(x)
+
+    systBins = tuple([0]*4+[1]*2+[2]*2)
+    name = x.__class__.__name__
+    if "ge2j" in name :
+        systMagnitudes = (0.10, 0.20, 0.60)
+        x._observations["nHadBulk"] = (630453600, 286166200, 209611400, 69777150, 26101500, 20182300, 4745175, 4776350, 0, 0)
+    elif "le3j" in name :
+        systMagnitudes = (0.15, 0.30, 0.50)
+        x._observations["nHadBulk"] = (487992800, 202369400, 134976100, 36965375, 12292400,  8301900, 1925125, 1768325, 0, 0)
+    elif "ge4j" in name :
+        systMagnitudes = (0.25, 0.35, 0.70)
+        x._observations["nHadBulk"] = (142460800,  83796800,  74635300, 32811775, 13809100, 11880400, 2820050, 3008025, 0, 0)
+
+    if "ge4b" in name :
+        x._mergeBins = (0, 1, 2, 2, 2, 2, 2, 2, 2, 2)
+        systMagnitudes = (0.25,)
+        systBins = (0, 0, 0)
+    else :
+        if "0b" in name :
+            x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
+        else :
+            x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 6, 6, 6)
+            systBins = tuple([0]*4+[1]*2+[2]*1)
+
+    x._systBins = {
+        "sigmaLumiLike": [0]*len(systBins),
+        "sigmaPhotZ": systBins,
+        "sigmaMuonW": systBins,
+        "sigmaMumuZ": systBins,
+        }
+
+    x._fixedParameters = {
+        "sigmaLumiLike": tuple([lumiLikeValue]*1),
+        "sigmaPhotZ": systMagnitudes,
+        "sigmaMuonW": systMagnitudes,
+        "sigmaMumuZ": systMagnitudes,
+        "k_qcd_nom":2.96e-2,
+        "k_qcd_unc_inp":utils.quadSum([0.61e-2, 0.463e-2])
+        }
 
 class data_0b_ge2j(data) :
     def _fill(self) :
