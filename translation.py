@@ -111,7 +111,7 @@ color = {"ge2j":r.kBlack,
          "le3j":r.kBlue,
          }
 
-for i,j in enumerate(["ge2j", "ge4j", "le3j"]) :
+for i,j in enumerate(["ge4j", "le3j"]) :
     bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
     datasets = [ {"module": take11, "slices": ["%s_%s"%(b,j) for b in bs], "color":color[j], "label": "2012 (%s)"%j}, ]
     print datasets
