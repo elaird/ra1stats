@@ -100,8 +100,9 @@ NOTES
         assert len(self._htMeans)==l
         
         for item in ["observations", "mcExpectationsBeforeTrigger", "mcStatError", "systBins"] :
+            length = self._mergeChecks() if (item=="systBins" and self._mergeBins) else l
             for key,value in getattr(self,"_%s"%item).iteritems() :
-                assert len(value)==l,"%s: %s"%(item, key)
+                assert len(value)==length,"%s: %s"%(item, key)
 
         for key,value in self._systBins.iteritems() :
             assert min(value)==0, "%s_%s"%(str(key), str(value))
@@ -123,6 +124,11 @@ NOTES
         s = set(self._mergeBins)
         assert s==set(range(len(s))),"Holes are not supported."
         return len(s)
+
+    def _mergeHtMax(self, nBins) :
+        if self._mergeBins.count(nBins-1)>1 :
+            i = self._mergeBins.index(nBins-1)+1
+            self._htMaxForPlot = self._htBinLowerEdges[i]
 
     def _mergeHtMeans(self, nBins) :
         newMeans = [0]*nBins
@@ -171,7 +177,8 @@ NOTES
         if self._mergeBins is None : return
 
         nBins = self._mergeChecks()
-        self._mergeHtMeans(nBins) #before the others are adjusted
+        self._mergeHtMax(nBins)
+        self._mergeHtMeans(nBins)
         self._mergeHtBinLowerEdges(nBins)
         self._mergeCounts(nBins, items = ["observations", "mcExpectationsBeforeTrigger", "mcExpectations"])
         self._mergeErrors(nBins, items = ["mcStatError"])
