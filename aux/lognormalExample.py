@@ -23,7 +23,8 @@ def stamp(keep = [], mode = "", gauss = None, lognormal = None, sigmaValue = Non
         keep.append( text.DrawLatex(x0, y0-s*(3+i), name+"(x|  #mu, #sigma)") )
 
 def plot() :
-    sigmaValues = [0.1, 0.2, 0.26, 0.4]
+    sigmaValues = [0.10, 0.20, 0.26, 0.40 ]
+    maxes       = [0.13, 0.065,0.05, 0.035]
     canvas = r.TCanvas()
     canvas.Divide(len(sigmaValues), 1)
 
@@ -44,6 +45,7 @@ def plot() :
 
         frame.SetTitle("")
         frame.Draw()
+        if maxes : frame.SetMaximum(maxes[i])
 
         stamp(keep, mode, gauss, lognormal, sigmaValue)
 
@@ -51,7 +53,7 @@ def plot() :
         r.gPad.SetTicky()
 
     canvas.cd(0)
-    canvas.Print("lognormal_%s.pdf"%mode)
+    canvas.Print("llk_vs_%s.pdf"%mode)
 
 color = {"gauss":r.kRed, "lognormal":r.kBlue}
 for mode in ["x", "mu"] :
