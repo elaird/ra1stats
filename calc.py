@@ -506,7 +506,14 @@ def pullsRaw(pdf = None) :
         assert sigma,sigma
         out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma}
     elif className=="RooLognormal" :
-        out[("Logn", pdfName)] = {"simple": 0.0}
+        l = r.Lognormal(pdf)
+        x = l.x.arg().getVal()
+        m0 = l.m0.arg().getVal()
+        k = l.k.arg().getVal()
+        assert x>0.0,x
+        assert m0>0.0,m0
+        assert k>1.0,k
+        out[("Logn", pdfName)] = {"simple": (r.TMath.Log(x)-r.TMath.Log(m0))/r.TMath.Log(k)}
     else :
         assert False,className
     return out
@@ -521,7 +528,7 @@ def pullHistoTitle(termType = "", key = "") :
     elif termType=="Gaus" :
         return "Gaussian terms;;(x-#mu)/#sigma"
     elif termType=="Logn" :
-        return "Lognormal terms;;fixme"
+        return "Lognormal terms;;(ln x - ln #mu)/#sigma"
     else :
         assert False,termType
 
@@ -530,7 +537,8 @@ def pullHisto(termType = "", pulls = {}, title = "") :
     for key,value in pulls.iteritems() :
         if key[0]!=termType : continue
         p[key[1]] = value
-
+    if not p :
+        return None
     h = r.TH1D("%sPulls"%termType, title, len(p), 0.5, 0.5+len(p))
     for i,key in enumerate(sorted(p.keys())) :
         h.SetBinContent(1+i, p[key])
@@ -604,6 +612,7 @@ def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "simple", 
 
     for termType in ["Pois", "Gaus", "Logn"] :
         h = pullHisto(termType, p)
+        if not h : continue
         h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
         h.SetStats(False)
         h.SetMarkerStyle(20)
