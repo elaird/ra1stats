@@ -505,6 +505,8 @@ def pullsRaw(pdf = None) :
         sigma = g.sigma.arg().getVal()
         assert sigma,sigma
         out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma}
+    elif className=="RooLognormal" :
+        out[("Logn", pdfName)] = {"simple": 0.0}
     else :
         assert False,className
     return out
@@ -518,6 +520,8 @@ def pullHistoTitle(termType = "", key = "") :
         return "Poisson terms;;"+dct[key]
     elif termType=="Gaus" :
         return "Gaussian terms;;(x-#mu)/#sigma"
+    elif termType=="Logn" :
+        return "Lognormal terms;;fixme"
     else :
         assert False,termType
 
@@ -530,6 +534,7 @@ def pullHisto(termType = "", pulls = {}, title = "") :
     h = r.TH1D("%sPulls"%termType, title, len(p), 0.5, 0.5+len(p))
     for i,key in enumerate(sorted(p.keys())) :
         h.SetBinContent(1+i, p[key])
+        h.GetXaxis().SetBinLabel(1+i, key)
         if termType=="Pois" :
             sample,sel,nB,iHt = common.split(key)
             sample = sample.replace(termType,"")
@@ -539,11 +544,9 @@ def pullHisto(termType = "", pulls = {}, title = "") :
             else :
                 label = ""
             h.GetXaxis().SetBinLabel(1+i, label)
-        elif termType=="Gaus" :
-            h.GetXaxis().SetBinLabel(1+i, key)
     return h
 
-def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple", debug = False) :
+def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple", lognKey = "simple", debug = False) :
     pRaw = pullsRaw(pdf)
 
     if debug :
@@ -559,6 +562,8 @@ def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gaus
             p[key] = value[poisKey]
         elif key[0]=="Gaus" :
             p[key] = value[gausKey]
+        elif key[0]=="Logn" :
+            p[key] = value[lognKey]
         else :
             assert False,key
     return p
@@ -580,7 +585,7 @@ def pullStats(pulls = {}, nParams = None) :
     out["prob"]    = r.TMath.Prob(chi2, nDof)
     return out
 
-def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
+def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "simple", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
     p = pulls
 
     canvas = r.TCanvas()
@@ -597,7 +602,7 @@ def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", threshold = 2.0, yMa
 
     total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
 
-    for termType in ["Pois", "Gaus"] :
+    for termType in ["Pois", "Gaus", "Logn"] :
         h = pullHisto(termType, p)
         h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
         h.SetStats(False)
