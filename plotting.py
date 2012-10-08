@@ -292,7 +292,7 @@ class validationPlotter(object) :
         self.width1 = 2
         self.width2 = 3
 
-        self.smDesc = "Standard Model%s"%(" #pm Expected Unc." if self.errorsFromToys else "")
+        self.smDesc = "Standard Model%s"%(" #kern[0.25]{#pm} Expected Unc." if self.errorsFromToys else "")
         self.bandInLegend = True
         self.sm = r.kAzure+6
         self.smError = r.kAzure
