@@ -57,7 +57,7 @@ def plot(datasets = [], tag = "") :
         canvas.cd(0)
         canvas.Clear()
         canvas.Divide(1, 3)
-        leg = r.TLegend(0.6, 0.9, 0.85, 0.98)
+        leg = r.TLegend(0.5, 0.92, 0.9, 0.98)
         leg.SetFillStyle(0)
         leg.SetBorderSize(0)
 
@@ -89,9 +89,9 @@ from inputData.data2011reorg import take3
 #2012
 from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012 import take6,take6_capped,take6_unweighted
-from inputData.data2012 import take11
+from inputData.data2012 import take12_weighted,take12_unweighted
 
-datasets = [ {"module": take5,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
+datasets = [ {"module": take5,            "slnices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
              {"module": take5a,           "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack,   "label": "2012 (fully weighted; hacked)"},
              {"module": take5_capped,     "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kBlue,    "label": "2012 (weights capped at 5)"},
              {"module": take5_unweighted, "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kCyan,    "label": "2012 (unweighted)"},
@@ -106,13 +106,20 @@ datasets = [ {"module": take6,            "slices": ["0b_no_aT", "0b", "1b", "2b
 
 setup()
 
-color = {"ge2j":r.kBlack,
-         "ge4j":r.kRed,
-         "le3j":r.kBlue,
-         }
+color1 = {"ge2j":r.kBlack,
+          "ge4j":r.kRed,
+          "le3j":r.kBlue,
+          }
+color2 = {"ge2j":r.kGray,
+          "ge4j":r.kOrange,
+          "le3j":r.kCyan,
+          }
 
 for i,j in enumerate(["ge4j", "le3j"]) :
     bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
-    datasets = [ {"module": take11, "slices": ["%s_%s"%(b,j) for b in bs], "color":color[j], "label": "2012 (%s)"%j}, ]
+    slices = ["%s_%s"%(b,j) for b in bs]
+    datasets = [ {"module": take12_weighted, "slices": slices, "color":color1[j], "label": "2012 (%s, weighted)"%j}, 
+                 {"module": take12_unweighted, "slices": slices, "color":color2[j], "label": "2012 (%s, unweighted)"%j},
+                 ]
     print datasets
     plot(datasets, tag = j)
