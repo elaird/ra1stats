@@ -8,7 +8,7 @@ def points() :
 
 def description(key, cl = None) :
     if key[:2]=="CL" : return key
-    if key[-5:]=="Limit" and cl : return "%g%% C.L. %s limit on XS factor"%(cl, key[:-5])
+    if key[-5:]=="Limit" and cl : return "%g%% CL %s limit on XS factor"%(cl, key[:-5])
     else : return ""
 
 def printDict(d, space = "") :
