@@ -1,4 +1,4 @@
-nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript)
+nb = "n_{#kern[0.1]{#lower[-0.2]{b}}}^{#color[0]{b}}" #graphical hack (white superscript)
 nj = "n_{j}^{#color[0]{j}}" #graphical hack (white superscript)
 
 class selection(object) :
