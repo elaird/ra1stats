@@ -17,14 +17,14 @@ options = {
     'limitFile': '/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
                  'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
                  '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
-    'processName': 'pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t '
-        '+ LSP; m(#tilde{g})>>m(#tilde{t})',
+    'processName': 'pp #rightarrow #tilde{t} #tilde{t},  #tilde{t} #rightarrow'
+        't + LSP; m(#tilde{g})>>m(#tilde{t})',
     'refYRange': (50.,50.),
     'shiftX': True,
     'showRatio': False,
     }
 
-plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} (GeV)' }
+plotOptOverrides = { 'xLabel': 'm_{#kern[0.2]{#tilde{t}}} (GeV)' }
 
 
 def drawStamp(canvas, processName=None):
@@ -35,7 +35,7 @@ def drawStamp(canvas, processName=None):
     tl.SetTextSize(0.04)
     #tl.DrawLatex(0.16,0.84,'CMS')
     tl.DrawLatex(0.42,0.49,'m_{LSP} = 50 GeV')
-    tl.DrawLatex(0.42,0.603,'CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV')
+    tl.DrawLatex(0.42,0.613,'CMS, L_{#lower[-0.25]{int}} = 4.98 fb^{-1}, #sqrt{s} = 7 TeV')
     tl.SetTextSize(0.07)
     #tl.DrawLatex(0.20,0.75,'#alpha_{T}')
     if processName is not None:
@@ -58,7 +58,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
             'FillStyle': 3002,
             'hasErrors': True,
             'opts': 'e3l',
-            'label': '#sigma^{{NLO+NLL}}({rn}) #pm th. unc.'.format(rn=refName),
+            'label': '#sigma^{{NLO+NLL}}({rn}) #pm 1#sigma theory'.format(rn=refName),
             }
         }
     return histoD
@@ -67,7 +67,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
 def getExclusionHistos(limitFile, yMinMax=(50,50)):
     limitHistoDict = {
         'UpperLimit': {
-            'label': 'Observed Limit (95% C.L.)',
+            'label': 'Observed Limit (95% CL)',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             'opts': 'c',
@@ -203,6 +203,8 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         'xLabel': "{p} mass (GeV)".format(
             p=refProcess.capitalize().replace('_',' ')),
         'yLabel': '#sigma (pb)',
+        'titleSize': 0.045,
+        'yTitleOffset': 0.8,
         'legendPosition': [0.40, 0.65, 0.85, 0.88],
         }
     if plotOptOverrides is not None:
@@ -232,6 +234,9 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         h.SetStats(False)
         #h.SetTitle(processName)
         h.GetXaxis().SetRangeUser(plotOpts['xMin'],plotOpts['xMax'])
+        h.GetXaxis().SetTitleSize(plotOpts['titleSize'])
+        h.GetYaxis().SetTitleSize(plotOpts['titleSize'])
+        h.GetYaxis().SetTitleOffset(plotOpts['yTitleOffset'])
         h.SetMinimum(plotOpts['yMin'])
         h.SetMaximum(plotOpts['yMax'])
         if props.get('Smooth', False):
