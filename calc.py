@@ -513,7 +513,8 @@ def pullsRaw(pdf = None) :
         assert x>0.0,x
         assert m0>0.0,m0
         assert k>1.0,k
-        out[("Logn", pdfName)] = {"simple": (r.TMath.Log(x)-r.TMath.Log(m0))/r.TMath.Log(k)}
+        out[("Logn", pdfName)] = {"kMinusOne": (r.TMath.Log(x)-r.TMath.Log(m0))/(k-1),
+                                  "logk": (r.TMath.Log(x)-r.TMath.Log(m0))/r.TMath.Log(k)}
     else :
         assert False,className
     return out
@@ -528,7 +529,7 @@ def pullHistoTitle(termType = "", key = "") :
     elif termType=="Gaus" :
         return "Gaussian terms;;(x-#mu)/#sigma"
     elif termType=="Logn" :
-        return "Lognormal terms;;(ln x - ln #mu)/#sigma"
+        return "Lognormal terms;;"+{"kMinusOne":"(ln x - ln #mu)/(k-1)", "logk":"(ln x - ln #mu)/ln k"}[key]
     else :
         assert False,termType
 
@@ -554,7 +555,8 @@ def pullHisto(termType = "", pulls = {}, title = "") :
             h.GetXaxis().SetBinLabel(1+i, label)
     return h
 
-def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple", lognKey = "simple", debug = False) :
+def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple",
+          lognKey = ["", "kMinusOne", "logk"][0], debug = False) :
     pRaw = pullsRaw(pdf)
 
     if debug :
@@ -564,6 +566,7 @@ def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gaus
             printPoisPull(pRaw[key])
 
     assert poisKey,poisKey
+    assert lognKey,lognKey
     p = {}
     for key,value in pRaw.iteritems() :
         if key[0]=="Pois" :
@@ -593,7 +596,7 @@ def pullStats(pulls = {}, nParams = None) :
     out["prob"]    = r.TMath.Prob(chi2, nDof)
     return out
 
-def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "simple", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
+def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
     p = pulls
 
     canvas = r.TCanvas()
