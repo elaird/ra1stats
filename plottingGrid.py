@@ -249,7 +249,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
         h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
-        title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
+        title += ";%g%% CL upper limit on  #sigma (pb)"%(100.0*cl)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
