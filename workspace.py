@@ -148,7 +148,7 @@ def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", s
         wimport(w, r.RooGaussian(name, name, obsVar, muVar, w.var(sigmaName)))
     elif pdf=="lognormal" :
         #see aux/lognormalExample.py
-        wimport(w, r.RooRealVar(sigmaName, sigmaName, r.TMath.Exp(sigmaValue)))
+        wimport(w, r.RooRealVar(sigmaName, sigmaName, 1+sigmaValue))
         wimport(w, r.RooLognormal(name, name, obsVar, muVar, w.var(sigmaName)))
     else :
         assert False,pdf
@@ -908,13 +908,14 @@ class foo(object) :
         utils.checkResults(results)
 
         poisKey = "simple"
-        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey)
+        lognKey = "kMinusOne"
+        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
 
         stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
         for key in sorted(stats.keys()) :
             print "%s = %g"%(key.ljust(7), stats[key])
 
-        calc.pullPlots(pulls = pulls, poisKey = poisKey, note = self.note(),
+        calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
                        plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
 
         for selection in self.likelihoodSpec.selections() :
