@@ -141,13 +141,15 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
         w.var(norm).setVal(0.0)
         w.var(norm).setConstant()
 
-def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", sigmaValue = None) :
+def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
     pdf = ["gauss", "lognormal"][1]
     if pdf=="gauss" :
         wimport(w, r.RooRealVar(sigmaName, sigmaName, sigmaValue))
         wimport(w, r.RooGaussian(name, name, obsVar, muVar, w.var(sigmaName)))
     elif pdf=="lognormal" :
         #see aux/lognormalExample.py
+        if makeSigmaRelative :
+            sigmaValue /= obsVar.getVal()
         wimport(w, r.RooRealVar(sigmaName, sigmaName, 1+sigmaValue))
         wimport(w, r.RooLognormal(name, name, obsVar, muVar, w.var(sigmaName)))
     else :
@@ -454,11 +456,8 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     qcdTerms = ni("qcdTerms", label)
 
     wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
-    #systTerm(w, name = qcdGaus, obsVar = w.var(k_qcd_nom), muVar = w.var(k_qcd),
-    #         sigmaName = k_qcd_unc_inp, sigmaValue = inputData.fixedParameters()["k_qcd_unc_inp"])
-
-    wimport(w, r.RooRealVar(k_qcd_unc_inp, k_qcd_unc_inp, inputData.fixedParameters()["k_qcd_unc_inp"]))
-    wimport(w, r.RooGaussian(qcdGaus, qcdGaus, w.var(k_qcd_nom), w.var(k_qcd), w.var(k_qcd_unc_inp)))
+    systTerm(w, name = qcdGaus, obsVar = w.var(k_qcd_nom), muVar = w.var(k_qcd),
+             sigmaName = k_qcd_unc_inp, sigmaValue = inputData.fixedParameters()["k_qcd_unc_inp"], makeSigmaRelative = True)
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
