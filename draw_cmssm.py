@@ -6,7 +6,7 @@ import patches
 def setup() :
     r.gErrorIgnoreLevel = 2000
     r.gROOT.SetBatch(True)
-    
+
 def susyCanvas(fileName = "xs/GridTanb10_v1.root", canvasName = "GridCanvas") :
     #http://arxiv.org/abs/1202.6580
     #https://twiki.cern.ch/twiki/bin/view/CMS/SUSY42XSUSYScan#mSUGRA_Templates
@@ -51,6 +51,13 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
 
     #clone and draw template from SUSY group
     canvas = susyCanvas()
+
+    x = canvas.GetPrimitive('mSUGRA')
+    print x.ClassName()
+    x.GetXaxis().SetTitle('m_{0} (GeV)')
+    x.GetYaxis().SetTitle('m_{1/2} (GeV)')
+    #canvas.GetListOfPrimitives().Print()
+    #print x.ClassName()
     canvas.Draw()
 
     #expected band
@@ -81,7 +88,7 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     expLeg.SetFillColor(band.GetFillColor())
 
     #observed limit (xs variations)
-    obsD = spline(curves[("UpperLimit", "down")], title = "Observed Limit #pm 1 #sigma th. unc.")
+    obsD = spline(curves[("UpperLimit", "down")], title = "Observed Limit #pm 1 #sigma theory")
     obsD.SetLineStyle(4)
     obsD.Draw("lsame")
 
@@ -90,7 +97,7 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     obsU.Draw("lsame")
 
     #observed limit (xs = default)
-    obs = spline(curves[("UpperLimit", "default")], "Observed Limit (95% C.L.)")
+    obs = spline(curves[("UpperLimit", "default")], "Observed Limit (95% CL)")
     obs.SetLineWidth(3)
     obs.Draw("lsame")
 
@@ -109,7 +116,7 @@ def go(outFile = "", model = "tanBeta10", bandOutline = False) :
     text.SetNDC()
     text.SetTextSize(0.8*text.GetTextSize())
     #stamp = text.DrawLatex(0.35, 0.77, "CMS Preliminary, 4.98 fb^{-1}, #sqrt{s} = 7 TeV")
-    stamp = text.DrawLatex(0.40, 0.77, "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV")
+    stamp = text.DrawLatex(0.40, 0.77, "CMS, L_{#lower[-0.25]{int}} = 4.98 fb^{-1}, #sqrt{s} = 7 TeV")
     #print to file
     canvas.Print(outFile)
 
