@@ -98,8 +98,12 @@ class spec(object) :
 
                 if b=="0" :
                     options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
-                elif b in ["1", "2"] :
-                    options = [{"had":True, "muon":True}, {"had":True, "muon":True, "phot":False, "mumu":False}]
+                elif b=="1" :
+                    options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                    #options += [{"had":True, "muon":True}]
+                elif b=="2" :
+                    options = [{"had":True, "muon":True}]
+                    #options += [{"had":True, "muon":True, "phot":False, "mumu":False}]
                 else :
                     options = [{"had":True, "muon":True}]
 
