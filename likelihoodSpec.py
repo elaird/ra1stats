@@ -76,7 +76,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self.legendTitle = ""
-        from inputData.data2012 import take11 as module
+        from inputData.data2012 import take12_weighted as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
@@ -96,8 +96,13 @@ class spec(object) :
                 note += "; %s#%s"%(nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
 
-                options = [{"had":True, "muon":True}]
-                options += [{"had":True, "muon":True, "phot":False, "mumu":False}] if b in ["0", "1", "2"] else []
+                if b=="0" :
+                    options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                if b in ["1", "2"] :
+                    options = [{"had":True, "muon":True}, {"had":True, "muon":True, "phot":False, "mumu":False}]
+                else :
+                    options = [{"had":True, "muon":True}]
+
                 for samplesAndSignalEff in options :
                     sel = selection(name = name, note = note,
                                     alphaTMinMax = ("55", None),
