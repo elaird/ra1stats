@@ -199,7 +199,7 @@ def cls(dataset = None, modelconfig = None, wspace = None, smOnly = None,
 
     calcs = {
         "SHTID" : hypoTestInvTool.RunInverter,
-        "NCKW"  : r.RooStats.asROOT
+        #"NCKW"  : r.RooStats.asROOT
     }
 
     result = calcs[calcToUse](wspace, #RooWorkspace * w,
