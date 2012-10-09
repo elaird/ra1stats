@@ -80,7 +80,7 @@ class spec(object) :
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
-            fZinvIni = {"0"  : 0.50,
+            fZinvIni = {"0"  : 0.60,
                         "1"  : 0.25,
                         "2"  : 0.10,
                         "3"  : 0.05,
