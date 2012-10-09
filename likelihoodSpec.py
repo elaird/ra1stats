@@ -98,7 +98,7 @@ class spec(object) :
 
                 if b=="0" :
                     options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
-                if b in ["1", "2"] :
+                elif b in ["1", "2"] :
                     options = [{"had":True, "muon":True}, {"had":True, "muon":True, "phot":False, "mumu":False}]
                 else :
                     options = [{"had":True, "muon":True}]
