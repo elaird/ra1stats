@@ -80,16 +80,16 @@ class spec(object) :
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
-            fZinvIni = {"0"  : 0.60,
-                        "1"  : 0.25,
-                        "2"  : 0.10,
-                        "3"  : 0.05,
-                        "ge4": 0.01,
-                        }[b]
-
             for j in ["ge2", "le3", "ge4"][1:] :
                 if b=="ge4" and j!="ge4" : continue
                 if b=="3"   and j!="ge4" : continue
+
+                fZinvIni = {"0b"  : {"le3j":0.57, "ge4j":0.40},
+                            "1b"  : {"le3j":0.40, "ge4j":0.20},
+                            "2b"  : {"le3j":0.10, "ge4j":0.10},
+                            "3b"  : {"le3j":0.05, "ge4j":0.05},
+                            "ge4b": {"le3j":0.01, "ge4j":0.01},
+                            }[b+"b"][j+"j"]
 
                 name  = "%sb_%sj"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
