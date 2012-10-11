@@ -141,6 +141,20 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
         w.var(norm).setVal(0.0)
         w.var(norm).setConstant()
 
+def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
+    pdf = ["gauss", "lognormal"][1]
+    if pdf=="gauss" :
+        wimport(w, r.RooRealVar(sigmaName, sigmaName, sigmaValue))
+        wimport(w, r.RooGaussian(name, name, obsVar, muVar, w.var(sigmaName)))
+    elif pdf=="lognormal" :
+        #see aux/lognormalExample.py
+        if makeSigmaRelative :
+            sigmaValue /= obsVar.getVal()
+        wimport(w, r.RooRealVar(sigmaName, sigmaName, 1+sigmaValue))
+        wimport(w, r.RooLognormal(name, name, obsVar, muVar, w.var(sigmaName)))
+    else :
+        assert False,pdf
+
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
              REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
              zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
@@ -268,8 +282,8 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             gaus = ni("mumuGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
             wimport(w, r.RooRealVar(one, one, 1.0))
-            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"][iPar]))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+                     sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMumuZ"][iPar])
             out["systObs"].append(one)
             terms.append(gaus)
 
@@ -315,8 +329,8 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             gaus = ni("photGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
             wimport(w, r.RooRealVar(one, one, 1.0))
-            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaPhotZ"][iPar]))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+                     sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaPhotZ"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
 
@@ -362,8 +376,8 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             gaus = ni("muonGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
             wimport(w, r.RooRealVar(one, one, 1.0))
-            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMuonW"][iPar]))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+                     sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMuonW"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
 
@@ -426,8 +440,8 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     qcdTerms = ni("qcdTerms", label)
 
     wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
-    wimport(w, r.RooRealVar(k_qcd_unc_inp, k_qcd_unc_inp, inputData.fixedParameters()["k_qcd_unc_inp"]))
-    wimport(w, r.RooGaussian(qcdGaus, qcdGaus, w.var(k_qcd_nom), w.var(k_qcd), w.var(k_qcd_unc_inp)))
+    systTerm(w, name = qcdGaus, obsVar = w.var(k_qcd_nom), muVar = w.var(k_qcd),
+             sigmaName = k_qcd_unc_inp, sigmaValue = inputData.fixedParameters()["k_qcd_unc_inp"], makeSigmaRelative = True)
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
@@ -468,8 +482,7 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
 
             wimport(w, r.RooRealVar(one, one, 1.0))
             wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
-            wimport(w, r.RooRealVar(delta, delta, deltaSignalValue))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(delta)))
+            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho), sigmaName = delta, sigmaValue = deltaSignalValue)
 
             signalTermsName = ni("signalTerms", label, iPar)
             w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
@@ -878,13 +891,14 @@ class foo(object) :
         utils.checkResults(results)
 
         poisKey = "simple"
-        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey)
+        lognKey = "kMinusOne"
+        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
 
         stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
         for key in sorted(stats.keys()) :
             print "%s = %g"%(key.ljust(7), stats[key])
 
-        calc.pullPlots(pulls = pulls, poisKey = poisKey, note = self.note(),
+        calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
                        plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
 
         for selection in self.likelihoodSpec.selections() :
