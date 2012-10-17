@@ -15,7 +15,7 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
 
     nToys = {"2011":3000,
              "2012ichep":1000,
-             "2012dev":300,
+             "2012dev":0,
              }[dataset]
 
     f = workspace.foo(likelihoodSpec = spec,
@@ -59,7 +59,7 @@ if kargs["dataset"]=="2011" :
     go(**kargs)
 else :
     nSelections = len(likelihoodSpec.spec(dataset = kargs["dataset"]).selections())
-    for iLower in range(nSelections) :
+    for iLower in range(nSelections)[1:2] :
         args = {"iLower":iLower, "iUpper":1+iLower}
         args.update(kargs)
         go(**args)
