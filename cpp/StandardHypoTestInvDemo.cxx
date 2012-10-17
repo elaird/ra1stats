@@ -312,19 +312,19 @@ StandardHypoTestInvDemo(const char * infile = 0,
   
    // if input file was specified but not found, quit
    if(!file && !TString(infile).IsNull()){
-      cout <<"file " << fileName << " not found" << endl;
+      std::cout <<"file " << fileName << " not found" << std::endl;
       return;
    } 
   
    // if default file not found, try to create it
    if(!file ){
       // Normally this would be run on the command line
-      cout <<"will run standard hist2workspace example"<<endl;
+      std::cout <<"will run standard hist2workspace example"<<std::endl;
       gROOT->ProcessLine(".! prepareHistFactory .");
       gROOT->ProcessLine(".! hist2workspace config/example.xml");
-      cout <<"\n\n---------------------"<<endl;
-      cout <<"Done creating example input"<<endl;
-      cout <<"---------------------\n\n"<<endl;
+      std::cout <<"\n\n---------------------"<<std::endl;
+      std::cout <<"Done creating example input"<<std::endl;
+      std::cout <<"---------------------\n\n"<<std::endl;
     
       // now try to access the file again
       file = TFile::Open(fileName);
@@ -333,7 +333,7 @@ StandardHypoTestInvDemo(const char * infile = 0,
   
    if(!file){
       // if it is still not there, then we can't continue
-      cout << "Not able to run hist2workspace to create example input" <<endl;
+      std::cout << "Not able to run hist2workspace to create example input" <<std::endl;
       return;
    }
   
@@ -533,8 +533,8 @@ RooStats::HypoTestInvTool::RunInverter(RooWorkspace * w,
       std::cout << "Using data set " << dataName << std::endl;
   
    if (mUseVectorStore) { 
-      RooAbsData::defaultStorageType = RooAbsData::Vector;
-      data->convertToVectorStore() ;
+      //RooAbsData::defaultStorageType = RooAbsData::Vector;
+      //data->convertToVectorStore() ;
    }
   
   
