@@ -14,8 +14,7 @@ def itMult(l1 = [], l2 = []) :
 
 def _trigKey(sample = "") :
     d = {"mcTtw":"had", "mcZinv":"had", "mcHad": "had",
-         "mcMumu":"mumu", "mcMuon":"muon",
-         "mcGjets":"phot", "mcPhot":"phot",
+         "mcMumu":"mumu", "mcMuon":"muon", "mcPhot":"phot",
          "mcSimple":"simple", # legacy for simple
          "mcZmumu":"mumu" # legacy for orig
          }
@@ -28,7 +27,7 @@ def _trigKey(sample = "") :
 
 
 vars = ["mergeBins", "constantMcRatioAfterHere", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
-        "observations", "triggerEfficiencies", "purities", "mcStatError", "fixedParameters"]
+        "observations", "triggerEfficiencies", "mcStatError", "fixedParameters"]
 
 class data(object) :
     def __init__(self, requireFullImplementation = True, systMode = 1) :
@@ -43,7 +42,7 @@ class data(object) :
 
     def __str__(self, notes = False) :
         out = ""
-        for func in ["observations", "mcExpectations", "purities", "mcExtra", "mcStatError"] :
+        for func in ["observations", "mcExpectations", "mcExtra", "mcStatError"] :
             out += "\n".join(["", func, "-"*20, ""])
             d = getattr(self, func)()
             for key in sorted(d.keys()) :
@@ -56,10 +55,6 @@ NOTES
 - all numbers are after the trigger, i.e.
 -- the observations are integers
 -- the appropriate MC samples are scaled down to emulate trigger inefficiency
-
-- mcGJets is the true gamma+jets component of the MC
-- mcPhot is what is to be compared to data; (GJets + QCD contamination)
-- they are related by the photon purity
 '''
         return out
 
@@ -71,7 +66,6 @@ NOTES
                }[tr]
 
         assert self._constantMcRatioAfterHere == tuple([0]*7+[1]),self._constantMcRatioAfterHere
-        #todo: handle purities
         value = self.mcExpectations() if afterTrigger else self._mcExpectationsBeforeTrigger
         error = self.mcStatError()
         lumi = self.lumi()
@@ -179,12 +173,8 @@ NOTES
 
         if self.requireFullImplementation :
             assert False,"Implement trigger efficiency merging."
-            assert False,"Implement purity merging."
-            assert False,"Implement sigEffCorr merging."
         else :
-            print "WARNING: Purity merging is not implemented.  Results are nonsense."
             print "WARNING: Trigger efficiency merging is not implemented.  Results are nonsense."
-            print "WARNING: Signal efficiency correction merging is not implemented.  Results are nonsense."
         return
 
     #define functions called by outside world

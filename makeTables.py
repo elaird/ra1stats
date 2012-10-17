@@ -111,9 +111,9 @@ def truncate(t, index = 2) :
 def nr(x, value = 0.0) :
     return x if x!=None else value
 
-def purity(data, indices, *args) :
-    p = data.purities()[args[0]]
-    return ["%4.2f"%nr(p[i]) for i in indices]
+#def purity(data, indices, *args) :
+#    p = data.purities()[args[0]]
+#    return ["%4.2f"%nr(p[i]) for i in indices]
 
 def mcYieldHadLumi(data, indices, *args) :
     value = data.mcExpectations()[args[0]]
@@ -162,10 +162,9 @@ def photon(data) :
                     caption = r'''Photon Sample Predictions '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
                     label = "results-PHOTON",
                     rows = [{"label": r'''MC $\znunu$''',          "entryFunc":mcYieldHadLumi,    "args":("mcZinv",)},
-                            {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcGjets", "phot", "had")},
-                            {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcGjets", "mcZinv", "phot", "had")},
+                            {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcPhot", "phot", "had")},
+                            {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcPhot", "mcZinv", "phot", "had")},
                             {"label": r'''Data $\gamma +$~jets''', "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
-                            {"label": r'''Sample Purity''',        "entryFunc":purity,            "args":("phot",)},
                             {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcPhot", "mcZinv", "sigmaPhotZ")},
                             ])
 
