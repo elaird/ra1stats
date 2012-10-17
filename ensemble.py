@@ -25,7 +25,7 @@ def collect(wspace, results, extraStructure = False) :
     return out
 
 def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None, toyNumberMod = 5) :
-    results = utils.rooFitResults(common.pdf(wspace), data, globalObs = wspace.set("systObs"))
+    results = utils.rooFitResults(common.pdf(wspace), data)
     wspace.saveSnapshot("snap", wspace.allVars())
 
     obs = collect(wspace, results, extraStructure = True)
@@ -34,8 +34,8 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
     for i,dataSet in enumerate(common.pseudoData(wspace, nToys)) :
         if not (i%toyNumberMod) : print "iToy = %d"%i
         wspace.loadSnapshot("snap")
-        dataSet.Print("v")
-        results = utils.rooFitResults(common.pdf(wspace), dataSet, globalObs = wspace.set("systObs"))
+        #dataSet.Print("v")
+        results = utils.rooFitResults(common.pdf(wspace), dataSet)
 
         wspace.allVars().assignValueOnly(dataSet.get()) #store this toy's observations, needed for (a) computing chi2 in collect(); (b) making "snapA"
         if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
