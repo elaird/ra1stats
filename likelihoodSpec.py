@@ -76,40 +76,48 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self.legendTitle = ""
-        from inputData.data2012 import take7 as module
+        from inputData.data2012 import take13 as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
-            fZinvIni = {"0"  : 0.50,
-                        "1"  : 0.25,
-                        "2"  : 0.10,
-                        "3"  : 0.05,
-                        "ge4": 0.01,
-                        }[b]
-
-            for j in ["ge2", "le3", "ge4"] :
+            for j in ["ge2", "le3", "ge4"][1:] :
                 if b=="ge4" and j!="ge4" : continue
+                if b=="3"   and j!="ge4" : continue
+
+                fZinvIni = {"0b"  : {"le3j":0.57, "ge4j":0.40},
+                            "1b"  : {"le3j":0.40, "ge4j":0.20},
+                            "2b"  : {"le3j":0.10, "ge4j":0.10},
+                            "3b"  : {"le3j":0.05, "ge4j":0.05},
+                            "ge4b": {"le3j":0.01, "ge4j":0.01},
+                            }[b+"b"][j+"j"]
 
                 name  = "%sb_%sj"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
                 note += "; %s#%s"%(nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
 
-                samplesAndSignalEff = {"had":True, "muon":True}
-                if b in ["0", "1", "2"] :
-                    samplesAndSignalEff.update({"phot":False, "mumu":False})
+                if b=="0" :
+                    options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                elif b=="1" :
+                    options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                    #options += [{"had":True, "muon":True}]
+                elif b=="2" :
+                    options = [{"had":True, "muon":True}]
+                    #options += [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                else :
+                    options = [{"had":True, "muon":True}]
 
-                sel = selection(name = name,
-                                note = note,
-                                alphaTMinMax = ("55", None),
-                                samplesAndSignalEff = samplesAndSignalEff,
-                                muonForFullEwk = len(samplesAndSignalEff)==2,
-                                data = getattr(module, "data_%s"%name)(),
-                                #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
-                                fZinvIni = fZinvIni,
-                                AQcdIni = 0.0,
-                                )
-                lst.append(sel)
+                for samplesAndSignalEff in options :
+                    sel = selection(name = name, note = note,
+                                    alphaTMinMax = ("55", None),
+                                    samplesAndSignalEff = samplesAndSignalEff,
+                                    muonForFullEwk = len(samplesAndSignalEff)==2,
+                                    data = getattr(module, "data_%s"%name)(),
+                                    #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
+                                    fZinvIni = fZinvIni,
+                                    AQcdIni = 0.0,
+                                    )
+                    lst.append(sel)
         self.add(lst)
 
     def __init2012ichep__(self) :

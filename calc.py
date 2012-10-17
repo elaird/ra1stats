@@ -440,7 +440,7 @@ def nSigma(quantile = None) :
     return r.TMath.ErfInverse(2.0*quantile - 1.0)*math.sqrt(2.0)
 
 def poisMedian(mu = None) :
-    assert mu,mu
+    #assert mu,mu
     med = mu + 1/3.0# - 0.02/mu
     return int(med)
 
@@ -455,8 +455,10 @@ def poisPull(n = None, mu = None) :
     out["median"] = poisMedian(mu)
     out["mode"] = poisMode(mu)
 
-    assert mu,mu
-    out["simple"] = (n-mu)/math.sqrt(mu)
+    if mu :
+        out["simple"] = (n-mu)/math.sqrt(mu)
+    else :
+        out["simple"] = 1000.0
 
     assert float(int(n))==n,n
     out["quantile"] = r.Math.poisson_cdf(int(n), mu)

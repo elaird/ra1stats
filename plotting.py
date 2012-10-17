@@ -242,6 +242,8 @@ def drawOne(hist = None, goptions = "", errorBand = False, bandFillStyle = 1001)
     return [errors, noerrors]
 
 def printOnePage(canvas, fileName, ext = ".eps", plotsDir = "plots", sameDir = True) :
+    if "_logy" in fileName :
+        fileName = fileName.replace("_logy","")+"_logy"
     fileName = "%s/%s%s"%(plotsDir, fileName, ext)
     super(utils.numberedCanvas, canvas).Print(fileName)
     if ext==".eps" : utils.epsToPdf(fileName, sameDir = sameDir)
@@ -345,7 +347,7 @@ class validationPlotter(object) :
 
         for logY in [False, True] :
             thisNote = "Simple Sample%s"%(" (logY)" if logY else "")
-            fileName = "simple_signal_fit%s"%("_logy" if logY else "")
+            fileName = ["simple"]+(["logy"] if logY else [])
             self.plot(fileName = fileName, legend0 = (0.48 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.85),
                       obs = {"var":"nSimple", "desc": obsString(self.obsLabel, "simple sample", self.lumi["simple"])},
                       otherVars = vars, logY = logY, stampParams = False)
@@ -378,7 +380,7 @@ class validationPlotter(object) :
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
-            fileName = "hadronic_signal_fit%s"%("_logy" if logY else "")
+            fileName = ["hadronic"]+(["logy"] if logY else [])
             obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
                    "desc": "Data (hadronic sample, %s)"%self.selNote}
 
@@ -388,7 +390,7 @@ class validationPlotter(object) :
     def hadDataMcPlots(self) :
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
-            fileName = "hadronic_signal_data_mc%s"%("_logy" if logY else "")
+            fileName = ["hadronic","data","mc"]+(["logy"] if logY else [])
             self.plot(note = thisNote, fileName = fileName, legend0 = (0.35, 0.72), reverseLegend = True, logY = logY,
                       obs = {"var":"nHad", "desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])}, otherVars = [
                 {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2, "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray},
@@ -414,7 +416,7 @@ class validationPlotter(object) :
 
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
-            fileName = "muon_control_fit%s"%("_logy" if logY else "")
+            fileName = ["muon"]+(["logy"] if logY else [])
             #self.plot(fileName = fileName, legend0 = (0.45 - self.legendXSub, 0.7), legend1 = (0.88 - self.legendXSub, 0.88),
             self.plot(fileName = fileName, legend0 = (0.12, 0.18), legend1 = (0.6, 0.4),
                       obs = {"var":"nMuon", #"desc": obsString(self.obsLabel, "muon sample", self.lumi["muon"])},
@@ -426,7 +428,7 @@ class validationPlotter(object) :
         if self.muonForFullEwk : return
         for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
-            fileName = "photon_control_fit%s"%("_logy" if logY else "")
+            fileName = ["photon"]+(["logy"] if logY else [])
             self.plot(fileName = fileName, legend0 = (0.44 - self.legendXSub, 0.73), legend1 = (0.86 - self.legendXSub, 0.88),
                       reverseLegend = True, logY = logY, ratioDenom = "photExp",
                       obs = {"var":"nPhot", #"desc": obsString(self.obsLabel, "photon sample", self.lumi["phot"])},
@@ -443,7 +445,7 @@ class validationPlotter(object) :
         if self.muonForFullEwk : return
         for logY in [False, True] :
             thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
-            fileName = "mumu_control_fit%s"%("_logy" if logY else "")
+            fileName = ["mumu"]+(["logy"] if logY else [])
             self.plot(fileName = fileName, legend0 = (0.45 - self.legendXSub, 0.72), legend1 = (0.87 - self.legendXSub, 0.88),
                       reverseLegend = True,
                       obs = {"var":"nMumu", #"desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])},
@@ -468,7 +470,7 @@ class validationPlotter(object) :
                                      "stack":None, "color":r.kRed, "goptions": "hist"}])
 
             self.plot(note = "fraction of EWK background which is Zinv (result of fit)" if not self.printPages else "",
-                      fileName = "fZinv_fit", legend0 = (0.2, 0.8), legend1 = (0.55, 0.85), minimum = 0.0, maximum = 1.0, yLabel = "",
+                      fileName = ["fZinv"], legend0 = (0.2, 0.8), legend1 = (0.55, 0.85), minimum = 0.0, maximum = 1.0, yLabel = "",
                       otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z#rightarrow#nu#bar{#nu} / EWK", "stack":None}])
         else :
             self.plot(note = "ewk scale factor (result of fit)", legend0 = (0.5, 0.8), yLabel = "",
@@ -515,9 +517,11 @@ class validationPlotter(object) :
             specs += [{"example":self.signalExampleToStack, "box":"had", "dens":["nHadBulk"], "denTypes":["var"], "desc":self.signalExampleToStack.label,
                        "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
-        self.plot(fileName = "hadronic_signal_alphaT_ratio", legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
+        self.plot(fileName = ["hadronic","alphaT","ratio"], legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
                   obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},
                   otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2)
+
+        return
 
         if self.muonForFullEwk :
             self.plot(note = "muon to ewk", legend0 = (0.12, 0.7), legend1 = (0.62, 0.88), yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2,
@@ -626,7 +630,7 @@ class validationPlotter(object) :
 
         if self.printPages and name :
             h.SetTitle("")
-            printOnePage(self.canvas, name)
+            printOnePage(self.canvas, "_".join([name, self.label]))
             #printOnePage(self.canvas, name, ext = ".C")
         self.canvas.Print(self.psFileName)
         utils.delete(h)
@@ -787,7 +791,6 @@ class validationPlotter(object) :
     def hadronicSummaryTable(self) :
         N = len(self.htBinLowerEdges)
         print "HT bins :",pretty(self.htBinLowerEdges)
-        print "MC EWK  :",pretty(self.inputData.mcExtra()["mcHad"])
         print "Data    :",pretty([self.wspace.var("nHad%d"%i).getVal() for i in range(N)])
         print "fit SM  :",pretty([self.wspace.function("hadB%d"%i).getVal() for i in range(N)])
         print "fit EWK :",pretty([self.wspace.function("ewk%d"%i).getVal() for i in range(N)])
@@ -912,7 +915,7 @@ class validationPlotter(object) :
                         d["noErrors"].SetBinError(i+1, 0.0)
                 #else : d["value"].SetBinError(i+1, func.getPropagatedError(self.results))
             else :
-                value = self.inputData.mcExpectations()[varName][i] if varName in self.inputData.mcExpectations() else self.inputData.mcExtra()[varName][i]
+                value = self.inputData.mcExpectations()[varName][i]
                 if value!=None :
                     d["value"].SetBinContent(i+1, value)
                     d["errors"].SetBinContent(i+1, value)
@@ -1097,7 +1100,7 @@ class validationPlotter(object) :
 
         if self.printPages and fileName :
             #obsHisto.SetTitle("")
-            printOnePage(self.canvas, fileName+self.label)
+            printOnePage(self.canvas, "_".join(fileName+[self.label]))
             #printOnePage(self.canvas, fileName, ext = ".C")
         self.canvas.Print(self.psFileName)
 
