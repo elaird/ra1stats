@@ -211,7 +211,7 @@ def epsToPdf(fileName, tight = True, sameDir = False) :
     print "INFO: %s has been written."%fileName.replace(".eps", ".pdf")
 #####################################
 def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
-    return pdf.fitTo(data, *tuple(options))
+    return pdf.fitTo(data, *options)
 #####################################
 def checkResults(results) :
     status = results.status()
