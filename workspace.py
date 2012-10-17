@@ -142,7 +142,7 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
         w.var(norm).setConstant()
 
 def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
-    pdf = ["gauss", "lognormal"][0]
+    pdf = ["gauss", "lognormal"][1]
     if pdf=="gauss" :
         wimport(w, r.RooRealVar(sigmaName, sigmaName, sigmaValue))
         wimport(w, r.RooGaussian(name, name, obsVar, muVar, w.var(sigmaName)))
