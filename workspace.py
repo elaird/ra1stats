@@ -142,7 +142,7 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
         w.var(norm).setConstant()
 
 def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
-    pdf = ["gauss", "lognormal"][1]
+    pdf = ["gauss", "lognormal"][0]
     if pdf=="gauss" :
         wimport(w, r.RooRealVar(sigmaName, sigmaName, sigmaValue))
         wimport(w, r.RooGaussian(name, name, obsVar, muVar, w.var(sigmaName)))
@@ -322,7 +322,14 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
 
     terms = []
     if label==systematicsLabel :
-        for iPar in set(inputData.systBins()["sigmaPhotZ"]) :
+        systBins = inputData.systBins()["sigmaPhotZ"]
+        nPhot = inputData.observations()["nPhot"]
+        for iPar in set(systBins) :
+            htBins = []
+            for iHt,iSyst in enumerate(systBins) :
+                if iSyst==iPar : htBins.append(iHt)
+            counts = [nPhot[i] for i in htBins]
+            if all(map(lambda x:x==None, counts)) : continue #do not include term if all obs in relevant HT range are None
             rho = ni("rhoPhotZ", label, iPar)
             one = ni("onePhotZ", label, iPar)
             sigma = ni("sigmaPhotZ", label, iPar)
