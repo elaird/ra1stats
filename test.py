@@ -6,7 +6,8 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     spec = likelihoodSpec.spec(iLower = iLower, iUpper = iUpper,
                                dataset = dataset, separateSystObs = not ensemble)
 
-    model_sel = 2
+    model_sel = 0
+                                    # modelD,      modelA,
     signalExampleToStack = {"2011": [signals.t2bb, signals.t1, signals.t2tt2][model_sel],
                             "2012ichep": signals.t1tttt_2012_3,
                             "2012dev": {},
