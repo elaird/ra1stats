@@ -34,6 +34,7 @@ def common(x) :
     lumiLikeValue = common1(x)
 
     systBins = tuple([0]*4+[1]*2+[2]*2)
+    #systBins = tuple([0,1]+[2]*2+[3]*2+[4]*2)
     name = x.__class__.__name__
 
     if "ge2j" in name :
@@ -43,11 +44,13 @@ def common(x) :
     elif "le3j" in name :
         #systMagnitudes = (0.15, 0.30, 0.50)
         systMagnitudes = (0.10, 0.20, 0.20)
+        #systMagnitudes = (0.10, 0.10, 0.20, 0.20, 0.20)
         x._observations["nHadBulk"] = (487992800, 202369400, 134976100, 36965375, 12292400,  8301900, 1925125, 1768325, 0, 0)
         x._triggerEfficiencies["had"] = (0.891, 0.987, 0.990, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000)
     elif "ge4j" in name :
         #systMagnitudes = (0.25, 0.35, 0.70)
         systMagnitudes = (0.10, 0.20, 0.30)
+        #systMagnitudes = (0.10, 0.10, 0.20, 0.20, 0.30)
         x._triggerEfficiencies["had"] = (0.837, 0.982, 0.997, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000)
         x._observations["nHadBulk"] = (142460800,  83796800,  74635300, 32811775, 13809100, 11880400, 2820050, 3008025, 0, 0)
 
@@ -56,12 +59,7 @@ def common(x) :
         systMagnitudes = (0.25,)
         systBins = (0, 0, 0)
     else :
-        if "0b" in name :
-            x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
-        else :
-            x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
-            #x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 6, 6, 6)
-            #systBins = tuple([0]*4+[1]*2+[2]*1)
+        x._mergeBins = (0, 1, 2, 3, 4, 5, 6, 7, 7, 7)
 
     x._systBins = {
         "sigmaLumiLike": [0]*len(systBins),
