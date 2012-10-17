@@ -141,17 +141,21 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
         w.var(norm).setVal(0.0)
         w.var(norm).setConstant()
 
-def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
+def systTerm(w = None, name = "", obsName = "", obsValue = None, muVar = None,
+             sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
     pdf = ["gauss", "lognormal"][1]
     if pdf=="gauss" :
+        wimport(w, r.RooRealVar(obsName, obsName, obsValue))
         wimport(w, r.RooRealVar(sigmaName, sigmaName, sigmaValue))
-        wimport(w, r.RooGaussian(name, name, obsVar, muVar, w.var(sigmaName)))
+        wimport(w, r.RooGaussian(name, name, w.var(obsName), muVar, w.var(sigmaName)))
     elif pdf=="lognormal" :
+        wimport(w, r.RooRealVar(obsName, obsName, obsValue, 0.0, r.RooNumber.infinity()))
+        w.var(obsName).setConstant(True)
         #see aux/lognormalExample.py
         if makeSigmaRelative :
-            sigmaValue /= obsVar.getVal()
+            sigmaValue /= w.var(obsName).getVal()
         wimport(w, r.RooRealVar(sigmaName, sigmaName, 1+sigmaValue))
-        wimport(w, r.RooLognormal(name, name, obsVar, muVar, w.var(sigmaName)))
+        wimport(w, r.RooLognormal(name, name, w.var(obsName), muVar, w.var(sigmaName)))
     else :
         assert False,pdf
 
@@ -281,8 +285,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             sigma = ni("sigmaMumuZ", label, iPar)
             gaus = ni("mumuGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMumuZ"][iPar])
             out["systObs"].append(one)
             terms.append(gaus)
@@ -328,8 +331,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             sigma = ni("sigmaPhotZ", label, iPar)
             gaus = ni("photGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaPhotZ"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
@@ -375,8 +377,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             sigma = ni("sigmaMuonW", label, iPar)
             gaus = ni("muonGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMuonW"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
@@ -439,8 +440,7 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     qcdGaus = ni("qcdGaus", label)
     qcdTerms = ni("qcdTerms", label)
 
-    wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
-    systTerm(w, name = qcdGaus, obsVar = w.var(k_qcd_nom), muVar = w.var(k_qcd),
+    systTerm(w, name = qcdGaus, obsName = k_qcd_nom, obsValue = inputData.fixedParameters()["k_qcd_nom"], muVar = w.var(k_qcd),
              sigmaName = k_qcd_unc_inp, sigmaValue = inputData.fixedParameters()["k_qcd_unc_inp"], makeSigmaRelative = True)
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
@@ -480,9 +480,8 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
             delta = ni("deltaSignal", label, iPar)
             gaus = ni("signalGaus", label, iPar)
 
-            wimport(w, r.RooRealVar(one, one, 1.0))
             wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho), sigmaName = delta, sigmaValue = deltaSignalValue)
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho), sigmaName = delta, sigmaValue = deltaSignalValue)
 
             signalTermsName = ni("signalTerms", label, iPar)
             w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
