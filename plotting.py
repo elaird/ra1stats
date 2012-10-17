@@ -347,7 +347,7 @@ class validationPlotter(object) :
 
         for logY in [False, True] :
             thisNote = "Simple Sample%s"%(" (logY)" if logY else "")
-            fileName = "simple%s"%("_logy" if logY else "")
+            fileName = ["simple"]+(["logy"] if logY else [])
             self.plot(fileName = fileName, legend0 = (0.48 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.85),
                       obs = {"var":"nSimple", "desc": obsString(self.obsLabel, "simple sample", self.lumi["simple"])},
                       otherVars = vars, logY = logY, stampParams = False)
