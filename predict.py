@@ -11,26 +11,16 @@ def histo(inputData, name, title = "") :
     #out.SetStats(False)
     return out
 
-def fill(constantR, h, contents, errors) :
+def fill(h, contents, errors) :
     h.Reset()
-    cFinal = None
-    eFinal = None
-    for i,c,e in zip(range(len(contents)), contents, errors) :
-        if constantR[i] :
-            cFinal = sum(contents[i:])
-            eFinal = e
-        content = c if cFinal is None else cFinal
-        error   = e if eFinal is None else eFinal
+    for i,content,error in zip(range(len(contents)), contents, errors) :
         if content==None or error==None : continue
         h.SetBinContent(1+i, content)
         h.SetBinError(1+i, error)
     return h
 
 data = data2011(requireFullImplementation = False)
-
 htBins = data.htBinLowerEdges()
-constantR = tuple([0]*len(htBins)+[1])
-
 mode = 0
 
 if mode==0 :
@@ -45,8 +35,8 @@ if mode==0 :
     
     syst      = data.fixedParameters()["sigmaPhotZ"]
 
-    muon = fill(constantR, histo(data, name = "mcMuon2Jet", title = "mcMuon2Jet"), mcMuon, mcMuonErr)
-    phot = fill(constantR, histo(data, name = "mcPhot2Jet", title = "mcPhot2Jet"), mcPhot, mcPhotErr)
+    muon = fill(histo(data, name = "mcMuon2Jet", title = "mcMuon2Jet"), mcMuon, mcMuonErr)
+    phot = fill(histo(data, name = "mcPhot2Jet", title = "mcPhot2Jet"), mcPhot, mcPhotErr)
 
 if mode==1 :
     print "photon to muon (n-jet)"
@@ -60,8 +50,8 @@ if mode==1 :
 
     syst      = data.fixedParameters()["sigmaPhotZ"]
 
-    muon = fill(constantR, histo(data, name = "mcMuon", title = "mcMuon"), mcMuon, mcMuonErr)
-    phot = fill(constantR, histo(data, name = "mcPhot", title = "mcPhot"), mcPhot, mcPhotErr)
+    muon = fill(histo(data, name = "mcMuon", title = "mcMuon"), mcMuon, mcMuonErr)
+    phot = fill(histo(data, name = "mcPhot", title = "mcPhot"), mcPhot, mcPhotErr)
 
 if mode==2 :
     print "photon to mumu (n-jet)"
@@ -75,8 +65,8 @@ if mode==2 :
 
     syst      = data.fixedParameters()["sigmaPhotZ"]
 
-    muon = fill(constantR, histo(data, name = "mcMumu", title = "mcMumu"), mcMuon, mcMuonErr)
-    phot = fill(constantR, histo(data, name = "mcPhot", title = "mcPhot"), mcPhot, mcPhotErr)
+    muon = fill(histo(data, name = "mcMumu", title = "mcMumu"), mcMuon, mcMuonErr)
+    phot = fill(histo(data, name = "mcPhot", title = "mcPhot"), mcPhot, mcPhotErr)
 
 muon.Divide(phot)
 
