@@ -82,7 +82,7 @@ class spec(object) :
         for b in ["0", "1", "2", "3", "ge4"] :
             for j in ["ge2", "le3", "ge4"][1:] :
                 if b=="ge4" and j!="ge4" : continue
-                #if b=="3"   and j!="ge4" : continue
+                if b=="3"   and j!="ge4" : continue
 
                 fZinvIni = {"0b"  : {"le3j":0.57, "ge4j":0.40},
                             "1b"  : {"le3j":0.40, "ge4j":0.20},
