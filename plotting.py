@@ -14,6 +14,35 @@ def writeGraphVizTree(wspace, pdfName = "model") :
     cmd = "dot -Tps %s -o %s"%(dotFile, dotFile.replace(".dot", ".ps"))
     os.system(cmd)
 
+def pValueCategoryPlots(hMap = None) :
+    can = r.TCanvas("canvas", "", 500, 700)
+    can.Divide(1, 3)
+    can.cd(1)
+    r.gPad.SetTickx()
+    r.gPad.SetTicky()
+
+    hMap.SetStats(False)
+    hMap.SetMarkerStyle(20)
+    hMap.Draw("p")
+
+    can.cd(2)
+    hMap.Draw("p")
+    r.gPad.SetTickx()
+    r.gPad.SetTicky()
+    r.gPad.SetLogy()
+
+    hDist = r.TH1D("pValueDist", ";p-value;categories / bin", 55, 0.0, 1.1)
+    hDist.SetStats(False)
+    for iBin in range(1, 1+hMap.GetNbinsX()) :
+        hDist.Fill(hMap.GetBinContent(iBin))
+
+    can.cd(3)
+    r.gPad.SetTickx()
+    r.gPad.SetTicky()
+    hDist.Draw()
+
+    can.Print("pValues.pdf")
+
 def errorsPlot(wspace, results) :
     results.Print("v")
     k = wspace.var("k_qcd")
