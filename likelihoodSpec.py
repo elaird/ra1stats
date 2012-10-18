@@ -31,7 +31,10 @@ class spec(object) :
     def qcdParameterIsYield(self) : return self._qcdParameterIsYield
 
     def selections(self) :
-        return self._selections[self._iLower:self._iUpper]
+        if self._whiteList :
+            return filter(lambda x:x.name in self._whiteList, self._selections)
+        else :
+            return self._selections
 
     def poiList(self) :
         return self.poi().keys()
@@ -42,9 +45,8 @@ class spec(object) :
     def add(self, sel = []) :
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None, dataset = "2011", separateSystObs = True) :
-        self._iLower = iLower
-        self._iUpper = iUpper
+    def __init__(self, dataset = "2012dev", separateSystObs = True, whiteList = []) :
+        self._whiteList = whiteList
         self._dataset = dataset
         self._selections = []
         self._separateSystObs = separateSystObs
