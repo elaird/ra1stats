@@ -20,11 +20,10 @@ def readNumbers(fileName) :
 def effHistos() :
     out = {}
     for sel in conf.likelihoodSpec().selections() :
-        assert not sel.data._mergeBins, "merging bins is not yet supported"
+        assert sel.data._mergeBins==(0,1,2,3,4,5,6,7,7,7),"bin merging other than 10-->8 not yet supported"
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
 
-        kargs = {"alphaTLower": sel.alphaTMinMax[0], "alphaTUpper": sel.alphaTMinMax[1], "nbTag": sel.nbTag, "bTagLower": sel.bTagLower }
         d = {}
         for box,considerSignal in sel.samplesAndSignalEff.iteritems() :
             item = "eff%s"%(box.capitalize())
@@ -32,7 +31,9 @@ def effHistos() :
                 d[item] = [0.0]*len(bins)
                 continue
 
-    	    d[item] = [hp.effHisto(box = box, scale = "1", htLower = l, htUpper = u, **kargs) for l,u in htThresholds]
+            d[item] = [hp.effHisto(box = box, scale = "1",
+                                   htLower = l, htUpper = u,
+                                   bJets = sel.bJets, jets = sel.jets) for l,u in htThresholds]
         out[sel.name] = d
     return out
 
@@ -97,7 +98,6 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
 
 def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
-    
     args = {"switches": switches,
             "eff": effHistos(),
             "xs": hp.xsHisto(),
