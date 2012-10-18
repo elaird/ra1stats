@@ -59,9 +59,8 @@ def ranges(model) :
 
 
 def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None,
-              alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None, xsVariation = None) :
+              bJets = None, jets = None, xsVariation = None) :
     #xsVariation is ignored
-    assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"
 
     base = locations()["eff"]
 
@@ -74,7 +73,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
            "T2":          {"had": "rw_fix"},
            #"T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
            "T2tt":        {"had": "strip", "muon": "strip"},
-           "T2bb":        {"had": "rw_fix", "muon": "rw_fix"},
+           "T2bb":        {"had": "v1"},
            "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
            "T5zz":        {"had": "v1", "muon": "v1"},
            "T1bbbb":      {"had": "rw_fix", "muon": "rw_fix"},
@@ -93,6 +92,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     if htLower==325 : thresh = "1"
 
     out = {}
+    tags = []
     if model in cmssm :
         assert box in ["had", "muon"]
         if scale not in ["1", "05", "2"] :
@@ -101,27 +101,33 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
         d = cmssm[model]
         out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+"%s.root"%thresh])
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
-        out["afterDir"] = "mSuGraScan"
+        tags.append("mSuGraScan")
     elif model in sms :
         assert box in ["had","muon"]
         out["file"] = "/".join([base, "sms", model, box, sms[model][box], box+"%s.root"%thresh])
         out["beforeDir"] = "smsScan_before"
-        out["afterDir"] = "smsScan"
+        tags.append("smsScan")
     else :
         assert False, "model %s not in list"%model
 
-    if nbTag is not None     : out["afterDir"] += "_btag_==_%s"%nbTag
-    if bTagLower is not None : out["afterDir"] += "_btag_>_%s"%bTagLower
-# eventually for upper b slices
-    #if box == "muon":
-        #if alphaTLower    : out["afterDir"] += "_NoAlphaT"
-    #else:
-        #if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
-    if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
-    if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
-    if htLower        : out["afterDir"] += "_%d"%htLower
-    if htUpper        : out["afterDir"] += "_%d"%htUpper
-    if model in cmssm : out["afterDir"] += "_scale%s"%scale
+    if bJets :
+        tags.append(bJets)
+    if jets :
+        tags.append(jets)
+
+    if box=="had":
+        tags.append("AlphaT55")
+    else:
+        tags.append("NoAlphaT")
+
+    if htLower :
+        tags.append("%d"%htLower)
+    if htUpper :
+        tags.append("%d"%htUpper)
+    if model in cmssm :
+        tags.append("scale%s"%scale)
+
+    out["afterDir"] = "_".join(tags)
     return out
 
 def histoTitle(model = "") :
