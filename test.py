@@ -66,6 +66,7 @@ else :
         args = {"iLower":iLower, "iUpper":1+iLower}
         args.update(kargs)
         pValue = go(**args)
+        if pValue==None : continue
         hMap.GetXaxis().SetBinLabel(1+iLower, sel.name)
         hMap.SetBinContent(1+iLower, pValue)
 
