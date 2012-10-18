@@ -9,12 +9,13 @@ def locations() :
         "phosphorus" : "/home/elaird/71_stats_files/",
         "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
         "fnal.gov"   : "/uscms_data/d1/samr/",
+        "brown02"    : "/vols/cms02/samr"
     }
     lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
     assert len(lst) == 1, lst
     s = dct[ lst[0] ]
 
-    return {"eff": "%s/20_yieldHistograms/2011/"%s,
+    return {"eff": "%s/20_yieldHistograms/2012/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
 def method() :
@@ -48,12 +49,12 @@ def signal() :
 
 def likelihoodSpec() :
     dct = {}
-    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "dataset":"2012ichep",
-            "separateSystObs":True}
+    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "dataset":"2012ichep", "separateSystObs":True}
+    dct["T2bb"] = {"iLower":4, "iUpper":5, "dataset":"2012dev", "separateSystObs":True}
     for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
-                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
+                  "T2", "T2tt", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
                   "TGQ_0p8", "T2bw"] :
-        dct[model] = {"iLower":None, "iUpper":None, "dataset":"2011",
+        dct[model] = {"iLower":None, "iUpper":None, "dataset":"2012dev",
                 "separateSystObs": True}
     return ls.spec(**dct[signal()["signalModel"]])
 
