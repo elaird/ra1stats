@@ -919,6 +919,7 @@ class foo(object) :
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
+        return stats["prob"]
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
