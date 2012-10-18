@@ -6,14 +6,13 @@ class selection(object) :
     the corresponding value determines whether signal efficiency is considered for that sample.'''
 
     def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
-                 alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
-                 fZinvIni = 0.5, fZinvRange = (0.0, 1.0), AQcdIni = 1.0e-2, AQcdMax = 100.0,
+                 bJets = "", jets = "", fZinvIni = 0.5, fZinvRange = (0.0, 1.0),
+                 AQcdIni = 1.0e-2, AQcdMax = 100.0,
                  zeroQcd = False, muonForFullEwk = False,
                  universalSystematics = False, universalKQcd = False) :
         for item in ["name", "note", "samplesAndSignalEff", "data",
-                     "alphaTMinMax","nbTag", "bTagLower",
-                     "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax",
-                     "zeroQcd", "muonForFullEwk",
+                     "bJets", "jets", "fZinvIni", "fZinvRange",
+                     "AQcdIni", "AQcdMax", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
@@ -109,11 +108,11 @@ class spec(object) :
 
                 for samplesAndSignalEff in options :
                     sel = selection(name = name, note = note,
-                                    alphaTMinMax = ("55", None),
                                     samplesAndSignalEff = samplesAndSignalEff,
                                     muonForFullEwk = len(samplesAndSignalEff)==2,
                                     data = getattr(module, "data_%s"%name)(),
-                                    #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
+                                    bJets = ("eq%sb"%b).replace("eqge","ge"),
+                                    jets = "%sj"%j,
                                     fZinvIni = fZinvIni,
                                     AQcdIni = 0.0,
                                     )
