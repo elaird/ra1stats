@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
-import common,workspace,likelihoodSpec,signals
+import ROOT as r
+import common,workspace,likelihoodSpec,signals,plotting
 
 def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     spec = likelihoodSpec.spec(iLower = iLower, iUpper = iUpper,
@@ -15,7 +15,7 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
 
     nToys = {"2011":3000,
              "2012ichep":1000,
-             "2012dev":0,
+             "2012dev":300,
              }[dataset]
 
     f = workspace.foo(likelihoodSpec = spec,
@@ -28,9 +28,10 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
                       #extraSigEffUncSources = ["effHadSumUncRelMcStats"],
                       )
 
+    out = None
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
-        return
+        return out
 
     #cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
     #out = f.interval(cl = cl, method = ["profileLikelihood", "feldmanCousins"][0], makePlots = True); print out
@@ -45,12 +46,13 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
     #f.writeMlTable()
     #f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys, signalLineStyle = signalLineStyle)
-    f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
+    out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
     #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
     #f.debug()
     #f.cppDrive(tool = "")
+    return out
 
 kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][2],
          "ensemble": False,
@@ -58,8 +60,13 @@ kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][2],
 if kargs["dataset"]=="2011" :
     go(**kargs)
 else :
-    nSelections = len(likelihoodSpec.spec(dataset = kargs["dataset"]).selections())
-    for iLower in range(nSelections)[1:2] :
+    selections = likelihoodSpec.spec(dataset = kargs["dataset"]).selections()
+    hMap = r.TH1D("pValueMap", ";category;p-value", len(selections), 0.0, len(selections))
+    for iLower,sel in enumerate(selections) :
         args = {"iLower":iLower, "iUpper":1+iLower}
         args.update(kargs)
-        go(**args)
+        pValue = go(**args)
+        hMap.GetXaxis().SetBinLabel(1+iLower, sel.name)
+        hMap.SetBinContent(1+iLower, pValue)
+
+    plotting.pValueCategoryPlots(hMap)
