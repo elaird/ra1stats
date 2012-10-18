@@ -99,7 +99,7 @@ def nEventsInHisto() :
 def effHisto(**args) :
     s = conf.switches()
     model = s["signalModel"]
-    if model in ["T1","T2"] and args["box"]=="muon" :
+    if model in ["T1","T2", "T2bb"] and args["box"]=="muon" :
         print "WARNING: ignoring muon efficiency for %s"%model
         return None
     if not s["isSms"] :
@@ -175,7 +175,7 @@ def cmssmEffHisto(**args) :
 def xsHistoAllOne(model, cutFunc = None) :
     h = smsEffHisto(model = model, box = "had", scale = None,
                     htLower = 875, htUpper = None,
-                    alphaTLower = "55", alphaTUpper = None)
+                    bJets = "eq0b", jets = "le3j")
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         content = 1.0
         if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
