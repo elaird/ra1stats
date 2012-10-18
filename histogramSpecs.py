@@ -69,7 +69,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              }
 
-    sms = {"T1":          {"had": "v2"},
+    sms = {"T1":          {"had": "v3"},
            "T2":          {"had": "rw_fix"},
            #"T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
            "T2tt":        {"had": "strip", "muon": "strip"},
