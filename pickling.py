@@ -20,7 +20,7 @@ def readNumbers(fileName) :
 def effHistos() :
     out = {}
     for sel in conf.likelihoodSpec().selections() :
-        assert sel.data._mergeBins==(0,1,2,3,4,5,6,7,7,7),\
+        assert (not sel.data._mergeBins) or sel.data._mergeBins==(0,1,2,3,4,5,6,7,7,7),\
                "bin merging other than 10-->8 not yet supported: %s %s"%(sel.name, str(sel.data._mergeBins))
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
