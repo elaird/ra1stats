@@ -2,10 +2,8 @@
 import ROOT as r
 import common,workspace,likelihoodSpec,signals,plotting
 
-def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
-    spec = likelihoodSpec.spec(iLower = iLower, iUpper = iUpper,
-                               dataset = dataset, separateSystObs = not ensemble)
-
+def go(whiteList = [], dataset = "2011", ensemble = False) :
+    spec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, separateSystObs = not ensemble)
     model_sel = 2
     signalExampleToStack = {"2011": [signals.t2bb, signals.t1, signals.t2tt2][model_sel],
                             "2012ichep": signals.t1tttt_2012_3,
@@ -15,7 +13,7 @@ def go(iLower = None, iUpper = None, dataset = "2011", ensemble = False) :
 
     nToys = {"2011":3000,
              "2012ichep":1000,
-             "2012dev":300,
+             "2012dev":0,
              }[dataset]
 
     f = workspace.foo(likelihoodSpec = spec,
@@ -62,12 +60,12 @@ if kargs["dataset"]=="2011" :
 else :
     selections = likelihoodSpec.spec(dataset = kargs["dataset"]).selections()
     hMap = r.TH1D("pValueMap", ";category;p-value", len(selections), 0.0, len(selections))
-    for iLower,sel in enumerate(selections) :
-        args = {"iLower":iLower, "iUpper":1+iLower}
+    for iSel,sel in enumerate(selections) :
+        args = {"whiteList":[sel.name]}
         args.update(kargs)
         pValue = go(**args)
         if pValue==None : continue
-        hMap.GetXaxis().SetBinLabel(1+iLower, sel.name)
-        hMap.SetBinContent(1+iLower, pValue)
+        hMap.GetXaxis().SetBinLabel(1+iSel, sel.name)
+        hMap.SetBinContent(1+iSel, pValue)
 
     plotting.pValueCategoryPlots(hMap)
