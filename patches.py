@@ -98,6 +98,18 @@ def overwriteInput() :
 def overwriteOutput() :
     out = collections.defaultdict(list)
     out.update({"T2": [(9,2,1)], # need to hack histoProc to only use vert neighbors
+                "T1": [(35, 25, 1),
+                       (41, 10, 1),
+                       (41,  9, 1),
+                       (41,  8, 1),
+                       (41,  7, 1),
+                       (41,  6, 1),
+                       (41,  5, 1),
+                       (41,  4, 1),
+                       (41,  3, 1),
+                       (41,  2, 1),
+                       (41,  1, 1),
+                       ],
                 "T2bb": [
                 (16, 9, 1), (18, 2, 1), (20, 3, 1), (20, 14, 1), (21, 1, 1),
                 (22, 5, 1), (22, 15, 1), (23, 12, 1), (25, 17, 1), (26, 14, 1),
