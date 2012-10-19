@@ -26,7 +26,7 @@ def _trigKey(sample = "") :
     return d[sample]
 
 
-vars = ["mergeBins", "htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
+vars = ["htBinLowerEdges", "htMaxForPlot", "lumi", "htMeans", "systBins",
         "observations", "triggerEfficiencies", "mcStatError", "fixedParameters"]
 
 class data(object) :
@@ -41,7 +41,7 @@ class data(object) :
 
     def __str__(self, notes = False) :
         out = ""
-        for func in ["observations", "mcExpectations", "mcStatError"] :
+        for func in ["observations", "mcExpectationsBeforeTrigger", "mcStatError"] :
             out += "\n".join(["", func, "-"*20, ""])
             d = getattr(self, func)()
             for key in sorted(d.keys()) :
@@ -102,7 +102,7 @@ NOTES
         for item in ["observations", "mcExpectationsBeforeTrigger", "mcStatError", "systBins"] :
             length = self._mergeChecks() if (item=="systBins" and self._mergeBins) else l
             for key,value in getattr(self,"_%s"%item).iteritems() :
-                assert len(value)==length,"%s: %s"%(item, key)
+                assert len(value)==length,"%s['%s']: %d!=%d"%(item, key, len(value), length)
 
         for key,value in self._systBins.iteritems() :
             assert min(value)==0, "%s_%s"%(str(key), str(value))
