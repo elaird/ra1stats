@@ -243,13 +243,16 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     f = r.TFile(fileName)
     histos = {}
 
-    for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
+    for name,pretty in [("UpperLimit", "upper limit"),
+                        ("ExpectedUpperLimit", "expected upper limit"),
+                        ("ExpectedUpperLimit_-1_Sigma", "title"),
+                        ("ExpectedUpperLimit_+1_Sigma", "title")] :
         h3 = f.Get(name)
         if not h3 : continue
         h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
-        title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
+        title += ";%g%% C.L. %s on #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
