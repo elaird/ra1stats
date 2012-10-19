@@ -9,15 +9,14 @@ def histoSpec(model) :
     eight = "%s/v4/sms_xs.root"%base
     tgqFile = "%s/v1/TGQ_xSec.root"%base
     tanBeta10 = "%s/v5/7TeV_cmssm.root"%base
-    d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": seven},
-         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
-         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
-         "T1tttt_2012": {"histo": "gluino", "factor": 1.0,  "file": eight},
-         "tanBeta10":   {"histo": "total_%s"%variation,  "factor": 1.0,  "file": tanBeta10},
+    d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": eight},
+         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
+         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
+         #"tanBeta10":   {"histo": "total_%s"%variation,  "factor": 1.0,  "file": tanBeta10},#7TeV
          }
 
     for item in ["T1", "T1bbbb", "T1tttt", "T5zz"] :
-        d[item] = {"histo":"gluino", "factor":1.0,  "file":seven}
+        d[item] = {"histo":"gluino", "factor":1.0,  "file":eight}
 
     for item in ["TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
         d[item] = {"histo":"clone", "factor":1.0, "file":tgqFile}
