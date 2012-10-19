@@ -5,7 +5,7 @@ batchHost = [ "FNAL", "IC" ][1]
 
 def locations() :
     dct = {
-        "ic.ac.uk"   : "/vols/cms02/samr",
+        "ic.ac.uk"   : "/vols/cms02/elaird1",
         "phosphorus" : "/home/elaird/71_stats_files/",
         "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
         "fnal.gov"   : "/uscms_data/d1/samr/",
@@ -79,7 +79,7 @@ def other() :
             "icfDefaultNEventsIn": 10000,
             "subCmd": getSubCmds(),
             "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
-            "queueSelection" : ["short", "medium", "long"][1:2],
+            "queueSelection" : ["short", "medium", "long"][0:1],
             "envScript": "env.sh",
             "nJobsMax": getMaxJobs()}
 
