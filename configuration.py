@@ -34,7 +34,7 @@ def ignoreEff() :
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              "T1tttt_2012", "T2bw"]
+              "T1tttt_ichep", "T2bw"]
 
     variations = ["default", "up", "down"]
     return {"overwriteInput": patches.overwriteInput(),
@@ -51,12 +51,13 @@ def signal() :
             }
 
 def likelihoodSpec() :
-    dct = {"T1"    : {"whiteList":["0b_ge4j"]},
-           "T2"    : {"whiteList":["0b_le3j"]},
-           "T2bb"  : {"whiteList":["1b_le3j", "2b_le3j"]},
-           "T2tt"  : {"whiteList":["1b_ge4j", "2b_ge4j"]},
-           "T1bbbb": {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-           "T1tttt": {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+    dct = {"T1"          : {"whiteList":["0b_ge4j"]},
+           "T2"          : {"whiteList":["0b_le3j"]},
+           "T2bb"        : {"whiteList":["1b_le3j", "2b_le3j"]},
+           "T2tt"        : {"whiteList":["1b_ge4j", "2b_ge4j"]},
+           "T1bbbb"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T1tttt"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T1tttt_ichep": {"whiteList":["2b", "ge3b"], "dataset":"2012ichep"},
            }
     return ls.spec(**dct[signal()["signalModel"]])
 
