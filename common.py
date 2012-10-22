@@ -98,5 +98,4 @@ def split(key) :
             assert False,"unsupported length %d"%len(fields)
         return sample,sel,nB,iHt
     except:
-        print key
-        exit()
+        assert False,"Could not split key %s"%key
