@@ -28,6 +28,9 @@ def method() :
             "multiplesInGeV": None,
             }
 
+def ignoreEff() :
+    return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"]}}
+
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
@@ -85,7 +88,7 @@ def other() :
 
 def switches() :
     out = {}
-    lst = [method(), signal(), other()]
+    lst = [method(), signal(), ignoreEff(), other()]
     for func in ["xWhiteList", "listOfTestPoints"] :
         lst.append( {func: eval(func)()} )
     keys = sum([dct.keys() for dct in lst], [])
