@@ -9,7 +9,7 @@ def locations() :
         "phosphorus" : "/home/elaird/71_stats_files/",
         "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
         "fnal.gov"   : "/uscms_data/d1/samr/",
-        "brown02"    : "/vols/cms02/samr"
+        "brown02"    : "/vols/cms02/elaird1"
     }
     lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
     assert len(lst) == 1, lst
