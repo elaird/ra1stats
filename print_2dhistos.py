@@ -44,7 +44,8 @@ std_selections = { "had"  : base_histos,
                  }
 
 base_dir = { 'phosphorus' : '~/140_updated_5fb_numbers_from_darren/v4_no_weights',
-             'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
+             'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/',
+             'lx06.hep.ph.ic.ac.uk' : '/home/hep/elaird1/122_numbers_from_darren/v2',
            }[gethostname()]
 
 d_set = ""
@@ -68,6 +69,10 @@ files = {"ge4b_le3j": "RA1_Stats_btag_eq4_category_eq2_and_3.root",
          "0b_le3j": "RA1_Stats_btag_eq0_category_eq2_and_3.root",
          "0b_ge4j": "RA1_Stats_btag_eq0_category_greq4.root",
          #"0b_ge2j": "RA1_Stats_btag_eq0_category_inclusive.root",
+
+         "0b_le3j_alphaTmuon": "RA1_Stats_btag_eq0_category_eq2_and_3_alphaT.root",
+         "0b_ge4j_alphaTmuon": "RA1_Stats_btag_eq0_category_greq4_alphaT.root",
+         #"0b_ge2j_alphaTmuon": "RA1_Stats_btag_eq0_category_inclusive_alphaT.root",
          }
 
 slices = {}
