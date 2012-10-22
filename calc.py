@@ -536,6 +536,7 @@ def pullHistoTitle(termType = "", key = "") :
         assert False,termType
 
 def pullHisto(termType = "", pulls = {}, title = "") :
+    print termType
     p = {}
     for key,value in pulls.iteritems() :
         if key[0]!=termType : continue
@@ -544,6 +545,7 @@ def pullHisto(termType = "", pulls = {}, title = "") :
         return None
     h = r.TH1D("%sPulls"%termType, title, len(p), 0.5, 0.5+len(p))
     for i,key in enumerate(sorted(p.keys())) :
+        print i,key
         h.SetBinContent(1+i, p[key])
         h.GetXaxis().SetBinLabel(1+i, key)
         if termType=="Pois" :
@@ -599,8 +601,6 @@ def pullStats(pulls = {}, nParams = None) :
     return out
 
 def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
-    p = pulls
-
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
@@ -614,9 +614,8 @@ def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", thresh
     line.SetLineColor(r.kBlue)
 
     total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
-
     for termType in ["Pois", "Gaus", "Logn"] :
-        h = pullHisto(termType, p)
+        h = pullHisto(termType, pulls)
         if not h : continue
         h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
         h.SetStats(False)
