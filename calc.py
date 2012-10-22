@@ -1,4 +1,4 @@
-import math,array,copy,collections
+import math,array,copy,collections,string
 import utils,cpp,plotting
 import ROOT as r
 import common
@@ -544,17 +544,13 @@ def pullHisto(termType = "", pulls = {}, title = "") :
         return None
     h = r.TH1D("%sPulls"%termType, title, len(p), 0.5, 0.5+len(p))
     for i,key in enumerate(sorted(p.keys())) :
+        iHt = key.split("_")[-1]
+        if termType=="Pois" and (iHt in string.digits) and int(iHt)%2 :
+            label = ""
+        else :
+            label = key.replace("Pois", "").replace("Gaus","").replace("_", " ")
         h.SetBinContent(1+i, p[key])
-        h.GetXaxis().SetBinLabel(1+i, key)
-        if termType=="Pois" :
-            sample,sel,nB,iHt = common.split(key)
-            sample = sample.replace(termType,"")
-            nB = nB.replace("gt2","3")
-            if not int(iHt)%2 :
-                label = "%s  %s  %s"%(sample,nB,iHt)
-            else :
-                label = ""
-            h.GetXaxis().SetBinLabel(1+i, label)
+        h.GetXaxis().SetBinLabel(1+i, label)
     return h
 
 def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple",
