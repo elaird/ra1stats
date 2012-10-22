@@ -174,9 +174,11 @@ def cmssmEffHisto(**args) :
     return out
 
 def xsHistoAllOne(model, cutFunc = None) :
+    ls = conf.likelihoodSpec()
+    kargs = {} if ls._dataset=="2012ichep" else {"bJets":"eq0b", "jets":"le3j"}
+
     h = smsEffHisto(model = model, box = "had", scale = None,
-                    htLower = 875, htUpper = None,
-                    bJets = "eq0b", jets = "le3j")
+                    htLower = 875, htUpper = None, **kargs)
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         content = 1.0
         if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
