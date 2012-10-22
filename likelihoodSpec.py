@@ -77,7 +77,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self.legendTitle = ""
-        from inputData.data2012 import take13 as module
+        from inputData.data2012 import take14 as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
@@ -93,6 +93,7 @@ class spec(object) :
                             }[b+"b"][j+"j"]
 
                 name  = "%sb_%sj"%(b,j)
+                #name  = "%sb_%sj_alphaTmuon"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
                 note += "; %s#%s"%(nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
