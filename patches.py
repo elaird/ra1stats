@@ -29,7 +29,7 @@ def cutFunc() :
             "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
-            "T1tttt_2012":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T1tttt_ichep":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "tanBeta10":cmssmCut,
             }
 
@@ -218,8 +218,8 @@ def graphBlackLists() :
         [(875,350), (900,150), (900,200), (1000,225), (925,225), (950,275),
         (950,300), (900,325), (850,325)]})
 
-    out["UpperLimit"].update({"T1tttt_2012" : [ (850,200) ]})
-    out["UpperLimit_-1_Sigma"].update({"T1tttt_2012" : [ (450,50) ]})
+    out["UpperLimit"].update({"T1tttt_ichep" : [ (850,200) ]})
+    out["UpperLimit_-1_Sigma"].update({"T1tttt_ichep" : [ (450,50) ]})
 
     return out
 
