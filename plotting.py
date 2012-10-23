@@ -20,15 +20,27 @@ def pValueCategoryPlots(hMap = None) :
     can.cd(1)
     r.gPad.SetTickx()
     r.gPad.SetTicky()
+    r.gPad.SetGridy()
 
-    hMap.SetStats(False)
-    hMap.SetMarkerStyle(20)
-    hMap.Draw("p")
-    hMap.SetMinimum(0.0)
-    hMap.SetMaximum(1.1)
+    leg = r.TLegend(0.60, 0.65, 0.85, 0.85)
+    for i,(key,latex,color) in enumerate([("chi2ProbSimple", "#chi^{2} prob.", 602),
+                                          ("chi2Prob", "#chi^{2} prob. (toys)", r.kBlack),
+                                          ("lMax", "L_{max} (toys)", r.kCyan),
+                                          ]) :
+        hMap[key].SetMarkerStyle(20)
+        hMap[key].SetMarkerColor(color)
+        if not i :
+            hMap[key].SetStats(False)
+            hMap[key].Draw("p")
+            hMap[key].SetMinimum(0.0)
+            hMap[key].SetMaximum(1.5)
+        else :
+            hMap[key].Draw("psame")
+        leg.AddEntry(hMap[key], latex, "p")
+    leg.Draw()
 
     can.cd(2)
-    hMap2 = hMap.Clone(hMap.GetName()+"2")
+    hMap2 = hMap["chi2ProbSimple"].Clone(hMap["chi2ProbSimple"].GetName()+"2")
     hMap2.Draw("p")
     hMap2.SetMinimum(1.0e-3)
     hMap2.SetMaximum(2.0)
@@ -38,8 +50,8 @@ def pValueCategoryPlots(hMap = None) :
 
     hDist = r.TH1D("pValueDist", ";p-value;categories / bin", 55, 0.0, 1.1)
     hDist.SetStats(False)
-    for iBin in range(1, 1+hMap.GetNbinsX()) :
-        hDist.Fill(hMap.GetBinContent(iBin))
+    for iBin in range(1, 1+hMap["chi2ProbSimple"].GetNbinsX()) :
+        hDist.Fill(hMap["chi2ProbSimple"].GetBinContent(iBin))
 
     can.cd(3)
     r.gPad.SetTickx()
