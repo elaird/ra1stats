@@ -27,7 +27,12 @@ def histoSpec(model) :
 def refXsHisto(model) :
     hs = histoSpec(model)
     f = r.TFile(hs["file"])
-    out = f.Get(hs["histo"]).Clone("%s_clone"%hs["histo"])
+    h = f.Get(hs["histo"])
+    if not h :
+        print "Could not find %s: available are these:"%hs["histo"]
+        f.ls()
+        assert False
+    out = h.Clone("%s_clone"%hs["histo"])
     out.SetDirectory(0)
     f.Close()
     out.Scale(hs["factor"])
