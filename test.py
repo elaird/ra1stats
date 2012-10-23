@@ -59,13 +59,18 @@ if kargs["dataset"]=="2011" :
     go(**kargs)
 else :
     selections = likelihoodSpec.spec(dataset = kargs["dataset"]).selections()
-    hMap = r.TH1D("pValueMap", ";category;p-value", len(selections), 0.0, len(selections))
-    for iSel,sel in enumerate(selections) :
+    hMap = {}
+    bins = (len(selections), 0.0, len(selections))
+    for key in ["chi2ProbSimple", "chi2Prob", "lMax"] :
+        hMap[key] = r.TH1D("pValueMap_%s"%key, ";category;p-value", *bins)
+
+    for iSel,sel in enumerate(selections[:1]) :
         args = {"whiteList":[sel.name]}
         args.update(kargs)
-        pValue = go(**args)
-        if pValue==None : continue
-        hMap.GetXaxis().SetBinLabel(1+iSel, sel.name)
-        hMap.SetBinContent(1+iSel, pValue)
+        dct = go(**args)
+        if not dct : continue
+        for key,pValue in dct.iteritems() :
+            hMap[key].GetXaxis().SetBinLabel(1+iSel, sel.name)
+            hMap[key].SetBinContent(1+iSel, pValue)
 
     plotting.pValueCategoryPlots(hMap)
