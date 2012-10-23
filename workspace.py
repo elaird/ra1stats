@@ -900,10 +900,6 @@ class foo(object) :
         lognKey = "kMinusOne"
         pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
 
-        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
-        for key in sorted(stats.keys()) :
-            print "%s = %g"%(key.ljust(7), stats[key])
-
         calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
                        plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
 
@@ -919,7 +915,19 @@ class foo(object) :
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
-        return stats["prob"]
+
+        #gather stats
+        out = {}
+        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
+        for key in sorted(stats.keys()) :
+            print "%s = %g"%(key.ljust(7), stats[key])
+        out["chi2ProbSimple"] = stats["prob"]
+
+        pvalues = plotting.ensembleResults(note = self.note(), nToys = errorsFromToys)
+        for dct in pvalues :
+            out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
+
+        return out
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
