@@ -64,7 +64,7 @@ else :
     for key in ["chi2ProbSimple", "chi2Prob", "lMax"] :
         hMap[key] = r.TH1D("pValueMap_%s"%key, ";category;p-value", *bins)
 
-    for iSel,sel in enumerate(selections[:1]) :
+    for iSel,sel in enumerate(selections) :
         args = {"whiteList":[sel.name]}
         args.update(kargs)
         dct = go(**args)
