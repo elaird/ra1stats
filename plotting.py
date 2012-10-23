@@ -160,6 +160,21 @@ def pValuePlots(pValue = None, observed = None, pseudo = None, note = "", plotsD
 
     canvas.Print(fileName+"]")
 
+def ensembleResults(note = "", nToys = None) :
+    _,tfile = ensemble.results(note, nToys)
+
+    out = []
+    for key,keyLatex in [("lMax", "log(L_{max})"),
+                         ("chi2Prob", "#chi^{2} prob."),
+                         ] :
+        kargs = {}
+        for item in ["pValue", "observed", "pseudo"] :
+            kargs[item] = tfile.Get("/graphs/%s_%s"%(key, item))
+        for item in ["key", "keyLatex"] :
+            kargs[item] = eval(item)
+        out.append(kargs)
+    return out
+
 def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = False, selections = []) :
     #open results
     obs,tfile = ensemble.results(note, nToys)
@@ -170,13 +185,8 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
     oHistos,oQuantiles = ensemble.histosAndQuantiles(tfile, "other")
 
     #p-value plots
-    kargs = {}
-    for key,keyLatex in [("lMax", "log(L_{max})"),
-                         ("chi2Prob", "#chi^{2} prob."),
-                         ] :
-        for item in ["pValue", "observed", "pseudo"] :
-            kargs[item] = tfile.Get("/graphs/%s_%s"%(key, item))
-        for item in ["note", "plotsDir", "stdout", "key", "keyLatex"] :
+    for kargs in ensembleResults(note, nToys) :
+        for item in ["note", "plotsDir", "stdout"] :
             kargs[item] = eval(item)
         pValuePlots(**kargs)
 
