@@ -6,7 +6,7 @@ def histoSpec(model) :
     base = locations()["xs"]
     variation = switches()["xsVariation"]
     seven = "%s/v5/7TeV.root"%base
-    eight = "%s/v4/sms_xs.root"%base
+    eight = "%s/v5/8TeV.root"%base
     tgqFile = "%s/v1/TGQ_xSec.root"%base
     tanBeta10 = "%s/v5/7TeV_cmssm.root"%base
     d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": eight},
