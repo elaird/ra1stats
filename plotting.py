@@ -14,9 +14,19 @@ def writeGraphVizTree(wspace, pdfName = "model") :
     cmd = "dot -Tps %s -o %s"%(dotFile, dotFile.replace(".dot", ".ps"))
     os.system(cmd)
 
-def pValueCategoryPlots(hMap = None) :
-    can = r.TCanvas("canvas", "", 500, 700)
-    can.Divide(1, 3)
+def magnify(h = None) :
+    h.SetLabelSize(2.0*h.GetLabelSize())
+    h.GetXaxis().SetTitleSize(1.4*h.GetXaxis().GetTitleSize())
+    h.GetYaxis().SetTitleSize(1.4*h.GetYaxis().GetTitleSize())
+
+def pValueCategoryPlots(hMap = None, threePanel = False) :
+    if threePanel :
+        can = r.TCanvas("canvas", "", 500, 700)
+        can.Divide(1, 3)
+    else :
+        can = r.TCanvas("canvas", "", 700, 500)
+        can.Divide(1, 2)
+
     can.cd(1)
     r.gPad.SetTickx()
     r.gPad.SetTicky()
@@ -34,26 +44,30 @@ def pValueCategoryPlots(hMap = None) :
             hMap[key].Draw("p")
             hMap[key].SetMinimum(0.0)
             hMap[key].SetMaximum(1.5)
+            magnify(hMap[key])
         else :
             hMap[key].Draw("psame")
         leg.AddEntry(hMap[key], latex, "p")
     leg.Draw()
 
-    can.cd(2)
-    hMap2 = hMap["chi2ProbSimple"].Clone(hMap["chi2ProbSimple"].GetName()+"2")
-    hMap2.Draw("p")
-    hMap2.SetMinimum(1.0e-3)
-    hMap2.SetMaximum(2.0)
-    r.gPad.SetTickx()
-    r.gPad.SetTicky()
-    r.gPad.SetLogy()
+    if threePanel :
+        can.cd(2)
+        hMap2 = hMap["chi2ProbSimple"].Clone(hMap["chi2ProbSimple"].GetName()+"2")
+        hMap2.Draw("p")
+        hMap2.SetMinimum(1.0e-3)
+        hMap2.SetMaximum(2.0)
+        r.gPad.SetTickx()
+        r.gPad.SetTicky()
+        r.gPad.SetLogy()
 
     hDist = r.TH1D("pValueDist", ";p-value;categories / bin", 55, 0.0, 1.1)
     hDist.SetStats(False)
+    magnify(hDist)
+
     for iBin in range(1, 1+hMap["chi2ProbSimple"].GetNbinsX()) :
         hDist.Fill(hMap["chi2ProbSimple"].GetBinContent(iBin))
 
-    can.cd(3)
+    can.cd(3 if threePanel else 2)
     r.gPad.SetTickx()
     r.gPad.SetTicky()
     hDist.Draw()
