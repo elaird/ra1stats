@@ -89,13 +89,9 @@ def split(key) :
     try:
         fields = key.split("_")
         if len(fields)==4 :
-            sample,sel,nB,iHt = fields
-        elif len(fields)==6 :
-            sample,sel,nB,s1,s2,iHt = fields
-            assert s1=="no",s1
-            assert s2=="aT",s2
+            sample,nB,nJ,iHt = fields
         else :
             assert False,"unsupported length %d"%len(fields)
-        return sample,sel,nB,iHt
+        return sample,nB,nJ,iHt
     except:
         assert False,"Could not split key %s"%key
