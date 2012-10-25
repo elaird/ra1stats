@@ -706,22 +706,14 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def writeMlTable(self, fileName = "mlTables.tex") :
+    def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
         def pars() :
             utils.rooFitResults(pdf(self.wspace), self.data)
             return floatingVars(self.wspace)
 
-        def category(v = "") :
-            if "k_qcd" in v : return "common"
-            if "rho" in v : return "common"
-            for item in ["gt2b", "2b", "1b", "0b"] :
-                if item in v : return item
-            assert False,v
-
-        def renamed(v) :
+        def renamed(v, cat = "") :
             out = v
-            for item in ["55"]+categories :
-                out = out.replace("_%s"%item,"")
+            out = out.replace("_"+cat, "")
             for i in range(9) :
                 out = out.replace("_%d"%i, "^%d"%i)
             out = out.replace("ewk", r'\mathrm{EWK}')
@@ -734,25 +726,25 @@ class foo(object) :
             return r'$%s$'%out
 
         p = pars()
-        categories = ["0b", "1b", "2b", "gt2b"]
         s  = "\n".join([r'\documentclass{article}',
                         r'\begin{document}'])
 
-        for cat in ["common"]+categories :
+        for cat in categories :
+            if not any([cat in d["name"] for d in p]) : continue
             s += "\n".join(['', '',
                             r'\begin{table}\centering',
-                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat,
+                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat.replace("_", " "),
                             r'\label{tab:mlParameterValues%s}'%cat,
                             r'\begin{tabular}{lcc}',
                             ])
             s += r'name & value & error \\ \hline'+'\n'
             for d in sorted(p, key = lambda d:d["name"]) :
-                if category(d["name"])!=cat : continue
+                if cat not in d["name"] : continue
                 cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
                 if "rho" in d["name"] or "fZinv" in d["name"] :
                     cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
                 spec = ' & '.join(['%s']+cols)+r'\\'+'\n'
-                s += spec%(renamed(d["name"]), d["value"], d["error"])
+                s += spec%(renamed(d["name"], cat), d["value"], d["error"])
             s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
 
         s += "\n".join(['',r'\end{document}'])
