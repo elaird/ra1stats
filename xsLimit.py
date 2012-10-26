@@ -14,3 +14,4 @@ plottingGrid.makeXsUpperLimitPlots(logZ = True,
                                    )
 
 plottingGrid.makeEfficiencyPlot()
+#plottingGrid.makeEfficiencyPlotBinned()
