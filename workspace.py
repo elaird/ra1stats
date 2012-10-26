@@ -892,8 +892,9 @@ class foo(object) :
         lognKey = "kMinusOne"
         pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
 
+        title = "_".join([x.name for x in self.likelihoodSpec.selections()])
         calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
-                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
+                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold, title = title)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
