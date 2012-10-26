@@ -535,7 +535,7 @@ def pullHistoTitle(termType = "", key = "") :
     else :
         assert False,termType
 
-def pullHisto(termType = "", pulls = {}, title = "") :
+def pullHisto(termType = "", pulls = {}, title = "", trimLabels = False) :
     p = {}
     for key,value in pulls.iteritems() :
         if key[0]!=termType : continue
@@ -549,8 +549,13 @@ def pullHisto(termType = "", pulls = {}, title = "") :
             label = ""
         else :
             label = key.replace("Pois", "").replace("Gaus","").replace("_", " ")
+        if trimLabels :
+            s = label.split(" ")
+            label = s[0]+s[-1]
         h.SetBinContent(1+i, p[key])
         h.GetXaxis().SetBinLabel(1+i, label)
+
+    if trimLabels : plotting.magnify(h)
     return h
 
 def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple",
@@ -594,7 +599,8 @@ def pullStats(pulls = {}, nParams = None) :
     out["prob"]    = r.TMath.Prob(chi2, nDof)
     return out
 
-def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
+def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "",
+              title = "", onlyPois = False) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
@@ -608,10 +614,12 @@ def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", thresh
     line.SetLineColor(r.kBlue)
 
     total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
-    for termType in ["Pois", "Gaus", "Logn"] :
-        h = pullHisto(termType, pulls)
+    for termType in (["Pois"] if onlyPois else ["Pois", "Gaus", "Logn"]) :
+        h = pullHisto(termType, pulls, trimLabels = onlyPois)
         if not h : continue
         h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
+        if onlyPois :
+            h.SetTitle(title)
         h.SetStats(False)
         h.SetMarkerStyle(20)
         h.Draw("p")
@@ -641,5 +649,5 @@ def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", thresh
         canvas.Print(fileName)
 
     total.Draw()
-    canvas.Print(fileName)
+    if not onlyPois : canvas.Print(fileName)
     canvas.Print(fileName+"]")
