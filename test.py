@@ -3,20 +3,19 @@ import ROOT as r
 import common,workspace,likelihoodSpec,signals,plotting
 
 def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
-    spec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, separateSystObs = not ensemble)
     model_sel = 2
+    signalLineStyle = model_sel+1
     signalExampleToStack = {"2011": [signals.t2bb, signals.t1, signals.t2tt2][model_sel],
                             "2012ichep": signals.t1tttt_2012_3,
                             "2012dev": {},
                             }[dataset]
-    signalLineStyle = model_sel+1
 
     nToys = {"2011":3000,
              "2012ichep":1000,
              "2012dev":300,
              }[dataset]
 
-    f = workspace.foo(likelihoodSpec = spec,
+    f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, separateSystObs = not ensemble),
                       #signalToTest = signals.t2tt2,
                       signalExampleToStack = signalExampleToStack
                       #signalToInject = signals.t1,
@@ -41,10 +40,10 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
     #            ); print out
     #
     #f.profile()
-    f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
+    #f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
     #f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys, signalLineStyle = signalLineStyle)
-    #out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
+    out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #print f.clsCustom(nToys = 500, testStatType = 1)
     #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
