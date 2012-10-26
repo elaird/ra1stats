@@ -77,13 +77,13 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self.legendTitle = ""
-        from inputData.data2012 import take14 as module
+        from inputData.data2012 import take15 as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
             for j in ["ge2", "le3", "ge4"][1:] :
                 if b=="ge4" and j!="ge4" : continue
-                if b=="3"   and j!="ge4" : continue
+                #if b=="3"   and j!="ge4" : continue
 
                 fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.57, "ge4j":0.40},
                             "1b"  : {"ge2j":0.40, "le3j":0.40, "ge4j":0.20},
