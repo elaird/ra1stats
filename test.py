@@ -10,11 +10,6 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
                             "2012dev": {},
                             }[dataset]
 
-    nToys = {"2011":3000,
-             "2012ichep":1000,
-             "2012dev":300,
-             }[dataset]
-
     f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, separateSystObs = not ensemble),
                       #signalToTest = signals.t2tt2,
                       signalExampleToStack = signalExampleToStack
@@ -26,6 +21,8 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
                       )
 
     out = None
+    nToys = {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
+
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
         return out
@@ -41,12 +38,9 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
     #
     #f.profile()
     #f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
-    #f.bestFit(drawMc = False, printValues = True, errorsFromToys = False, pullPlotMax = 4.0, pullThreshold = 5.0)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys, signalLineStyle = signalLineStyle)
     out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
-    #print f.clsCustom(nToys = 500, testStatType = 1)
-    #f.expectedLimit(cl = 0.95, nToys = 300, plusMinus = {"OneSigma": 1.0, "TwoSigma": 2.0}, makePlots = True)
     #f.debug()
     #f.cppDrive(tool = "")
     return out
