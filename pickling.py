@@ -17,11 +17,10 @@ def readNumbers(fileName) :
     return d
 
 ##number collection
-def effHistos() :
+def effHistos(okMerges = [None, (0,1,2,3,4,5,6,7,7,7), (0,1,2,2,2,2,2,2,2,2), (0,1,2,2,2,2,2,2)]) :
     out = {}
     for sel in conf.likelihoodSpec().selections() :
-        assert (not sel.data._mergeBins) or sel.data._mergeBins==(0,1,2,3,4,5,6,7,7,7),\
-               "bin merging other than 10-->8 not yet supported: %s %s"%(sel.name, str(sel.data._mergeBins))
+        assert sel.data._mergeBins in okMerges,"bin merge %s not yet supported (%s)"%(str(sel.data._mergeBins), sel.name)
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
 
