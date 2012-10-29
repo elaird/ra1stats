@@ -916,9 +916,10 @@ class foo(object) :
             print "%s = %g"%(key.ljust(7), stats[key])
         out["chi2ProbSimple"] = stats["prob"]
 
-        pvalues = plotting.ensembleResults(note = self.note(), nToys = errorsFromToys)
-        for dct in pvalues :
-            out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
+        if errorsFromToys :
+            pvalues = plotting.ensembleResults(note = self.note(), nToys = errorsFromToys)
+            for dct in pvalues :
+                out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
 
         return out
 
