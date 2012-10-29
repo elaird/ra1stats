@@ -77,7 +77,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self.legendTitle = ""
-        from inputData.data2012 import take15 as module
+        from inputData.data2012 import take16 as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
