@@ -21,10 +21,9 @@ def cmssmCut(iX, x, iY, y, iZ, z) :
 
 def cutFunc() :
     return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
-            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
-            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
-            #"T2tt":lambda iX,x,iY,y,iZ,z:(y<50 and iZ==1 and x>299.9),
-            "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
+            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<900.0),
+            "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             "T2bw":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
@@ -97,8 +96,7 @@ def overwriteInput() :
 
 def overwriteOutput() :
     out = collections.defaultdict(list)
-    out.update({"T2": [],
-                "T1": [(35, 25, 1),
+    out.update({"T1": [(35, 25, 1),
                        (41, 10, 1),
                        (41,  9, 1),
                        (41,  8, 1),
@@ -110,16 +108,6 @@ def overwriteOutput() :
                        (41,  2, 1),
                        (41,  1, 1),
                        ],
-                "T1bbbb": [ ],
-                "T1tttt": [
-                (37, 2, 1), (37, 3, 1), (37, 4, 1), (37, 5, 1), (37, 6, 1),
-                (37, 7, 1), (29, 13, 1), (40, 24, 1), (44, 28, 1),
-                (27, 11, 1)
-                ],
-                "T2tt": [ (13,2,1), (14,1,1), (13,1,1), (19,1,1), (24,1,1),
-                    (26,1,1), (27,2,1), (29,1,1), (31,1,1), (34,1,1), (36,1,1),
-                    (37,2,1), (39,1,1), (42,2,1), (44,1,1,), (46,1,1), (47,2,1)
-                    ],
                 })
     return out
 
@@ -131,28 +119,12 @@ def graphBlackLists() :
     for key in keys :
         out[key] = collections.defaultdict(list)
 
-    out["UpperLimit"].update({"T1" : [ (1000,125), (1000,175) ]})
-    out["UpperLimit_-1_Sigma"].update({"T1":[ (950, 350) ]})
-    out["UpperLimit_+1_Sigma"].update({"T1":[ (1050,50), (1025, 375),
-        (1025, 400), (1000,425) ]})
-
-    out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,25),
-        (475,100), (375,25), (400,25), (450, 50), (425,25) ]})
-    out["UpperLimit_-1_Sigma"].update({"T2tt":[ (375,25), (425,25), (450,25),
-        (350,25), (400,50), (425,25), (450,25), (475,25), (525,50), (550,100) ]})
-    out["UpperLimit_+1_Sigma"].update({"T2tt":[ (400,25), (425,25), (475,125),
-        (475,50), (525, 150), (550,100), (575,125) ]})
-    out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (350,25), (375,0),
-        (375,50), (450,50) ]})
-
-# BULK REGION ONLY
     #out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50),
         #(475,100), (400,75) ]})
     #out["UpperLimit_-1_Sigma"].update({"T2tt":[ (550, 100), (350,50) ]})
     #out["UpperLimit_+1_Sigma"].update({"T2tt":[ (550, 100), (575,125),
         #(525,150), (475,125) ]})
     #out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
-##################
 
     out["UpperLimit"].update({"T1tttt" : [ (550,150), (800,350),
         (750,300), (800,300), (800,250), (825,200), (825,250), (875,300) ]})
