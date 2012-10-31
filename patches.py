@@ -119,26 +119,19 @@ def graphBlackLists() :
     for key in keys :
         out[key] = collections.defaultdict(list)
 
-    #out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,50),
-        #(475,100), (400,75) ]})
-    #out["UpperLimit_-1_Sigma"].update({"T2tt":[ (550, 100), (350,50) ]})
-    #out["UpperLimit_+1_Sigma"].update({"T2tt":[ (550, 100), (575,125),
-        #(525,150), (475,125) ]})
-    #out["ExpectedUpperLimit_-1_Sigma"].update({"T2tt" : [ (450,50), (375,50)]})
-
-    out["UpperLimit"].update({"T1tttt" : [ (550,150), (800,350),
-        (750,300), (800,300), (800,250), (825,200), (825,250), (875,300) ]})
-    out["UpperLimit_-1_Sigma"].update({"T1tttt" : [ (550,150), (600,100),
-        (600,150), (725,200), (750,200), (875,175), (775,275), (825,250) ]})
-    out["UpperLimit_+1_Sigma"].update({"T1tttt" : [ (550,150), (825,200),
-        (825,250), (875,350), (900,350), (925,300), (900,300)]})
-
-    out["ExpectedUpperLimit"].update({"T1tttt" : [(825,175)] })
-    out["ExpectedUpperLimit_+1_Sigma"].update({"T1tttt" :
-        [(675,175), (750, 125) ]})
-    out["ExpectedUpperLimit_-1_Sigma"].update({"T1tttt" :
-        [(875,350), (900,150), (900,200), (1000,225), (925,225), (950,275),
-        (950,300), (900,325), (850,325)]})
+    #out["UpperLimit"].update({"T1tttt" : [ (550,150), (800,350),
+    #    (750,300), (800,300), (800,250), (825,200), (825,250), (875,300) ]})
+    #out["UpperLimit_-1_Sigma"].update({"T1tttt" : [ (550,150), (600,100),
+    #    (600,150), (725,200), (750,200), (875,175), (775,275), (825,250) ]})
+    #out["UpperLimit_+1_Sigma"].update({"T1tttt" : [ (550,150), (825,200),
+    #    (825,250), (875,350), (900,350), (925,300), (900,300)]})
+    #
+    #out["ExpectedUpperLimit"].update({"T1tttt" : [(825,175)] })
+    #out["ExpectedUpperLimit_+1_Sigma"].update({"T1tttt" :
+    #    [(675,175), (750, 125) ]})
+    #out["ExpectedUpperLimit_-1_Sigma"].update({"T1tttt" :
+    #    [(875,350), (900,150), (900,200), (1000,225), (925,225), (950,275),
+    #    (950,300), (900,325), (850,325)]})
 
     out["UpperLimit"].update({"T1tttt_ichep" : [ (850,200) ]})
     out["UpperLimit_-1_Sigma"].update({"T1tttt_ichep" : [ (450,50) ]})
@@ -153,7 +146,7 @@ def graphAdditionalPoints():
     for key in keys :
         out[key] = collections.defaultdict(list)
 
-    out["ExpectedUpperLimit"].update({"T2tt" : [ (350, 0) ]})
-    out["UpperLimit_-1_Sigma"].update({"T2tt" : [ (350,50), (400,75) ]})
+    #out["ExpectedUpperLimit"].update({"T2tt" : [ (350, 0) ]})
+    #out["UpperLimit_-1_Sigma"].update({"T2tt" : [ (350,50), (400,75) ]})
 
     return out
