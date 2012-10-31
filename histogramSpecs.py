@@ -3,7 +3,7 @@ from configuration import locations
 def ranges(model) :
     x = {"T1":   ( 287.5, 2212.5), #(min, max)
          "T2":   ( 287.5, 1212.5),
-         "T2tt": ( 287.5, 1212.5),
+         "T2tt": ( 287.5, 805.0),
          "T2bb": ( 287.5, 1212.5),
          "T1bbbb": ( 287.5, 2212.5),
          "T1tttt": ( 440.0, 1212.5),
@@ -13,7 +13,7 @@ def ranges(model) :
     y = {"T5zz": ( 50.0,  999.9), #(min, max)
          "T1":   ( 50.0, 2000.0),
          "T2":   ( 50.0, 1000.0),
-         "T2tt": ( -12.5,1000.0),
+         "T2tt": (-12.5,  800.0),
          "T2bb": ( 50.0, 1000.0),
          "T1bbbb": ( 50.0, 2000.0),
          "T1tttt": ( 50.0, 800.0),
@@ -71,12 +71,12 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
 
     sms = {"T1":          {"had": "v5"},
            "T2":          {"had": "v1"},
-           "T2tt":        {"had": "strip", "muon": "strip"},
+           "T2tt":        {"had": "v1", "muon": "v1"},
            "T2bb":        {"had": "v3", "muon": "v3"},
            "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
            "T5zz":        {"had": "v1", "muon": "v1"},
            "T1bbbb":      {"had": "v3", "muon": "v3"},
-           "T1tttt":      {"had": "v3", "muon": "v3"},
+           "T1tttt":      {"had": "v1", "muon": "v1"},
            "T1tttt_ichep":{"had": "2012full", "muon": "2012full"},
            "TGQ_0p0":     {"had": "v1"},
            "TGQ_0p2":     {"had": "v1"},
