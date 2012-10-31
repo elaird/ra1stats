@@ -97,7 +97,7 @@ def overwriteInput() :
 
 def overwriteOutput() :
     out = collections.defaultdict(list)
-    out.update({"T2": [(9,2,1)], # need to hack histoProc to only use vert neighbors
+    out.update({"T2": [],
                 "T1": [(35, 25, 1),
                        (41, 10, 1),
                        (41,  9, 1),
@@ -135,16 +135,6 @@ def graphBlackLists() :
     out["UpperLimit_-1_Sigma"].update({"T1":[ (950, 350) ]})
     out["UpperLimit_+1_Sigma"].update({"T1":[ (1050,50), (1025, 375),
         (1025, 400), (1000,425) ]})
-
-    out["UpperLimit"].update({"T2" : [ (800,200), (325,125), (300,100) ]})
-    out["UpperLimit_-1_Sigma"].update({"T2":[ (750, 200), (675,300),
-        (525,300), (300,100) ]})
-    out["UpperLimit_+1_Sigma"].update({"T2":[ (575,400), (725,325), (700,300),
-        (750,250), (775,200), (825,275), (800,250), (850,225), (850,75),
-        (875,75), (725,250), (300,100)]})
-    out["ExpectedUpperLimit_-1_Sigma"].update({"T2" : [ (875,150), (300,100) ]})
-    out["ExpectedUpperLimit_+1_Sigma"].update({"T2" : [ (300,100) ]})
-    out["ExpectedUpperLimit"].update({"T2" : [ (300,100) ]})
 
     out["UpperLimit"].update({"T2tt" : [ (550,100), (525,150), (450,25),
         (475,100), (375,25), (400,25), (450, 50), (425,25) ]})
