@@ -1,7 +1,7 @@
 from configuration import locations
 
 def ranges(model) :
-    x = {"T1":   ( 287.5, 1225), #(min, max)
+    x = {"T1":   ( 287.5, 2212.5), #(min, max)
          "T2":   ( 287.5, 1212.5),
          "T2tt": ( 287.5, 1212.5),
          "T2bb": ( 287.5, 1212.5),
@@ -11,7 +11,7 @@ def ranges(model) :
          "tanBeta10": (0.0, 4000.0),
          }
     y = {"T5zz": ( 50.0,  999.9), #(min, max)
-         "T1":   ( 50.0, 1000.0),
+         "T1":   ( 50.0, 2000.0),
          "T2":   ( 50.0, 1000.0),
          "T2tt": ( -12.5,1000.0),
          "T2bb": ( 50.0, 1000.0),
@@ -69,11 +69,10 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              }
 
-    sms = {"T1":          {"had": "v4"},
-           "T2":          {"had": "rw_fix"},
-           #"T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
+    sms = {"T1":          {"had": "v5"},
+           "T2":          {"had": "v1"},
            "T2tt":        {"had": "strip", "muon": "strip"},
-           "T2bb":        {"had": "v2", "muon": "v2"},
+           "T2bb":        {"had": "v3", "muon": "v3"},
            "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
            "T5zz":        {"had": "v1", "muon": "v1"},
            "T1bbbb":      {"had": "v3", "muon": "v3"},
