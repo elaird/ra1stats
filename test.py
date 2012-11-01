@@ -13,11 +13,11 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
                 ("3b_ge4j",):signals.t1bbbb_1,
                 ("ge4b_ge4j",):signals.t1bbbb_1,
                 }
-
+    signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
     f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, separateSystObs = not ensemble),
-                      #signalToTest = signals.t2tt2,
-                      signalExampleToStack = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
-                      #signalToInject = signals.t1,
+                      #signalToTest = signal,
+                      signalExampleToStack = signal,
+                      #signalToInject = signal,
                       #trace = True
                       #rhoSignalMin = 0.1,
                       #fIniFactor = 0.1,
