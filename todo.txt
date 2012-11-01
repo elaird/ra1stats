@@ -10,8 +10,6 @@ one
 - range for par f
 - gaussian counts
 - errors on translation factors
-- muon efficiency spec.
-- likelihoodSpec constructor
 - view call graph to speed up cmssm initialization
 
 two
@@ -26,7 +24,6 @@ three
 - debug page 3 of cls plot
 - bin-by-bin systematics on signal eff.
 - upgrade dirac delta
-- lognormal vs. gaussian
 - check signal efficiency merging
 - separate eff unc. for hadrons and muons
 - restore extraSigEffSources
@@ -35,7 +32,6 @@ three
 
 four
 ----
-- 4x2 syst. bins
 - remove syst. encouragement
 - rho vs. HT
 - automatic N_bins, N_nuisance
