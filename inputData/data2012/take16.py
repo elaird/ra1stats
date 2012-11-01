@@ -26,12 +26,8 @@ def common1(x) :
 
     x._observations["nPhot"] = tuple([None, None]+list(x._observations["nPhot"][2:]))
 
-    uncs = {"btagUncert": 0.035, "lumi": 0.06, "deadEcal": 0.03, "lepVetoes": 0.025, "jesjer": 0.025, "pdf": 0.10} # SMS other than T1, T2
-    uncs["btagUncert"] = 0.12 #T1, T2, cMSSM tb10 only
-    return utils.quadSum(uncs.values())
-
 def common(x) :
-    lumiLikeValue = common1(x)
+    common1(x)
 
     #systBins = tuple([0]*4+[1]*2+[2]*2)
     systBins = tuple([0,1]+[2]*2+[3]*2+[4]*2)
@@ -60,14 +56,12 @@ def common(x) :
         x._mergeBins = None
 
     x._systBins = {
-        "sigmaLumiLike": [0]*len(systBins),
         "sigmaPhotZ": systBins,
         "sigmaMuonW": systBins,
         "sigmaMumuZ": systBins,
         }
 
     x._fixedParameters = {
-        "sigmaLumiLike": tuple([lumiLikeValue]*1),
         "sigmaPhotZ": systMagnitudes,
         "sigmaMuonW": systMagnitudes,
         "sigmaMumuZ": systMagnitudes,
