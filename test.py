@@ -3,16 +3,20 @@ import ROOT as r
 import common,workspace,likelihoodSpec,signals,plotting
 
 def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
-    model_sel = 2
-    signalLineStyle = model_sel+1
-    signalExampleToStack = {"2011": [signals.t2bb, signals.t1, signals.t2tt2][model_sel],
-                            "2012ichep": signals.t1tttt_2012_3,
-                            "2012dev": {},
-                            }[dataset]
+    examples = {("0b_le3j",):{},
+                ("0b_ge4j",):signals.t1_1,
+                ("1b_le3j",):{},
+                ("1b_ge4j",):{},
+                ("2b_le3j",):signals.t1bbbb_1,
+                ("2b_ge4j",):signals.t1bbbb_1,
+                ("3b_le3j",):signals.t1bbbb_1,
+                ("3b_ge4j",):signals.t1bbbb_1,
+                ("ge4b_ge4j",):signals.t1bbbb_1,
+                }
 
     f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, separateSystObs = not ensemble),
                       #signalToTest = signals.t2tt2,
-                      signalExampleToStack = signalExampleToStack
+                      signalExampleToStack = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
                       #signalToInject = signals.t1,
                       #trace = True
                       #rhoSignalMin = 0.1,
