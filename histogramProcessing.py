@@ -195,23 +195,19 @@ def smsEffHisto(**args) :
     return out
 
 ##signal point selection
-def fullPoints() :
+def points() :
     out = []
     s = conf.switches()
+    whiteList = s["whiteListOfPoints"]
     h = xsHisto()
     for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
-        if "xWhiteList" in s and s["xWhiteList"] and iBinX not in s["xWhiteList"] : continue
+        if whiteList and (x,y) not in whiteList : continue
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content : continue
         if s["multiplesInGeV"] and ((x/s["multiplesInGeV"])%1 != 0.0) : continue
         if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
             out.append( (iBinX, iBinY, iBinZ) )
     return out
-
-def points() :
-    p = conf.switches()["listOfTestPoints"]
-    if p : return p
-    return fullPoints()
 
 ##warnings
 def printHoles(h) :
