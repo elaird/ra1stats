@@ -47,7 +47,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["T1"]
+            "signalModel": dict(zip(models, models))["T1bbbb"]
             }
 
 def likelihoodSpec() :
@@ -61,22 +61,11 @@ def likelihoodSpec() :
            }
     return ls.spec(**dct[signal()["signalModel"]])
 
-def listOfTestPoints() :
-    #out = [(181, 29, 1)]
-    #out = [(33, 53, 1)]
-    #out = [(61, 61, 1)]
-    #out = [(13, 3, 1)]
-    #out = [(17, 5, 1)]
-    #out = [(37, 19, 1)]
-    #out = [(17,5,1)]
-    #out = [(26,26,1)]
-    #out = [(15,3,1)]
-    #out = [(13,1,1)]
+def whiteListOfPoints() : #GeV
     out = []
+    out = [(1000.0, 400.0)]  #T1
+    out = [(1100.0, 500.0)]  #T1bbbb
     return out
-
-def xWhiteList() :
-    return []
 
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
@@ -90,7 +79,7 @@ def other() :
 def switches() :
     out = {}
     lst = [method(), signal(), ignoreEff(), other()]
-    for func in ["xWhiteList", "listOfTestPoints"] :
+    for func in ["whiteListOfPoints"] :
         lst.append( {func: eval(func)()} )
     keys = sum([dct.keys() for dct in lst], [])
     assert len(keys)==len(set(keys))
