@@ -47,7 +47,7 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["T1bbbb"]
+            "signalModel": dict(zip(models, models))["T2tt"]
             }
 
 def likelihoodSpec() :
@@ -63,8 +63,10 @@ def likelihoodSpec() :
 
 def whiteListOfPoints() : #GeV
     out = []
-    out = [(1000.0, 400.0)]  #T1
-    out = [(1100.0, 500.0)]  #T1bbbb
+    #out = [(1000.0, 400.0)]  #T1
+    #out = [(1100.0, 500.0)]  #T1bbbb
+    #out = [( 450.0,  20.0)]  #T2tt
+    out = [( 550.0,  20.0)]  #T2tt
     return out
 
 def other() :
