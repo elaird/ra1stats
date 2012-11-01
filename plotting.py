@@ -1023,7 +1023,6 @@ class validationPlotter(object) :
             l += [("rhoPhotZ",  ("#rho (#gammaZ% d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaPhotZ")]
             l += [("rhoMuonW",  ("#rho (#muW %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMuonW")]
             l += [("rhoMumuZ",  ("#rho (#mu#muZ %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMumuZ")]
-            l += [("rhoSignal", ("#rho (sig. %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaLumiLike")]
 
         if self.printNom :
             l +=  [("", ""),
