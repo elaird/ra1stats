@@ -52,7 +52,7 @@ def eventsInRange(switches = None, nEventsIn = None) :
     return out
 
 def signalModel(point = None, eff = None, xs = None, xsLo = None, nEventsIn = None, switches = None) :
-    out = common.signal(xs = xs.GetBinContent(*point), label = "%d_%d_%d"%point)
+    out = common.signal(xs = xs.GetBinContent(*point), label = "%d_%d_%d"%point, effUncRel = switches["effUncRel"][switches["signalModel"]])
     if xsLo : out["xs_LO"] = xsLo.GetBinContent(*point)
     out["xs"] = out.xs
     out["x"] = xs.GetXaxis().GetBinLowEdge(point[0])
@@ -114,7 +114,6 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         writeNumbers(fileName = stem + ".out", d = signal)
         #stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
 
-    print "FIX: stuff vars"
     map(one, points)
         
 ##merge functions
