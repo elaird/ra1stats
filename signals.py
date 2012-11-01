@@ -8,8 +8,7 @@ simple.insert("test", {
         "effSimple": (1.0, ),
         })
 
-print "fixme (signals.py)"
-t1_1 = common.signal(xs = 0.0243547, effUncRel = 0.20, label = "T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)")
+t1_1 = common.signal(xs = 0.0243547, effUncRel = 0.14, label = "T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)")
 t1_1.insert("0b_ge4j", {"effHad":[0.000000, 0.000200, 0.000800, 0.005200, 0.013100, 0.024600, 0.032000, 0.065700],})
 t1_1.insert("0b_le3j", {"effHad":[0.000600, 0.000800, 0.002100, 0.004000, 0.007800, 0.010700, 0.007300, 0.008000],})
 t1_1.insert("1b_ge4j", {"effHad":[0.000100, 0.000000, 0.000000, 0.001100, 0.001100, 0.002200, 0.003200, 0.006000],})
