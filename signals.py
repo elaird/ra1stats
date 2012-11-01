@@ -3,12 +3,13 @@ import common
 def scaled(t, factor) :
     return tuple([factor*item for item in t])
 
-simple = common.signal(xs = 1.0, label = "signal")
+simple = common.signal(xs = 1.0, effUncRel = 0.0, label = "signal")
 simple.insert("test", {
         "effSimple": (1.0, ),
         })
 
-t1_1 = common.signal(xs = 0.0243547, label = "T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)")
+print "fixme (signals.py)"
+t1_1 = common.signal(xs = 0.0243547, effUncRel = 0.20, label = "T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)")
 t1_1.insert("0b_ge4j", {"effHad":[0.000000, 0.000200, 0.000800, 0.005200, 0.013100, 0.024600, 0.032000, 0.065700],})
 t1_1.insert("0b_le3j", {"effHad":[0.000600, 0.000800, 0.002100, 0.004000, 0.007800, 0.010700, 0.007300, 0.008000],})
 t1_1.insert("1b_ge4j", {"effHad":[0.000100, 0.000000, 0.000000, 0.001100, 0.001100, 0.002200, 0.003200, 0.006000],})
@@ -19,7 +20,7 @@ t1_1.insert("3b_ge4j", {"effHad":[0.000000, 0.000000, 0.000000, 0.000000, 0.0000
 t1_1.insert("3b_le3j", {"effHad":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],})
 t1_1.insert("ge4b_ge4j",{"effHad":[0.000000, 0.000000, 0.000000],})
 
-t1bbbb_1 = common.signal(xs = 0.0101744, label = "T1bbbb m_{gl} = 1.1 TeV; m_{LSP} = 0.5 TeV (xs = 10 fb)")
+t1bbbb_1 = common.signal(xs = 0.0101744, effUncRel = 0.160, label = "T1bbbb m_{gl} = 1.1 TeV; m_{LSP} = 0.5 TeV (xs = 10 fb)")
 t1bbbb_1.insert("0b_ge4j", {"effHad" :[0.000000, 0.000000, 0.000000, 0.000200, 0.000300, 0.001000, 0.000400, 0.001400],
                             "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000]})
 t1bbbb_1.insert("0b_le3j", {"effHad" :[0.000000, 0.000100, 0.000300, 0.000300, 0.000800, 0.000600, 0.000200, 0.000500],
@@ -39,7 +40,7 @@ t1bbbb_1.insert("3b_le3j", {"effHad" :[0.000000, 0.000200, 0.001200, 0.002300, 0
 t1bbbb_1.insert("ge4b_ge4j",{"effHad":[0.000000, 0.000000, 0.017600],
                              "effMuon":[0.000000, 0.000000, 0.000000]})
 
-t2tt_1 = common.signal(xs = 0.0452067, label = "T2tt m_{st} = 550 GeV; m_{LSP} = 20 GeV (xs = 45 fb)")
+t2tt_1 = common.signal(xs = 0.0452067, effUncRel = 0.139, label = "T2tt m_{st} = 550 GeV; m_{LSP} = 20 GeV (xs = 45 fb)")
 t2tt_1.insert("0b_ge4j", {"effHad" :[0.000340, 0.000840, 0.002900, 0.005400, 0.003980, 0.002460, 0.001140, 0.000680],
                           "effMuon":[0.000140, 0.000100, 0.000300, 0.000380, 0.000160, 0.000300, 0.000040, 0.000060]})
 t2tt_1.insert("0b_le3j", {"effHad" :[0.003420, 0.002620, 0.005000, 0.002940, 0.001160, 0.000380, 0.000080, 0.000020],
@@ -57,8 +58,10 @@ t2tt_1.insert("3b_ge4j", {"effHad" :[0.000060, 0.000080, 0.000640, 0.001340, 0.0
 t2tt_1.insert("ge4b_ge4j",{"effHad" :[0.000000, 0.000000, 0.000240],
                            "effMuon":[0.000000, 0.000000, 0.000000]})
 
-t2bb_2 = common.signal(xs = 0.0486, label = ["#lower[0.35]{#splitline{SM + SUSY Model D}{(m_{sbottom} = 500 GeV, m_{LSP} = 150 GeV)}}",
-                                             "T2bb m_{sbottom} = 500 GeV; m_{LSP} = 150 GeV (xs = 49 fb)"][0])
+effUncRelOld = 0.13
+t2bb_2 = common.signal(xs = 0.0486, effUncRel = effUncRelOld,
+                       label = ["#lower[0.35]{#splitline{SM + SUSY Model D}{(m_{sbottom} = 500 GeV, m_{LSP} = 150 GeV)}}",
+                                "T2bb m_{sbottom} = 500 GeV; m_{LSP} = 150 GeV (xs = 49 fb)"][0])
 t2bb_2.insert("55_0b", {
         "effHad": [0.003599, 0.004056, 0.007274, 0.004042, 0.002711, 0.000908, 0.000688, 0.000195],
         "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
@@ -76,8 +79,9 @@ t2bb_2.insert("55_gt2b", {
         "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
         })
 
-t1 = common.signal(xs = 0.0651, label = ["#lower[0.35]{#splitline{SM + SUSY Model A}{(m_{gluino} = 800 GeV, m_{LSP} = 200 GeV)}}",
-                                         "T1 m_{gluino} = 800 GeV; m_{LSP} = 200 GeV (xs = 65 fb)"][0])
+t1 = common.signal(xs = 0.0651, effUncRel = effUncRelOld,
+                   label = ["#lower[0.35]{#splitline{SM + SUSY Model A}{(m_{gluino} = 800 GeV, m_{LSP} = 200 GeV)}}",
+                            "T1 m_{gluino} = 800 GeV; m_{LSP} = 200 GeV (xs = 65 fb)"][0])
 t1.insert("55_0b", {
     "effHad": [0.000200, 0.001200, 0.005500, 0.013000, 0.028600, 0.040800, 0.035300, 0.040400],
     })
@@ -91,7 +95,8 @@ t1.insert("55_gt2b", {
     "effHad": [0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000100, 0.000000, 0.000000],
     })
 
-t1tttt_2012 = common.signal(xs=0.0243547, label="T1tttt m_{gluino} = 1000 GeV; m_{LSP} = 200GeV (xs = 24 fb)")
+t1tttt_2012 = common.signal(xs=0.0243547, effUncRel = effUncRelOld,
+                            label="T1tttt m_{gluino} = 1000 GeV; m_{LSP} = 200GeV (xs = 24 fb)")
 t1tttt_2012.insert( "55_0b", {
         "effHad": [0.000000, 0.000000, 0.000082, 0.000439, 0.000505, 0.000805, 0.000505, 0.001351],
         "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
@@ -111,7 +116,8 @@ t1tttt_2012.insert( "55_gt2b", {
 
 ttch = "t#bar{t} #tilde{#chi}^{0}"
 t1ttttLabel = "#tilde{g}#tilde{g} #rightarrow %s %s"%(ttch, ttch)
-t1tttt_2012_2 = common.signal(xs=0.157399, label = "#lower[0.35]{#splitline{SM + SUSY  ( %s )}{(m_{gluino} = 800 GeV, m_{LSP} = 100 GeV)}}"%t1ttttLabel)
+t1tttt_2012_2 = common.signal(xs=0.157399, effUncRel = effUncRelOld,
+                              label = "#lower[0.35]{#splitline{SM + SUSY  ( %s )}{(m_{gluino} = 800 GeV, m_{LSP} = 100 GeV)}}"%t1ttttLabel)
 t1tttt_2012_2.insert( "55_0b", {
         "effHad": [0.000040, 0.000000, 0.000189, 0.000429, 0.001074, 0.000405, 0.000323, 0.000367],
         "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
@@ -129,7 +135,8 @@ t1tttt_2012_2.insert( "55_gt2b", {
         "effMuon":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],
         })
 
-t1tttt_2012_23 = common.signal(xs=0.157399, label = "#lower[0.35]{#splitline{SM + SUSY  ( %s )}{(m_{gluino} = 800 GeV, m_{LSP} = 100 GeV)}}"%t1ttttLabel)
+t1tttt_2012_23 = common.signal(xs=0.157399, effUncRel = effUncRelOld,
+                               label = "#lower[0.35]{#splitline{SM + SUSY  ( %s )}{(m_{gluino} = 800 GeV, m_{LSP} = 100 GeV)}}"%t1ttttLabel)
 t1tttt_2012_23.insert( "55_0b", {
         "effHad": [0.000040, 0.000000, 0.000189, 0.000429, 0.001074, 0.000405, 0.000323, 0.000367],
         "effMuon":[0.000050, 0.000000, 0.000150, 0.000200, 0.000200, 0.000150, 0.000150, 0.000150],
@@ -147,7 +154,8 @@ t1tttt_2012_23.insert( "55_gt2b", {
         "effMuon":[0.000000, 0.000000, 0.000100, 0.000450, 0.000900, 0.001000, 0.000500, 0.001150],
         })
 
-t1tttt_2012_3 = common.signal(xs=0.157399, label = "#lower[0.35]{#splitline{SM + SUSY  ( %s )}{(m_{gluino} = 800 GeV, m_{LSP} = 100 GeV)}}"%t1ttttLabel)
+t1tttt_2012_3 = common.signal(xs=0.157399, effUncRel = effUncRelOld,
+                              label = "#lower[0.35]{#splitline{SM + SUSY  ( %s )}{(m_{gluino} = 800 GeV, m_{LSP} = 100 GeV)}}"%t1ttttLabel)
 t1tttt_2012_3.insert( "55_0b", {
         "effHad": [0.000000, 0.000000, 0.000250, 0.000350, 0.001050, 0.000400, 0.000350, 0.000400],
         "effMuon":[0.000050, 0.000000, 0.000150, 0.000200, 0.000200, 0.000150, 0.000150, 0.000150],
