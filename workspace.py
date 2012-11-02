@@ -847,11 +847,9 @@ class foo(object) :
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
             args[item] = getattr(selection.data, item)()
 
-        for item in ["REwk", "RQcd"] :
+        for item in ["REwk", "RQcd", "legendTitle"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["legendTitle"] :
-            args[item] = getattr(self.likelihoodSpec, item)
         return args
 
     def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :

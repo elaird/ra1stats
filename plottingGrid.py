@@ -340,7 +340,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
             func.Draw("same")
 
     #stamp plot
-    stamp_text = conf.likelihoodSpec().legendTitle
+    stamp_text = conf.likelihoodSpec().legendTitle()
 
     #s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
