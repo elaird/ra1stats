@@ -61,14 +61,21 @@ def fillPoints(h, points = []) :
         return None
 
     for point in points :
-        iBinX,iBinY,iBinZ = point
+        if len(point)==3:
+            iBinX,iBinY,iBinZ = point
+            neighbors = "ewns"
+        elif len(point)==4 :
+            iBinX,iBinY,iBinZ,neighbors = point
+        else :
+            assert False,point
+
         valueOld = h.GetBinContent(iBinX, iBinY, iBinZ)
 
         items = []
-        if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
-        if iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
-        if iBinY!=h.GetNbinsY() : items.append(h.GetBinContent(iBinX  , iBinY+1, iBinZ))
-        if iBinY!=1             : items.append(h.GetBinContent(iBinX  , iBinY-1, iBinZ))
+        if ("w" in neighbors) and iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
+        if ("e" in neighbors) and iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
+        if ("n" in neighbors) and iBinY!=h.GetNbinsY() : items.append(h.GetBinContent(iBinX  , iBinY+1, iBinZ))
+        if ("s" in neighbors) and iBinY!=1             : items.append(h.GetBinContent(iBinX  , iBinY-1, iBinZ))
 
         value = avg(items)
         if value!=None :
