@@ -847,7 +847,7 @@ class foo(object) :
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
             args[item] = getattr(selection.data, item)()
 
-        for item in ["REwk", "RQcd", "legendTitle"] :
+        for item in ["REwk", "RQcd", "legendTitle", "ignoreHad"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
         return args
