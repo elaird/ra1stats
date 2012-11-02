@@ -32,11 +32,13 @@ class spec(object) :
     def nFZinv(self) :
         return "All" if self._ignoreHad else self._nFZinv
     def constrainQcdSlope(self) :
-        return self._constrainQcdSlope
+        return False if self._ignoreHad else self._constrainQcdSlope
     def qcdParameterIsYield(self) :
         return self._qcdParameterIsYield
     def legendTitle(self) :
-        return self._legendTitle+(", QCD=0, NO HAD IN LLK" if self._ignoreHad else "")
+        return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
+    def ignoreHad(self) :
+        return self._ignoreHad
 
     def selections(self) :
         if self._whiteList :
@@ -51,17 +53,19 @@ class spec(object) :
         return self.poiList()==["f"]
 
     def add(self, sel = []) :
+        if self._ignoreHad :
+            for s in sel :
+                del s.samplesAndSignalEff["had"]
         self._selections += sel
 
-    def __init__(self, dataset = "2012dev", separateSystObs = True, whiteList = []) :
-        self._whiteList = whiteList
-        self._dataset = dataset
-        self._selections = []
-        self._separateSystObs = separateSystObs
-        self._ignoreHad = False
+    def __init__(self, dataset = "2012dev", separateSystObs = True, whiteList = [], ignoreHad = False) :
+        for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
+            setattr(self, "_"+item, eval(item))
+
         self._RQcd = None
         self._nFZinv = None
         self._REwk = None
+        self._selections = []
 
         assert self._dataset in ["", "2011", "2012ichep", "2012dev"],self._dataset
         if self._dataset=="" :
