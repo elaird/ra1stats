@@ -27,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                       )
 
     out = None
-    nToys = {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset] if not ignoreHad else 0
+    nToys = 0 if (ignoreHad and not ensemble) else {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
