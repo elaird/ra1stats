@@ -18,17 +18,25 @@ class selection(object) :
 
 class spec(object) :
 
-    def separateSystObs(self) : return self._separateSystObs
+    def separateSystObs(self) :
+        return self._separateSystObs
     def poi(self) :
         return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
                 {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
                 {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
                 {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0]
-    def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
-    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
-    def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return self._constrainQcdSlope
-    def qcdParameterIsYield(self) : return self._qcdParameterIsYield
+    def REwk(self) :
+        return "" if self._ignoreHad else self._REwk
+    def RQcd(self) :
+        return "Zero" if self._ignoreHad else self._RQcd
+    def nFZinv(self) :
+        return "All" if self._ignoreHad else self._nFZinv
+    def constrainQcdSlope(self) :
+        return self._constrainQcdSlope
+    def qcdParameterIsYield(self) :
+        return self._qcdParameterIsYield
+    def legendTitle(self) :
+        return self._legendTitle+(", QCD=0, NO HAD IN LLK" if self._ignoreHad else "")
 
     def selections(self) :
         if self._whiteList :
@@ -50,6 +58,10 @@ class spec(object) :
         self._dataset = dataset
         self._selections = []
         self._separateSystObs = separateSystObs
+        self._ignoreHad = False
+        self._RQcd = None
+        self._nFZinv = None
+        self._REwk = None
 
         assert self._dataset in ["", "2011", "2012ichep", "2012dev"],self._dataset
         if self._dataset=="" :
@@ -61,10 +73,14 @@ class spec(object) :
         elif self._dataset=="2012dev" :
             self.__init2012dev__()
 
+        assert self._RQcd in ["Zero", "FallingExp", "FallingExpA"]
+        assert self._nFZinv in ["All", "One", "Two"]
+        assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
+
     def __initSimple__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = False
-        self.legendTitle = "SIMPLE TEST"
+        self._legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
                 selection(name = "test",
@@ -76,7 +92,10 @@ class spec(object) :
     def __init2012dev__(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
-        self.legendTitle = ""
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._legendTitle = "CMS Preliminary, 11.1 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take14 as module
 
         lst = []
@@ -125,10 +144,11 @@ class spec(object) :
     def __init2012ichep__(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
-        self.legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module
-        #self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 8 TeV"
-        #from inputData.data2012 import take6_unweighted as module
 
         self.add([
                 selection(name = "55_0b",
@@ -177,7 +197,10 @@ class spec(object) :
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
-        self.legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
         else :
