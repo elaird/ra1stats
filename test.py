@@ -2,7 +2,7 @@
 import ROOT as r
 import common,workspace,likelihoodSpec,signals,plotting
 
-def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
+def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], ignoreHad = False) :
     examples = {("0b_le3j",):{},
                 ("0b_ge4j",):signals.t1_1,
                 ("1b_le3j",):{},
@@ -14,7 +14,9 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
                 ("ge4b_ge4j",):signals.t1bbbb_1,
                 }
     signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
-    f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, separateSystObs = not ensemble),
+    f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, ignoreHad = ignoreHad,
+                                                           separateSystObs = not ensemble
+                                                           ),
                       #signalToTest = signal,
                       signalExampleToStack = signal,
                       #signalToInject = signal,
@@ -25,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = []) :
                       )
 
     out = None
-    nToys = {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
+    nToys = {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset] if not ignoreHad else 0
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
