@@ -41,7 +41,7 @@ class data(object) :
 
     def __str__(self, notes = False) :
         out = ""
-        for func in ["observations", "mcExpectationsBeforeTrigger", "mcStatError"] :
+        for func in ["observations", "mcExpectations", "mcStatError"] :
             out += "\n".join(["", func, "-"*20, ""])
             d = getattr(self, func)()
             for key in sorted(d.keys()) :
