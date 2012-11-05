@@ -1,12 +1,11 @@
-import os,sys,math,utils
-from array import array
+import os,sys,math,utils,pickling
+
+from histogramProcessing import printHoles,fillPoints,killPoints
+from utils import threeToTwo, shifted
 
 import configuration as conf
 import histogramSpecs as hs
 import refXsProcessing as rxs
-from histogramProcessing import printHoles,fillPoints,killPoints
-from pickling import mergedFile
-from utils import threeToTwo, shifted
 import ROOT as r
 
 def setupRoot() :
@@ -243,13 +242,16 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     f = r.TFile(fileName)
     histos = {}
 
-    for name in ["UpperLimit", "ExpectedUpperLimit", "ExpectedUpperLimit_-1_Sigma", "ExpectedUpperLimit_+1_Sigma"] :
+    for name,pretty in [("UpperLimit", "upper limit"),
+                        ("ExpectedUpperLimit", "expected upper limit"),
+                        ("ExpectedUpperLimit_-1_Sigma", "title"),
+                        ("ExpectedUpperLimit_+1_Sigma", "title")] :
         h3 = f.Get(name)
         if not h3 : continue
         h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, switches)
         title = hs.histoTitle(model = model)
-        title += ";%g%% C.L. upper limit on #sigma (pb)"%(100.0*cl)
+        title += ";%g%% C.L. %s on #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
@@ -290,7 +292,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
 
-    inFile = mergedFile()
+    inFile = pickling.mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFileEps  = inFile.replace(".root", "_xsLimit.eps")
     histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY)
@@ -338,7 +340,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
             func.Draw("same")
 
     #stamp plot
-    stamp_text = conf.likelihoodSpec().legendTitle
+    stamp_text = conf.likelihoodSpec().legendTitle()
 
     #s2 = stamp(text = "#alpha_{T}", x = 0.2075, y = 0.55, factor = 1.3)
     textMap = {"profileLikelihood":"PL", "CLs":"CL_{s}"}
@@ -349,11 +351,67 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     printOnce(c, outFileEps)
     printHoles(histos[name])
 
+def efficiencyHistos(key = "") :
+    out = {}
+    for cat,dct in pickling.effHistos().iteritems() :
+        total = None
+        for histo in dct[key] :
+            if not total :
+                total = histo.Clone("%s_%s"%(cat,key))
+            else :
+                total.Add(histo)
+        out[cat] = total
+    return out
+
+def makeEfficiencyPlotBinned(key = "effHad") :
+    def prep(p) :
+        p.SetTopMargin(0.15)
+        p.SetBottomMargin(0.15)
+        p.SetLeftMargin(0.15)
+        p.SetRightMargin(0.15)
+
+    can = r.TCanvas("canvas", "canvas", 400, 1000)
+    can.Divide(2, 5)
+    dct = efficiencyHistos(key = key)
+    maximum = max([h.GetMaximum() for h in dct.values()])
+    keep = []
+    pad = {0:2, 1:1, 2:4, 3:3, 4:6, 5:5, 6:8, 7:7, 8:10}
+
+    model = conf.switches()["signalModel"]
+    label = "%s_%s"%(model, key)
+    total = None
+    for i,(cat,h) in enumerate(sorted(dct.iteritems())) :
+        can.cd(pad[i])
+        prep(r.gPad)
+
+        h2 = threeToTwo(h)
+        keep.append(h2)
+        h2.SetTitle(cat)
+        h2.SetStats(False)
+        h2.SetMinimum(0.0)
+        h2.SetMaximum(maximum)
+        h2.Draw("colz")
+
+        if not total :
+            total = h2.Clone(label)
+        else :
+            total.Add(h2)
+        #h2.GetListOfFunctions().FindObject("palette").GetAxis().SetTitle("")
+
+    can.cd(9)
+    prep(r.gPad)
+
+    total.Draw("colz")
+    total.SetTitle("%s#semicolon max = %4.2f"%(label, total.GetMaximum()))
+
+    can.cd(0)
+    can.Print("%s.pdf"%label)
+
 def makeEfficiencyPlot() :
     s = conf.switches()
     if not s["isSms"] : return
 
-    inFile = mergedFile()
+    inFile = pickling.mergedFile()
     f = r.TFile(inFile)
     fileName = inFile.replace(".root","_efficiency.eps")
 
@@ -403,7 +461,7 @@ def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
     if not s["isSms"] : return
 
-    inFile = mergedFile()
+    inFile = pickling.mergedFile()
     f = r.TFile(inFile)
     ranges = hs.ranges(s["signalModel"])
 
@@ -570,7 +628,7 @@ def sortedNames(histos = [], first = [], last = []) :
 def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False, square = False) :
     assert tag
 
-    inFile = mergedFile()
+    inFile = pickling.mergedFile()
     f = r.TFile(inFile)
     r.gROOT.cd()
 
@@ -644,7 +702,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
     if whiteList :
         assert len(whiteList)==divide[0]*divide[1], "%d != %d"%(len(whiteList), divide[0]*divide[1])
 
-    histos = allHistos(fileName = mergedFile())
+    histos = allHistos(fileName = pickling.mergedFile())
     master = histos[masterKey]
     graphs = {}
     for iBinX in range(1, 1 + master.GetNbinsX()) :
@@ -688,7 +746,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
                 plLimLine.SetLineColor(r.kGreen)
                 graphs[name].append(plLimLine)
 
-    fileName = mergedFile().replace(".root","_%s_%s.pdf"%(tag, str(cl).replace("0.","")))
+    fileName = pickling.mergedFile().replace(".root","_%s_%s.pdf"%(tag, str(cl).replace("0.","")))
     if whiteList :
         fileName = fileName.replace(".pdf", ".eps")
         canvas = r.TCanvas("canvas", "", 500*divide[0], 500*divide[1])

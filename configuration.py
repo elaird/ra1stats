@@ -5,16 +5,17 @@ batchHost = [ "FNAL", "IC" ][1]
 
 def locations() :
     dct = {
-        "ic.ac.uk"   : "/vols/cms02/samr",
+        "ic.ac.uk"   : "/vols/cms02/elaird1",
         "phosphorus" : "/home/elaird/71_stats_files/",
         "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
         "fnal.gov"   : "/uscms_data/d1/samr/",
+        "brown02"    : "/vols/cms02/elaird1"
     }
     lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
     assert len(lst) == 1, lst
     s = dct[ lst[0] ]
 
-    return {"eff": "%s/20_yieldHistograms/2011/"%s,
+    return {"eff": "%s/20_yieldHistograms/2012/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
 def method() :
@@ -27,10 +28,22 @@ def method() :
             "multiplesInGeV": None,
             }
 
+def ignoreEff() :
+    return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"]}}
+
+def effUncRel() :
+    return {"effUncRel":{"T1":0.140,
+                         "T2":0.134,
+                         "T2bb":0.131,
+                         "T2tt":0.139,
+                         "T1bbbb":0.160,
+                         "T1tttt":0.230,
+                         }}
+
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              "T1tttt_2012", "T2bw"]
+              "T1tttt_ichep", "T2bw"]
 
     variations = ["default", "up", "down"]
     return {"overwriteInput": patches.overwriteInput(),
@@ -43,50 +56,41 @@ def signal() :
             "drawBenchmarkPoints": True,
             "effRatioPlots": False,
             "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["T2bb"]
+            "signalModel": dict(zip(models, models))["T1"]
             }
 
 def likelihoodSpec() :
-    dct = {}
-    dct["T1tttt_2012"] = {"iLower":2, "iUpper":3, "dataset":"2012ichep",
-            "separateSystObs":True}
-    for model in ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb",
-                  "T2", "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4",
-                  "TGQ_0p8", "T2bw"] :
-        dct[model] = {"iLower":None, "iUpper":None, "dataset":"2011",
-                "separateSystObs": True}
+    dct = {"T1"          : {"whiteList":["0b_ge4j"]},
+           "T2"          : {"whiteList":["0b_le3j"]},
+           "T2bb"        : {"whiteList":["1b_le3j", "2b_le3j"]},
+           "T2tt"        : {"whiteList":["1b_ge4j", "2b_ge4j"]},
+           "T1bbbb"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T1tttt"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T1tttt_ichep": {"whiteList":["2b", "ge3b"], "dataset":"2012ichep"},
+           }
     return ls.spec(**dct[signal()["signalModel"]])
 
-def listOfTestPoints() :
-    #out = [(181, 29, 1)]
-    #out = [(33, 53, 1)]
-    #out = [(61, 61, 1)]
-    #out = [(13, 3, 1)]
-    #out = [(17, 5, 1)]
-    #out = [(37, 19, 1)]
-    #out = [(17,5,1)]
-    #out = [(26,26,1)]
-    #out = [(15,3,1)]
-    #out = [(13,1,1)]
+def whiteListOfPoints() : #GeV
     out = []
+    #out = [(1000.0, 400.0)]  #T1
+    #out = [(1100.0, 500.0)]  #T1bbbb
+    #out = [( 450.0,  20.0)]  #T2tt
+    #out = [( 550.0,  20.0)]  #T2tt
     return out
-
-def xWhiteList() :
-    return []
 
 def other() :
     return {"icfDefaultLumi": 100.0, #/pb
             "icfDefaultNEventsIn": 10000,
             "subCmd": getSubCmds(),
             "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
-            "queueSelection" : ["short", "medium", "long"][1:2],
+            "queueSelection" : ["short", "medium", "long"][0:1],
             "envScript": "env.sh",
             "nJobsMax": getMaxJobs()}
 
 def switches() :
     out = {}
-    lst = [method(), signal(), other()]
-    for func in ["xWhiteList", "listOfTestPoints"] :
+    lst = [method(), signal(), ignoreEff(), effUncRel(), other()]
+    for func in ["whiteListOfPoints"] :
         lst.append( {func: eval(func)()} )
     keys = sum([dct.keys() for dct in lst], [])
     assert len(keys)==len(set(keys))

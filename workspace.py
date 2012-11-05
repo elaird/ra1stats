@@ -191,7 +191,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     #more
     iFirst = None
     iLast = len(htMeans)-1
-    systBin = inputData.systBins()["sigmaLumiLike"]
     for i,nHadValue in enumerate(obs["nHad"]) :
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
@@ -228,7 +227,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             lumi = ni("hadLumi", label)
             eff = ni("signalEffHad", label, i)
             assert w.var(eff),eff
-            rho = ni("rhoSignal", systematicsLabel, systBin[i])
+            rho = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
@@ -390,7 +389,6 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             out["systObs"].append(one)
 
     systBin = inputData.systBins()["sigmaMuonW"]
-    signalSystBin = inputData.systBins()["sigmaLumiLike"]
     for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue in zip(range(len(inputData.observations()["nMuon"])),
                                                                inputData.observations()["nMuon"],
                                                                inputData.mcExpectations()["mcMuon"],
@@ -422,7 +420,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             muonS = ni("muonS", label, i)
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
-            rhoSignal = ni("rhoSignal", systematicsLabel, signalSystBin[i])
+            rhoSignal = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
@@ -479,16 +477,15 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
 
     out = collections.defaultdict(list)
     if label==systematicsLabel :
-        for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
-            #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalToTest[item] for item in extraSigEffUncSources])
-            deltaSignalValue = inputData.fixedParameters()["sigmaLumiLike"][iPar]
+        for iPar in [None] :
             one = ni("oneRhoSignal", label, iPar)
             rho = ni("rhoSignal", label, iPar)
             delta = ni("deltaSignal", label, iPar)
             gaus = ni("signalGaus", label, iPar)
 
             wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
-            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho), sigmaName = delta, sigmaValue = deltaSignalValue)
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
+                     sigmaName = delta, sigmaValue = w.var("effUncRel").getVal())
 
             signalTermsName = ni("signalTerms", label, iPar)
             w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
@@ -578,8 +575,9 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["systObs" if separateSystObs else "obs"] += variables["systObs"]
     return out
 
-def startLikelihood(w = None, xs = None, fIniFactor = None, poi = {}) :
+def startLikelihood(w = None, xs = None, effUncRel = None, fIniFactor = None, poi = {}) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
+    wimport(w, r.RooRealVar("effUncRel", "effUncRel", effUncRel))
     fIni,fMin,fMax = poi["f"]
     wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
 
@@ -627,7 +625,8 @@ class foo(object) :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
+            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, effUncRel = signalToTest.effUncRel,
+                            fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec.selections() :
@@ -706,22 +705,14 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def writeMlTable(self, fileName = "mlTables.tex") :
+    def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
         def pars() :
             utils.rooFitResults(pdf(self.wspace), self.data)
             return floatingVars(self.wspace)
 
-        def category(v = "") :
-            if "k_qcd" in v : return "common"
-            if "rho" in v : return "common"
-            for item in ["gt2b", "2b", "1b", "0b"] :
-                if item in v : return item
-            assert False,v
-
-        def renamed(v) :
+        def renamed(v, cat = "") :
             out = v
-            for item in ["55"]+categories :
-                out = out.replace("_%s"%item,"")
+            out = out.replace("_"+cat, "")
             for i in range(9) :
                 out = out.replace("_%d"%i, "^%d"%i)
             out = out.replace("ewk", r'\mathrm{EWK}')
@@ -734,25 +725,25 @@ class foo(object) :
             return r'$%s$'%out
 
         p = pars()
-        categories = ["0b", "1b", "2b", "gt2b"]
         s  = "\n".join([r'\documentclass{article}',
                         r'\begin{document}'])
 
-        for cat in ["common"]+categories :
+        for cat in categories :
+            if not any([cat in d["name"] for d in p]) : continue
             s += "\n".join(['', '',
                             r'\begin{table}\centering',
-                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat,
+                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat.replace("_", " "),
                             r'\label{tab:mlParameterValues%s}'%cat,
                             r'\begin{tabular}{lcc}',
                             ])
             s += r'name & value & error \\ \hline'+'\n'
             for d in sorted(p, key = lambda d:d["name"]) :
-                if category(d["name"])!=cat : continue
+                if cat not in d["name"] : continue
                 cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
                 if "rho" in d["name"] or "fZinv" in d["name"] :
                     cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
                 spec = ' & '.join(['%s']+cols)+r'\\'+'\n'
-                s += spec%(renamed(d["name"]), d["value"], d["error"])
+                s += spec%(renamed(d["name"], cat), d["value"], d["error"])
             s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
 
         s += "\n".join(['',r'\end{document}'])
@@ -856,11 +847,9 @@ class foo(object) :
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
             args[item] = getattr(selection.data, item)()
 
-        for item in ["REwk", "RQcd"] :
+        for item in ["REwk", "RQcd", "legendTitle", "ignoreHad"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["legendTitle"] :
-            args[item] = getattr(self.likelihoodSpec, item)
         return args
 
     def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
@@ -900,12 +889,9 @@ class foo(object) :
         lognKey = "kMinusOne"
         pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
 
-        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
-        for key in sorted(stats.keys()) :
-            print "%s = %g"%(key.ljust(7), stats[key])
-
+        title = "_".join([x.name for x in self.likelihoodSpec.selections()])
         calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
-                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
+                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold, title = title)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
@@ -919,7 +905,20 @@ class foo(object) :
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
-        return stats["prob"]
+
+        #gather stats
+        out = {}
+        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
+        for key in sorted(stats.keys()) :
+            print "%s = %g"%(key.ljust(7), stats[key])
+        out["chi2ProbSimple"] = stats["prob"]
+
+        if errorsFromToys :
+            pvalues = plotting.ensembleResults(note = self.note(), nToys = errorsFromToys)
+            for dct in pvalues :
+                out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
+
+        return out
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))

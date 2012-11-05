@@ -33,24 +33,22 @@ def common1(x) :
 def common(x) :
     lumiLikeValue = common1(x)
 
-    systBins = tuple([0]*4+[1]*2+[2]*2)
-    #systBins = tuple([0,1]+[2]*2+[3]*2+[4]*2)
+    #systBins = tuple([0]*4+[1]*2+[2]*2)
+    systBins = tuple([0,1]+[2]*2+[3]*2+[4]*2)
     name = x.__class__.__name__
 
     if "ge2j" in name :
-        systMagnitudes = (0.10, 0.20, 0.60)
-        x._observations["nHadBulk"] = (630453600, 286166200, 209611400, 69777150, 26101500, 20182300, 4745175, 4776350, 0, 0)
+        systMagnitudes = (0.10, 0.10, 0.20, 0.20, 0.30)
+        #x._observations["nHadBulk"] = (630453600, 286166200, 209611400, 69777150, 26101500, 20182300, 4745175, 4776350, 0, 0)
         x._triggerEfficiencies["had"] = (0.870, 0.986, 0.994, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000)
     elif "le3j" in name :
-        #systMagnitudes = (0.15, 0.30, 0.50)
-        systMagnitudes = (0.10, 0.20, 0.20)
-        #systMagnitudes = (0.10, 0.10, 0.20, 0.20, 0.20)
+        #systMagnitudes = (0.10, 0.20, 0.20)
+        systMagnitudes = (0.10, 0.10, 0.20, 0.20, 0.20)
         x._observations["nHadBulk"] = (487992800, 202369400, 134976100, 36965375, 12292400,  8301900, 1925125, 1768325, 0, 0)
         x._triggerEfficiencies["had"] = (0.891, 0.987, 0.990, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000)
     elif "ge4j" in name :
-        #systMagnitudes = (0.25, 0.35, 0.70)
-        systMagnitudes = (0.10, 0.20, 0.30)
-        #systMagnitudes = (0.10, 0.10, 0.20, 0.20, 0.30)
+        #systMagnitudes = (0.10, 0.20, 0.30)
+        systMagnitudes = (0.10, 0.10, 0.20, 0.20, 0.30)
         x._triggerEfficiencies["had"] = (0.837, 0.982, 0.997, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000)
         x._observations["nHadBulk"] = (142460800,  83796800,  74635300, 32811775, 13809100, 11880400, 2820050, 3008025, 0, 0)
 
@@ -375,3 +373,50 @@ class data_ge4b_le3j(data) :
 	}
 
         common(self)
+
+import collections
+
+def add(lst = [], quad = False) :
+    dct = collections.defaultdict(float)
+    lens = []
+    for t in lst :
+        lens.append(len(t))
+        for i,x in enumerate(t) :
+            if x!=None :
+                dct[i] += x if not quad else x*x
+            else :
+                dct[i] = None
+    if quad :
+        for key in dct.keys() :
+            if dct[key]!=None : dct[key] = dct[key]**0.5
+
+    assert len(set(lens))==1,set(lens)
+    return tuple([dct[i] for i in range(len(dct))])
+
+def fetched(lst = [], func = "", attr = "", key = "") :
+    return [(getattr(x,func)() if func else getattr(x,attr))[key] for x in lst]
+
+def fill(x, lst = []) :
+    x._observations = {}
+    for key in ["nPhot", "nHad", "nMuon", "nMumu", "nHadBulk"] :
+        x._observations[key] = add(fetched(lst = lst, attr = "_observations", key = key))
+
+    x._mcExpectationsBeforeTrigger = {}
+    for key in ["mcPhot", "mcHad", "mcTtw", "mcMuon", "mcZinv", "mcMumu"] :
+        x._mcExpectationsBeforeTrigger[key] = add(fetched(lst = lst, attr = "_mcExpectationsBeforeTrigger", key = key))
+
+    x._mcStatError = {}
+    for key in ["mcMuonErr", "mcMumuErr", "mcHadErr", "mcZinvErr", "mcTtwErr", "mcPhotErr"] :
+        x._mcStatError[key] = add(fetched(lst, attr = "_mcStatError", key = key), quad = True)
+
+    common(x)
+
+    x._mergeBins = None
+    print "ERROR: assert uniformity"
+    x._htBinLowerEdges = lst[0]._htBinLowerEdges
+    x._htMaxForPlot    = lst[0]._htMaxForPlot
+    x._htMeans         = lst[0]._htMeans
+
+class data_0b_ge2j(data) :
+    def _fill(self) :
+        fill(self,  lst = [data_0b_le3j(), data_0b_ge4j()])

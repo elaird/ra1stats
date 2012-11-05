@@ -242,9 +242,9 @@ def ensembleSplit(d, group = "had") :
 def ensembleSplit2(dct, group = "had") :
     out = defaultdict(list)
     for key,latex in dct.iteritems() :
-        sample,aT,nB,iBin = common.split(key)
+        sample,nB,nJ,iBin = common.split(key)
         if sample[:len(group)]!=group : continue
-        out[nB] += [(iBin, latex)]
+        out[" ".join([nB,nJ])] += [(iBin, latex)]
 
     for key in out.keys() :
         out[key] = map(lambda x:x[1],sorted(out[key]))
@@ -348,6 +348,7 @@ def ensembleResultsBySelection( d, data, note = "", nEmptyPhot = 2 ) :
         if sample == "phot" :
             for selection, values in mc_out[title].iteritems() :
                 mc_out[title][selection] = ["--"]*nEmptyPhot + values
+
 
     selections = sorted(mc_out[mc_titles[0]].keys())
 

@@ -61,14 +61,21 @@ def fillPoints(h, points = []) :
         return None
 
     for point in points :
-        iBinX,iBinY,iBinZ = point
+        if len(point)==3:
+            iBinX,iBinY,iBinZ = point
+            neighbors = "ewns"
+        elif len(point)==4 :
+            iBinX,iBinY,iBinZ,neighbors = point
+        else :
+            assert False,point
+
         valueOld = h.GetBinContent(iBinX, iBinY, iBinZ)
 
         items = []
-        if iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
-        if iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
-        if iBinY!=h.GetNbinsY() : items.append(h.GetBinContent(iBinX  , iBinY+1, iBinZ))
-        if iBinY!=1             : items.append(h.GetBinContent(iBinX  , iBinY-1, iBinZ))
+        if ("w" in neighbors) and iBinX!=1             : items.append(h.GetBinContent(iBinX-1, iBinY  , iBinZ))
+        if ("e" in neighbors) and iBinX!=h.GetNbinsX() : items.append(h.GetBinContent(iBinX+1, iBinY  , iBinZ))
+        if ("n" in neighbors) and iBinY!=h.GetNbinsY() : items.append(h.GetBinContent(iBinX  , iBinY+1, iBinZ))
+        if ("s" in neighbors) and iBinY!=1             : items.append(h.GetBinContent(iBinX  , iBinY-1, iBinZ))
 
         value = avg(items)
         if value!=None :
@@ -99,8 +106,9 @@ def nEventsInHisto() :
 def effHisto(**args) :
     s = conf.switches()
     model = s["signalModel"]
-    if model in ["T1","T2"] and args["box"]=="muon" :
-        print "WARNING: ignoring muon efficiency for %s"%model
+    ignore = s["ignoreEff"]
+    if (model in ignore) and (args["box"] in ignore[model]) :
+        print "WARNING: ignoring %s efficiency for %s"%(args["box"], model)
         return None
     if not s["isSms"] :
         return cmssmEffHisto(model = model, xsVariation = s["xsVariation"], **args)
@@ -173,9 +181,11 @@ def cmssmEffHisto(**args) :
     return out
 
 def xsHistoAllOne(model, cutFunc = None) :
+    ls = conf.likelihoodSpec()
+    kargs = {} if ls._dataset=="2012ichep" else {"bJets":"eq0b", "jets":"le3j"}
+
     h = smsEffHisto(model = model, box = "had", scale = None,
-                    htLower = 875, htUpper = None,
-                    alphaTLower = "55", alphaTUpper = None)
+                    htLower = 875, htUpper = None, **kargs)
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         content = 1.0
         if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
@@ -192,23 +202,19 @@ def smsEffHisto(**args) :
     return out
 
 ##signal point selection
-def fullPoints() :
+def points() :
     out = []
     s = conf.switches()
+    whiteList = s["whiteListOfPoints"]
     h = xsHisto()
     for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
-        if "xWhiteList" in s and s["xWhiteList"] and iBinX not in s["xWhiteList"] : continue
+        if whiteList and (x,y) not in whiteList : continue
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content : continue
         if s["multiplesInGeV"] and ((x/s["multiplesInGeV"])%1 != 0.0) : continue
         if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
             out.append( (iBinX, iBinY, iBinZ) )
     return out
-
-def points() :
-    p = conf.switches()["listOfTestPoints"]
-    if p : return p
-    return fullPoints()
 
 ##warnings
 def printHoles(h) :

@@ -1,22 +1,22 @@
 from configuration import locations
 
 def ranges(model) :
-    x = {"T1":   ( 287.5, 1225), #(min, max)
-         "T2":   ( 287.5, 1212.5),
-         "T2tt": ( 287.5, 1212.5),
-         "T2bb": ( 287.5, 1212.5),
-         "T1bbbb": ( 287.5, 1212.5),
-         "T1tttt": ( 440.0, 1212.5),
+    x = {"T1":   ( 287.5, 2212.5), #(min, max)
+         "T2":   ( 287.5, 1200.0),
+         "T2tt": ( 300.0, 800.0),
+         "T2bb": ( 287.5, 1200.0),
+         "T1bbbb": ( 287.5, 2212.5),
+         "T1tttt": ( 440.0, 2212.5),
          "T1tttt_2012": ( 375.0, 1200.0),
          "tanBeta10": (0.0, 4000.0),
          }
     y = {"T5zz": ( 50.0,  999.9), #(min, max)
-         "T1":   ( 50.0, 1000.0),
-         "T2":   ( 50.0, 1000.0),
-         "T2tt": ( -12.5,1000.0),
-         "T2bb": ( 50.0, 1000.0),
-         "T1bbbb": ( 50.0, 1000.0),
-         "T1tttt": ( 50.0, 800.0),
+         "T1":   ( 50.0, 1800.0),
+         "T2":   ( 50.0, 1025.0),
+         "T2tt": (-12.5,  600.0),
+         "T2bb": ( 50.0, 1025.0),
+         "T1bbbb": ( 50.0, 1800.0),
+         "T1tttt": ( 50.0, 1625.0),
          "T1tttt_2012": ( 50.0, 800.0),
          "tanBeta10": (0.0, 4000.0),
          }
@@ -59,9 +59,8 @@ def ranges(model) :
 
 
 def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None,
-              alphaTLower = None, alphaTUpper = None, nbTag = None, bTagLower = None, xsVariation = None) :
+              bJets = None, jets = None, xsVariation = None) :
     #xsVariation is ignored
-    assert not ( nbTag and bTagLower ), "cannot specify both an exact number of btags and a lower limit"
 
     base = locations()["eff"]
 
@@ -70,17 +69,15 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
              "tanBeta40":  {"cmssw":"42", "had":"v2", "muon":"v2"},
              }
 
-    sms = {"T1":          {"had": "rw_fix"},
-           "T2":          {"had": "rw_fix"},
-           #"T2tt":        {"had": "rw_fix", "muon": "rw_fix"},
-           "T2tt":        {"had": "strip", "muon": "strip"},
-           "T2bb":        {"had": "rw_fix", "muon": "rw_fix"},
+    sms = {"T1":          {"had": "v5"},
+           "T2":          {"had": "v1"},
+           "T2tt":        {"had": "v1", "muon": "v1"},
+           "T2bb":        {"had": "v3", "muon": "v3"},
            "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
            "T5zz":        {"had": "v1", "muon": "v1"},
-           "T1bbbb":      {"had": "rw_fix", "muon": "rw_fix"},
-           "T1tttt":      {"had": "v3", "muon": "v3"},
-           #"T1tttt_2012": {"had": "2012full_newIDs", "muon": "2012full_newIDs"},
-           "T1tttt_2012": {"had": "2012full", "muon": "2012full"},
+           "T1bbbb":      {"had": "v3", "muon": "v3"},
+           "T1tttt":      {"had": "v1", "muon": "v1"},
+           "T1tttt_ichep":{"had": "2012full", "muon": "2012full"},
            "TGQ_0p0":     {"had": "v1"},
            "TGQ_0p2":     {"had": "v1"},
            "TGQ_0p4":     {"had": "v1"},
@@ -93,6 +90,7 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
     if htLower==325 : thresh = "1"
 
     out = {}
+    tags = []
     if model in cmssm :
         assert box in ["had", "muon"]
         if scale not in ["1", "05", "2"] :
@@ -101,27 +99,33 @@ def histoSpec(model = "", box = None, scale = None, htLower = None, htUpper = No
         d = cmssm[model]
         out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+"%s.root"%thresh])
         out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
-        out["afterDir"] = "mSuGraScan"
+        tags.append("mSuGraScan")
     elif model in sms :
         assert box in ["had","muon"]
         out["file"] = "/".join([base, "sms", model, box, sms[model][box], box+"%s.root"%thresh])
         out["beforeDir"] = "smsScan_before"
-        out["afterDir"] = "smsScan"
+        tags.append("smsScan")
     else :
         assert False, "model %s not in list"%model
 
-    if nbTag is not None     : out["afterDir"] += "_btag_==_%s"%nbTag
-    if bTagLower is not None : out["afterDir"] += "_btag_>_%s"%bTagLower
-# eventually for upper b slices
-    #if box == "muon":
-        #if alphaTLower    : out["afterDir"] += "_NoAlphaT"
-    #else:
-        #if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
-    if alphaTLower    : out["afterDir"] += "_AlphaT%s"%alphaTLower
-    if alphaTUpper    : out["afterDir"] += "_%s"%alphaTUpper
-    if htLower        : out["afterDir"] += "_%d"%htLower
-    if htUpper        : out["afterDir"] += "_%d"%htUpper
-    if model in cmssm : out["afterDir"] += "_scale%s"%scale
+    if bJets :
+        tags.append(bJets)
+    if jets :
+        tags.append(jets)
+
+    if box=="had":
+        tags.append("AlphaT55")
+    else:
+        tags.append("NoAlphaT")
+
+    if htLower :
+        tags.append("%d"%htLower)
+    if htUpper :
+        tags.append("%d"%htUpper)
+    if model in cmssm :
+        tags.append("scale%s"%scale)
+
+    out["afterDir"] = "_".join(tags)
     return out
 
 def histoTitle(model = "") :

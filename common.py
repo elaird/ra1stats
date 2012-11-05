@@ -1,9 +1,9 @@
 import ROOT as r
 
 class signal(dict) :
-    def __init__(self, xs = None, label = "") :
-        for item in ["xs", "label"] :
-            assert item
+    def __init__(self, xs = None, label = "", effUncRel = None) :
+        for item in ["xs", "label", "effUncRel"] :
+            assert eval(item)!=None,item
             setattr(self, item, eval(item))
     
     def insert(self, key = "", dct = {}) :
@@ -89,14 +89,9 @@ def split(key) :
     try:
         fields = key.split("_")
         if len(fields)==4 :
-            sample,sel,nB,iHt = fields
-        elif len(fields)==6 :
-            sample,sel,nB,s1,s2,iHt = fields
-            assert s1=="no",s1
-            assert s2=="aT",s2
+            sample,nB,nJ,iHt = fields
         else :
             assert False,"unsupported length %d"%len(fields)
-        return sample,sel,nB,iHt
+        return sample,nB,nJ,iHt
     except:
-        print key
-        exit()
+        assert False,"Could not split key %s"%key

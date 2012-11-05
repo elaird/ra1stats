@@ -14,29 +14,60 @@ def writeGraphVizTree(wspace, pdfName = "model") :
     cmd = "dot -Tps %s -o %s"%(dotFile, dotFile.replace(".dot", ".ps"))
     os.system(cmd)
 
-def pValueCategoryPlots(hMap = None) :
-    can = r.TCanvas("canvas", "", 500, 700)
-    can.Divide(1, 3)
+def magnify(h = None) :
+    h.SetLabelSize(2.0*h.GetLabelSize())
+    h.GetXaxis().SetTitleSize(1.4*h.GetXaxis().GetTitleSize())
+    h.GetYaxis().SetTitleSize(1.4*h.GetYaxis().GetTitleSize())
+
+def pValueCategoryPlots(hMap = None, threePanel = False) :
+    if threePanel :
+        can = r.TCanvas("canvas", "", 500, 700)
+        can.Divide(1, 3)
+    else :
+        can = r.TCanvas("canvas", "", 700, 500)
+        can.Divide(1, 2)
+
     can.cd(1)
     r.gPad.SetTickx()
     r.gPad.SetTicky()
+    r.gPad.SetGridy()
 
-    hMap.SetStats(False)
-    hMap.SetMarkerStyle(20)
-    hMap.Draw("p")
+    leg = r.TLegend(0.60, 0.65, 0.85, 0.85)
+    for i,(key,latex,color) in enumerate([("chi2ProbSimple", "#chi^{2} prob.", 602),
+                                          ("chi2Prob", "#chi^{2} prob. (toys)", r.kBlack),
+                                          ("lMax", "L_{max} (toys)", r.kCyan),
+                                          ]) :
+        hMap[key].SetMarkerStyle(20)
+        hMap[key].SetMarkerColor(color)
+        if not i :
+            hMap[key].SetStats(False)
+            hMap[key].Draw("p")
+            hMap[key].SetMinimum(0.0)
+            hMap[key].SetMaximum(1.5)
+            magnify(hMap[key])
+        else :
+            hMap[key].Draw("psame")
+        leg.AddEntry(hMap[key], latex, "p")
+    leg.Draw()
 
-    can.cd(2)
-    hMap.Draw("p")
-    r.gPad.SetTickx()
-    r.gPad.SetTicky()
-    r.gPad.SetLogy()
+    if threePanel :
+        can.cd(2)
+        hMap2 = hMap["chi2ProbSimple"].Clone(hMap["chi2ProbSimple"].GetName()+"2")
+        hMap2.Draw("p")
+        hMap2.SetMinimum(1.0e-3)
+        hMap2.SetMaximum(2.0)
+        r.gPad.SetTickx()
+        r.gPad.SetTicky()
+        r.gPad.SetLogy()
 
     hDist = r.TH1D("pValueDist", ";p-value;categories / bin", 55, 0.0, 1.1)
     hDist.SetStats(False)
-    for iBin in range(1, 1+hMap.GetNbinsX()) :
-        hDist.Fill(hMap.GetBinContent(iBin))
+    magnify(hDist)
 
-    can.cd(3)
+    for iBin in range(1, 1+hMap["chi2ProbSimple"].GetNbinsX()) :
+        hDist.Fill(hMap["chi2ProbSimple"].GetBinContent(iBin))
+
+    can.cd(3 if threePanel else 2)
     r.gPad.SetTickx()
     r.gPad.SetTicky()
     hDist.Draw()
@@ -155,6 +186,21 @@ def pValuePlots(pValue = None, observed = None, pseudo = None, note = "", plotsD
 
     canvas.Print(fileName+"]")
 
+def ensembleResults(note = "", nToys = None) :
+    _,tfile = ensemble.results(note, nToys)
+
+    out = []
+    for key,keyLatex in [("lMax", "log(L_{max})"),
+                         ("chi2Prob", "#chi^{2} prob."),
+                         ] :
+        kargs = {}
+        for item in ["pValue", "observed", "pseudo"] :
+            kargs[item] = tfile.Get("/graphs/%s_%s"%(key, item))
+        for item in ["key", "keyLatex"] :
+            kargs[item] = eval(item)
+        out.append(kargs)
+    return out
+
 def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = False, selections = []) :
     #open results
     obs,tfile = ensemble.results(note, nToys)
@@ -165,13 +211,8 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
     oHistos,oQuantiles = ensemble.histosAndQuantiles(tfile, "other")
 
     #p-value plots
-    kargs = {}
-    for key,keyLatex in [("lMax", "log(L_{max})"),
-                         ("chi2Prob", "#chi^{2} prob."),
-                         ] :
-        for item in ["pValue", "observed", "pseudo"] :
-            kargs[item] = tfile.Get("/graphs/%s_%s"%(key, item))
-        for item in ["note", "plotsDir", "stdout", "key", "keyLatex"] :
+    for kargs in ensembleResults(note, nToys) :
+        for item in ["note", "plotsDir", "stdout"] :
             kargs[item] = eval(item)
         pValuePlots(**kargs)
 
@@ -385,8 +426,9 @@ class validationPlotter(object) :
         if "had" not in self.lumi : return
         vars = [
             {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else self.smDesc,
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle},
-            #"color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True, "errorsFrom":"ewk"},#for test when removing had sample from likelihood
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total",
+             "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle,
+             "errorsFrom":"ewk" if self.ignoreHad else ""},
             {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
              "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
             ]
@@ -982,7 +1024,6 @@ class validationPlotter(object) :
             l += [("rhoPhotZ",  ("#rho (#gammaZ% d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaPhotZ")]
             l += [("rhoMuonW",  ("#rho (#muW %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMuonW")]
             l += [("rhoMumuZ",  ("#rho (#mu#muZ %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaMumuZ")]
-            l += [("rhoSignal", ("#rho (sig. %d)"%i)+" = %4.2f #pm %4.2f", i) for i in sl("sigmaLumiLike")]
 
         if self.printNom :
             l +=  [("", ""),
