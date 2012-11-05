@@ -35,6 +35,8 @@ class spec(object) :
         return False if self._ignoreHad else self._constrainQcdSlope
     def qcdParameterIsYield(self) :
         return self._qcdParameterIsYield
+    def initialValuesFromMuonSample(self) :
+        return self._initialValuesFromMuonSample
     def legendTitle(self) :
         return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
     def ignoreHad(self) :
@@ -62,9 +64,12 @@ class spec(object) :
         for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
             setattr(self, "_"+item, eval(item))
 
-        self._RQcd = None
-        self._nFZinv = None
-        self._REwk = None
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._qcdParameterIsYield = True
+        self._constrainQcdSlope = True
+        self._initialValuesFromMuonSample = False
         self._selections = []
 
         assert self._dataset in ["", "2011", "2012ichep", "2012dev"],self._dataset
@@ -82,8 +87,6 @@ class spec(object) :
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
 
     def __initSimple__(self) :
-        self._constrainQcdSlope = False
-        self._qcdParameterIsYield = False
         self._legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
@@ -94,13 +97,14 @@ class spec(object) :
                 ])
 
     def __init2012dev__(self) :
-        self._constrainQcdSlope = True
-        self._qcdParameterIsYield = True
-        self._REwk = ""
-        self._RQcd = "FallingExp"
-        self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 11.1 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take14 as module
+
+        #QCD test
+        self._constrainQcdSlope = False
+        self._initialValuesFromMuonSample = True
+        self._legendTitle = "CMS Preliminary, 11.1 fb^{-1}, #sqrt{s} = 8 TeV [NO MHT/MET CUT]"
+        from inputData.data2012 import take15a as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
@@ -146,11 +150,7 @@ class spec(object) :
         self.add(lst)
 
     def __init2012ichep__(self) :
-        self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
-        self._REwk = ""
-        self._RQcd = "FallingExp"
-        self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module
 
@@ -199,11 +199,7 @@ class spec(object) :
                 ])
 
     def __init2011reorg__(self, updated = True) :
-        self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
-        self._REwk = ""
-        self._RQcd = "FallingExp"
-        self._nFZinv = "Two"
         self._legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
