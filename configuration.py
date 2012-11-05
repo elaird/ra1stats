@@ -72,10 +72,13 @@ def likelihoodSpec() :
 
 def whiteListOfPoints() : #GeV
     out = []
-    #out = [(1000.0, 400.0)]  #T1
-    #out = [(1100.0, 500.0)]  #T1bbbb
-    #out = [( 450.0,  20.0)]  #T2tt
-    #out = [( 550.0,  20.0)]  #T2tt
+    #out += [(1000.0, 400.0)]  #T1
+    #out += [(1100.0, 500.0)]  #T1bbbb
+    #out += [( 450.0,  20.0)]  #T2tt
+    #out += [( 550.0,  20.0)]  #T2tt
+
+    #out += [(1125.0, 550.0)]  #T1 freak (with 15 obs)
+    #out += [(1125.0, 500.0)]  #T1 ok    (with 15 obs)
     return out
 
 def other() :
