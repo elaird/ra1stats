@@ -18,7 +18,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                                                            separateSystObs = not ensemble
                                                            ),
                       #signalToTest = signal,
-                      signalExampleToStack = signal,
+                      #signalExampleToStack = signal,
                       #signalToInject = signal,
                       #trace = True
                       #rhoSignalMin = 0.1,
@@ -27,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                       )
 
     out = None
-    nToys = 0 if (ignoreHad and not ensemble) else {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
+    nToys = 0 if (ignoreHad and not ensemble) else {"2011":3000, "2012ichep":1000, "2012dev":0}[dataset]
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
@@ -45,7 +45,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
     #f.profile()
     #f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
     #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys, signalLineStyle = signalLineStyle)
-    out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
+    out = f.bestFit(drawMc = False, drawComponents = True, errorsFromToys = nToys)
     #f.qcdPlot()
     #f.debug()
     #f.cppDrive(tool = "")
@@ -63,7 +63,7 @@ else :
     for key in ["chi2ProbSimple", "chi2Prob", "lMax"] :
         hMap[key] = r.TH1D("pValueMap_%s"%key, ";category;p-value", *bins)
 
-    for iSel,sel in enumerate(selections) :
+    for iSel,sel in enumerate(selections[:1]) :
         args = {"whiteList":[sel.name], "allCategories":sorted([x.name for x in selections])}
         args.update(kargs)
         dct = go(**args)
