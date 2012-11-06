@@ -838,7 +838,7 @@ class foo(object) :
         for item in ["smOnly", "note"] :
             args[item] = getattr(self, item)()
 
-        for item in ["wspace", "signalExampleToStack"] :
+        for item in ["wspace", "signalExampleToStack", "signalToTest"] :
             args[item] = getattr(self, item)
 
         for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
