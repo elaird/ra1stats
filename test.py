@@ -27,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                       )
 
     out = None
-    nToys = 0 if (ignoreHad and not ensemble) else {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
+    nToys = {"2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
@@ -44,7 +44,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
     #
     #f.profile()
     #f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
-    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys, signalLineStyle = signalLineStyle)
+    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
     out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #f.debug()
