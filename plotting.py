@@ -358,8 +358,10 @@ class validationPlotter(object) :
         utils.getCommandOutput("mkdir %s"%self.plotsDir)
 
         if not self.smOnly :
-            mlF = "[ML #sigma/#sigma^{nom} = %3.1e #pm %3.1e]"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError())
-            self.signalDesc = "#lower[0.35]{#splitline{%s}{%s}}"%(self.signalToTest.label.replace("xs","#sigma^{nom}"), mlF)
+            iXs = self.signalToTest.label.find("(xs =")
+            xs = self.signalToTest.label[6+iXs:-1]
+            mlF = "[#sigma_{ML} = (%3.1e #pm %3.1e) #times %s]"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), xs)
+            self.signalDesc = "#lower[0.35]{#splitline{%s}{%s}}"%(self.signalToTest.label[:iXs], mlF)
             self.signalDesc2 = ""
 
         self.width1 = 2
