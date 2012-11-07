@@ -175,11 +175,12 @@ def spline(points = [], title = "") :
 
 def exclusions(histos = {}, switches = {}, graphBlackLists = None,
         printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
-        pruneYMin = False, graphAdditionalPoints=None) :
+        pruneYMin = False, graphAdditionalPoints=None, upperLimitName = "UpperLimit") :
     graphs = []
 
+    isCLs = upperLimitName=="UpperLimit"
     specs = []
-    if switches["xsVariation"]=="default" :
+    if switches["xsVariation"]=="default" and isCLs :
         specs += [
             {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
              "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
@@ -192,17 +193,17 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
             ]
 
     specs += [
-        {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+        {"name":upperLimitName,                    "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
          "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
         ]
 
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+            {"name":upperLimitName,                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
              "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
 
-            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+            {"name":upperLimitName,                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
             ]
     elif curves :
@@ -318,7 +319,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         graphs = exclusions(histos = histos, writeDir = g, switches = s,
                 graphBlackLists = s["graphBlackLists"], interBin = interBin,
                 printXs = printXs, pruneYMin = pruneYMin, debug = debug,
-                graphAdditionalPoints = s["graphAdditionalPoints"])
+                graphAdditionalPoints = s["graphAdditionalPoints"], upperLimitName = name)
     except:
         print "ERROR: creation of exclusions has failed."
         sys.excepthook(*sys.exc_info())
