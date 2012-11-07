@@ -234,7 +234,7 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
         writeDir.Close()
     return graphs
 
-def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
+def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False, upperLimitName = "UpperLimit") :
     assert len(switches["CL"])==1
     cl = switches["CL"][0]
     model = switches["signalModel"]
@@ -242,7 +242,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     f = r.TFile(fileName)
     histos = {}
 
-    for name,pretty in [("UpperLimit", "upper limit"),
+    for name,pretty in [(upperLimitName, "upper limit"),
                         ("ExpectedUpperLimit", "expected upper limit"),
                         ("ExpectedUpperLimit_-1_Sigma", "title"),
                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
@@ -295,8 +295,8 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     inFile = pickling.mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFileEps  = inFile.replace(".root", "_xsLimit.eps")
-    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY)
-
+    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY,
+                                    upperLimitName = name)
     #output a root file
     g = r.TFile(outFileRoot, "RECREATE")
     for h in histos.values() :
