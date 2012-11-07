@@ -696,7 +696,7 @@ class foo(object) :
         return name if sum(k)!=1 else selections[k.index(True)].name
 
     def note(self) :
-        return note(likelihoodSpec = self.likelihoodSpec)
+        return note(likelihoodSpec = self.likelihoodSpec)+("_signal" if not self.smOnly() else "")
 
     def debug(self) :
         self.wspace.Print("v")
