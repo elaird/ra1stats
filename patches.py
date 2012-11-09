@@ -187,6 +187,9 @@ def graphBlackLists() :
     for key in keys :
         out[key] = collections.defaultdict(list)
 
+    #T1
+    out["ExpectedUpperLimit_-1_Sigma"].update({"T1": [(1150,425), (1100,300), (1100,350), (1100,375)]})
+
     #T1bbbb
     out["ExpectedUpperLimit_+1_Sigma"].update({"T1bbbb": [(1225,500), (1200,150)]})
 
