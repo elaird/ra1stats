@@ -7,11 +7,11 @@ class selection(object) :
 
     def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
                  bJets = "", jets = "", fZinvIni = 0.5, fZinvRange = (0.0, 1.0),
-                 AQcdIni = 1.0e-2, AQcdMax = 100.0,
+                 AQcdIni = 1.0e-2, AQcdMax = 100.0, yAxisLogMinMax = (0.3, None),
                  zeroQcd = False, muonForFullEwk = False,
                  universalSystematics = False, universalKQcd = False) :
         for item in ["name", "note", "samplesAndSignalEff", "data",
-                     "bJets", "jets", "fZinvIni", "fZinvRange",
+                     "bJets", "jets", "fZinvIni", "fZinvRange", "yAxisLogMinMax",
                      "AQcdIni", "AQcdMax", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
@@ -108,6 +108,13 @@ class spec(object) :
                 if b=="ge4" and j!="ge4" : continue
                 if b=="3"   and j!="ge4" : continue
 
+                yAxisLogMinMax = {"0"  :(0.3, None),
+                                  "1"  :(0.3, None),
+                                  "2"  :(0.3, None),
+                                  "3"  :(0.3, None),
+                                  "ge4":(0.1, None),
+                                  }[b]
+
                 fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.57, "ge4j":0.40},
                             "1b"  : {"ge2j":0.40, "le3j":0.40, "ge4j":0.20},
                             "2b"  : {"ge2j":0.10, "le3j":0.10, "ge4j":0.10},
@@ -141,6 +148,7 @@ class spec(object) :
                                     jets = "%sj"%j,
                                     fZinvIni = fZinvIni,
                                     AQcdIni = 0.0,
+                                    yAxisLogMinMax = yAxisLogMinMax,
                                     )
                     lst.append(sel)
         self.add(lst)
