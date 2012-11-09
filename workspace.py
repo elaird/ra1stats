@@ -841,7 +841,8 @@ class foo(object) :
         for item in ["wspace", "signalExampleToStack", "signalToTest"] :
             args[item] = getattr(self, item)
 
-        for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data",
+                           "muonForFullEwk":"muonForFullEwk", "yAxisLogMinMax":"yAxisLogMinMax"}.iteritems() :
             args[arg] = getattr(selection, member)
 
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
