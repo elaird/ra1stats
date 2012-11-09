@@ -358,8 +358,11 @@ class validationPlotter(object) :
         utils.getCommandOutput("mkdir %s"%self.plotsDir)
 
         if not self.smOnly :
-            self.signalDesc = "signal"
-            self.signalDesc2 = "xs/xs^{nom} = %4.2e #pm %4.2e"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError())
+            iXs = self.signalToTest.label.find("(xs =")
+            xs = self.signalToTest.label[6+iXs:-1]
+            mlF = "[#sigma_{ML} = (%3.1e #pm %3.1e) #times %s]"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), xs)
+            self.signalDesc = "#lower[0.35]{#splitline{%s}{%s}}"%(self.signalToTest.label[:iXs], mlF)
+            self.signalDesc2 = ""
 
         self.width1 = 2
         self.width2 = 3
@@ -368,8 +371,8 @@ class validationPlotter(object) :
         if self.errorsFromToys :
             self.smDesc += " #pm Expected Unc."
         self.bandInLegend = True
-        self.sm = r.kAzure+6 if not self.ignoreHad else r.kSpring
-        self.smError = r.kAzure if not self.ignoreHad else r.kGreen-2
+        self.sm = r.kAzure if not self.ignoreHad else r.kSpring
+        self.smError = r.kAzure+6 if not self.ignoreHad else r.kGreen-2
         self.smBandStyle = 1001
         self.sig = r.kPink+7
         self.ewk = r.kBlue+1
@@ -533,16 +536,16 @@ class validationPlotter(object) :
         if "had" not in self.lumi : return
 
         if not self.muonForFullEwk :
-            self.plot(note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, yLabel = "",
+            self.plot(note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), yAxisMinMax = (0.0,3.0), yLabel = "",
                       otherVars = [ {"var":"ttw", "type":"function", "dens":["mcTtw"], "denTypes":[None], "desc":"ML ttW / MC ttW",
                                      "stack":None, "color":r.kGreen, "goptions": "hist"} ])
 
-            self.plot(note = "Zinv scale factor (result of fit)", legend0 = (0.5, 0.8), maximum = 3.0, yLabel = "",
+            self.plot(note = "Zinv scale factor (result of fit)", legend0 = (0.5, 0.8), yAxisMinMax = (0.0,3.0), yLabel = "",
                       otherVars = [ {"var":"zInv", "type":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv",
                                      "stack":None, "color":r.kRed, "goptions": "hist"}])
 
             self.plot(note = "fraction of EWK background which is Zinv (result of fit)" if not self.printPages else "",
-                      fileName = ["fZinv"], legend0 = (0.2, 0.8), legend1 = (0.55, 0.85), minimum = 0.0, maximum = 1.0, yLabel = "",
+                      fileName = ["fZinv"], legend0 = (0.2, 0.8), legend1 = (0.55, 0.85), yAxisMinMax = (0.0,1.0), yLabel = "",
                       otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z#rightarrow#nu#bar{#nu} / EWK", "stack":None}])
         else :
             self.plot(note = "ewk scale factor (result of fit)", legend0 = (0.5, 0.8), yLabel = "",
@@ -551,17 +554,17 @@ class validationPlotter(object) :
 
     def mcFactorPlots(self) :
         if "muon" in self.lumi :
-            self.plot(note = "muon translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 2.0,
+            self.plot(note = "muon translation factor (from MC)", legend0 = (0.5, 0.8),
                       otherVars = [{"var":"rMuon", "type":"var", "color":r.kBlue, "style":1, "desc":"MC muon / MC %s"%("ewk" if self.muonForFullEwk else "ttW"), "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["muon"])
         if self.muonForFullEwk : return
         if "phot" in self.lumi :
-            self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 4.0,
+            self.plot(note = "photon translation factor (from MC)", legend0 = (0.5, 0.8),
                       otherVars = [{"var":"rPhot", "type":"var", "color":r.kBlue, "style":1, "desc":"MC #gamma / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["phot"])
 
         if "mumu" in self.lumi :
-            self.plot(note = "mumu translation factor (from MC)", legend0 = (0.5, 0.8), #maximum = 0.5,
+            self.plot(note = "mumu translation factor (from MC)", legend0 = (0.5, 0.8),
                       otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
 
@@ -569,8 +572,9 @@ class validationPlotter(object) :
         if "had" not in self.lumi : return
 
         specs = [
-            {"var":"hadB",  "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else "SM",
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total", "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle,
+            {"var":"hadB",  "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else self.smDesc,
+             "color":self.sm, "style":1, "width":self.width2, "stack":"total",
+             "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle,
              "dens":["nHadBulk"], "denTypes":["var"]},
             ]
         if self.drawComponents :
@@ -639,15 +643,15 @@ class validationPlotter(object) :
         if self.label!=self.systematicsLabel : return
         self.plot(otherVars = [{"var":"rhoPhotZ", "type":"var", "desc":"#rho_{#gammaZ}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                  maximum = 2.0, yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
+                  yAxisMinMax = (0.0,2.0), yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
 
         self.plot(otherVars = [{"var":"rhoMuonW", "type":"var", "desc":"#rho_{#muW}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                  maximum = 2.0, yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
+                  yAxisMinMax = (0.0,2.0), yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
 
         self.plot(otherVars = [{"var":"rhoMumuZ", "type":"var", "desc":"#rho_{#mu#muZ}", "suppress":["min","max"], "color":self.ewk,
                                 "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                  maximum = 2.0, yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
+                  yAxisMinMax = (0.0,2.0), yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
 
     def printPars(self) :
         def ini(x, y) :
@@ -1079,9 +1083,9 @@ class validationPlotter(object) :
         return stacks,legEntries
 
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
-             selNoteCoords = (0.13, 0.85),
-             minimum = 0.0, maximum = None, customMaxFactor = (1.1, 2.0), logY = False, stampParams = False,
-             obs = {"var":"", "desc":""}, otherVars = [], yLabel = "Events / bin", scale = 1.0, ratioDenom = "" ) :
+             selNoteCoords = (0.13, 0.85), yAxisMinMax = (0.0, None), customMaxFactor = (1.1, 2.0),
+             logY = False, stampParams = False, obs = {"var":"", "desc":""}, otherVars = [],
+             yLabel = "Events / bin", scale = 1.0, ratioDenom = "" ) :
 
         ## assert [CONDITION], would work here, but this seems easier to read
         #if ( self.drawRatios and (None in ratioVars) ) or ( len(ratioVars) != 2 ) :
@@ -1108,9 +1112,10 @@ class validationPlotter(object) :
         obsHisto.SetStats(False)
         obsHisto.Draw(inDict(obs, "goptions", "p"))
 
+        minimum,maximum = self.yAxisLogMinMax if logY else yAxisMinMax
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
-        if logY : obsHisto.SetMinimum(0.3)
+
         if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], inDict(obs, "legSpec", "lpe"))
         stuff += [obs]
 
@@ -1131,7 +1136,8 @@ class validationPlotter(object) :
         for key,stack in stackDict.iteritems() :
             stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = False)
 
-        obsHisto.Draw("psame") #redraw data
+        obsHisto.Draw("sameaxis") #redraw axis
+        obsHisto.Draw("psame") #redraw data points
 
         for item in reversed(legEntries) if reverseLegend else legEntries :
             leg.AddEntry(*item)

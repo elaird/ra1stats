@@ -9,14 +9,17 @@ import utils
 
 model = 'T2tt'
 hSpec = histoSpec(model)
+smooth = False
+gopts = 'l'
 
 options = {
     'refProcess': hSpec['histo'],
     'refXsFile': hSpec['file'],
     'refName': '#tilde{t} #tilde{t}',
-    'limitFile': '/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
-                 'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
-                 '0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
+    'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_asymptotic_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
+    #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
+    #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
+    #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
     'processName': 'pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t '
         '+ LSP; m(#tilde{g})>>m(#tilde{t})',
     'refYRange': (50.,50.),
@@ -27,15 +30,15 @@ options = {
 plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} (GeV)' }
 
 
-def drawStamp(canvas, processName=None):
+def drawStamp(canvas, processName=None, lspMass = None):
     canvas.cd()
     tl = r.TLatex()
     tl.SetNDC()
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
     #tl.DrawLatex(0.16,0.84,'CMS')
-    tl.DrawLatex(0.42,0.49,'m_{LSP} = 50 GeV')
-    tl.DrawLatex(0.42,0.603,'CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV')
+    tl.DrawLatex(0.42,0.49,'m_{LSP} = %d GeV'%int(lspMass))
+    tl.DrawLatex(0.42,0.603,'CMS, L = 11 fb^{-1}, #sqrt{s} = 8 TeV')
     tl.SetTextSize(0.07)
     #tl.DrawLatex(0.20,0.75,'#alpha_{T}')
     if processName is not None:
@@ -70,16 +73,16 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'label': 'Observed Limit (95% C.L.)',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
-            'opts': 'c',
-            'Smooth': True,
+            'opts': gopts,
+            'Smooth': smooth,
             },
         'ExpectedUpperLimit': {
             'label': 'Median Expected Limit #pm 1#sigma exp.',
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'LineStyle': 9,
-            'opts': 'c',
-            'Smooth': True,
+            'opts': gopts,
+            'Smooth': smooth,
             # for legend
             'FillStyle': 3001,
             'FillColor': r.kBlue-10,
@@ -90,16 +93,16 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'FillColor': r.kBlue-10,
-            'opts': 'c',
-            'Smooth': True,
+            'opts': gopts,
+            'Smooth': smooth,
             },
         'ExpectedUpperLimit_-1_Sigma': {
             'label': 'Expected Upper Limit (-1#sigma)',
             'LineColor': r.kOrange+7,
             'LineWidth': 2,
             'FillColor': 10,
-            'opts': 'c',
-            'Smooth': True,
+            'opts': gopts,
+            'Smooth': smooth,
             'nSmooth': 5,
             },
         }
@@ -209,7 +212,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         plotOpts.update(plotOptOverrides)
 
     refHisto = getReferenceXsHisto(refProcess, refName, refXsFile)
-    exclusionHistos = getExclusionHistos(limitFile)
+    exclusionHistos = getExclusionHistos(limitFile, yMinMax = refYRange)
 
     canvas = r.TCanvas('c1','c1',700,600)
     utils.divideCanvas(canvas)
@@ -258,7 +261,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
             h2.SetLineWidth(1)
             h2.Draw('lsame')
     leg.Draw()
-    tl = drawStamp(canvas,processName)
+    tl = drawStamp(canvas,processName, lspMass = refYRange[0])
     pad.RedrawAxis()
     pad.SetLogy()
     pad.SetTickx()
@@ -276,6 +279,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
                                 #xMax=plotOpts['xMax'])
 
+    epsFile = epsFile.replace(".eps","_%d.eps"%int(refYRange[0]))
     print "Saving to {file}".format(file=epsFile)
     canvas.Print(epsFile)
 

@@ -175,11 +175,12 @@ def spline(points = [], title = "") :
 
 def exclusions(histos = {}, switches = {}, graphBlackLists = None,
         printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
-        pruneYMin = False, graphAdditionalPoints=None) :
+        pruneYMin = False, graphAdditionalPoints=None, upperLimitName = "UpperLimit") :
     graphs = []
 
+    isCLs = upperLimitName=="UpperLimit"
     specs = []
-    if switches["xsVariation"]=="default" :
+    if switches["xsVariation"]=="default" and isCLs :
         specs += [
             {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
              "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
@@ -192,17 +193,17 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
             ]
 
     specs += [
-        {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+        {"name":upperLimitName,                    "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
          "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
         ]
 
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
+            {"name":upperLimitName,                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
              "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
 
-            {"name":"UpperLimit",                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
+            {"name":upperLimitName,                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
              "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
             ]
     elif curves :
@@ -234,7 +235,7 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
         writeDir.Close()
     return graphs
 
-def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False) :
+def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = False, shiftY = False, upperLimitName = "UpperLimit") :
     assert len(switches["CL"])==1
     cl = switches["CL"][0]
     model = switches["signalModel"]
@@ -242,7 +243,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
     f = r.TFile(fileName)
     histos = {}
 
-    for name,pretty in [("UpperLimit", "upper limit"),
+    for name,pretty in [(upperLimitName, "upper limit"),
                         ("ExpectedUpperLimit", "expected upper limit"),
                         ("ExpectedUpperLimit_-1_Sigma", "title"),
                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
@@ -295,8 +296,8 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     inFile = pickling.mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFileEps  = inFile.replace(".root", "_xsLimit.eps")
-    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY)
-
+    histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY,
+                                    upperLimitName = name)
     #output a root file
     g = r.TFile(outFileRoot, "RECREATE")
     for h in histos.values() :
@@ -318,7 +319,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         graphs = exclusions(histos = histos, writeDir = g, switches = s,
                 graphBlackLists = s["graphBlackLists"], interBin = interBin,
                 printXs = printXs, pruneYMin = pruneYMin, debug = debug,
-                graphAdditionalPoints = s["graphAdditionalPoints"])
+                graphAdditionalPoints = s["graphAdditionalPoints"], upperLimitName = name)
     except:
         print "ERROR: creation of exclusions has failed."
         sys.excepthook(*sys.exc_info())
@@ -770,9 +771,10 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
 
 def makePlots(square = False) :
     multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], square = square)
-    multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
-    multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
-    multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
+    #multiPlots(tag = "nEvents", whiteListMatch = ["nEvents"], square = square)
+    #multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
+    #multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
+    #multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
 
     s = conf.switches()
     if s["isSms"] and s["method"]=="CLs" :

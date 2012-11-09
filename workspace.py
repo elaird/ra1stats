@@ -696,7 +696,7 @@ class foo(object) :
         return name if sum(k)!=1 else selections[k.index(True)].name
 
     def note(self) :
-        return note(likelihoodSpec = self.likelihoodSpec)
+        return note(likelihoodSpec = self.likelihoodSpec)+("_signal" if not self.smOnly() else "")
 
     def debug(self) :
         self.wspace.Print("v")
@@ -838,10 +838,11 @@ class foo(object) :
         for item in ["smOnly", "note"] :
             args[item] = getattr(self, item)()
 
-        for item in ["wspace", "signalExampleToStack"] :
+        for item in ["wspace", "signalExampleToStack", "signalToTest"] :
             args[item] = getattr(self, item)
 
-        for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data",
+                           "muonForFullEwk":"muonForFullEwk", "yAxisLogMinMax":"yAxisLogMinMax"}.iteritems() :
             args[arg] = getattr(selection, member)
 
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
