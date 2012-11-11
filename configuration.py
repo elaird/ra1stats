@@ -46,18 +46,16 @@ def signal() :
               "T1tttt_ichep", "T2bw"]
 
     variations = ["default", "up", "down"]
-    return {"overwriteInput": patches.overwriteInput(),
-            "overwriteOutput": patches.overwriteOutput(),
-            "graphBlackLists": patches.graphBlackLists(),
-            "graphAdditionalPoints": patches.graphAdditionalPoints(),
-            "cutFunc": patches.cutFunc(),
-            "nEventsIn": patches.nEventsIn(),
-            "curves": patches.curves(),
-            "drawBenchmarkPoints": True,
-            "effRatioPlots": False,
-            "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["T1"]
-            }
+    out = {}
+    for item in ["overwriteInput", "overwriteOutput",
+                 "graphBlackLists", "graphReplacePoints", "graphAdditionalPoints",
+                 "cutFunc", "nEventsIn", "curves"] :
+        out[item] = getattr(patches, item)()
+    out["drawBenchmarkPoints"] = True
+    out["effRatioPlots"] = False
+    out["xsVariation"] = dict(zip(variations, variations))["default"]
+    out["signalModel"] = dict(zip(models, models))["T1"]
+    return out
 
 def likelihoodSpec() :
     dct = {"T1"          : {"whiteList":["0b_ge4j"]},
