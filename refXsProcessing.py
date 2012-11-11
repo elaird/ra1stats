@@ -188,7 +188,7 @@ def drawGraphs(graphs, legendTitle="") :
         g = d["graph"]
         if d['label']:
             legend.AddEntry(g, d["label"], "l")
-        if g.GetN() : g.Draw("lsame")
+        if g.GetN() : g.Draw("csame")
     legend.Draw("same")
     return legend,graphs
 
