@@ -493,7 +493,9 @@ class validationPlotter(object) :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = ["muon"]+(["logy"] if logY else [])
             #self.plot(fileName = fileName, legend0 = (0.45 - self.legendXSub, 0.7), legend1 = (0.88 - self.legendXSub, 0.88),
-            self.plot(fileName = fileName, legend0 = (0.12, 0.18), legend1 = (0.6, 0.4),
+            legend0 = (0.12, 0.18) if "ge4b" not in self.note else (0.12, 0.73)
+            legend1 = (0.6, 0.4) if "ge4b" not in self.note else (0.6, 0.88)
+            self.plot(fileName = fileName, legend0 = legend0, legend1 = legend1,
                       obs = {"var":"nMuon", #"desc": obsString(self.obsLabel, "muon sample", self.lumi["muon"])},
                              "desc": "Data (#mu + jets sample, %s)"%self.selNote},
                       otherVars = vars, logY = logY, ratioDenom = "muonB")
