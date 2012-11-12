@@ -379,6 +379,21 @@ class validationPlotter(object) :
         self.qcd = r.kGreen+3
         self.qcdError = r.kGreen-3
 
+    def makeLegends(self) :
+        x0 = 0.35; x1 = 0.88
+        y0 = 0.65; y1 = 0.88
+        dx = x1 - x0
+        dy = y1 - y0
+        f = 3.75/5.0
+        self.hadLegend  = {"legend0": (x0,y0     ), "legend1": (x1, y1)}
+        self.photLegend = {"legend0": (x0,y1-dy*f), "legend1": (x1, y1)}
+        self.mumuLegend = self.photLegend
+        y = 1.0
+        if self.signalExampleToStack and self.signalExampleToStack.keyPresent("effMuon") :
+            f = 1.0
+            y = 1.08
+        self.muonLegend = {"legend0": (1.0-x1, y-y0), "legend1": (1.0-x1+dx, y-y0-dy*f)} #top left to bottom right
+
     def go(self) :
         self.canvas = utils.numberedCanvas()
         utils.divideCanvas( self.canvas, self.drawRatios )
@@ -386,6 +401,8 @@ class validationPlotter(object) :
         if self.smOnly : fields.append("smOnly")
         self.psFileName = "_".join(fields)+".pdf"
         self.canvas.Print(self.psFileName+"[")
+
+        self.makeLegends()
 
         self.simplePlots()
         self.hadPlots()
@@ -461,8 +478,8 @@ class validationPlotter(object) :
             obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
                    "desc": "Data (hadronic sample, %s)"%self.selNote}
 
-            self.plot(fileName = fileName, legend0 = (0.4, 0.65), legend1 = (0.88, 0.88),
-                      obs = obs, otherVars = vars, logY = logY, stampParams = True, ratioDenom = "hadB" )
+            self.plot(fileName = fileName, obs = obs, otherVars = vars, logY = logY, stampParams = True,
+                      ratioDenom = "hadB", **self.hadLegend)
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
@@ -495,12 +512,11 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = ["muon"]+(["logy"] if logY else [])
-            legend0 = (0.12, 0.18) if "ge4b" not in self.note else (0.12, 0.73)
-            legend1 = (0.6, 0.4) if "ge4b" not in self.note else (0.6, 0.88)
-            self.plot(fileName = fileName, legend0 = legend0, legend1 = legend1,
+            legend = self.muonLegend if "ge4b" not in self.note else self.photLegend
+            self.plot(fileName = fileName,
                       obs = {"var":"nMuon", #"desc": obsString(self.obsLabel, "muon sample", self.lumi["muon"])},
                              "desc": "Data (#mu + jets sample, %s)"%self.selNote},
-                      otherVars = vars, logY = logY, ratioDenom = "muonB")
+                      otherVars = vars, logY = logY, ratioDenom = "muonB", **legend)
 
     def photPlots(self) :
         if "phot" not in self.lumi : return
@@ -508,7 +524,7 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = ["photon"]+(["logy"] if logY else [])
-            self.plot(fileName = fileName, legend0 = (0.44, 0.73), legend1 = (0.86, 0.88),
+            self.plot(fileName = fileName,
                       reverseLegend = True, logY = logY, ratioDenom = "photExp",
                       obs = {"var":"nPhot", #"desc": obsString(self.obsLabel, "photon sample", self.lumi["phot"])},
                              "desc": "Data (#gamma + jets sample, %s)"%self.selNote},
@@ -517,7 +533,7 @@ class validationPlotter(object) :
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
                 {"var":"photExp", "type":"function", "color":self.sm,  "style":1, "width":self.width2,
                  "desc":self.smDesc, "stack":None, "errorBand":self.smError, "bandStyle":self.smBandStyle},
-                ])
+                ], **self.photLegend)
 
     def mumuPlots(self) :
         if "mumu" not in self.lumi : return
@@ -525,7 +541,7 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
             fileName = ["mumu"]+(["logy"] if logY else [])
-            self.plot(fileName = fileName, legend0 = (0.45, 0.72), legend1 = (0.87, 0.88),
+            self.plot(fileName = fileName,
                       reverseLegend = True,
                       obs = {"var":"nMumu", #"desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])},
                              "desc": "Data (#mu#mu + jets sample, %s)"%self.selNote},
@@ -534,7 +550,7 @@ class validationPlotter(object) :
                  "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
                 {"var":"mumuExp", "type":"function", "color":self.sm,   "style":1, "width":self.width2, "desc":self.smDesc, "stack":None,
                  "errorBand":self.smError, "bandStyle":self.smBandStyle},
-                ])
+                ], **self.mumuLegend)
 
     def ewkPlots(self) :
         if "had" not in self.lumi : return
