@@ -76,7 +76,8 @@ def whiteListOfPoints() : #GeV
     #out += [( 550.0,  20.0)]  #T2tt
     #out += [( 410.0,  20.0)]  #T2tt
     #out += [( 420.0,  20.0)]  #T2tt
-    #out += [( 550.0,  100.0)]  #T2bb
+    #out += [( 550.0, 100.0)]  #T2bb
+    #out += [( 700.0, 200.0)]  #T2
     return out
 
 def other() :
