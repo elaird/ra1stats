@@ -210,15 +210,15 @@ def processStamp(key = "") :
         'xpos': 0.41,
         },
         'T1'     : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q#bar{q} + LSP; m(#tilde{q})>>m(#tilde{g})",
         'xpos': 0.4325,
         },
         'T1bbbb' : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b#bar{b} + LSP; m(#tilde{b})>>m(#tilde{g})",
         'xpos': 0.43,
         },
         'T1tttt' : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t#bar{t} + LSP; m(#tilde{t})>>m(#tilde{g})",
         'xpos': 0.425,
         },
         }
