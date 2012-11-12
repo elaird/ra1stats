@@ -12,7 +12,10 @@ simple.insert("test", {
         "effSimple": (1.0, ),
         })
 
-t1_1 = common.signal(xs = 0.0243547, effUncRel = 0.14, label = "T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)")
+t1_1 = common.signal(xs = 0.0243547, effUncRel = 0.14,
+                     label = ["SM + T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)",
+                              "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T1")["text"]),
+                                                                  "(m_{#tilde{g}}= 1000 GeV, m_{#tilde{#chi}^{0}} = 400 GeV)")][1])
 t1_1.insert("0b_ge4j", {"effHad":[0.000000, 0.000200, 0.000800, 0.005200, 0.013100, 0.024600, 0.032000, 0.065700],})
 t1_1.insert("0b_le3j", {"effHad":[0.000600, 0.000800, 0.002100, 0.004000, 0.007800, 0.010700, 0.007300, 0.008000],})
 t1_1.insert("1b_ge4j", {"effHad":[0.000100, 0.000000, 0.000000, 0.001100, 0.001100, 0.002200, 0.003200, 0.006000],})
@@ -26,8 +29,7 @@ t1_1.insert("ge4b_ge4j",{"effHad":[0.000000, 0.000000, 0.000000],})
 t1bbbb_1 = common.signal(xs = 0.0101744, effUncRel = 0.160,
                          label = ["SM + T1bbbb m_{gl} = 1.1 TeV; m_{LSP} = 0.5 TeV (xs = 10 fb)",
                                   "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T1bbbb")["text"]),
-                                                                     "(m_{#tilde{g}}= 1100 GeV, m_{#tilde{#chi}^{0}} = 500 GeV)")
-                                  ][1])
+                                                                     "(m_{#tilde{g}}= 1100 GeV, m_{#tilde{#chi}^{0}} = 500 GeV)")][1])
 t1bbbb_1.insert("0b_ge4j", {"effHad" :[0.000000, 0.000000, 0.000000, 0.000200, 0.000300, 0.001000, 0.000400, 0.001400],})
 t1bbbb_1.insert("0b_le3j", {"effHad" :[0.000000, 0.000100, 0.000300, 0.000300, 0.000800, 0.000600, 0.000200, 0.000500],})
 t1bbbb_1.insert("1b_ge4j", {"effHad" :[0.000000, 0.000000, 0.000500, 0.000600, 0.002700, 0.003700, 0.004200, 0.010000],})
