@@ -47,37 +47,7 @@ def printOnce(canvas, fileName) :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-
-        # should this go somewhere else (refXsProcessing?)
-        # i.e. modelSpec = { 'T2': { 'histo': 'squark', 'factor': 1.0, 'file':
-        # seven, 'process': 'pp ....' } }
-        process_stamps =  {
-            'T2'     : {
-                'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
-                'xpos': 0.4250,
-                },
-            'T2bb'   : {
-                'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
-                'xpos': 0.425,
-                },
-            'T2tt'   : {
-                'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
-                'xpos': 0.41,
-                },
-            'T1'     : {
-                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
-                'xpos': 0.4325,
-                },
-            'T1bbbb' : {
-                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
-                'xpos': 0.43,
-                },
-            'T1tttt' : {
-                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
-                'xpos': 0.425,
-                },
-            }
-        current_stamp = process_stamps.get(conf.switches()['signalModel'],None)
+        current_stamp = conf.processStamp(conf.switches()['signalModel'])
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
