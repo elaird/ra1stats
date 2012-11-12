@@ -196,7 +196,7 @@ def ps2pdf(psFileName, removePs = True, sameDir = False) :
     os.system(cmd)
     if removePs : os.remove(psFileName)
 #####################################
-def epsToPdf(fileName, tight = True, alsoPng = False) :
+def epsToPdf(fileName, tight = True, alsoPng = True) :
     pdfFileName = fileName.replace(".eps", ".pdf")
     if not tight : #make pdf
         os.system("epstopdf "+fileName)
