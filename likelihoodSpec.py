@@ -111,8 +111,8 @@ class spec(object) :
                 yAxisLogMinMax = {"0"  :(0.3, None),
                                   "1"  :(0.3, None),
                                   "2"  :(0.3, None) if j!="le3" else (0.05, None),
-                                  "3"  :(0.3, None),
-                                  "ge4":(0.1, None),
+                                  "3"  :(0.05, None),
+                                  "ge4":(0.1, 1.0e2),
                                   }[b]
 
                 fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.57, "ge4j":0.40},
