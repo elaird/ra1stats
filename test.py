@@ -3,12 +3,12 @@ import ROOT as r
 import common,workspace,likelihoodSpec,signals,plotting
 
 def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], ignoreHad = False) :
-    examples = {("0b_le3j",):{},
+    examples = {("0b_le3j",):signals.t2_1,
                 ("0b_ge4j",):signals.t1_1,
-                ("1b_le3j",):{},
-                ("1b_ge4j",):signals.t2tt_1,
-                ("2b_le3j",):{},
-                ("2b_ge4j",):signals.t2tt_1,
+                ("1b_le3j",):signals.t2bb,
+                ("1b_ge4j",):{},#signals.t2tt_1,
+                ("2b_le3j",):signals.t2bb,
+                ("2b_ge4j",):signals.t1bbbb_1,#signals.t2tt_1,
                 ("3b_le3j",):{},
                 ("3b_ge4j",):signals.t1bbbb_1,
                 ("ge4b_ge4j",):signals.t1bbbb_1,
