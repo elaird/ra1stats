@@ -192,36 +192,35 @@ def processes() :
     return ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
 
 def processStamp(key = "") :
+    chi = "#tilde{#chi}^{0}_{1}"
     dct = {
         ''     : {
         'text': "",
         'xpos': 0.4250,
         },
         'T2'     : {
-        'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
+        'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q %s; m(#tilde{g})>>m(#tilde{q})"%chi,
         'xpos': 0.4250,
         },
         'T2bb'   : {
-        'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
+        'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b %s; m(#tilde{g})>>m(#tilde{b})"%chi,
         'xpos': 0.425,
         },
         'T2tt'   : {
-        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
+        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t %s; m(#tilde{g})>>m(#tilde{t})"%chi,
         'xpos': 0.41,
         },
         'T1'     : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q#bar{q} + LSP; m(#tilde{q})>>m(#tilde{g})",
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q #bar{q} %s; m(#tilde{q})>>m(#tilde{g})"%chi,
         'xpos': 0.4325,
         },
         'T1bbbb' : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b#bar{b} + LSP; m(#tilde{b})>>m(#tilde{g})",
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b #bar{b} %s; m(#tilde{b})>>m(#tilde{g})"%chi,
         'xpos': 0.43,
         },
         'T1tttt' : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t#bar{t} + LSP; m(#tilde{t})>>m(#tilde{g})",
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t #bar{t} %s; m(#tilde{t})>>m(#tilde{g})"%chi,
         'xpos': 0.425,
         },
         }
-    out = dct.get(key, dct[""])
-    out["text"] = out["text"].replace(" + LSP","#tilde{#chi}^{0}_{1}")
-    return out
+    return dct.get(key, dct[""])
