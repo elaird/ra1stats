@@ -199,11 +199,11 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
     specs = []
     if switches["xsVariation"]=="default" and isCLs :
         specs += [
-            {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":1, "lineWidth":2, "label":"",
-             "color": r.kBlue,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
-            {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":1, "lineWidth":2, "label":"",
-             "color": r.kBlue,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
-            {"name":"ExpectedUpperLimit",          "lineStyle":1, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
+            {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
+            {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+            {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
              "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
             ]
 
@@ -295,10 +295,13 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
         d["histo"].SetTitle(d.get("simpleLabel"))
         d["histo"].Write()
         if drawGraphs :
-            d["graph"].SetMarkerColor(r.kBlack)
-            d["graph"].SetMarkerStyle(20)
-            d["graph"].SetMarkerSize(0.3*d["graph"].GetMarkerSize())
-            d["graph"].Draw("psame")
+            d["graphClone"] = d["graph"].Clone()
+            d["graphClone"].SetMarkerColor(r.kBlack)
+            d["graphClone"].SetMarkerStyle(20)
+            d["graphClone"].SetMarkerSize(0.3*d["graphClone"].GetMarkerSize())
+            d["graphClone"].SetLineColor(r.kYellow)
+            d["graphClone"].SetLineStyle(1)
+            d["graphClone"].Draw("cpsame")
         if d.get("curve") and d["curve"].GetNp() :
             d["curve"].SetMarkerStyle(20)
             d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
