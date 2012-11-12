@@ -311,12 +311,12 @@ def drawOne(hist = None, goptions = "", errorBand = False, bandFillStyle = 1001)
     noerrors.Draw("h"+goptions)
     return [errors, noerrors]
 
-def printOnePage(canvas, fileName, ext = ".eps", plotsDir = "plots", sameDir = True) :
+def printOnePage(canvas, fileName, ext = ".eps", plotsDir = "plots") :
     if "_logy" in fileName :
         fileName = fileName.replace("_logy","")+"_logy"
     fileName = "%s/%s%s"%(plotsDir, fileName, ext)
     super(utils.numberedCanvas, canvas).Print(fileName)
-    if ext==".eps" : utils.epsToPdf(fileName, sameDir = sameDir)
+    if ext==".eps" : utils.epsToPdf(fileName)
 
 def legSpec(goptions) :
     out = ""
