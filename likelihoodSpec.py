@@ -110,7 +110,7 @@ class spec(object) :
 
                 yAxisLogMinMax = {"0"  :(0.3, None),
                                   "1"  :(0.3, None),
-                                  "2"  :(0.3, None) if j!="le3" else (0.05, None),
+                                  "2"  :(0.3, 1.0e3) if j!="le3" else (0.05, None),
                                   "3"  :(0.05, None),
                                   "ge4":(0.1, 1.0e2),
                                   }[b]
