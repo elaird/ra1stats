@@ -424,7 +424,7 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Simple Sample%s"%(" (logY)" if logY else "")
             fileName = ["simple"]+(["logy"] if logY else [])
-            self.plot(fileName = fileName, legend0 = (0.48 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.85),
+            self.plot(fileName = fileName, legend0 = (0.48, 0.65), legend1 = (0.88, 0.85),
                       obs = {"var":"nSimple", "desc": obsString(self.obsLabel, "simple sample", self.lumi["simple"])},
                       otherVars = vars, logY = logY, stampParams = False)
 
@@ -461,7 +461,7 @@ class validationPlotter(object) :
             obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
                    "desc": "Data (hadronic sample, %s)"%self.selNote}
 
-            self.plot(fileName = fileName, legend0 = (0.4 - self.legendXSub, 0.65), legend1 = (0.88 - self.legendXSub, 0.88),
+            self.plot(fileName = fileName, legend0 = (0.4, 0.65), legend1 = (0.88, 0.88),
                       obs = obs, otherVars = vars, logY = logY, stampParams = True, ratioDenom = "hadB" )
 
     def hadDataMcPlots(self) :
@@ -495,7 +495,6 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Muon Control Sample%s"%(" (logY)" if logY else "")
             fileName = ["muon"]+(["logy"] if logY else [])
-            #self.plot(fileName = fileName, legend0 = (0.45 - self.legendXSub, 0.7), legend1 = (0.88 - self.legendXSub, 0.88),
             legend0 = (0.12, 0.18) if "ge4b" not in self.note else (0.12, 0.73)
             legend1 = (0.6, 0.4) if "ge4b" not in self.note else (0.6, 0.88)
             self.plot(fileName = fileName, legend0 = legend0, legend1 = legend1,
@@ -509,7 +508,7 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Photon Control Sample%s"%(" (logY)" if logY else "")
             fileName = ["photon"]+(["logy"] if logY else [])
-            self.plot(fileName = fileName, legend0 = (0.44 - self.legendXSub, 0.73), legend1 = (0.86 - self.legendXSub, 0.88),
+            self.plot(fileName = fileName, legend0 = (0.44, 0.73), legend1 = (0.86, 0.88),
                       reverseLegend = True, logY = logY, ratioDenom = "photExp",
                       obs = {"var":"nPhot", #"desc": obsString(self.obsLabel, "photon sample", self.lumi["phot"])},
                              "desc": "Data (#gamma + jets sample, %s)"%self.selNote},
@@ -526,7 +525,7 @@ class validationPlotter(object) :
         for logY in [False, True] :
             thisNote = "Mu-Mu Control Sample%s"%(" (logY)" if logY else "")
             fileName = ["mumu"]+(["logy"] if logY else [])
-            self.plot(fileName = fileName, legend0 = (0.45 - self.legendXSub, 0.72), legend1 = (0.87 - self.legendXSub, 0.88),
+            self.plot(fileName = fileName, legend0 = (0.45, 0.72), legend1 = (0.87, 0.88),
                       reverseLegend = True,
                       obs = {"var":"nMumu", #"desc": obsString(self.obsLabel, "mumu sample", self.lumi["mumu"])},
                              "desc": "Data (#mu#mu + jets sample, %s)"%self.selNote},
