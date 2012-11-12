@@ -69,6 +69,15 @@ t2tt_3.insert("1b_ge4j", {"effHad":[0.001800, 0.003240, 0.007760, 0.008220, 0.00
 t2tt_3.insert("2b_ge4j", {"effHad":[0.001220, 0.001740, 0.004380, 0.005180, 0.002720, 0.001220, 0.000340, 0.000220],
                           "effMuon":[0.000080, 0.000160, 0.000220, 0.000380, 0.000340, 0.000100, 0.000080, 0.000060],})
 
+
+t2bb = common.signal(xs = 0.0452067, effUncRel = 0.131,
+                     label = ["SM + T2bb m_{sb} = 550 GeV; m_{LSP} = 100 GeV (xs = 45 fb)",
+                              "#lower[0.25]{SM + (m_{#tilde{b}_{1}}= 550 GeV, m_{#tilde{#chi}^{0}_{1}} = 100 GeV)}",][1])
+t2bb.insert("1b_le3j", {"effHad":[0.006300, 0.007900, 0.024800, 0.021300, 0.013400, 0.003900, 0.001800, 0.000900],})
+t2bb.insert("2b_le3j", {"effHad":[0.005700, 0.008900, 0.023700, 0.025200, 0.011700, 0.005100, 0.001100, 0.000900],})
+
+
+## old points below here ##
 effUncRelOld = 0.13
 t2bb_2 = common.signal(xs = 0.0486, effUncRel = effUncRelOld,
                        label = ["#lower[0.35]{#splitline{SM + SUSY Model D}{(m_{sbottom} = 500 GeV, m_{LSP} = 150 GeV)}}",
