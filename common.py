@@ -9,6 +9,11 @@ class signal(dict) :
     def insert(self, key = "", dct = {}) :
         self[key] = dct
 
+    def keyPresent(self, key = "") :
+        for k,_ in self.iteritems() :
+            if k==key : return True
+        return False
+
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
     getattr(w, "import")(item)
