@@ -26,6 +26,12 @@ t1_1.insert("3b_ge4j", {"effHad":[0.000000, 0.000000, 0.000000, 0.000000, 0.0000
 t1_1.insert("3b_le3j", {"effHad":[0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000],})
 t1_1.insert("ge4b_ge4j",{"effHad":[0.000000, 0.000000, 0.000000],})
 
+t2_1 = common.signal(xs = 0.0799667, effUncRel = 0.134,
+                     label = ["SM + T1 m_{sq} = 700 GeV; m_{LSP} = 200 GeV (xs = 80 fb)",
+                              "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2")["text"]),
+                                                                  "(m_{#tilde{q}}= 700 GeV, m_{#tilde{#chi}^{0}} = 200 GeV)")][1])
+t2_1.insert("0b_le3j", {"effHad":[0.004800, 0.006300, 0.027900, 0.044500, 0.050100, 0.037000, 0.018900, 0.011600],})
+
 t1bbbb_1 = common.signal(xs = 0.0101744, effUncRel = 0.160,
                          label = ["SM + T1bbbb m_{gl} = 1.1 TeV; m_{LSP} = 0.5 TeV (xs = 10 fb)",
                                   "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T1bbbb")["text"]),
