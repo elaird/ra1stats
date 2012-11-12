@@ -5,7 +5,7 @@ def scaled(t, factor) :
     return tuple([factor*item for item in t])
 
 def pruned(s = "") :
-    return s.split(";")[0].replace("LSP","#tilde{#chi}^{0}")
+    return s.split(";")[0].replace("LSP","#tilde{#chi}^{0}_{1}")
 
 simple = common.signal(xs = 1.0, effUncRel = 0.0, label = "signal")
 simple.insert("test", {
@@ -15,7 +15,7 @@ simple.insert("test", {
 t1_1 = common.signal(xs = 0.0243547, effUncRel = 0.14,
                      label = ["SM + T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)",
                               "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T1")["text"]),
-                                                                  "(m_{#tilde{g}}= 1000 GeV, m_{#tilde{#chi}^{0}} = 400 GeV)")][1])
+                                                                  "(m_{#tilde{g}}= 1000 GeV, m_{#tilde{#chi}^{0}_{1}} = 400 GeV)")][1])
 t1_1.insert("0b_ge4j", {"effHad":[0.000000, 0.000200, 0.000800, 0.005200, 0.013100, 0.024600, 0.032000, 0.065700],})
 t1_1.insert("0b_le3j", {"effHad":[0.000600, 0.000800, 0.002100, 0.004000, 0.007800, 0.010700, 0.007300, 0.008000],})
 t1_1.insert("1b_ge4j", {"effHad":[0.000100, 0.000000, 0.000000, 0.001100, 0.001100, 0.002200, 0.003200, 0.006000],})
@@ -29,13 +29,13 @@ t1_1.insert("ge4b_ge4j",{"effHad":[0.000000, 0.000000, 0.000000],})
 t2_1 = common.signal(xs = 0.0799667, effUncRel = 0.134, lineColor = r.kRed+1,
                      label = ["SM + T1 m_{sq} = 700 GeV; m_{LSP} = 200 GeV (xs = 80 fb)",
                               "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2")["text"]),
-                                                                  "(m_{#tilde{q}}= 700 GeV, m_{#tilde{#chi}^{0}} = 200 GeV)")][1])
+                                                                  "(m_{#tilde{q}}= 700 GeV, m_{#tilde{#chi}^{0}_{1}} = 200 GeV)")][1])
 t2_1.insert("0b_le3j", {"effHad":[0.004800, 0.006300, 0.027900, 0.044500, 0.050100, 0.037000, 0.018900, 0.011600],})
 
 t1bbbb_1 = common.signal(xs = 0.0101744, effUncRel = 0.160, lineStyle = 5,
                          label = ["SM + T1bbbb m_{gl} = 1.1 TeV; m_{LSP} = 0.5 TeV (xs = 10 fb)",
                                   "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T1bbbb")["text"]),
-                                                                     "(m_{#tilde{g}}= 1100 GeV, m_{#tilde{#chi}^{0}} = 500 GeV)")][1])
+                                                                     "(m_{#tilde{g}}= 1100 GeV, m_{#tilde{#chi}^{0}_{1}} = 500 GeV)")][1])
 t1bbbb_1.insert("0b_ge4j", {"effHad" :[0.000000, 0.000000, 0.000000, 0.000200, 0.000300, 0.001000, 0.000400, 0.001400],})
 t1bbbb_1.insert("0b_le3j", {"effHad" :[0.000000, 0.000100, 0.000300, 0.000300, 0.000800, 0.000600, 0.000200, 0.000500],})
 t1bbbb_1.insert("1b_ge4j", {"effHad" :[0.000000, 0.000000, 0.000500, 0.000600, 0.002700, 0.003700, 0.004200, 0.010000],})
@@ -80,7 +80,7 @@ t2tt_3.insert("2b_ge4j", {"effHad":[0.001220, 0.001740, 0.004380, 0.005180, 0.00
 t2bb = common.signal(xs = 0.0452067, effUncRel = 0.131, lineColor = r.kRed+1, lineStyle = 7,
                      label = ["SM + T2bb m_{sb} = 550 GeV; m_{LSP} = 100 GeV (xs = 45 fb)",
                               "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2bb")["text"]),
-                                                                  "(m_{#tilde{b}}= 550 GeV, m_{#tilde{#chi}^{0}} = 100 GeV)")][1])
+                                                                  "(m_{#tilde{b}}= 550 GeV, m_{#tilde{#chi}^{0}_{1}} = 100 GeV)")][1])
 t2bb.insert("1b_le3j", {"effHad":[0.006300, 0.007900, 0.024800, 0.021300, 0.013400, 0.003900, 0.001800, 0.000900],})
 t2bb.insert("2b_le3j", {"effHad":[0.005700, 0.008900, 0.023700, 0.025200, 0.011700, 0.005100, 0.001100, 0.000900],})
 
