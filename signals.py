@@ -5,7 +5,7 @@ def scaled(t, factor) :
     return tuple([factor*item for item in t])
 
 def pruned(s = "") :
-    return s.split(";")[0].replace("LSP","#tilde{#chi}^{0}_{1}")
+    return s.split(";")[0]
 
 simple = common.signal(xs = 1.0, effUncRel = 0.0, label = "signal")
 simple.insert("test", {
