@@ -485,7 +485,7 @@ class validationPlotter(object) :
             ]
         if not self.smOnly :
             vars += [{"var":"muonS",   "type":"function", "color":self.sig, "style":1, "width":self.width1, "desc":self.signalDesc, "desc2":self.signalDesc2, "stack":"total"}]
-        elif self.signalExampleToStack :
+        elif self.signalExampleToStack and self.signalExampleToStack.keyPresent("effMuon") :
             vars += [{"example":self.signalExampleToStack, "box":"muon", "desc":self.signalExampleToStack.label,
                       "color":self.sig, "style":getattr(self,'signalLineStyle',1), "width":self.width1, "stack":"total"}]
 
