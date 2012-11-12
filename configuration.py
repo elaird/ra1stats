@@ -222,4 +222,6 @@ def processStamp(key = "") :
         'xpos': 0.425,
         },
         }
-    return dct.get(key, dct[""])
+    out = dct.get(key, dct[""])
+    out["text"] = out["text"].replace(" + LSP","#tilde{#chi}^{0}_{1}")
+    return out
