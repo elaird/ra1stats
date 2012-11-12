@@ -54,7 +54,7 @@ def signal() :
     out["drawBenchmarkPoints"] = True
     out["effRatioPlots"] = False
     out["xsVariation"] = dict(zip(variations, variations))["default"]
-    out["signalModel"] = dict(zip(models, models))["T1"]
+    out["signalModel"] = dict(zip(models, models))["T2bb"]
     return out
 
 def likelihoodSpec() :
@@ -76,6 +76,7 @@ def whiteListOfPoints() : #GeV
     #out += [( 550.0,  20.0)]  #T2tt
     #out += [( 410.0,  20.0)]  #T2tt
     #out += [( 420.0,  20.0)]  #T2tt
+    #out += [( 550.0,  100.0)]  #T2bb
     return out
 
 def other() :
@@ -188,3 +189,36 @@ def scanParameters() :
 
 def processes() :
     return ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
+
+def processStamp(key = "") :
+    dct = {
+        ''     : {
+        'text': "",
+        'xpos': 0.4250,
+        },
+        'T2'     : {
+        'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
+        'xpos': 0.4250,
+        },
+        'T2bb'   : {
+        'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
+        'xpos': 0.425,
+        },
+        'T2tt'   : {
+        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
+        'xpos': 0.41,
+        },
+        'T1'     : {
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
+        'xpos': 0.4325,
+        },
+        'T1bbbb' : {
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
+        'xpos': 0.43,
+        },
+        'T1tttt' : {
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
+        'xpos': 0.425,
+        },
+        }
+    return dct.get(key, dct[""])
