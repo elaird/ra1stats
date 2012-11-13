@@ -276,6 +276,8 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
             d["curve"].SetMarkerStyle(20)
             d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
             d["curve"].Draw("lpsame")
+        r.gPad.SetGridx()
+        r.gPad.SetGridy()
         c.Print(pdf)
     c.Print(pdf+"]")
     tfile.Close()
