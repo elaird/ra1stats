@@ -54,7 +54,7 @@ def signal() :
     out["drawBenchmarkPoints"] = True
     out["effRatioPlots"] = False
     out["xsVariation"] = dict(zip(variations, variations))["default"]
-    out["signalModel"] = dict(zip(models, models))["T2bb"]
+    out["signalModel"] = dict(zip(models, models))["T1tttt"]
     return out
 
 def likelihoodSpec() :
