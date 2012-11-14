@@ -47,37 +47,7 @@ def printOnce(canvas, fileName) :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-
-        # should this go somewhere else (refXsProcessing?)
-        # i.e. modelSpec = { 'T2': { 'histo': 'squark', 'factor': 1.0, 'file':
-        # seven, 'process': 'pp ....' } }
-        process_stamps =  {
-            'T2'     : {
-                'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q + LSP; m(#tilde{g})>>m(#tilde{q})",
-                'xpos': 0.4250,
-                },
-            'T2bb'   : {
-                'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b + LSP; m(#tilde{g})>>m(#tilde{b})",
-                'xpos': 0.425,
-                },
-            'T2tt'   : {
-                'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t + LSP; m(#tilde{g})>>m(#tilde{t})",
-                'xpos': 0.41,
-                },
-            'T1'     : {
-                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2q + LSP; m(#tilde{q})>>m(#tilde{g})",
-                'xpos': 0.4325,
-                },
-            'T1bbbb' : {
-                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2b + LSP; m(#tilde{b})>>m(#tilde{g})",
-                'xpos': 0.43,
-                },
-            'T1tttt' : {
-                'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow 2t + LSP; m(#tilde{t})>>m(#tilde{g})",
-                'xpos': 0.425,
-                },
-            }
-        current_stamp = process_stamps.get(conf.switches()['signalModel'],None)
+        current_stamp = conf.processStamp(conf.switches()['signalModel'])
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
@@ -123,8 +93,9 @@ def pointsAtYMin(graph) :
             out.remove((xMin,yMin))
     return out
 
-def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
+def pruneGraph(graph, lst = [], debug = False, breakLink = False) :
     if debug: graph.Print()
+    nRemoved = 0
     for p in lst:
         x = graph.GetX()
         y = graph.GetY()
@@ -132,14 +103,30 @@ def pruneGraph( graph, lst=[], debug=False, breakLink=False ):
         for i in range(graph.GetN()):
             if abs(p[0]-x[i]) < 1.0e-6 and abs(p[1]-y[i]) < 1.0e-6:
                 bad.append(i-len(bad))
+        nRemoved += len(bad)
         for i in bad:
-            print "WARNING: Removing point %d = (%g,%g) from graph %s" % (i, x[i], y[i], graph.GetName())
+            if debug :
+                print "WARN: Removing point %d = (%g,%g) from %s"%(i, x[i], y[i], graph.GetName())
             graph.RemovePoint(i)
     if breakLink:
         graph.RemovePoint(graph.GetN()-1)
     if debug: graph.Print()
+    if nRemoved :
+        print "WARN: Removing %d points from graph %s"%(nRemoved, graph.GetName())
+
+def modifyGraph(graph, dct = {}, debug = True) :
+    if debug: graph.Print()
+    for old,new in dct.iteritems() :
+        x = graph.GetX()
+        y = graph.GetY()
+        for i in range(graph.GetN()):
+            if abs(old[0]-x[i]) < 1.0e-6 and abs(old[1]-y[i]) < 1.0e-6:
+                graph.SetPoint(i,new[0],new[1])
+                print "WARN: Replacing point %d: (%g,%g) --> (%g,%g) from graph %s" % (i, old[0], old[1], new[0], new[1], graph.GetName())
+    if debug: graph.Print()
 
 def insertPoints( graph, lst=[], mode="prepend" ) :
+    if not lst : return
     npoints = len(lst)
     ngraph = graph.GetN()
 
@@ -173,7 +160,7 @@ def spline(points = [], title = "") :
         graph.SetPoint(i, x, y)
     return r.TSpline3(title, graph)
 
-def exclusions(histos = {}, switches = {}, graphBlackLists = None,
+def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplacePoints = None,
         printXs = None, writeDir = None, interBin = "LowEdge", debug = False,
         pruneYMin = False, graphAdditionalPoints=None, upperLimitName = "UpperLimit") :
     graphs = []
@@ -182,14 +169,12 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
     specs = []
     if switches["xsVariation"]=="default" and isCLs :
         specs += [
-            {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
-             "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
-
             {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
              "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
-
             {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
              "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
+            {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
+             "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
             ]
 
     specs += [
@@ -222,7 +207,11 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None,
             lst = graphBlackLists[name][signalModel]
             if pruneYMin :
                 lst += pointsAtYMin(graph['graph'])
-            pruneGraph(graph['graph'], lst = lst, debug = False, breakLink=pruneYMin)
+            pruneGraph(graph['graph'], lst = lst, debug = False, breakLink = pruneYMin)
+        if name in graphReplacePoints :
+            dct = graphReplacePoints[name][signalModel]
+            modifyGraph(graph['graph'], dct = dct, debug = False)
+
         if name in graphAdditionalPoints :
             lst = graphAdditionalPoints[name][signalModel]
             insertPoints(graph['graph'], lst = lst)
@@ -275,11 +264,20 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
         d["histo"].SetMinimum(-1.0)
         d["histo"].SetTitle(d.get("simpleLabel"))
         d["histo"].Write()
-        if drawGraphs : d["graph"].Draw("psame")
+        if drawGraphs :
+            d["graphClone"] = d["graph"].Clone()
+            d["graphClone"].SetMarkerColor(r.kBlack)
+            d["graphClone"].SetMarkerStyle(20)
+            d["graphClone"].SetMarkerSize(0.3*d["graphClone"].GetMarkerSize())
+            d["graphClone"].SetLineColor(r.kYellow)
+            d["graphClone"].SetLineStyle(1)
+            d["graphClone"].Draw("cpsame")
         if d.get("curve") and d["curve"].GetNp() :
             d["curve"].SetMarkerStyle(20)
             d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
             d["curve"].Draw("lpsame")
+        r.gPad.SetGridx()
+        r.gPad.SetGridy()
         c.Print(pdf)
     c.Print(pdf+"]")
     tfile.Close()
@@ -317,9 +315,9 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #make exclusion histograms and curves
     try:
         graphs = exclusions(histos = histos, writeDir = g, switches = s,
-                graphBlackLists = s["graphBlackLists"], interBin = interBin,
-                printXs = printXs, pruneYMin = pruneYMin, debug = debug,
-                graphAdditionalPoints = s["graphAdditionalPoints"], upperLimitName = name)
+                            graphBlackLists = s["graphBlackLists"], graphReplacePoints = s["graphReplacePoints"],
+                            interBin = interBin, printXs = printXs, pruneYMin = pruneYMin, debug = debug,
+                            graphAdditionalPoints = s["graphAdditionalPoints"], upperLimitName = name)
     except:
         print "ERROR: creation of exclusions has failed."
         sys.excepthook(*sys.exc_info())

@@ -832,7 +832,6 @@ class foo(object) :
 
         args = {}
         args["activeBins"] = activeBins(selection)
-        args["legendXSub"] = 0.0
         args["systematicsLabel"] = self.systematicsLabel(selection.name)
 
         for item in ["smOnly", "note"] :
@@ -881,7 +880,7 @@ class foo(object) :
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
                 errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5,
-                pullThreshold = 2.0, signalLineStyle = 1) :
+                pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
@@ -901,8 +900,7 @@ class foo(object) :
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
                          "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
-                         "drawRatios" : drawRatios, "signalLineStyle" :
-                         signalLineStyle,
+                         "drawRatios" : drawRatios,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()

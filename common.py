@@ -1,13 +1,18 @@
 import ROOT as r
 
 class signal(dict) :
-    def __init__(self, xs = None, label = "", effUncRel = None) :
-        for item in ["xs", "label", "effUncRel"] :
+    def __init__(self, xs = None, label = "", effUncRel = None, lineColor = r.kPink+7, lineStyle = 1) :
+        for item in ["xs", "label", "effUncRel", "lineColor", "lineStyle"] :
             assert eval(item)!=None,item
             setattr(self, item, eval(item))
     
     def insert(self, key = "", dct = {}) :
         self[key] = dct
+
+    def keyPresent(self, key = "") :
+        for k,_ in self.iteritems() :
+            if k==key : return True
+        return False
 
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages

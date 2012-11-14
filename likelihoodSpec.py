@@ -99,7 +99,7 @@ class spec(object) :
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
-        self._legendTitle = "CMS Preliminary, 11.1 fb^{-1}, #sqrt{s} = 8 TeV"
+        self._legendTitle = "CMS Preliminary, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take14 as module
 
         lst = []
@@ -108,11 +108,11 @@ class spec(object) :
                 if b=="ge4" and j!="ge4" : continue
                 if b=="3"   and j!="ge4" : continue
 
-                yAxisLogMinMax = {"0"  :(0.3, None),
-                                  "1"  :(0.3, None),
-                                  "2"  :(0.3, None),
-                                  "3"  :(0.3, None),
-                                  "ge4":(0.1, None),
+                yAxisLogMinMax = {"0"  :(0.3, 2.0e4) if j=="le3" else (0.3, 1.0e4),
+                                  "1"  :(0.3, 5.0e3) if j=="le3" else (0.3, 3.0e3),
+                                  "2"  :(0.05,2.0e3) if j=="le3" else (0.3, 2.0e3),
+                                  "3"  :(0.05,2.0e2),
+                                  "ge4":(0.1, 1.0e2),
                                   }[b]
 
                 fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.57, "ge4j":0.40},

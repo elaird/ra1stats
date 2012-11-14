@@ -22,7 +22,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
             "multiplesInGeV": None,
@@ -46,18 +46,16 @@ def signal() :
               "T1tttt_ichep", "T2bw"]
 
     variations = ["default", "up", "down"]
-    return {"overwriteInput": patches.overwriteInput(),
-            "overwriteOutput": patches.overwriteOutput(),
-            "graphBlackLists": patches.graphBlackLists(),
-            "graphAdditionalPoints": patches.graphAdditionalPoints(),
-            "cutFunc": patches.cutFunc(),
-            "nEventsIn": patches.nEventsIn(),
-            "curves": patches.curves(),
-            "drawBenchmarkPoints": True,
-            "effRatioPlots": False,
-            "xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["T2tt"]
-            }
+    out = {}
+    for item in ["overwriteInput", "overwriteOutput",
+                 "graphBlackLists", "graphReplacePoints", "graphAdditionalPoints",
+                 "cutFunc", "nEventsIn", "curves"] :
+        out[item] = getattr(patches, item)()
+    out["drawBenchmarkPoints"] = True
+    out["effRatioPlots"] = False
+    out["xsVariation"] = dict(zip(variations, variations))["default"]
+    out["signalModel"] = dict(zip(models, models))["T1tttt"]
+    return out
 
 def likelihoodSpec() :
     dct = {"T1"          : {"whiteList":["0b_ge4j"]},
@@ -78,6 +76,8 @@ def whiteListOfPoints() : #GeV
     #out += [( 550.0,  20.0)]  #T2tt
     #out += [( 410.0,  20.0)]  #T2tt
     #out += [( 420.0,  20.0)]  #T2tt
+    #out += [( 550.0, 100.0)]  #T2bb
+    #out += [( 700.0, 200.0)]  #T2
     return out
 
 def other() :
@@ -190,3 +190,37 @@ def scanParameters() :
 
 def processes() :
     return ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
+
+def processStamp(key = "") :
+    chi = "#tilde{#chi}^{0}_{1}"
+    dct = {
+        ''     : {
+        'text': "",
+        'xpos': 0.4250,
+        },
+        'T2'     : {
+        'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q %s; m(#tilde{g})>>m(#tilde{q})"%chi,
+        'xpos': 0.4250,
+        },
+        'T2bb'   : {
+        'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b %s; m(#tilde{g})>>m(#tilde{b})"%chi,
+        'xpos': 0.425,
+        },
+        'T2tt'   : {
+        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t %s; m(#tilde{g})>>m(#tilde{t})"%chi,
+        'xpos': 0.41,
+        },
+        'T1'     : {
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q #bar{q} %s; m(#tilde{q})>>m(#tilde{g})"%chi,
+        'xpos': 0.4325,
+        },
+        'T1bbbb' : {
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b #bar{b} %s; m(#tilde{b})>>m(#tilde{g})"%chi,
+        'xpos': 0.43,
+        },
+        'T1tttt' : {
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t #bar{t} %s; m(#tilde{t})>>m(#tilde{g})"%chi,
+        'xpos': 0.425,
+        },
+        }
+    return dct.get(key, dct[""])
