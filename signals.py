@@ -12,6 +12,9 @@ simple.insert("test", {
         "effSimple": (1.0, ),
         })
 
+zeroB_le3j_ht875 = common.signal(xs = 1.0e-3, effUncRel = 0.0001, label = "0b_le3j_ht875, 100% eff. (xs = 1 fb)")
+zeroB_le3j_ht875.insert("0b_le3j", {"effHad":[0.0]*7+[1.0]})
+
 t1_1 = common.signal(xs = 0.0243547, effUncRel = 0.14,
                      label = ["SM + T1 m_{gl} = 1.0 TeV; m_{LSP} = 0.4 TeV (xs = 24 fb)",
                               "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T1")["text"]),
