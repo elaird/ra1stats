@@ -10,7 +10,7 @@ import utils
 stamp = 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV'
 model = 'T2tt'
 hSpec = histoSpec(model)
-smooth = False
+nSmooth = 0
 gopts = 'l'
 
 options = {
@@ -53,19 +53,18 @@ def getReferenceXsHisto(refHistoName, refName, filename):
     refHisto = refFile.Get(refHistoName).Clone()
     refHisto.SetDirectory(0)
     refFile.Close()
-    histoD = {
-        'refHisto': {
-            'hist': refHisto,
-            'LineWidth': 2,
-            'LineStyle': 1,
-            'LineColor': r.kBlack,
-            'FillColor': r.kGray+2,
-            'FillStyle': 3002,
-            'hasErrors': True,
-            'opts': 'e3l',
-            'label': '#sigma^{{NLO+NLL}}({rn}) #pm th. unc.'.format(rn=refName),
-            }
-        }
+    histoD = {'refHisto': {'hist': refHisto,
+                           'LineWidth': 2,
+                           'LineStyle': 1,
+                           'LineColor': r.kBlack,
+                           'FillColor': r.kGray+2,
+                           'FillStyle': 3002,
+                           'hasErrors': True,
+                           'opts': 'e3l',
+                           'label': '#sigma^{{NLO+NLL}}({rn}) #pm th. unc.'.format(rn=refName),
+                           'nSmooth':0,
+                           }
+              }
     return histoD
 
 
@@ -76,7 +75,7 @@ def getExclusionHistos(limitFile, yValue = None):
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             'opts': gopts,
-            'Smooth': smooth,
+            'nSmooth': nSmooth,
             },
         'ExpectedUpperLimit': {
             'label': 'Median Expected Limit #pm 1#sigma exp.',
@@ -84,7 +83,7 @@ def getExclusionHistos(limitFile, yValue = None):
             'LineColor': r.kOrange+7,
             'LineStyle': 9,
             'opts': gopts,
-            'Smooth': smooth,
+            'nSmooth': nSmooth,
             # for legend
             'FillStyle': 3001,
             'FillColor': r.kBlue-10,
@@ -96,7 +95,7 @@ def getExclusionHistos(limitFile, yValue = None):
             'LineColor': r.kOrange+7,
             'FillColor': r.kBlue-10,
             'opts': gopts,
-            'Smooth': smooth,
+            'nSmooth': nSmooth,
             },
         'ExpectedUpperLimit_-1_Sigma': {
             'label': 'Expected Upper Limit (-1#sigma)',
@@ -104,8 +103,7 @@ def getExclusionHistos(limitFile, yValue = None):
             'LineWidth': 2,
             'FillColor': 10,
             'opts': gopts,
-            'Smooth': smooth,
-            'nSmooth': 5,
+            'nSmooth': nSmooth,
             },
         }
 
@@ -196,7 +194,7 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
-              epsFile="xs/compareXs.eps", yValue = None, processName="",
+              yValue = None, processName="",
               plotOptOverrides=None, shiftX=False, showRatio=False,
               dumpRatio=True) :
     plotOpts = {
@@ -238,7 +236,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         h.GetXaxis().SetRangeUser(plotOpts['xMin'],plotOpts['xMax'])
         h.SetMinimum(plotOpts['yMin'])
         h.SetMaximum(plotOpts['yMax'])
-        if props.get('Smooth', False):
+        if props['nSmooth']:
             h.Smooth(props.get('nSmooth',1),'R')
         h.Draw("%s%s"%(props.get('opts','c'), "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
@@ -280,7 +278,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
                                 #xMax=plotOpts['xMax'])
 
-    epsFile = epsFile.replace(".eps","_%d.eps"%int(yValue))
+    epsFile = "_".join([model, "mlsp%d"%int(yValue), "smooth%d"%nSmooth])+".eps"
     print "Saving to {file}".format(file=epsFile)
     canvas.Print(epsFile)
 
