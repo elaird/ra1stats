@@ -11,8 +11,8 @@ import configuration
 stamp = 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV'
 model = 'T2tt'
 hSpec = histoSpec(model)
-nSmooth = 0
-gopts = 'l'
+nSmooth = 1
+gopts = 'c'
 
 options = {
     'refProcess': hSpec['histo'],
