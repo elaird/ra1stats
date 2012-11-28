@@ -6,6 +6,7 @@ import ROOT as r
 from utils import threeToTwo, shifted
 from refXsProcessing import histoSpec
 import utils
+import configuration
 
 stamp = 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV'
 model = 'T2tt'
@@ -22,9 +23,7 @@ options = {
     #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
     #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
     #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
-    'processName': 'pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t '
-        '+ LSP; m(#tilde{g})>>m(#tilde{t})',
-    'yValue': 50.,
+    'yValue': 0.,
     'shiftX': True,
     'showRatio': False,
     }
@@ -32,20 +31,25 @@ options = {
 plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} (GeV)' }
 
 
-def drawStamp(canvas, processName=None, lspMass = None):
+def drawStamp(canvas, lspMass = None):
     canvas.cd()
     tl = r.TLatex()
     tl.SetNDC()
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
     #tl.DrawLatex(0.16,0.84,'CMS')
-    tl.DrawLatex(0.42,0.49,'m_{LSP} = %d GeV'%int(lspMass))
-    tl.DrawLatex(0.42,0.603, stamp)
-    tl.SetTextSize(0.07)
+    #x = 0.42
+    x = 0.16
+    y = 0.3
+    dy = 0.06
+    tl.DrawLatex(x,y-2*dy,'m_{LSP} = %d GeV'%int(lspMass))
+    tl.DrawLatex(x,y, stamp)
+
+    #tl.SetTextSize(0.07)
     #tl.DrawLatex(0.20,0.75,'#alpha_{T}')
-    if processName is not None:
-        tl.SetTextSize(0.04)
-        tl.DrawLatex(0.42,0.550,processName)
+
+    tl.SetTextSize(0.04)
+    tl.DrawLatex(x,y-dy,configuration.processStamp(model)['text'])
     return tl
 
 def getReferenceXsHisto(refHistoName, refName, filename):
@@ -201,7 +205,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         'yMax': 1e+1,
         'yMin': 1e-3,
         'xMin': 300,
-        'xMax': 1200,
+        'xMax': 800,
         'xLabel': "{p} mass (GeV)".format(
             p=refProcess.capitalize().replace('_',' ')),
         'yLabel': '#sigma (pb)',
@@ -232,7 +236,6 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         props = hs[hname]
         h = props['hist']
         h.SetStats(False)
-        #h.SetTitle(processName)
         h.GetXaxis().SetRangeUser(plotOpts['xMin'],plotOpts['xMax'])
         h.SetMinimum(plotOpts['yMin'])
         h.SetMaximum(plotOpts['yMax'])
@@ -260,7 +263,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
             h2.SetLineWidth(1)
             h2.Draw('lsame')
     leg.Draw()
-    tl = drawStamp(canvas,processName, lspMass = yValue)
+    tl = drawStamp(canvas, lspMass = yValue)
     pad.RedrawAxis()
     pad.SetLogy()
     pad.SetTickx()
