@@ -8,30 +8,7 @@ from refXsProcessing import histoSpec
 import utils
 import configuration
 
-stamp = 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV'
-model = 'T2tt'
-hSpec = histoSpec(model)
-nSmooth = 1
-gopts = 'c'
-
-options = {
-    'refProcess': hSpec['histo'],
-    'refXsFile': hSpec['file'],
-    'refName': '#tilde{t} #tilde{t}',
-    'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_frequentist_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
-    #'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_asymptotic_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
-    #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
-    #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
-    #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
-    'yValue': 0.,
-    'shiftX': True,
-    'showRatio': False,
-    }
-
-plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} (GeV)' }
-
-
-def drawStamp(canvas, lspMass = None):
+def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     canvas.cd()
     tl = r.TLatex()
     tl.SetNDC()
@@ -42,14 +19,14 @@ def drawStamp(canvas, lspMass = None):
     x = 0.16
     y = 0.3
     dy = 0.06
-    tl.DrawLatex(x,y-2*dy,'m_{LSP} = %d GeV'%int(lspMass))
-    tl.DrawLatex(x,y, stamp)
+    tl.DrawLatex(x,y-2*dy, 'm_{LSP} = %d GeV'%int(lspMass))
+    tl.DrawLatex(x,y, lumiStamp)
 
     #tl.SetTextSize(0.07)
     #tl.DrawLatex(0.20,0.75,'#alpha_{T}')
 
     tl.SetTextSize(0.04)
-    tl.DrawLatex(x,y-dy,configuration.processStamp(model)['text'])
+    tl.DrawLatex(x,y-dy, processStamp)
     return tl
 
 def getReferenceXsHisto(refHistoName, refName, filename):
@@ -72,7 +49,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
     return histoD
 
 
-def getExclusionHistos(limitFile, yValue = None):
+def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0):
     limitHistoDict = {
         'UpperLimit': {
             'label': 'Observed Limit (95% C.L.)',
@@ -198,9 +175,8 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
-              yValue = None, processName="",
-              plotOptOverrides=None, shiftX=False, showRatio=False,
-              dumpRatio=True) :
+              yValue = None, plotOptOverrides=None, shiftX=False, showRatio=False,
+              nSmooth = 0, dumpRatio=True, lumiStamp = "", processStamp = "", model = "") :
     plotOpts = {
         'yMax': 1e+1,
         'yMin': 1e-3,
@@ -215,7 +191,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         plotOpts.update(plotOptOverrides)
 
     refHisto = getReferenceXsHisto(refProcess, refName, refXsFile)
-    exclusionHistos = getExclusionHistos(limitFile, yValue = yValue)
+    exclusionHistos = getExclusionHistos(limitFile, yValue = yValue, nSmooth = nSmooth)
 
     canvas = r.TCanvas('c1','c1',700,600)
     utils.divideCanvas(canvas)
@@ -263,7 +239,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
             h2.SetLineWidth(1)
             h2.Draw('lsame')
     leg.Draw()
-    tl = drawStamp(canvas, lspMass = yValue)
+    tl = drawStamp(canvas, lspMass = yValue, lumiStamp = lumiStamp, processStamp = processStamp)
     pad.RedrawAxis()
     pad.SetLogy()
     pad.SetTickx()
@@ -284,6 +260,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
     epsFile = "_".join([model, "mlsp%d"%int(yValue), "smooth%d"%nSmooth])+".eps"
     print "Saving to {file}".format(file=epsFile)
     canvas.Print(epsFile)
+    canvas.Print(epsFile.replace(".eps",".C"))
 
     epsiFile = epsFile.replace(".eps",".epsi")
     os.system("ps2epsi "+epsFile+" "+epsiFile)
@@ -297,7 +274,36 @@ def setup() :
 
 def main():
     setup()
-    compareXs(plotOptOverrides=plotOptOverrides, **options )
+
+    model = 'T2tt'
+    hSpec = histoSpec(model)
+    
+    options = {
+        'refProcess': hSpec['histo'],
+        'refXsFile': hSpec['file'],
+        'refName': '#tilde{t} #tilde{t}',
+        'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_frequentist_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
+        #'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_asymptotic_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
+        #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
+        #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
+        #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
+        'yValue': 0.,
+        'shiftX': True,
+        'showRatio': False,
+        'plotOptOverrides': {'xLabel': 'm_{#tilde{t}} (GeV)'},
+        'lumiStamp': 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
+        'processStamp':configuration.processStamp(model)['text'],
+        'model':model,
+        }
+
+    lst = []
+    for y in [0,50,100,150] :
+        for nSmooth in [0,1,2,5] :
+            lst.append({"yValue":y, "nSmooth":nSmooth})
+
+    for dct in lst :
+        options.update(dct)
+        compareXs(**options)
 
 if __name__=="__main__":
     main()
