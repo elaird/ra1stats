@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os,ROOT as r
-import utils,configuration,refXsProcessing
+import utils,configuration,refXsProcessing,plottingGrid
 
 def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     canvas.cd()
@@ -88,6 +88,8 @@ def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0):
     rfile = r.TFile(limitFile,'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
         limitHisto = utils.threeToTwo(rfile.Get(limitHistoName))
+        plottingGrid.modifyHisto(limitHisto, configuration.switches())
+
         yBin = limitHisto.GetYaxis().FindBin(yValue)
 
         opts['hist'] = limitHisto.ProjectionX(limitHistoName+"_",yBin,yBin).Clone()
@@ -173,7 +175,7 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
               yValue = None, plotOptOverrides=None, shiftX=False, showRatio=False,
-              nSmooth = 0, dumpRatio=True, lumiStamp = "", processStamp = "", model = "",
+              nSmooth = 0, dumpRatio=False, lumiStamp = "", processStamp = "", model = "",
               xMin = 300) :
     plotOpts = {
         'yMax': 1e+1,
