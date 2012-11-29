@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
-import os
-
-import ROOT as r
-from utils import threeToTwo, shifted
-from refXsProcessing import histoSpec
-import utils
-import configuration
+import os,ROOT as r
+import utils,configuration,refXsProcessing
 
 def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     canvas.cd()
@@ -19,7 +14,9 @@ def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     x = 0.16
     y = 0.3
     dy = 0.06
-    tl.DrawLatex(x,y-2*dy, 'm_{LSP} = %d GeV'%int(lspMass))
+
+    chi = "#tilde{#chi}^{0}_{1}"
+    tl.DrawLatex(x,y-2*dy, 'm_{%s} = %d GeV'%(chi, int(lspMass)))
     tl.DrawLatex(x,y, lumiStamp)
 
     #tl.SetTextSize(0.07)
@@ -90,7 +87,7 @@ def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0):
 
     rfile = r.TFile(limitFile,'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
-        limitHisto = threeToTwo(rfile.Get(limitHistoName))
+        limitHisto = utils.threeToTwo(rfile.Get(limitHistoName))
         yBin = limitHisto.GetYaxis().FindBin(yValue)
 
         opts['hist'] = limitHisto.ProjectionX(limitHistoName+"_",yBin,yBin).Clone()
@@ -176,11 +173,12 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
               yValue = None, plotOptOverrides=None, shiftX=False, showRatio=False,
-              nSmooth = 0, dumpRatio=True, lumiStamp = "", processStamp = "", model = "") :
+              nSmooth = 0, dumpRatio=True, lumiStamp = "", processStamp = "", model = "",
+              xMin = 300) :
     plotOpts = {
         'yMax': 1e+1,
         'yMin': 1e-3,
-        'xMin': 300,
+        'xMin': xMin,
         'xMax': 800,
         'xLabel': "{p} mass (GeV)".format(
             p=refProcess.capitalize().replace('_',' ')),
@@ -207,7 +205,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
     histosToDraw = ['ExpectedUpperLimit_+1_Sigma', 'ExpectedUpperLimit',
                     'ExpectedUpperLimit_-1_Sigma', 'refHisto', 'UpperLimit']
     for hname in histosToDraw:
-        hs[hname]['hist'] = shifted(hs[hname]['hist'],shift=(shiftX,), shiftErrors=hs[hname].get('hasErrors',False))
+        hs[hname]['hist'] = utils.shifted(hs[hname]['hist'],shift=(shiftX,), shiftErrors=hs[hname].get('hasErrors',False))
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
         h = props['hist']
@@ -257,7 +255,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
                                 #xMax=plotOpts['xMax'])
 
-    epsFile = "_".join([model, "mlsp%d"%int(yValue), "smooth%d"%nSmooth])+".eps"
+    epsFile = "_".join([model, "mlsp%d"%int(yValue), "xmin%d"%int(plotOpts['xMin']), "smooth%d"%nSmooth])+".eps"
     print "Saving to {file}".format(file=epsFile)
     canvas.Print(epsFile)
     canvas.Print(epsFile.replace(".eps",".C"))
@@ -276,7 +274,7 @@ def main():
     setup()
 
     model = 'T2tt'
-    hSpec = histoSpec(model)
+    hSpec = refXsProcessing.histoSpec(model)
     
     options = {
         'refProcess': hSpec['histo'],
@@ -299,7 +297,8 @@ def main():
     lst = []
     for y in [0,50,100,150] :
         for nSmooth in [0,1,2,5] :
-            lst.append({"yValue":y, "nSmooth":nSmooth})
+            for xMin in [300,350] :
+                lst.append({"yValue":y, "nSmooth":nSmooth, "xMin":xMin})
 
     for dct in lst :
         options.update(dct)
