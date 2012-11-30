@@ -1,49 +1,29 @@
 #!/usr/bin/env python
 
-import os
+import os,ROOT as r
+import utils,configuration,refXsProcessing,plottingGrid
 
-import ROOT as r
-from utils import threeToTwo, shifted
-from refXsProcessing import histoSpec
-import utils
-
-model = 'T2tt'
-hSpec = histoSpec(model)
-smooth = False
-gopts = 'l'
-
-options = {
-    'refProcess': hSpec['histo'],
-    'refXsFile': hSpec['file'],
-    'refName': '#tilde{t} #tilde{t}',
-    'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_asymptotic_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
-    #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
-    #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
-    #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
-    'processName': 'pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t '
-        '+ LSP; m(#tilde{g})>>m(#tilde{t})',
-    'refYRange': (50.,50.),
-    'shiftX': True,
-    'showRatio': False,
-    }
-
-plotOptOverrides = { 'xLabel': 'm_{#tilde{t}} (GeV)' }
-
-
-def drawStamp(canvas, processName=None, lspMass = None):
+def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     canvas.cd()
     tl = r.TLatex()
     tl.SetNDC()
     tl.SetTextAlign(12)
     tl.SetTextSize(0.04)
     #tl.DrawLatex(0.16,0.84,'CMS')
-    tl.DrawLatex(0.42,0.49,'m_{LSP} = %d GeV'%int(lspMass))
-    tl.DrawLatex(0.42,0.603,'CMS, L = 11 fb^{-1}, #sqrt{s} = 8 TeV')
-    tl.SetTextSize(0.07)
+    #x = 0.42
+    x = 0.16
+    y = 0.3
+    dy = 0.06
+
+    chi = "#tilde{#chi}^{0}_{1}"
+    tl.DrawLatex(x,y-2*dy, 'm_{%s} = %d GeV'%(chi, int(lspMass)))
+    tl.DrawLatex(x,y, lumiStamp)
+
+    #tl.SetTextSize(0.07)
     #tl.DrawLatex(0.20,0.75,'#alpha_{T}')
-    if processName is not None:
-        tl.SetTextSize(0.04)
-        tl.DrawLatex(0.42,0.550,processName)
+
+    tl.SetTextSize(0.04)
+    tl.DrawLatex(x,y-dy, processStamp)
     return tl
 
 def getReferenceXsHisto(refHistoName, refName, filename):
@@ -51,30 +31,29 @@ def getReferenceXsHisto(refHistoName, refName, filename):
     refHisto = refFile.Get(refHistoName).Clone()
     refHisto.SetDirectory(0)
     refFile.Close()
-    histoD = {
-        'refHisto': {
-            'hist': refHisto,
-            'LineWidth': 2,
-            'LineStyle': 1,
-            'LineColor': r.kBlack,
-            'FillColor': r.kGray+2,
-            'FillStyle': 3002,
-            'hasErrors': True,
-            'opts': 'e3l',
-            'label': '#sigma^{{NLO+NLL}}({rn}) #pm th. unc.'.format(rn=refName),
-            }
-        }
+    histoD = {'refHisto': {'hist': refHisto,
+                           'LineWidth': 2,
+                           'LineStyle': 1,
+                           'LineColor': r.kBlack,
+                           'FillColor': r.kGray+2,
+                           'FillStyle': 3002,
+                           'hasErrors': True,
+                           'opts': 'e3l',
+                           'label': '#sigma^{{NLO+NLL}}({rn}) #pm th. unc.'.format(rn=refName),
+                           'nSmooth':0,
+                           }
+              }
     return histoD
 
 
-def getExclusionHistos(limitFile, yMinMax=(50,50)):
+def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0):
     limitHistoDict = {
         'UpperLimit': {
             'label': 'Observed Limit (95% C.L.)',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             'opts': gopts,
-            'Smooth': smooth,
+            'nSmooth': nSmooth,
             },
         'ExpectedUpperLimit': {
             'label': 'Median Expected Limit #pm 1#sigma exp.',
@@ -82,7 +61,7 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'LineColor': r.kOrange+7,
             'LineStyle': 9,
             'opts': gopts,
-            'Smooth': smooth,
+            'nSmooth': nSmooth,
             # for legend
             'FillStyle': 3001,
             'FillColor': r.kBlue-10,
@@ -94,7 +73,7 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'LineColor': r.kOrange+7,
             'FillColor': r.kBlue-10,
             'opts': gopts,
-            'Smooth': smooth,
+            'nSmooth': nSmooth,
             },
         'ExpectedUpperLimit_-1_Sigma': {
             'label': 'Expected Upper Limit (-1#sigma)',
@@ -102,18 +81,18 @@ def getExclusionHistos(limitFile, yMinMax=(50,50)):
             'LineWidth': 2,
             'FillColor': 10,
             'opts': gopts,
-            'Smooth': smooth,
-            'nSmooth': 5,
+            'nSmooth': nSmooth,
             },
         }
 
     rfile = r.TFile(limitFile,'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
-        limitHisto = threeToTwo(rfile.Get(limitHistoName))
-        minYBin = limitHisto.GetYaxis().FindBin(yMinMax[0])
-        maxYBin = limitHisto.GetYaxis().FindBin(yMinMax[1])
+        limitHisto = utils.threeToTwo(rfile.Get(limitHistoName))
+        plottingGrid.modifyHisto(limitHisto, configuration.switches())
 
-        opts['hist'] = limitHisto.ProjectionX(limitHistoName+"_",minYBin,maxYBin).Clone()
+        yBin = limitHisto.GetYaxis().FindBin(yValue)
+
+        opts['hist'] = limitHisto.ProjectionX(limitHistoName+"_",yBin,yBin).Clone()
         opts['hist'].SetDirectory(0)
 
     rfile.Close()
@@ -195,14 +174,14 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 
 
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
-              epsFile="xs/compareXs.eps", refYRange=(50,50), processName="",
-              plotOptOverrides=None, shiftX=False, showRatio=False,
-              dumpRatio=True) :
+              yValue = None, plotOptOverrides=None, shiftX=False, showRatio=False,
+              nSmooth = 0, dumpRatio=False, lumiStamp = "", processStamp = "", model = "",
+              xMin = 300) :
     plotOpts = {
         'yMax': 1e+1,
         'yMin': 1e-3,
-        'xMin': 300,
-        'xMax': 1200,
+        'xMin': xMin,
+        'xMax': 800,
         'xLabel': "{p} mass (GeV)".format(
             p=refProcess.capitalize().replace('_',' ')),
         'yLabel': '#sigma (pb)',
@@ -212,7 +191,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         plotOpts.update(plotOptOverrides)
 
     refHisto = getReferenceXsHisto(refProcess, refName, refXsFile)
-    exclusionHistos = getExclusionHistos(limitFile, yMinMax = refYRange)
+    exclusionHistos = getExclusionHistos(limitFile, yValue = yValue, nSmooth = nSmooth)
 
     canvas = r.TCanvas('c1','c1',700,600)
     utils.divideCanvas(canvas)
@@ -228,16 +207,15 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
     histosToDraw = ['ExpectedUpperLimit_+1_Sigma', 'ExpectedUpperLimit',
                     'ExpectedUpperLimit_-1_Sigma', 'refHisto', 'UpperLimit']
     for hname in histosToDraw:
-        hs[hname]['hist'] = shifted(hs[hname]['hist'],shift=(shiftX,), shiftErrors=hs[hname].get('hasErrors',False))
+        hs[hname]['hist'] = utils.shifted(hs[hname]['hist'],shift=(shiftX,), shiftErrors=hs[hname].get('hasErrors',False))
     for iHisto, hname in enumerate(histosToDraw):
         props = hs[hname]
         h = props['hist']
         h.SetStats(False)
-        #h.SetTitle(processName)
         h.GetXaxis().SetRangeUser(plotOpts['xMin'],plotOpts['xMax'])
         h.SetMinimum(plotOpts['yMin'])
         h.SetMaximum(plotOpts['yMax'])
-        if props.get('Smooth', False):
+        if props['nSmooth']:
             h.Smooth(props.get('nSmooth',1),'R')
         h.Draw("%s%s"%(props.get('opts','c'), "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
@@ -261,7 +239,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
             h2.SetLineWidth(1)
             h2.Draw('lsame')
     leg.Draw()
-    tl = drawStamp(canvas,processName, lspMass = refYRange[0])
+    tl = drawStamp(canvas, lspMass = yValue, lumiStamp = lumiStamp, processStamp = processStamp)
     pad.RedrawAxis()
     pad.SetLogy()
     pad.SetTickx()
@@ -279,9 +257,10 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
                                 #xMax=plotOpts['xMax'])
 
-    epsFile = epsFile.replace(".eps","_%d.eps"%int(refYRange[0]))
+    epsFile = "_".join([model, "mlsp%d"%int(yValue), "xmin%d"%int(plotOpts['xMin']), "smooth%d"%nSmooth])+".eps"
     print "Saving to {file}".format(file=epsFile)
     canvas.Print(epsFile)
+    canvas.Print(epsFile.replace(".eps",".C"))
 
     epsiFile = epsFile.replace(".eps",".epsi")
     os.system("ps2epsi "+epsFile+" "+epsiFile)
@@ -295,7 +274,37 @@ def setup() :
 
 def main():
     setup()
-    compareXs(plotOptOverrides=plotOptOverrides, **options )
+
+    model = 'T2tt'
+    hSpec = refXsProcessing.histoSpec(model)
+    
+    options = {
+        'refProcess': hSpec['histo'],
+        'refXsFile': hSpec['file'],
+        'refName': '#tilde{t} #tilde{t}',
+        'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_frequentist_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
+        #'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_asymptotic_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
+        #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
+        #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
+        #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
+        'yValue': 0.,
+        'shiftX': True,
+        'showRatio': False,
+        'plotOptOverrides': {'xLabel': 'm_{#tilde{t}} (GeV)'},
+        'lumiStamp': 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
+        'processStamp':configuration.processStamp(model)['text'],
+        'model':model,
+        }
+
+    lst = []
+    for y in [0,50,100,150] :
+        for nSmooth in [0,1,2,5] :
+            for xMin in [300,350] :
+                lst.append({"yValue":y, "nSmooth":nSmooth, "xMin":xMin})
+
+    for dct in lst :
+        options.update(dct)
+        compareXs(**options)
 
 if __name__=="__main__":
     main()

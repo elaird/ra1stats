@@ -284,13 +284,13 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
     print "INFO: %s has been written."%pdf
     print "INFO: %s has been written."%root
 
-def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "UpperLimit",
+def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "",
                           shiftX = False, shiftY = False, interBin = "LowEdge",
                           pruneYMin = False, debug = False, stampPrelim = True) :
 
     s = conf.switches()
     ranges = hs.ranges(s["signalModel"])
-
+    if name == "": name = "UpperLimit" if s["method"]=="CLs" else "upperLimit95"
     inFile = pickling.mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFileEps  = inFile.replace(".root", "_xsLimit.eps")

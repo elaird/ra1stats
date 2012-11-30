@@ -69,6 +69,7 @@ else :
         dct = go(**args)
         if not dct : continue
         for key,pValue in dct.iteritems() :
+            if key not in hMap : continue
             hMap[key].GetXaxis().SetBinLabel(1+iSel, sel.name)
             hMap[key].SetBinContent(1+iSel, pValue)
 
