@@ -6,33 +6,45 @@ class selection(object) :
     the corresponding value determines whether signal efficiency is considered for that sample.'''
 
     def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
-                 alphaTMinMax = (None, None), nbTag = None, bTagLower = None,
-                 fZinvIni = 0.5, fZinvRange = (0.0, 1.0), AQcdIni = 1.0e-2, AQcdMax = 100.0,
+                 bJets = "", jets = "", fZinvIni = 0.5, fZinvRange = (0.0, 1.0),
+                 AQcdIni = 1.0e-2, AQcdMax = 100.0, yAxisLogMinMax = (0.3, None),
                  zeroQcd = False, muonForFullEwk = False,
                  universalSystematics = False, universalKQcd = False) :
         for item in ["name", "note", "samplesAndSignalEff", "data",
-                     "alphaTMinMax","nbTag", "bTagLower",
-                     "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax",
-                     "zeroQcd", "muonForFullEwk",
+                     "bJets", "jets", "fZinvIni", "fZinvRange", "yAxisLogMinMax",
+                     "AQcdIni", "AQcdMax", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
 class spec(object) :
 
-    def separateSystObs(self) : return self._separateSystObs
+    def separateSystObs(self) :
+        return self._separateSystObs
     def poi(self) :
         return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
                 {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
                 {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
                 {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0]
-    def REwk(self) : return ["", "Linear", "FallingExp", "Constant"][0]
-    def RQcd(self) : return ["Zero", "FallingExp", "FallingExpA"][1]
-    def nFZinv(self) : return ["All", "One", "Two"][2]
-    def constrainQcdSlope(self) : return self._constrainQcdSlope
-    def qcdParameterIsYield(self) : return self._qcdParameterIsYield
+    def REwk(self) :
+        return "" if self._ignoreHad else self._REwk
+    def RQcd(self) :
+        return "Zero" if self._ignoreHad else self._RQcd
+    def nFZinv(self) :
+        return "All" if self._ignoreHad else self._nFZinv
+    def constrainQcdSlope(self) :
+        return False if self._ignoreHad else self._constrainQcdSlope
+    def qcdParameterIsYield(self) :
+        return self._qcdParameterIsYield
+    def legendTitle(self) :
+        return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
+    def ignoreHad(self) :
+        return self._ignoreHad
 
     def selections(self) :
-        return self._selections[self._iLower:self._iUpper]
+        if self._whiteList :
+            return filter(lambda x:x.name in self._whiteList, self._selections)
+        else :
+            return self._selections
 
     def poiList(self) :
         return self.poi().keys()
@@ -41,14 +53,19 @@ class spec(object) :
         return self.poiList()==["f"]
 
     def add(self, sel = []) :
+        if self._ignoreHad :
+            for s in sel :
+                del s.samplesAndSignalEff["had"]
         self._selections += sel
 
-    def __init__(self, iLower = None, iUpper = None, dataset = "2011", separateSystObs = True) :
-        self._iLower = iLower
-        self._iUpper = iUpper
-        self._dataset = dataset
+    def __init__(self, dataset = "2012dev", separateSystObs = True, whiteList = [], ignoreHad = False) :
+        for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
+            setattr(self, "_"+item, eval(item))
+
+        self._RQcd = None
+        self._nFZinv = None
+        self._REwk = None
         self._selections = []
-        self._separateSystObs = separateSystObs
 
         assert self._dataset in ["", "2011", "2012ichep", "2012dev"],self._dataset
         if self._dataset=="" :
@@ -60,10 +77,14 @@ class spec(object) :
         elif self._dataset=="2012dev" :
             self.__init2012dev__()
 
+        assert self._RQcd in ["Zero", "FallingExp", "FallingExpA"]
+        assert self._nFZinv in ["All", "One", "Two"]
+        assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
+
     def __initSimple__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = False
-        self.legendTitle = "SIMPLE TEST"
+        self._legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
                 selection(name = "test",
@@ -75,94 +96,111 @@ class spec(object) :
     def __init2012dev__(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
-        self.legendTitle = ""
-        from inputData.data2012 import take7 as module
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._legendTitle = "CMS Preliminary, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
+        from inputData.data2012 import take14 as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
-            fZinvIni = {"0"  : 0.50,
-                        "1"  : 0.25,
-                        "2"  : 0.10,
-                        "3"  : 0.05,
-                        "ge4": 0.01,
-                        }[b]
-
-            for j in ["ge2", "le3", "ge4"] :
+            for j in ["ge2", "le3", "ge4"][1:] :
                 if b=="ge4" and j!="ge4" : continue
+                if b=="3"   and j!="ge4" : continue
+
+                yAxisLogMinMax = {"0"  :(0.3, 2.0e4) if j=="le3" else (0.3, 1.0e4),
+                                  "1"  :(0.3, 5.0e3) if j=="le3" else (0.3, 3.0e3),
+                                  "2"  :(0.05,2.0e3) if j=="le3" else (0.3, 2.0e3),
+                                  "3"  :(0.05,2.0e2),
+                                  "ge4":(0.1, 1.0e2),
+                                  }[b]
+
+                fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.57, "ge4j":0.40},
+                            "1b"  : {"ge2j":0.40, "le3j":0.40, "ge4j":0.20},
+                            "2b"  : {"ge2j":0.10, "le3j":0.10, "ge4j":0.10},
+                            "3b"  : {"ge2j":0.05, "le3j":0.05, "ge4j":0.05},
+                            "ge4b": {"ge2j":0.01, "le3j":0.01, "ge4j":0.01},
+                            }[b+"b"][j+"j"]
 
                 name  = "%sb_%sj"%(b,j)
+                #name  = "%sb_%sj_alphaTmuon"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
                 note += "; %s#%s"%(nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
 
-                samplesAndSignalEff = {"had":True, "muon":True}
-                if b in ["0", "1", "2"] :
-                    samplesAndSignalEff.update({"phot":False, "mumu":False})
+                if b=="0" :
+                    options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                elif b=="1" :
+                    options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                    #options += [{"had":True, "muon":True}]
+                elif b=="2" :
+                    options = [{"had":True, "muon":True}]
+                    #options += [{"had":True, "muon":True, "phot":False, "mumu":False}]
+                else :
+                    options = [{"had":True, "muon":True}]
 
-                sel = selection(name = name,
-                                note = note,
-                                alphaTMinMax = ("55", None),
-                                samplesAndSignalEff = samplesAndSignalEff,
-                                muonForFullEwk = len(samplesAndSignalEff)==2,
-                                data = getattr(module, "data_%s"%name)(),
-                                #nbTag = "0", #argh, must re-make signal eff. with extra dimension of binning
-                                fZinvIni = fZinvIni,
-                                AQcdIni = 0.0,
-                                )
-                lst.append(sel)
+                for samplesAndSignalEff in options :
+                    sel = selection(name = name, note = note,
+                                    samplesAndSignalEff = samplesAndSignalEff,
+                                    muonForFullEwk = len(samplesAndSignalEff)==2,
+                                    data = getattr(module, "data_%s"%name)(),
+                                    bJets = ("eq%sb"%b).replace("eqge","ge"),
+                                    jets = "%sj"%j,
+                                    fZinvIni = fZinvIni,
+                                    AQcdIni = 0.0,
+                                    yAxisLogMinMax = yAxisLogMinMax,
+                                    )
+                    lst.append(sel)
         self.add(lst)
 
     def __init2012ichep__(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
-        self.legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module
-        #self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 8 TeV"
-        #from inputData.data2012 import take6_unweighted as module
+
         self.add([
                 selection(name = "55_0b",
                           note = "%s= 0"%nb,
-                          alphaTMinMax = ("55", None),
                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                           data = module.data_0b(),
-                          nbTag = "0",
+                          bJets = "_btag_==_0",
                           fZinvIni = 0.50,
                           AQcdIni = 0.0,
                           ),
                 #selection(name = "55_0b_no_aT",
                 #          note = "%s= 0"%nb,
-                #          alphaTMinMax = ("55", None),
                 #          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                 #          data = module.data_0b_no_aT(),
-                #          nbTag = "0",
+                #          bJets = "_btag_==_0",
                 #          fZinvIni = 0.50,
                 #          AQcdIni = 0.0,
                 #          ),
                 selection(name = "55_1b",
                           note = "%s= 1"%nb,
-                          alphaTMinMax = ("55", None),
                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                           data = module.data_1b(),
-                          nbTag = "1",
+                          bJets = "_btag_==_1",
                           fZinvIni = 0.25,
                           AQcdIni = 0.0,
                           ),
                 selection(name = "55_2b",
                           note = "%s= 2"%nb,
-                          alphaTMinMax = ("55", None),
                           samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
                           data = module.data_2b(),
-                          nbTag = "2",
+                          bJets = "_btag_==_2",
                           fZinvIni = 0.1,
                           AQcdIni = 0.0,
                           ),
                 selection(name = "55_gt2b",
                           note = "%s#geq 3"%nb,
-                          alphaTMinMax = ("55", None),
                           samplesAndSignalEff = {"had":True, "muon":True},
                           muonForFullEwk = True,
                           data = module.data_ge3b(),
-                          bTagLower = "2",
+                          bJets = "_btag_>_2",
                           fZinvIni = 0.1,
                           AQcdIni = 0.0,
                           ),
@@ -171,7 +209,10 @@ class spec(object) :
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
-        self.legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
         else :
@@ -245,46 +286,3 @@ class spec(object) :
                             ),
                 ])
 
-    def __init2011old__(self) :
-        import selections
-        self._constrainQcdSlope = True
-        self._qcdParameterIsYield = False
-        self.legendTitle = "CMS, 5.0 fb^{-1}, #sqrt{s} = 7 TeV"
-        args = {}
-        args["systMode"] = 3
-        args["reweighted"] = predictedGe3b = True
-        args["predictionsEverywhere"] = False
-
-        slices = False
-        b = False
-        multib = True
-
-
-        # multib suboptions
-        aT0b = True # use aT cut in 0b slice
-        gt0_only  = False # only use gt0b selection on top of =0 selection
-                         # when false: use 1,2,gt2
-
-        assert sum([slices,b,multib]) == 1
-        if args["predictionsEverywhere"] :
-            assert args["reweighted"]
-
-        if slices :
-            self.add( selections.alphaT_slices(**args) )
-
-        if b :
-            self.add( selections.noAlphaT_gt0b(**args) )
-
-        if multib :
-            if aT0b :
-                self.add( selections.alphaT_0btags(**args) )
-            else :
-                self.add( selections.noAlphaT_0btags(**args) )
-
-            if gt0_only :
-                self.add( selections.noAlphaT_gt0b(universalSystematics = False, universalKQcd = False, **args) )
-            else :
-                self.add( selections.btags_1_2_gt2(predictedGe3b = predictedGe3b, **args) )
-
-#        self.add( selections.alphaT_slices_noMHTovMET(systMode) )
-#        self.add( selections.twentyTen() )

@@ -17,14 +17,13 @@ def readNumbers(fileName) :
     return d
 
 ##number collection
-def effHistos() :
+def effHistos(okMerges = [None, (0,1,2,3,4,5,6,7,7,7), (0,1,2,2,2,2,2,2,2,2), (0,1,2,2,2,2,2,2)]) :
     out = {}
     for sel in conf.likelihoodSpec().selections() :
-        assert sel.data.htBinLowerEdgesInput()==sel.data.htBinLowerEdges(), "merging bins is not yet supported"
+        assert sel.data._mergeBins in okMerges,"bin merge %s not yet supported (%s)"%(str(sel.data._mergeBins), sel.name)
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
 
-        kargs = {"alphaTLower": sel.alphaTMinMax[0], "alphaTUpper": sel.alphaTMinMax[1], "nbTag": sel.nbTag, "bTagLower": sel.bTagLower }
         d = {}
         for box,considerSignal in sel.samplesAndSignalEff.iteritems() :
             item = "eff%s"%(box.capitalize())
@@ -32,7 +31,9 @@ def effHistos() :
                 d[item] = [0.0]*len(bins)
                 continue
 
-    	    d[item] = [hp.effHisto(box = box, scale = "1", htLower = l, htUpper = u, **kargs) for l,u in htThresholds]
+            d[item] = [hp.effHisto(box = box, scale = "1",
+                                   htLower = l, htUpper = u,
+                                   bJets = sel.bJets, jets = sel.jets) for l,u in htThresholds]
         out[sel.name] = d
     return out
 
@@ -51,7 +52,7 @@ def eventsInRange(switches = None, nEventsIn = None) :
     return out
 
 def signalModel(point = None, eff = None, xs = None, xsLo = None, nEventsIn = None, switches = None) :
-    out = common.signal(xs = xs.GetBinContent(*point), label = "%d_%d_%d"%point)
+    out = common.signal(xs = xs.GetBinContent(*point), label = "%d_%d_%d"%point, effUncRel = switches["effUncRel"][switches["signalModel"]])
     if xsLo : out["xs_LO"] = xsLo.GetBinContent(*point)
     out["xs"] = out.xs
     out["x"] = xs.GetXaxis().GetBinLowEdge(point[0])
@@ -69,7 +70,10 @@ def signalModel(point = None, eff = None, xs = None, xsLo = None, nEventsIn = No
             d[box+"Sum"] = sum(d[box])
             key = box.replace("eff","nEvents")
             d[key] = d[box+"Sum"]*out["nEventsIn"]
-            if d[key] : d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
+            if d[key]>=0.0 :
+                d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
+            else :
+                print "ERROR: negative value: ",point,d[key]
         out[selName] = d
     return out
 
@@ -97,7 +101,6 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
 
 def writeSignalFiles(points = [], outFilesAlso = False) :
     switches = conf.switches()
-    
     args = {"switches": switches,
             "eff": effHistos(),
             "xs": hp.xsHisto(),
@@ -114,7 +117,6 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         writeNumbers(fileName = stem + ".out", d = signal)
         #stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
 
-    print "FIX: stuff vars"
     map(one, points)
         
 ##merge functions

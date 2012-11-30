@@ -5,7 +5,7 @@ import pickling,common,calc
 def collect(wspace, results, extraStructure = False) :
     out = {}
     out["lMax"] = -results.minNll()
-    out["chi2Prob"] = calc.pullStats(pulls = calc.pulls(pdf = common.pdf(wspace), poisKey = "simple"),
+    out["chi2Prob"] = calc.pullStats(pulls = calc.pulls(pdf = common.pdf(wspace), poisKey = "simple", lognKey = "kMinusOne"),
                                      nParams = len(common.floatingVars(wspace))
                                      )["prob"]
 

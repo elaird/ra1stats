@@ -141,6 +141,24 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
         w.var(norm).setVal(0.0)
         w.var(norm).setConstant()
 
+def systTerm(w = None, name = "", obsName = "", obsValue = None, muVar = None,
+             sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
+    pdf = ["gauss", "lognormal"][1]
+    if pdf=="gauss" :
+        wimport(w, r.RooRealVar(obsName, obsName, obsValue))
+        wimport(w, r.RooRealVar(sigmaName, sigmaName, sigmaValue))
+        wimport(w, r.RooGaussian(name, name, w.var(obsName), muVar, w.var(sigmaName)))
+    elif pdf=="lognormal" :
+        wimport(w, r.RooRealVar(obsName, obsName, obsValue, 0.0, r.RooNumber.infinity()))
+        w.var(obsName).setConstant(True)
+        #see aux/lognormalExample.py
+        if makeSigmaRelative :
+            sigmaValue /= w.var(obsName).getVal()
+        wimport(w, r.RooRealVar(sigmaName, sigmaName, 1+sigmaValue))
+        wimport(w, r.RooLognormal(name, name, w.var(obsName), muVar, w.var(sigmaName)))
+    else :
+        assert False,pdf
+
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
              REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
              zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
@@ -173,7 +191,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     #more
     iFirst = None
     iLast = len(htMeans)-1
-    systBin = inputData.systBins()["sigmaLumiLike"]
     for i,nHadValue in enumerate(obs["nHad"]) :
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
@@ -210,7 +227,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             lumi = ni("hadLumi", label)
             eff = ni("signalEffHad", label, i)
             assert w.var(eff),eff
-            rho = ni("rhoSignal", systematicsLabel, systBin[i])
+            rho = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
@@ -267,26 +284,22 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             sigma = ni("sigmaMumuZ", label, iPar)
             gaus = ni("mumuGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMumuZ"][iPar]))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
+                     sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMumuZ"][iPar])
             out["systObs"].append(one)
             terms.append(gaus)
 
-    rFinal = None
     systBin = inputData.systBins()["sigmaMumuZ"]
-    for i,nMumuValue,mcMumuValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMumu"])),
-                                                             inputData.observations()["nMumu"],
-                                                             inputData.mcExpectations()["mcMumu"],
-                                                             inputData.mcExpectations()["mcZinv"],
-                                                             inputData.constantMcRatioAfterHere(),
-                                                             ) :
+    for i,nMumuValue,mcMumuValue,mcZinvValue in zip(range(len(inputData.observations()["nMumu"])),
+                                                    inputData.observations()["nMumu"],
+                                                    inputData.mcExpectations()["mcMumu"],
+                                                    inputData.mcExpectations()["mcZinv"],
+                                                    ) :
         if nMumuValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcMumu"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         nMumu = ni("nMumu", label, i)
         rMumu = ni("rMumu", label, i)
         wimport(w, r.RooRealVar(nMumu, nMumu, nMumuValue))
-        wimport(w, r.RooRealVar(rMumu, rMumu, (mcMumuValue/mcZinvValue if rFinal==None else rFinal)))
+        wimport(w, r.RooRealVar(rMumu, rMumu, mcMumuValue/mcZinvValue))
 
         mumuExp = ni("mumuExp", label, i)
         rhoMumuZ = ni("rhoMumuZ", systematicsLabel, systBin[i])
@@ -311,33 +324,35 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
 
     terms = []
     if label==systematicsLabel :
-        for iPar in set(inputData.systBins()["sigmaPhotZ"]) :
+        systBins = inputData.systBins()["sigmaPhotZ"]
+        nPhot = inputData.observations()["nPhot"]
+        for iPar in set(systBins) :
+            htBins = []
+            for iHt,iSyst in enumerate(systBins) :
+                if iSyst==iPar : htBins.append(iHt)
+            counts = [nPhot[i] for i in htBins]
+            if all(map(lambda x:x==None, counts)) : continue #do not include term if all obs in relevant HT range are None
             rho = ni("rhoPhotZ", label, iPar)
             one = ni("onePhotZ", label, iPar)
             sigma = ni("sigmaPhotZ", label, iPar)
             gaus = ni("photGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaPhotZ"][iPar]))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
+                     sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaPhotZ"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
 
-    rFinal = None
     systBin = inputData.systBins()["sigmaPhotZ"]
-    for i,nPhotValue,purity,mcGjetValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nPhot"])),
-                                                                    inputData.observations()["nPhot"],
-                                                                    inputData.purities()["phot"],
-                                                                    inputData.mcExpectations()["mcGjets"],
-                                                                    inputData.mcExpectations()["mcZinv"],
-                                                                    inputData.constantMcRatioAfterHere(),
-                                                                    ) :
+    for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(inputData.observations()["nPhot"])),
+                                                    inputData.observations()["nPhot"],
+                                                    inputData.mcExpectations()["mcPhot"],
+                                                    inputData.mcExpectations()["mcZinv"],
+                                                    ) :
         if nPhotValue==None : continue
-        if stopHere : rFinal = sum(inputData.mcExpectations()["mcGjets"][i:])/sum(inputData.mcExpectations()["mcZinv"][i:])
         nPhot = ni("nPhot", label, i)
         rPhot = ni("rPhot", label, i)
         wimport(w, r.RooRealVar(nPhot, nPhot, nPhotValue))
-        wimport(w, r.RooRealVar(rPhot, rPhot, (mcGjetValue/mcZinvValue if rFinal==None else rFinal)/purity))
+        wimport(w, r.RooRealVar(rPhot, rPhot, mcPhotValue/mcZinvValue))
 
         rho = ni("rhoPhotZ", systematicsLabel, systBin[i])
         photExp = ni("photExp", label, i)
@@ -368,37 +383,26 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             sigma = ni("sigmaMuonW", label, iPar)
             gaus = ni("muonGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            wimport(w, r.RooRealVar(sigma, sigma, inputData.fixedParameters()["sigmaMuonW"][iPar]))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(sigma)))
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
+                     sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMuonW"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
 
-    rFinal = None
     systBin = inputData.systBins()["sigmaMuonW"]
-    signalSystBin = inputData.systBins()["sigmaLumiLike"]
-    for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue,stopHere in zip(range(len(inputData.observations()["nMuon"])),
-                                                                        inputData.observations()["nMuon"],
-                                                                        inputData.mcExpectations()["mcMuon"],
-                                                                        inputData.mcExpectations()["mcTtw"],
-                                                                        inputData.mcExpectations()["mcZinv"],
-                                                                        inputData.constantMcRatioAfterHere(),
-                                                                        ) :
+    for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue in zip(range(len(inputData.observations()["nMuon"])),
+                                                               inputData.observations()["nMuon"],
+                                                               inputData.mcExpectations()["mcMuon"],
+                                                               inputData.mcExpectations()["mcTtw"],
+                                                               inputData.mcExpectations()["mcZinv"],
+                                                               ) :
         if nMuonValue==None : continue
-        if stopHere :
-            denom = sum(inputData.mcExpectations()["mcTtw"][i:])
-            if muonForFullEwk : denom += sum(inputData.mcExpectations()["mcZinv"][i:])
-            rFinal = sum(inputData.mcExpectations()["mcMuon"][i:])/denom
-
         nMuon = ni("nMuon", label, i)
         rMuon = ni("rMuon", label, i)
         wimport(w, r.RooRealVar(nMuon, nMuon, nMuonValue))
-        if rFinal!=None :
-            rValue = rFinal
-        else :
-            denom = mcTtwValue
-            if muonForFullEwk : denom += mcZinvValue
-            rValue = mcMuonValue/denom
+
+        denom = mcTtwValue
+        if muonForFullEwk : denom += mcZinvValue
+        rValue = mcMuonValue/denom
         wimport(w, r.RooRealVar(rMuon, rMuon, rValue))
 
         muonB = ni("muonB", label, i)
@@ -416,7 +420,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             muonS = ni("muonS", label, i)
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
-            rhoSignal = ni("rhoSignal", systematicsLabel, signalSystBin[i])
+            rhoSignal = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
@@ -441,9 +445,8 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     qcdGaus = ni("qcdGaus", label)
     qcdTerms = ni("qcdTerms", label)
 
-    wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
-    wimport(w, r.RooRealVar(k_qcd_unc_inp, k_qcd_unc_inp, inputData.fixedParameters()["k_qcd_unc_inp"]))
-    wimport(w, r.RooGaussian(qcdGaus, qcdGaus, w.var(k_qcd_nom), w.var(k_qcd), w.var(k_qcd_unc_inp)))
+    systTerm(w, name = qcdGaus, obsName = k_qcd_nom, obsValue = inputData.fixedParameters()["k_qcd_nom"], muVar = w.var(k_qcd),
+             sigmaName = k_qcd_unc_inp, sigmaValue = inputData.fixedParameters()["k_qcd_unc_inp"], makeSigmaRelative = True)
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
@@ -474,18 +477,15 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
 
     out = collections.defaultdict(list)
     if label==systematicsLabel :
-        for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
-            #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalToTest[item] for item in extraSigEffUncSources])
-            deltaSignalValue = inputData.fixedParameters()["sigmaLumiLike"][iPar]
+        for iPar in [None] :
             one = ni("oneRhoSignal", label, iPar)
             rho = ni("rhoSignal", label, iPar)
             delta = ni("deltaSignal", label, iPar)
             gaus = ni("signalGaus", label, iPar)
 
-            wimport(w, r.RooRealVar(one, one, 1.0))
             wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
-            wimport(w, r.RooRealVar(delta, delta, deltaSignalValue))
-            wimport(w, r.RooGaussian(gaus, gaus, w.var(one), w.var(rho), w.var(delta)))
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
+                     sigmaName = delta, sigmaValue = w.var("effUncRel").getVal())
 
             signalTermsName = ni("signalTerms", label, iPar)
             w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
@@ -575,8 +575,9 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["systObs" if separateSystObs else "obs"] += variables["systObs"]
     return out
 
-def startLikelihood(w = None, xs = None, fIniFactor = None, poi = {}) :
+def startLikelihood(w = None, xs = None, effUncRel = None, fIniFactor = None, poi = {}) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
+    wimport(w, r.RooRealVar("effUncRel", "effUncRel", effUncRel))
     fIni,fMin,fMax = poi["f"]
     wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
 
@@ -624,7 +625,8 @@ class foo(object) :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
+            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, effUncRel = signalToTest.effUncRel,
+                            fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec.selections() :
@@ -694,7 +696,7 @@ class foo(object) :
         return name if sum(k)!=1 else selections[k.index(True)].name
 
     def note(self) :
-        return note(likelihoodSpec = self.likelihoodSpec)
+        return note(likelihoodSpec = self.likelihoodSpec)+("_signal" if not self.smOnly() else "")
 
     def debug(self) :
         self.wspace.Print("v")
@@ -703,22 +705,14 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def writeMlTable(self, fileName = "mlTables.tex") :
+    def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
         def pars() :
             utils.rooFitResults(pdf(self.wspace), self.data)
             return floatingVars(self.wspace)
 
-        def category(v = "") :
-            if "k_qcd" in v : return "common"
-            if "rho" in v : return "common"
-            for item in ["gt2b", "2b", "1b", "0b"] :
-                if item in v : return item
-            assert False,v
-
-        def renamed(v) :
+        def renamed(v, cat = "") :
             out = v
-            for item in ["55"]+categories :
-                out = out.replace("_%s"%item,"")
+            out = out.replace("_"+cat, "")
             for i in range(9) :
                 out = out.replace("_%d"%i, "^%d"%i)
             out = out.replace("ewk", r'\mathrm{EWK}')
@@ -731,25 +725,25 @@ class foo(object) :
             return r'$%s$'%out
 
         p = pars()
-        categories = ["0b", "1b", "2b", "gt2b"]
         s  = "\n".join([r'\documentclass{article}',
                         r'\begin{document}'])
 
-        for cat in ["common"]+categories :
+        for cat in categories :
+            if not any([cat in d["name"] for d in p]) : continue
             s += "\n".join(['', '',
                             r'\begin{table}\centering',
-                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat,
+                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat.replace("_", " "),
                             r'\label{tab:mlParameterValues%s}'%cat,
                             r'\begin{tabular}{lcc}',
                             ])
             s += r'name & value & error \\ \hline'+'\n'
             for d in sorted(p, key = lambda d:d["name"]) :
-                if category(d["name"])!=cat : continue
+                if cat not in d["name"] : continue
                 cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
                 if "rho" in d["name"] or "fZinv" in d["name"] :
                     cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
                 spec = ' & '.join(['%s']+cols)+r'\\'+'\n'
-                s += spec%(renamed(d["name"]), d["value"], d["error"])
+                s += spec%(renamed(d["name"], cat), d["value"], d["error"])
             s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
 
         s += "\n".join(['',r'\end{document}'])
@@ -838,26 +832,24 @@ class foo(object) :
 
         args = {}
         args["activeBins"] = activeBins(selection)
-        args["legendXSub"] = 0.0
         args["systematicsLabel"] = self.systematicsLabel(selection.name)
 
         for item in ["smOnly", "note"] :
             args[item] = getattr(self, item)()
 
-        for item in ["wspace", "signalExampleToStack"] :
+        for item in ["wspace", "signalExampleToStack", "signalToTest"] :
             args[item] = getattr(self, item)
 
-        for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data",
+                           "muonForFullEwk":"muonForFullEwk", "yAxisLogMinMax":"yAxisLogMinMax"}.iteritems() :
             args[arg] = getattr(selection, member)
 
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
             args[item] = getattr(selection.data, item)()
 
-        for item in ["REwk", "RQcd"] :
+        for item in ["REwk", "RQcd", "legendTitle", "ignoreHad"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["legendTitle"] :
-            args[item] = getattr(self.likelihoodSpec, item)
         return args
 
     def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
@@ -888,20 +880,18 @@ class foo(object) :
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
                 errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5,
-                pullThreshold = 2.0, signalLineStyle = 1) :
+                pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
 
         poisKey = "simple"
-        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey)
+        lognKey = "kMinusOne"
+        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
 
-        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
-        for key in sorted(stats.keys()) :
-            print "%s = %g"%(key.ljust(7), stats[key])
-
-        calc.pullPlots(pulls = pulls, poisKey = poisKey, note = self.note(),
-                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
+        title = "_".join([x.name for x in self.likelihoodSpec.selections()])
+        calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
+                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold, title = title)
 
         for selection in self.likelihoodSpec.selections() :
             args = self.plotterArgs(selection)
@@ -910,11 +900,24 @@ class foo(object) :
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
                          "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
-                         "drawRatios" : drawRatios, "signalLineStyle" :
-                         signalLineStyle,
+                         "drawRatios" : drawRatios,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
+
+        #gather stats
+        out = {}
+        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
+        for key in sorted(stats.keys()) :
+            print "%s = %g"%(key.ljust(7), stats[key])
+        out["chi2ProbSimple"] = stats["prob"]
+
+        if errorsFromToys :
+            pvalues = plotting.ensembleResults(note = self.note(), nToys = errorsFromToys)
+            for dct in pvalues :
+                out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
+
+        return out
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))

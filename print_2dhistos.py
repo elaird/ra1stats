@@ -43,27 +43,36 @@ std_selections = { "had"  : base_histos,
                    "phot" : [ "lumiData", "lumiMc", "obs", "Phot" ],
                  }
 
-base_dir = { 'phosphorus' : '~/132_2012_categories/',
-             'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/'
+base_dir = { 'phosphorus' : '~/140_updated_5fb_numbers_from_darren/v4_no_weights',
+             'kinitos'    : '~/public_html/03_RA1/07_ra1stats_numbers/',
+             'lx06.hep.ph.ic.ac.uk' : '/home/hep/elaird1/122_numbers_from_darren/v5_no_mht_over_met',
            }[gethostname()]
 
 d_set = ""
 
-files = {"ge4b_le3j": "RA1_Stats_More_Than_Three_btag_category_2.root",
-         "ge4b_ge4j": "RA1_Stats_More_Than_Three_btag_category_3.root",
-         "ge4b_ge2j": "RA1_Stats_More_Than_Three_btag_category_all.root",
-         "3b_le3j": "RA1_Stats_More_Than_Two_btag_category_2.root",
-         "3b_ge4j": "RA1_Stats_More_Than_Two_btag_category_3.root",
-         "3b_ge2j": "RA1_Stats_More_Than_Two_btag_category_all.root",
-         "2b_le3j": "RA1_Stats_Two_btags_category_2.root",
-         "2b_ge4j": "RA1_Stats_Two_btags_category_3.root",
-         "2b_ge2j": "RA1_Stats_Two_btags_category_all.root",
-         "1b_le3j": "RA1_Stats_One_btag_category_2.root",
-         "1b_ge4j": "RA1_Stats_One_btag_category_3.root",
-         "1b_ge2j": "RA1_Stats_One_btag_category_all.root",
-         "0b_le3j": "RA1_Stats_Zero_btags_category_2.root",
-         "0b_ge4j": "RA1_Stats_Zero_btags_category_3.root",
-         "0b_ge2j": "RA1_Stats_Zero_btags_category_all.root",
+files = {"ge4b_le3j": "RA1_Stats_btag_eq4_category_eq2_and_3.root",
+         "ge4b_ge4j": "RA1_Stats_btag_eq4_category_greq4.root",
+         #"ge4b_ge2j": "RA1_Stats_btag_eq4_category_inclusive.root",
+
+         "3b_le3j": "RA1_Stats_btag_eq3_category_eq2_and_3.root",
+         "3b_ge4j": "RA1_Stats_btag_eq3_category_greq4.root",
+         #"3b_ge2j": "RA1_Stats_btag_eq3_category_inclusive.root",
+
+         "2b_le3j": "RA1_Stats_btag_eq2_category_eq2_and_3.root",
+         "2b_ge4j": "RA1_Stats_btag_eq2_category_greq4.root",
+         #"2b_ge2j": "RA1_Stats_btag_eq2_category_inclusive.root",
+
+         "1b_le3j": "RA1_Stats_btag_eq1_category_eq2_and_3.root",
+         "1b_ge4j": "RA1_Stats_btag_eq1_category_greq4.root",
+         #"1b_ge2j": "RA1_Stats_btag_eq1_category_inclusive.root",
+
+         "0b_le3j": "RA1_Stats_btag_eq0_category_eq2_and_3.root",
+         "0b_ge4j": "RA1_Stats_btag_eq0_category_greq4.root",
+         #"0b_ge2j": "RA1_Stats_btag_eq0_category_inclusive.root",
+
+         #"0b_le3j_alphaTmuon": "RA1_Stats_btag_eq0_category_eq2_and_3_alphaT.root",
+         #"0b_ge4j_alphaTmuon": "RA1_Stats_btag_eq0_category_greq4_alphaT.root",
+         ##"0b_ge2j_alphaTmuon": "RA1_Stats_btag_eq0_category_inclusive_alphaT.root",
          }
 
 slices = {}

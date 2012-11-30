@@ -1,7 +1,7 @@
 import ROOT as r
 
-def compile(files = ["cpp/StandardHypoTestInvDemo.cxx","cpp/Poisson.cxx",
-                     "cpp/Gaussian.cxx", "cpp/NckwWorkspace.cxx"][:-1]) :
+def compile(files = ["cpp/StandardHypoTestInvDemo.cxx",#"cpp/NckwWorkspace.cxx", "cpp/RooLognormal2.cxx",
+                     "cpp/Poisson.cxx","cpp/Gaussian.cxx","cpp/Lognormal.cxx"]) :
     for f in files :
         r.gROOT.LoadMacro("%s+"%f)
 

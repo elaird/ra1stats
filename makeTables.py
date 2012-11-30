@@ -111,9 +111,9 @@ def truncate(t, index = 2) :
 def nr(x, value = 0.0) :
     return x if x!=None else value
 
-def purity(data, indices, *args) :
-    p = data.purities()[args[0]]
-    return ["%4.2f"%nr(p[i]) for i in indices]
+#def purity(data, indices, *args) :
+#    p = data.purities()[args[0]]
+#    return ["%4.2f"%nr(p[i]) for i in indices]
 
 def mcYieldHadLumi(data, indices, *args) :
     value = data.mcExpectations()[args[0]]
@@ -150,7 +150,7 @@ def error(obs) :
 def prediction(data, indices, *args) :
     def oneString(obs, ratio, sysFactor = 1.0) :
         return "%5.1f $\pm$ %5.1f$_{stat}$ %s"%(obs*ratio, error(obs)*ratio, "" if not obs else " $\pm$ %5.1f$_{syst}$"%(obs*ratio*sysFactor))
-    mcPhot = truncate(data.mcExpectations()[args[1]] if args[1] in data.mcExpectations() else data.mcExtra()[args[1]])
+    mcPhot = truncate(data.mcExpectations()[args[1]])
     mcZinv = truncate(data.mcExpectations()[args[2]])
     obs = data.observations()[args[0]]
     print [mcPhot[i] for i in indices]
@@ -162,10 +162,9 @@ def photon(data) :
                     caption = r'''Photon Sample Predictions '''+"%g"%data.lumi()["had"]+r'''pb$^{-1}$''',
                     label = "results-PHOTON",
                     rows = [{"label": r'''MC $\znunu$''',          "entryFunc":mcYieldHadLumi,    "args":("mcZinv",)},
-                            {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcGjets", "phot", "had")},
-                            {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcGjets", "mcZinv", "phot", "had")},
+                            {"label": r'''MC $\gamma +$~jets''',   "entryFunc":mcYieldOtherLumi,  "args":("mcPhot", "phot", "had")},
+                            {"label": r'''MC Ratio''',             "entryFunc":mcRatio,           "args":("mcPhot", "mcZinv", "phot", "had")},
                             {"label": r'''Data $\gamma +$~jets''', "entryFunc":dataYieldOtherLumi,"args":("nPhot", "phot", "had")},
-                            {"label": r'''Sample Purity''',        "entryFunc":purity,            "args":("phot",)},
                             {"label": r'''$\znunu$ Prediction''',  "entryFunc":prediction,        "args":("nPhot", "mcPhot", "mcZinv", "sigmaPhotZ")},
                             ])
 
@@ -243,9 +242,9 @@ def ensembleSplit(d, group = "had") :
 def ensembleSplit2(dct, group = "had") :
     out = defaultdict(list)
     for key,latex in dct.iteritems() :
-        sample,aT,nB,iBin = common.split(key)
+        sample,nB,nJ,iBin = common.split(key)
         if sample[:len(group)]!=group : continue
-        out[nB] += [(iBin, latex)]
+        out[" ".join([nB,nJ])] += [(iBin, latex)]
 
     for key in out.keys() :
         out[key] = map(lambda x:x[1],sorted(out[key]))
@@ -349,6 +348,7 @@ def ensembleResultsBySelection( d, data, note = "", nEmptyPhot = 2 ) :
         if sample == "phot" :
             for selection, values in mc_out[title].iteritems() :
                 mc_out[title][selection] = ["--"]*nEmptyPhot + values
+
 
     selections = sorted(mc_out[mc_titles[0]].keys())
 

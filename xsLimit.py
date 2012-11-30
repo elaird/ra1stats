@@ -13,4 +13,5 @@ plottingGrid.makeXsUpperLimitPlots(logZ = True,
                                    #**{"shiftX":False, "shiftY":False, "interBin":"LowEdge"}
                                    )
 
-plottingGrid.makeEfficiencyPlot()
+#plottingGrid.makeEfficiencyPlot()
+#plottingGrid.makeEfficiencyPlotBinned(key = ["effHad", "effMuon"][0])

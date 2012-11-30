@@ -23,10 +23,10 @@ def parsed(fileName = "") :
 def histos() :
     histosOut = []
     comsOut = []
-    for fileName,histName in {"gluglu_decoupled7TeV.txt":"gluino",
-                              "sqsq_decoupled7TeV.txt":"squark",
-                              "stst_decoupled7TeV.txt":"stop_or_sbottom",
-                              }.iteritems() :
+    for fileName,histName in sorted({"gluglu_decoupled8TeV.txt":"gluino",
+                              "sqsq_decoupled8TeV.txt":"squark",
+                              "stst_decoupled8TeV.txt":"stop_or_sbottom",
+                              }.iteritems()) :
         dct = parsed(fileName)
         masses = sorted(dct.keys())
         nMasses = len(masses)

@@ -6,18 +6,17 @@ def histoSpec(model) :
     base = locations()["xs"]
     variation = switches()["xsVariation"]
     seven = "%s/v5/7TeV.root"%base
-    eight = "%s/v4/sms_xs.root"%base
+    eight = "%s/v5/8TeV.root"%base
     tgqFile = "%s/v1/TGQ_xSec.root"%base
     tanBeta10 = "%s/v5/7TeV_cmssm.root"%base
-    d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": seven},
-         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
-         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": seven},
-         "T1tttt_2012": {"histo": "gluino", "factor": 1.0,  "file": eight},
-         "tanBeta10":   {"histo": "total_%s"%variation,  "factor": 1.0,  "file": tanBeta10},
+    d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": eight},
+         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
+         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
+         #"tanBeta10":   {"histo": "total_%s"%variation,  "factor": 1.0,  "file": tanBeta10},#7TeV
          }
 
     for item in ["T1", "T1bbbb", "T1tttt", "T5zz"] :
-        d[item] = {"histo":"gluino", "factor":1.0,  "file":seven}
+        d[item] = {"histo":"gluino", "factor":1.0,  "file":eight}
 
     for item in ["TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
         d[item] = {"histo":"clone", "factor":1.0, "file":tgqFile}
@@ -28,7 +27,12 @@ def histoSpec(model) :
 def refXsHisto(model) :
     hs = histoSpec(model)
     f = r.TFile(hs["file"])
-    out = f.Get(hs["histo"]).Clone("%s_clone"%hs["histo"])
+    h = f.Get(hs["histo"])
+    if not h :
+        print "Could not find %s: available are these:"%hs["histo"]
+        f.ls()
+        assert False
+    out = h.Clone("%s_clone"%hs["histo"])
     out.SetDirectory(0)
     f.Close()
     out.Scale(hs["factor"])
@@ -184,7 +188,7 @@ def drawGraphs(graphs, legendTitle="") :
         g = d["graph"]
         if d['label']:
             legend.AddEntry(g, d["label"], "l")
-        if g.GetN() : g.Draw("lsame")
+        if g.GetN() : g.Draw("csame")
     legend.Draw("same")
     return legend,graphs
 
