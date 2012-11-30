@@ -72,8 +72,8 @@ def signalModel(point = None, eff = None, xs = None, xsLo = None, nEventsIn = No
             d[key] = d[box+"Sum"]*out["nEventsIn"]
             if d[key]>0.0 :
                 d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
-            else :
-                print "ERROR: non-positive value: ",point,d[key],box
+            elif d[key]<0.0 :
+                print "ERROR: negative value: ",point,d[key],box
         out[selName] = d
     return out
 
