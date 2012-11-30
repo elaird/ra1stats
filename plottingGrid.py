@@ -169,12 +169,12 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
     specs = []
     if switches["xsVariation"]=="default" and isCLs :
         specs += [
-            {"name":"ExpectedUpperLimit_-1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-             "color": r.kViolet,                                           "simpleLabel":"Expected Limit - 1 #sigma"},
-            {"name":"ExpectedUpperLimit_+1_Sigma", "lineStyle":2, "lineWidth":2, "label":"",
-             "color": r.kViolet,                                           "simpleLabel":"Expected Limit + 1 #sigma"},
-            {"name":"ExpectedUpperLimit",          "lineStyle":7, "lineWidth":3, "label":"Expected Limit #pm1 #sigma exp.",
-             "color": r.kViolet,                                           "simpleLabel":"Expected Limit"},
+            {"name":"ExpectedUpperLimit_-1_Sigma", "label":"", "simpleLabel":"Expected Limit - 1 #sigma",
+             "lineStyle":2, "lineWidth":2, "color": r.kViolet},
+            {"name":"ExpectedUpperLimit_+1_Sigma", "label":"", "simpleLabel":"Expected Limit + 1 #sigma",
+             "lineStyle":2, "lineWidth":2, "color": r.kViolet},
+            {"name":"ExpectedUpperLimit", "label":"Expected Limit #pm1 #sigma exp.", "simpleLabel":"Expected Limit",
+             "lineStyle":7, "lineWidth":3, "color": r.kViolet},
             ]
 
     specs += [
@@ -185,11 +185,13 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            {"name":upperLimitName,                  "lineStyle":1, "lineWidth":1, "label":"", "variation":-1.0,
-             "color": r.kBlue if debug else r.kBlack,                      "simpleLabel":"Observed Limit - 1 #sigma (theory)"},
+            {"name":"%s_-1_Sigma"%upperLimitName, "histoName":"UpperLimit",
+             "variation":-1.0, "label":"", "simpleLabel":"Observed Limit - 1 #sigma (theory)",
+             "lineStyle":1, "lineWidth":1, "color": r.kBlue if debug else r.kBlack},
 
-            {"name":upperLimitName,                  "lineStyle":1, "lineWidth":1, "label":"", "variation": 1.0,
-             "color": r.kYellow if debug else r.kBlack,                    "simpleLabel":"Observed Limit + 1 #sigma (theory)"},
+            {"name":"%s_+1_Sigma"%upperLimitName, "histoName":"UpperLimit",
+             "variation": 1.0, "label":"", "simpleLabel":"Observed Limit + 1 #sigma (theory)",
+             "lineStyle":1, "lineWidth":1, "color": r.kYellow if debug else r.kBlack},
             ]
     elif curves :
         for spec in specs :
@@ -199,10 +201,11 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
 
     signalModel = switches["signalModel"]
     for i,spec in enumerate(specs) :
-        h = histos[spec["name"]]
+        h = histos[spec.get("histoName", spec["name"])]
+        h.SetName(spec["name"].replace("-1","m1").replace("+1","p1"))
         graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
 
-        name = spec["name"]+("_%+1d_Sigma"%spec["variation"] if ("variation" in spec and spec["variation"]) else "")
+        name = spec["name"]
         if name in graphBlackLists :
             lst = graphBlackLists[name][signalModel]
             if pruneYMin :
@@ -220,7 +223,7 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
     if writeDir :
         writeDir.cd()
         for dct in graphs :
-            dct["graph"].Write()#dct["graph"].GetName()+str(dct.get("variation","")))
+            dct["graph"].Write()
         writeDir.Close()
     return graphs
 
