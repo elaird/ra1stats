@@ -1,4 +1,4 @@
-import os,sys,math,utils,pickling
+import os,sys,math,utils,pickling,signalAux
 
 from histogramProcessing import printHoles,fillPoints,killPoints
 from utils import threeToTwo, shifted
@@ -47,7 +47,7 @@ def printOnce(canvas, fileName) :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-        current_stamp = conf.processStamp(conf.switches()['signalModel'])
+        current_stamp = signalAux.processStamp(conf.switches()['signalModel'])
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
@@ -185,11 +185,11 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            {"name":"%s_-1_Sigma"%upperLimitName, "histoName":"UpperLimit",
+            {"name":"%s_-1_Sigma"%upperLimitName, "histoName":upperLimitName,
              "variation":-1.0, "label":"", "simpleLabel":"Observed Limit - 1 #sigma (theory)",
              "lineStyle":1, "lineWidth":1, "color": r.kBlue if debug else r.kBlack},
 
-            {"name":"%s_+1_Sigma"%upperLimitName, "histoName":"UpperLimit",
+            {"name":"%s_+1_Sigma"%upperLimitName, "histoName":upperLimitName,
              "variation": 1.0, "label":"", "simpleLabel":"Observed Limit + 1 #sigma (theory)",
              "lineStyle":1, "lineWidth":1, "color": r.kYellow if debug else r.kBlack},
             ]
@@ -281,6 +281,7 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
             d["curve"].Draw("lpsame")
         r.gPad.SetGridx()
         r.gPad.SetGridy()
+        #printOnce(c, pdf.replace(".pdf",".eps"))
         c.Print(pdf)
     c.Print(pdf+"]")
     tfile.Close()
@@ -535,14 +536,14 @@ def printLumis() :
 
 def drawBenchmarks() :
     switches = conf.switches()
-    parameters =  conf.scanParameters()
+    parameters =  signalAux.scanParameters()
     if not switches["drawBenchmarkPoints"] : return
     if not (switches["signalModel"] in parameters) : return
     params = parameters[switches["signalModel"]]
 
     text = r.TText()
     out = []
-    for label,coords in conf.benchmarkPoints().iteritems() :
+    for label,coords in signalAux.benchmarkPoints().iteritems() :
         drawIt = True
         for key,value in coords.iteritems() :
             if key in params and value!=params[key] : drawIt = False
