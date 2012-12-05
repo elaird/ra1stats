@@ -7,14 +7,14 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
-            "binaryExclusionRatherThanUpperLimit": True,
+            "binaryExclusionRatherThanUpperLimit": False,
             "multiplesInGeV": None,
             }
 
 def ignoreEff() :
-    return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"], "T1bbbb":["muon"]}}
+    return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"]}}
 
 def effUncRel() :
     return {"effUncRel":{"T1":0.140,
@@ -62,7 +62,7 @@ def whiteListOfPoints() : #GeV
     #out += [( 550.0,  20.0)]  #T2tt
     #out += [( 400.0,   0.0)]  #T2tt
     #out += [( 410.0,  20.0)]  #T2tt
-    out += [( 410.0,  20.0)]  #T2tt
+    #out += [( 410.0,  20.0)]  #T2tt
     #out += [( 420.0,  20.0)]  #T2tt
     #out += [( 500.0, 150.0)]  #T2bb
     #out += [( 600.0, 250.0)]  #T2
