@@ -124,7 +124,7 @@ def cmssmXsHisto(model, process = "", xsVariation = "") :
     out.Reset()
 
     print "FIXME: hard-coded CMSSM XS version"
-    fileName = "%s/v5/7TeV_cmssm.root"%conf.locations()["xs"]
+    fileName = "%s/v5/7TeV_cmssm.root"%signalAux.locations()["xs"]
     h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
 
     #Note! Implement some check of the agreement in binning between these histos
@@ -167,7 +167,7 @@ def smsXsHisto(model, process = "", xsVariation = "") :
     out.Reset()
 
     print "FIXME: hard-coded SMS XS version"
-    fileName = "%s/v5/8TeV.root"%conf.locations()["xs"]
+    fileName = "%s/v5/8TeV.root"%signalAux.locations()["xs"]
     h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
 
     #Note! Implement some check of the agreement in binning between these histos
