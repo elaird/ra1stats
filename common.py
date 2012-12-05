@@ -10,8 +10,9 @@ class signal(dict) :
         self[key] = dct
 
     def keyPresent(self, key = "") :
-        for k,_ in self.iteritems() :
-            if k==key : return True
+        for dct in self.values() :
+            for k in dct.keys() :
+                if k==key : return True
         return False
 
 def wimport(w, item) :

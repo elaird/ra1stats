@@ -8,7 +8,7 @@ def locations() :
         "ic.ac.uk"   : "/vols/cms02/elaird1",
         "phosphorus" : "/home/elaird/71_stats_files/",
         "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
-        "fnal.gov"   : "/uscms_data/d1/samr/",
+        "fnal.gov"   : "/uscms_data/d2/elaird/",
         "brown02"    : "/vols/cms02/elaird1"
     }
     lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
@@ -54,7 +54,7 @@ def signal() :
     out["drawBenchmarkPoints"] = True
     out["effRatioPlots"] = False
     out["xsVariation"] = dict(zip(variations, variations))["default"]
-    out["signalModel"] = dict(zip(models, models))["T1tttt"]
+    out["signalModel"] = dict(zip(models, models))["T1bbbb"]
     return out
 
 def likelihoodSpec() :
@@ -70,14 +70,16 @@ def likelihoodSpec() :
 
 def whiteListOfPoints() : #GeV
     out = []
-    #out += [(1000.0, 400.0)]  #T1
-    #out += [(1100.0, 500.0)]  #T1bbbb
+    #out += [( 700.0, 300.0)]  #T1
+    #out += [( 900.0, 500.0)]  #T1bbbb
+    #out += [( 850.0, 250.0)]  #T1tttt
     #out += [( 450.0,  20.0)]  #T2tt
     #out += [( 550.0,  20.0)]  #T2tt
+    #out += [( 400.0,   0.0)]  #T2tt
     #out += [( 410.0,  20.0)]  #T2tt
     #out += [( 420.0,  20.0)]  #T2tt
-    #out += [( 550.0, 100.0)]  #T2bb
-    #out += [( 700.0, 200.0)]  #T2
+    #out += [( 500.0, 150.0)]  #T2bb
+    #out += [( 600.0, 250.0)]  #T2
     return out
 
 def other() :
