@@ -8,13 +8,8 @@
 ```bash
 git clone git://github.com/elaird/ra1stats.git
 cd ra1stats
+git submodule init
 ```
-or, if you have forked it:
-```bash
-git clone git://github.com/your_username/ra1stats.git
-cd ra1stats
-```
-
 
 2. If needed, set up the environment:
 ```bash
