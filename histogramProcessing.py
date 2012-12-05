@@ -1,4 +1,4 @@
-import collections,utils,signalAux
+import collections,utils,signalAux,patches
 import configuration as conf
 import ROOT as r
 
@@ -94,7 +94,7 @@ def xsHisto() :
     if s["binaryExclusionRatherThanUpperLimit"] :
         return xsHistoPhysical(model = model, cmssmProcess = "" if s["isSms"] else "total", xsVariation = s["xsVariation"])
     else :
-        return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
+        return xsHistoAllOne(model, cutFunc = patches.cutFunc()[model])
 
 def xsHistoPhysical(model = "", cmssmProcess = "", xsVariation = "") :
     #get example histo and reset
@@ -162,7 +162,7 @@ def smsEffHisto(**args) :
     s = signalAux.effHistoSpec(**args)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    fillPoints(out, points = switches["overwriteInput"][switches["signalModel"]])
+    fillPoints(out, points = patches.overwriteInput()[switches["signalModel"]])
     return out
 
 ##signal point selection
@@ -176,7 +176,7 @@ def points() :
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content : continue
         if s["multiplesInGeV"] and ((x/s["multiplesInGeV"])%1 != 0.0) : continue
-        if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
+        if patches.cutFunc()[s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
             out.append( (iBinX, iBinY, iBinZ) )
     return out
 

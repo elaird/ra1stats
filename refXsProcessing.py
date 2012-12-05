@@ -1,4 +1,4 @@
-import collections
+import collections,patches
 import ROOT as r
 from configuration import switches
 from signalAux import xsHistoSpec
@@ -102,7 +102,7 @@ def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "C
 def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge", variation = 0.0, applyCutFunc = False) :
     if applyCutFunc :
         s = switches()
-        cutFunc = s["cutFunc"][s["signalModel"]]
+        cutFunc = patches.cutFunc()[s["signalModel"]]
     refHisto = refXsHisto(model)
     out = h.Clone("%s_excludedHistoSimple"%h.GetName())
     out.Reset()
