@@ -28,13 +28,13 @@ def mDeltaFuncs(mDeltaMin = None, mDeltaMax = None, nSteps = None, mGMax = None)
 
     return out
 
-def graph(h = None, model = "", cutFunc = None, interBin = "", printXs = False, spec = {}) :
+def graph(h = None, model = "", interBin = "", printXs = False, spec = {}) :
     d = {"color":r.kBlack, "lineStyle":1, "lineWidth":3, "markerStyle":20, "factor":1.0, "variation":0.0, "label":"a curve"}
     d.update(spec)
     d["graph"] = excludedGraph(h, factor = d["factor"], variation = d["variation"],
                                model = model, interBin = interBin, printXs = printXs)
     stylize(d["graph"], d["color"], d["lineStyle"], d["lineWidth"], d["markerStyle"])
-    d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin, variation = d["variation"], cutFunc = cutFunc)
+    d["histo"] = excludedHistoSimple(h, d["factor"], model, interBin, variation = d["variation"])
     return d
 
 def binWidth(h, axisString) :
@@ -97,8 +97,8 @@ def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "C
 
     return out
 
-def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge", variation = 0.0,
-                        applyCutFunc = False, cutFunc = None) :
+def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge", variation = 0.0) :
+    cutFunc = None
     refHisto = refXsHisto(model)
     out = h.Clone("%s_excludedHistoSimple"%h.GetName())
     out.Reset()
@@ -109,7 +109,7 @@ def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowE
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             if not xsLimit : continue
-            if applyCutFunc and not cutFunc(iBinX, x, iBinY, y, 1, 0.0) : continue
+            if cutFunc and not cutFunc(iBinX, x, iBinY, y, 1, 0.0) : continue
             xs = content(h = refHisto, coords = (x, y), variation = variation, factor = factor)
             out.SetBinContent(iBinX, iBinY, 2*(xsLimit<xs)-1)
     return out
