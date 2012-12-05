@@ -1,4 +1,4 @@
-import collections,utils
+import collections,utils,signalAux
 import configuration as conf
 import histogramSpecs as hs
 import ROOT as r
@@ -137,7 +137,7 @@ def cmssmEffHisto(**args) :
     out = None
 
     #Note! Implement some check of the agreement in sets of processes between yield file and xs file
-    for process in conf.processes() :
+    for process in signalAux.processes() :
         h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s"%process) #efficiency of a process
         h.Multiply(cmssmXsHisto(model = args["model"], process = process, xsVariation = args["xsVariation"])) #weight by xs of the process
         if out is None : out = h.Clone("effHisto")

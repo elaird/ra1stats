@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os,ROOT as r
-import utils,configuration,refXsProcessing,plottingGrid
+import utils,configuration,refXsProcessing,plottingGrid,signalAux
 
 def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     canvas.cd()
@@ -292,7 +292,7 @@ def main():
         'showRatio': False,
         'plotOptOverrides': {'xLabel': 'm_{#tilde{t}} (GeV)'},
         'lumiStamp': 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
-        'processStamp':configuration.processStamp(model)['text'],
+        'processStamp':signalAux.processStamp(model)['text'],
         'model':model,
         }
 
