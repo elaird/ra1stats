@@ -122,11 +122,9 @@ def cmssmXsHisto(model, process = "", xsVariation = "") :
     out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_gg_noweight")
     out.Reset()
 
-    print "FIXME: hard-coded CMSSM XS version"
-    fileName = "%s/v5/7TeV_cmssm.root"%signalAux.locations()["xs"]
-    h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
+    h = oneHisto(signalAux.xsHistoSpec(model)["file"], "/", "_".join([process, xsVariation]))
 
-    #Note! Implement some check of the agreement in binning between these histos
+    print "FIXME: Implement some check of the agreement in binning between these histos"
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
@@ -159,17 +157,17 @@ def xsHistoAllOne(model, cutFunc = None) :
     return h
 
 def smsXsHisto(model, process = "", xsVariation = "") :
-    assert False,"this function is broken"
     #get example histo and reset
     s = signalAux.effHistoSpec(model = model, box = "had")
-    out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_mChi_noweight")
+    out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
     out.Reset()
 
-    print "FIXME: hard-coded SMS XS version"
-    fileName = "%s/v5/8TeV.root"%signalAux.locations()["xs"]
-    h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
+    spec = signalAux.xsHistoSpec(model)
+    assert spec["factor"]==1.0,"will need to accommodate factor of %g"%spec["factor"]
+    assert xsVariation=="default","%s will need to use error bars from xs file."%xsVariation
+    h = oneHisto(spec["file"], "/", spec["histo"])
 
-    #Note! Implement some check of the agreement in binning between these histos
+    print "FIXME: Implement some check of the agreement in binning between these histos"
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
