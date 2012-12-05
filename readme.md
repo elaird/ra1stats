@@ -7,19 +7,9 @@
 1. Clone the repository:
 ```bash
 git clone git://github.com/elaird/ra1stats.git
-```
-
-or, if you have forked it:
-```bash
-git clone git://github.com/your_username/ra1stats.git
-```
-
-then
-```bash
 cd ra1stats
 git submodule init
 ```
-
 
 2. If needed, set up the environment:
 ```bash
