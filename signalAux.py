@@ -59,6 +59,9 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
     out = {}
     tags = []
     if model in cmssm :
+        oldBase = base
+        base = "ra1e/2011/"
+        print 'WARNING: modifying base "%s" to "%s" for model %s.'%(oldBase, base, model)
         assert box in ["had", "muon"]
         if scale not in ["1", "05", "2"] :
             print "WARNING: assuming scale=1"
@@ -155,8 +158,11 @@ def ranges(model) :
     d["effUncThZRange"] = (0.0, 0.40, 40)
     return d
 
+def chi() :
+    return "#tilde{#chi}^{0}_{1}"
+
 def processStamp(key = "") :
-    chi = "#tilde{#chi}^{0}_{1}"
+    chi = chi()
     dct = {
         ''     : {
         'text': "",
