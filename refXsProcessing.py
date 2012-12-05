@@ -1,9 +1,8 @@
-import collections,patches
+import collections,patches,signalAux
 import ROOT as r
-from signalAux import xsHistoSpec
 
 def refXsHisto(model) :
-    hs = xsHistoSpec(model = model, xsVariation = "default")
+    hs = signalAux.xsHistoSpec(model = model, xsVariation = "default")
     f = r.TFile(hs["file"])
     h = f.Get(hs["histo"])
     if not h :
