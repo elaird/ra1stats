@@ -1,0 +1,3 @@
+[submodule "ra1e"]
+	path = ra1e
+	url = git@github.com:elaird/ra1e.git
