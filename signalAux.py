@@ -1,21 +1,20 @@
-from configuration import switches
-
 #joint SMS-CMSSM
-def locations() :
-    return {"eff": "ra1e/2012/",
-            "xs" : "xs/"}
+def xsHistoSpec(model = "", cmssmProcess = "", xsVariation = "") :
+    if not cmssmProcess :
+        if xsVariation!="default":
+            print 'WARNING: variation "%s" for SMS %s will need to use error bars in xs file.'%(xsVariation, model)
+    else :
+        print "WARNING: using 7 TeV xs for model %s, process %s"%(model, cmssmProcess)
 
-def xsHistoSpec(model) :
-    base = locations()["xs"]
-    variation = switches()["xsVariation"]
-    seven = "%s/v5/7TeV.root"%base
-    eight = "%s/v5/8TeV.root"%base
+    base = "xs"
+    #seven = "%s/v5/7TeV.root"%base
+    eight = "%s/v5/8TeV.root"%base;
     tgqFile = "%s/v1/TGQ_xSec.root"%base
     tanBeta10 = "%s/v5/7TeV_cmssm.root"%base
     d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": eight},
          "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
          "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
-         #"tanBeta10":   {"histo": "total_%s"%variation,  "factor": 1.0,  "file": tanBeta10},#7TeV
+         "tanBeta10":   {"histo": "%s_%s"%(cmssmProcess, xsVariation),  "factor": 1.0,  "file": tanBeta10},
          }
 
     for item in ["T1", "T1bbbb", "T1tttt", "T5zz"] :
@@ -30,8 +29,7 @@ def xsHistoSpec(model) :
 def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None,
                  bJets = None, jets = None, xsVariation = None) :
     #xsVariation is ignored
-
-    base = locations()["eff"]
+    base = "ra1e/2012/"
 
     cmssm = {"tanBeta10":  {"cmssw":"rw", "had":"v2", "muon":"v2"},
              #"tanBeta10":  {"cmssw":"42", "had":"v8", "muon":"v8"},
@@ -61,6 +59,9 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
     out = {}
     tags = []
     if model in cmssm :
+        oldBase = base
+        base = "ra1e/2011/"
+        print 'WARNING: modifying base "%s" to "%s" for model %s.'%(oldBase, base, model)
         assert box in ["had", "muon"]
         if scale not in ["1", "05", "2"] :
             print "WARNING: assuming scale=1"
@@ -157,35 +158,37 @@ def ranges(model) :
     d["effUncThZRange"] = (0.0, 0.40, 40)
     return d
 
+def chi() :
+    return "#tilde{#chi}^{0}_{1}"
+
 def processStamp(key = "") :
-    chi = "#tilde{#chi}^{0}_{1}"
     dct = {
         ''     : {
         'text': "",
         'xpos': 0.4250,
         },
         'T2'     : {
-        'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q %s; m(#tilde{g})>>m(#tilde{q})"%chi,
+        'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q %s; m(#tilde{g})>>m(#tilde{q})"%chi(),
         'xpos': 0.4250,
         },
         'T2bb'   : {
-        'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b %s; m(#tilde{g})>>m(#tilde{b})"%chi,
+        'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b %s; m(#tilde{g})>>m(#tilde{b})"%chi(),
         'xpos': 0.425,
         },
         'T2tt'   : {
-        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t %s; m(#tilde{g})>>m(#tilde{t})"%chi,
+        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t %s; m(#tilde{g})>>m(#tilde{t})"%chi(),
         'xpos': 0.41,
         },
         'T1'     : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q #bar{q} %s; m(#tilde{q})>>m(#tilde{g})"%chi,
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q #bar{q} %s; m(#tilde{q})>>m(#tilde{g})"%chi(),
         'xpos': 0.4325,
         },
         'T1bbbb' : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b #bar{b} %s; m(#tilde{b})>>m(#tilde{g})"%chi,
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b #bar{b} %s; m(#tilde{b})>>m(#tilde{g})"%chi(),
         'xpos': 0.43,
         },
         'T1tttt' : {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t #bar{t} %s; m(#tilde{t})>>m(#tilde{g})"%chi,
+        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t #bar{t} %s; m(#tilde{t})>>m(#tilde{g})"%chi(),
         'xpos': 0.425,
         },
         }

@@ -1,4 +1,4 @@
-import os,sys,math,utils,pickling,utils
+import os,sys,math,utils,pickling,utils,patches
 import signalAux as sa
 import histogramProcessing as hp
 import configuration as conf
@@ -17,8 +17,8 @@ setupRoot()
 
 
 def modifyHisto(h, s) :
-    hp.fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
-    hp.killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
+    hp.fillPoints(h, points = patches.overwriteOutput()[s["signalModel"]])
+    hp.killPoints(h, cutFunc = patches.cutFunc().get(s["signalModel"], None))
 
 def squareCanvas(margin = 0.18, ticks = True, name = "canvas", numbered = False) :
     canvas = (utils.numberedCanvas if numbered else r.TCanvas)(name, name, 2)
@@ -179,7 +179,7 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
          "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
         ]
 
-    curves = switches["curves"].get(switches["signalModel"])
+    curves = patches.curves().get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
             {"name":"%s_-1_Sigma"%upperLimitName, "histoName":upperLimitName,
@@ -197,6 +197,8 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
                 spec["curve"] = spline(points = curves[key])
 
     signalModel = switches["signalModel"]
+    cutFunc = patches.cutFunc()[signalModel]
+
     for i,spec in enumerate(specs) :
         h = histos[spec.get("histoName", spec["name"])]
         h.SetName(spec["name"].replace("-1","m1").replace("+1","p1"))
@@ -316,9 +318,9 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     #make exclusion histograms and curves
     try:
         graphs = exclusions(histos = histos, writeDir = g, switches = s,
-                            graphBlackLists = s["graphBlackLists"], graphReplacePoints = s["graphReplacePoints"],
+                            graphBlackLists = patches.graphBlackLists(), graphReplacePoints = patches.graphReplacePoints(),
                             interBin = interBin, printXs = printXs, pruneYMin = pruneYMin, debug = debug,
-                            graphAdditionalPoints = s["graphAdditionalPoints"], upperLimitName = name)
+                            graphAdditionalPoints = patches.graphAdditionalPoints(), upperLimitName = name)
     except:
         print "ERROR: creation of exclusions has failed."
         sys.excepthook(*sys.exc_info())

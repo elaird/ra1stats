@@ -1,10 +1,8 @@
-import collections
+import collections,signalAux
 import ROOT as r
-from configuration import switches
-from signalAux import xsHistoSpec
 
 def refXsHisto(model) :
-    hs = xsHistoSpec(model)
+    hs = signalAux.xsHistoSpec(model = model, xsVariation = "default")
     f = r.TFile(hs["file"])
     h = f.Get(hs["histo"])
     if not h :
@@ -99,10 +97,8 @@ def excludedGraph(h, factor = None, variation = 0.0, model = None, interBin = "C
 
     return out
 
-def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge", variation = 0.0, applyCutFunc = False) :
-    if applyCutFunc :
-        s = switches()
-        cutFunc = s["cutFunc"][s["signalModel"]]
+def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowEdge", variation = 0.0) :
+    cutFunc = None
     refHisto = refXsHisto(model)
     out = h.Clone("%s_excludedHistoSimple"%h.GetName())
     out.Reset()
@@ -113,7 +109,7 @@ def excludedHistoSimple(h, factor = None, model = None, interBin = "CenterOrLowE
             y = getattr(h.GetYaxis(),"GetBin%s"%interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             if not xsLimit : continue
-            if applyCutFunc and not cutFunc(iBinX, x, iBinY, y, 1, 0.0) : continue
+            if cutFunc and not cutFunc(iBinX, x, iBinY, y, 1, 0.0) : continue
             xs = content(h = refHisto, coords = (x, y), variation = variation, factor = factor)
             out.SetBinContent(iBinX, iBinY, 2*(xsLimit<xs)-1)
     return out

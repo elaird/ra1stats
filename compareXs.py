@@ -15,8 +15,7 @@ def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     y = 0.3
     dy = 0.06
 
-    chi = "#tilde{#chi}^{0}_{1}"
-    tl.DrawLatex(x,y-2*dy, 'm_{%s} = %d GeV'%(chi, int(lspMass)))
+    tl.DrawLatex(x,y-2*dy, 'm_{%s} = %d GeV'%(signalAux.chi(), int(lspMass)))
     tl.DrawLatex(x,y, lumiStamp)
 
     #tl.SetTextSize(0.07)
@@ -276,7 +275,7 @@ def main():
     setup()
 
     model = 'T2tt'
-    hSpec = signalAux.xsHistoSpec(model)
+    hSpec = signalAux.xsHistoSpec(model = model, xsVariation = "default")
     
     options = {
         'refProcess': hSpec['histo'],

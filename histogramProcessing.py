@@ -1,4 +1,4 @@
-import collections,utils,signalAux
+import collections,utils,signalAux,patches
 import configuration as conf
 import ROOT as r
 
@@ -92,12 +92,26 @@ def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
     if s["binaryExclusionRatherThanUpperLimit"] :
-        if s["isSms"] :
-            return smsXsHisto(model = model, process = "total", xsVariation = s["xsVariation"])
-        else :
-            return cmssmXsHisto(model = model, process = "total", xsVariation = s["xsVariation"])
+        return xsHistoPhysical(model = model, cmssmProcess = "" if s["isSms"] else "total", xsVariation = s["xsVariation"])
     else :
-        return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
+        return xsHistoAllOne(model, cutFunc = patches.cutFunc()[model])
+
+def xsHistoPhysical(model = "", cmssmProcess = "", xsVariation = "") :
+    #get example histo and reset
+    isSms = not cmssmProcess
+    dummyHisto = "m0_m12_mChi_noweight" if isSms else "m0_m12_gg"
+    s = signalAux.effHistoSpec(model = model, box = "had")
+    out = ratio(s["file"], s["beforeDir"], dummyHisto, s["beforeDir"], dummyHisto)
+    out.Reset()
+
+    spec = signalAux.xsHistoSpec(model = model, cmssmProcess = cmssmProcess, xsVariation = xsVariation)
+    assert spec["factor"]==1.0,"will need to accommodate factor of %g"%spec["factor"]
+    h = oneHisto(spec["file"], "/", spec["histo"])
+
+    print "FIXME: Implement some check of the agreement in binning between these histos"
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
+        out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
+    return out
 
 def nEventsInHisto() :
     model = conf.switches()["signalModel"]
@@ -116,33 +130,18 @@ def effHisto(**args) :
     else :
         return smsEffHisto(model = model, **args)
 
-def cmssmXsHisto(model, process = "", xsVariation = "") :
-    #get example histo and reset
-    s = signalAux.effHistoSpec(model = model, box = "had")
-    out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_gg_noweight")
-    out.Reset()
-
-    print "FIXME: hard-coded CMSSM XS version"
-    fileName = "%s/v5/7TeV_cmssm.root"%signalAux.locations()["xs"]
-    h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
-
-    #Note! Implement some check of the agreement in binning between these histos
-    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
-        out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
-    return out
-
 def cmssmEffHisto(**args) :
     s = signalAux.effHistoSpec(**args)
     out = None
 
     #Note! Implement some check of the agreement in sets of processes between yield file and xs file
-    for process in signalAux.processes() :
-        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s"%process) #efficiency of a process
-        h.Multiply(cmssmXsHisto(model = args["model"], process = process, xsVariation = args["xsVariation"])) #weight by xs of the process
+    for proc in signalAux.processes() :
+        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%proc, s["beforeDir"], "m0_m12_%s"%proc) #efficiency of a process
+        h.Multiply(xsHistoPhysical(model = args["model"], cmssmProcess = proc, xsVariation = args["xsVariation"])) #weight by xs of the process
         if out is None : out = h.Clone("effHisto")
         else :           out.Add(h)
     out.SetDirectory(0)
-    out.Divide(cmssmXsHisto(model = args["model"], process = "total", xsVariation = args["xsVariation"])) #divide by total xs
+    out.Divide(xsHistoPhysical(model = args["model"], cmssmProcess = "total", xsVariation = args["xsVariation"])) #divide by total xs
     return out
 
 def xsHistoAllOne(model, cutFunc = None) :
@@ -158,28 +157,12 @@ def xsHistoAllOne(model, cutFunc = None) :
         h.SetBinContent(iX, iY, iZ, content)
     return h
 
-def smsXsHisto(model, process = "", xsVariation = "") :
-    assert False,"this function is broken"
-    #get example histo and reset
-    s = signalAux.effHistoSpec(model = model, box = "had")
-    out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_mChi_noweight")
-    out.Reset()
-
-    print "FIXME: hard-coded SMS XS version"
-    fileName = "%s/v5/8TeV.root"%signalAux.locations()["xs"]
-    h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
-
-    #Note! Implement some check of the agreement in binning between these histos
-    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
-        out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
-    return out
-
 def smsEffHisto(**args) :
     switches = conf.switches()
     s = signalAux.effHistoSpec(**args)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
-    fillPoints(out, points = switches["overwriteInput"][switches["signalModel"]])
+    fillPoints(out, points = patches.overwriteInput()[switches["signalModel"]])
     return out
 
 ##signal point selection
@@ -193,7 +176,7 @@ def points() :
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content : continue
         if s["multiplesInGeV"] and ((x/s["multiplesInGeV"])%1 != 0.0) : continue
-        if s['cutFunc'][s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
+        if patches.cutFunc()[s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
             out.append( (iBinX, iBinY, iBinZ) )
     return out
 
