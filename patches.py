@@ -85,12 +85,6 @@ def curves() :
             }
             }
 
-def nEventsIn() :
-    return {""         :(1,     None),
-            "T5zz"     :(5.0e3, None),
-            "tanBeta10":(9.0e3, 11.0e3),
-            }
-
 def overwriteInput() :
     return collections.defaultdict(list)
 
