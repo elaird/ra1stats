@@ -1,10 +1,7 @@
-import os,sys,math,utils,pickling
-
-from histogramProcessing import printHoles,fillPoints,killPoints
-from utils import threeToTwo, shifted
-
+import os,sys,math,utils,pickling,utils
+import signalAux as sa
+import histogramProcessing as hp
 import configuration as conf
-import histogramSpecs as hs
 import refXsProcessing as rxs
 import ROOT as r
 
@@ -20,8 +17,8 @@ setupRoot()
 
 
 def modifyHisto(h, s) :
-    fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
-    killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
+    hp.fillPoints(h, points = s["overwriteOutput"][s["signalModel"]])
+    hp.killPoints(h, cutFunc = s["cutFunc"][s["signalModel"]] if s["signalModel"] in s["cutFunc"] else None)
 
 def squareCanvas(margin = 0.18, ticks = True, name = "canvas", numbered = False) :
     canvas = (utils.numberedCanvas if numbered else r.TCanvas)(name, name, 2)
@@ -47,7 +44,7 @@ def printOnce(canvas, fileName) :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-        current_stamp = conf.processStamp(conf.switches()['signalModel'])
+        current_stamp = sa.processStamp(conf.switches()['signalModel'])
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
@@ -185,11 +182,11 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
     curves = switches["curves"].get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            {"name":"%s_-1_Sigma"%upperLimitName, "histoName":"UpperLimit",
+            {"name":"%s_-1_Sigma"%upperLimitName, "histoName":upperLimitName,
              "variation":-1.0, "label":"", "simpleLabel":"Observed Limit - 1 #sigma (theory)",
              "lineStyle":1, "lineWidth":1, "color": r.kBlue if debug else r.kBlack},
 
-            {"name":"%s_+1_Sigma"%upperLimitName, "histoName":"UpperLimit",
+            {"name":"%s_+1_Sigma"%upperLimitName, "histoName":upperLimitName,
              "variation": 1.0, "label":"", "simpleLabel":"Observed Limit + 1 #sigma (theory)",
              "lineStyle":1, "lineWidth":1, "color": r.kYellow if debug else r.kBlack},
             ]
@@ -241,9 +238,9 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
         h3 = f.Get(name)
         if not h3 : continue
-        h = shifted(threeToTwo(h3), shift = (shiftX, shiftY))
+        h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, switches)
-        title = hs.histoTitle(model = model)
+        title = sa.histoTitle(model = model)
         title += ";%g%% C.L. %s on #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
@@ -281,6 +278,7 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
             d["curve"].Draw("lpsame")
         r.gPad.SetGridx()
         r.gPad.SetGridy()
+        #printOnce(c, pdf.replace(".pdf",".eps"))
         c.Print(pdf)
     c.Print(pdf+"]")
     tfile.Close()
@@ -292,7 +290,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
                           pruneYMin = False, debug = False, stampPrelim = True) :
 
     s = conf.switches()
-    ranges = hs.ranges(s["signalModel"])
+    ranges = sa.ranges(s["signalModel"])
     if name == "": name = "UpperLimit" if s["method"]=="CLs" else "upperLimit95"
     inFile = pickling.mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
@@ -351,7 +349,7 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
         s4 = stamp(text = "Preliminary", x = 0.2075, y = 0.595, factor = 0.7)
 
     printOnce(c, outFileEps)
-    printHoles(histos[name])
+    hp.printHoles(histos[name])
 
 def efficiencyHistos(key = "") :
     out = {}
@@ -386,7 +384,7 @@ def makeEfficiencyPlotBinned(key = "effHad") :
         can.cd(pad[i])
         prep(r.gPad)
 
-        h2 = threeToTwo(h)
+        h2 = utils.threeToTwo(h)
         keep.append(h2)
         h2.SetTitle(cat)
         h2.SetStats(False)
@@ -431,12 +429,12 @@ def makeEfficiencyPlot() :
             h3.Add(h)
     f.Close()
 
-    h2 = threeToTwo(h3)
+    h2 = utils.threeToTwo(h3)
 
     assert h2
     modifyHisto(h2, s)
 
-    title = hs.histoTitle(model = s["signalModel"])
+    title = sa.histoTitle(model = s["signalModel"])
     title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
 
@@ -445,7 +443,7 @@ def makeEfficiencyPlot() :
     h2.Write()
     g.Close()
 
-    ranges = hs.ranges(s["signalModel"])
+    ranges = sa.ranges(s["signalModel"])
     setRange("xRange", ranges, h2, "X")
     setRange("yRange", ranges, h2, "Y")
 
@@ -457,7 +455,7 @@ def makeEfficiencyPlot() :
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
 
     printOnce(c, printName)
-    printHoles(h2)
+    hp.printHoles(h2)
 
 def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
@@ -465,13 +463,13 @@ def makeEfficiencyUncertaintyPlots() :
 
     inFile = pickling.mergedFile()
     f = r.TFile(inFile)
-    ranges = hs.ranges(s["signalModel"])
+    ranges = sa.ranges(s["signalModel"])
 
     def go(name, suffix, zTitle, zRangeKey) :
         fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
         c = squareCanvas()
-        h2 = threeToTwo(f.Get(name))
-        xyTitle = hs.histoTitle(model = s["signalModel"])
+        h2 = utils.threeToTwo(f.Get(name))
+        xyTitle = sa.histoTitle(model = s["signalModel"])
         adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
         setRange("xRange", ranges, h2, "X")
         setRange("yRange", ranges, h2, "Y")
@@ -535,14 +533,14 @@ def printLumis() :
 
 def drawBenchmarks() :
     switches = conf.switches()
-    parameters =  conf.scanParameters()
+    parameters =  sa.scanParameters()
     if not switches["drawBenchmarkPoints"] : return
     if not (switches["signalModel"] in parameters) : return
     params = parameters[switches["signalModel"]]
 
     text = r.TText()
     out = []
-    for label,coords in conf.benchmarkPoints().iteritems() :
+    for label,coords in sa.benchmarkPoints().iteritems() :
         drawIt = True
         for key,value in coords.iteritems() :
             if key in params and value!=params[key] : drawIt = False
@@ -555,10 +553,10 @@ def drawBenchmarks() :
 
 def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [], switches = {}, suppressed = []) :
     if "upper" in name :
-        printHoles(h2)
+        hp.printHoles(h2)
         #printMaxes(h2)
     h2.SetStats(False)
-    h2.SetTitle("%s%s"%(name, hs.histoTitle(model = switches["signalModel"])))
+    h2.SetTitle("%s%s"%(name, sa.histoTitle(model = switches["signalModel"])))
     h2.Draw("colz")
     if not h2.Integral() :
         suppressed.append(name)
@@ -597,13 +595,13 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
     #effMu/effHad
     if switches["effRatioPlots"] :
         for name in names :
-            num = threeToTwo(f.Get(name))
+            num = utils.threeToTwo(f.Get(name))
             if name[:7]!="effmuon" : continue
             denName = name.replace("muon", "had")
-            den = threeToTwo(f.Get(denName))
+            den = utils.threeToTwo(f.Get(denName))
             num.Divide(den)
             num.SetStats(False)
-            num.SetTitle("%s/%s%s;"%(name, denName, hs.histoTitle(model = switches["signalModel"])))
+            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model = switches["signalModel"])))
             num.Draw("colz")
             if not num.Integral() : continue
             num.SetMinimum(0.0)
@@ -665,7 +663,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
         if whiteListMatch and not any([item in name for item in whiteListMatch]) : continue
         if any([item in name for item in blackListMatch]) : continue
 
-        h2 = threeToTwo(f.Get(name))
+        h2 = utils.threeToTwo(f.Get(name))
         if modify : modifyHisto(h2, s)
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
                       logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
@@ -693,7 +691,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         out = {}
         for key in f.GetListOfKeys() :
             name = key.GetName()
-            out[name] = threeToTwo(f.Get(name))
+            out[name] = utils.threeToTwo(f.Get(name))
             out[name].SetDirectory(0)
         f.Close()
         return out

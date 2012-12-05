@@ -615,7 +615,7 @@ class validationPlotter(object) :
                        "width":self.width1, "stack":"total"}]
 
         self.plot(fileName = ["hadronic","alphaT","ratio"], legend0 = (0.48, 0.65), legend1 = (0.85, 0.88),
-                  obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc":"%s (hadronic sample)"%self.obsLabel},
+                  obs = {"var":"nHad", "dens":["nHadBulk"], "denTypes":["var"], "desc": "Data (hadronic sample, %s)"%self.selNote},
                   otherVars = specs, yLabel = "R_{#alpha_{T}}", customMaxFactor = [1.5]*2)
 
         return
