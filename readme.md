@@ -7,12 +7,14 @@
 1. Clone the repository:
 ```bash
 git clone git://github.com/elaird/ra1stats.git
-cd ra1stats
 ```
 or, if you have forked it:
 ```bash
 git clone git://github.com/your_username/ra1stats.git
-cd ra1stats
+```
+then
+```cd ra1stats
+git submodule init
 ```
 
 
