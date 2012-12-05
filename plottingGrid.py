@@ -197,10 +197,13 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
                 spec["curve"] = spline(points = curves[key])
 
     signalModel = switches["signalModel"]
+    cutFunc = patches.cutFunc()[signalModel]
+
     for i,spec in enumerate(specs) :
         h = histos[spec.get("histoName", spec["name"])]
         h.SetName(spec["name"].replace("-1","m1").replace("+1","p1"))
-        graph = rxs.graph(h = h, model = signalModel, interBin = interBin, printXs = printXs, spec = spec)
+        graph = rxs.graph(h = h, model = signalModel, cutFunc = cutFunc,
+                          interBin = interBin, printXs = printXs, spec = spec)
 
         name = spec["name"]
         if name in graphBlackLists :
