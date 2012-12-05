@@ -1,12 +1,8 @@
 from configuration import switches
 
 #joint SMS-CMSSM
-def locations() :
-    return {"eff": "ra1e/2012/",
-            "xs" : "xs/"}
-
 def xsHistoSpec(model) :
-    base = locations()["xs"]
+    base = "xs"
     variation = switches()["xsVariation"]
     seven = "%s/v5/7TeV.root"%base
     eight = "%s/v5/8TeV.root"%base
@@ -30,8 +26,7 @@ def xsHistoSpec(model) :
 def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None,
                  bJets = None, jets = None, xsVariation = None) :
     #xsVariation is ignored
-
-    base = locations()["eff"]
+    base = "ra1e/2012/"
 
     cmssm = {"tanBeta10":  {"cmssw":"rw", "had":"v2", "muon":"v2"},
              #"tanBeta10":  {"cmssw":"42", "had":"v8", "muon":"v8"},
