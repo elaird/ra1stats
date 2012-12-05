@@ -1,3 +1,42 @@
+import socket
+
+def locations() :
+    dct = {
+        "ic.ac.uk"   : "/vols/cms02/elaird1",
+        "phosphorus" : "/home/elaird/71_stats_files/",
+        "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
+        "fnal.gov"   : "/uscms_data/d2/elaird/",
+        "brown02"    : "/vols/cms02/elaird1"
+    }
+    lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
+    assert len(lst) == 1, lst
+    s = dct[ lst[0] ]
+
+    return {"eff": "%s/20_yieldHistograms/2012/"%s,
+            "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
+
+def histoSpec(model) :
+    base = locations()["xs"]
+    variation = switches()["xsVariation"]
+    seven = "%s/v5/7TeV.root"%base
+    eight = "%s/v5/8TeV.root"%base
+    tgqFile = "%s/v1/TGQ_xSec.root"%base
+    tanBeta10 = "%s/v5/7TeV_cmssm.root"%base
+    d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": eight},
+         "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
+         "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
+         #"tanBeta10":   {"histo": "total_%s"%variation,  "factor": 1.0,  "file": tanBeta10},#7TeV
+         }
+
+    for item in ["T1", "T1bbbb", "T1tttt", "T5zz"] :
+        d[item] = {"histo":"gluino", "factor":1.0,  "file":eight}
+
+    for item in ["TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"] :
+        d[item] = {"histo":"clone", "factor":1.0, "file":tgqFile}
+
+    assert model in d,"model=%s"%model
+    return d[model]
+
 def benchmarkPoints() :
     out = {}
     fields =                       [  "m0",  "m12",  "A0", "tanBeta", "sgn(mu)"]
