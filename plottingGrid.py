@@ -16,9 +16,9 @@ def setupRoot() :
 setupRoot()
 
 
-def modifyHisto(h, s) :
-    hp.fillPoints(h, points = patches.overwriteOutput()[s["signalModel"]])
-    hp.killPoints(h, cutFunc = patches.cutFunc().get(s["signalModel"], None))
+def modifyHisto(h = None, model = "") :
+    hp.fillPoints(h, points = patches.overwriteOutput()[model])
+    hp.killPoints(h, cutFunc = patches.cutFunc().get(model, None))
 
 def squareCanvas(margin = 0.18, ticks = True, name = "canvas", numbered = False) :
     canvas = (utils.numberedCanvas if numbered else r.TCanvas)(name, name, 2)
@@ -241,7 +241,7 @@ def xsUpperLimitHistograms(fileName = "", switches = {}, ranges = {}, shiftX = F
         h3 = f.Get(name)
         if not h3 : continue
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
-        modifyHisto(h, switches)
+        modifyHisto(h, model)
         title = sa.histoTitle(model = model)
         title += ";%g%% C.L. %s on #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
@@ -434,7 +434,7 @@ def makeEfficiencyPlot() :
     h2 = utils.threeToTwo(h3)
 
     assert h2
-    modifyHisto(h2, s)
+    modifyHisto(h2, s["signalModel"])
 
     title = sa.histoTitle(model = s["signalModel"])
     title += ";A #times #epsilon"
@@ -666,7 +666,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
         if any([item in name for item in blackListMatch]) : continue
 
         h2 = utils.threeToTwo(f.Get(name))
-        if modify : modifyHisto(h2, s)
+        if modify : modifyHisto(h2, s["signalModel"])
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
                       logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
         if outputRootFile :
