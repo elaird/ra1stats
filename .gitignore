@@ -15,3 +15,6 @@ points/
 cpp/drive
 callgrind.out*
 .nfs*
+ensemble*.root
+workspace.root
+xs/sms_xs.root
