@@ -6,7 +6,6 @@ output*
 *.d
 *.so
 .*.swp
-*.root
 *.pdf
 points/
 *.log
