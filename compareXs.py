@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os,ROOT as r
-import utils,configuration,refXsProcessing,plottingGrid,signalAux
+import utils,configuration,plottingGrid,signalAux
 
 def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     canvas.cd()
@@ -276,7 +276,7 @@ def main():
     setup()
 
     model = 'T2tt'
-    hSpec = refXsProcessing.histoSpec(model)
+    hSpec = signalAux.xsHistoSpec(model)
     
     options = {
         'refProcess': hSpec['histo'],

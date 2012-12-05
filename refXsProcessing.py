@@ -1,10 +1,10 @@
 import collections
 import ROOT as r
 from configuration import switches
-from signalAux import histoSpec
+from signalAux import xsHistoSpec
 
 def refXsHisto(model) :
-    hs = histoSpec(model)
+    hs = xsHistoSpec(model)
     f = r.TFile(hs["file"])
     h = f.Get(hs["histo"])
     if not h :

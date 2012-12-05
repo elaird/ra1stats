@@ -1,4 +1,5 @@
 import socket
+from configuration import switches
 
 def locations() :
     dct = {
@@ -15,7 +16,7 @@ def locations() :
     return {"eff": "%s/20_yieldHistograms/2012/"%s,
             "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
 
-def histoSpec(model) :
+def xsHistoSpec(model) :
     base = locations()["xs"]
     variation = switches()["xsVariation"]
     seven = "%s/v5/7TeV.root"%base
