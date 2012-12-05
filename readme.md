@@ -8,7 +8,7 @@
 ```bash
 git clone git://github.com/elaird/ra1stats.git
 cd ra1stats
-git submodule init
+git submodule update --init
 ```
 
 2. If needed, set up the environment:
