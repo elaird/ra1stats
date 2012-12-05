@@ -93,8 +93,10 @@ def xsHisto() :
     s = conf.switches()
     model = s["signalModel"]
     if s["binaryExclusionRatherThanUpperLimit"] :
-        assert not s["isSms"],model
-        return cmssmXsHisto(model = model, process = "total", xsVariation = s["xsVariation"])
+        if s["isSms"] :
+            return smsXsHisto(model = model, process = "total", xsVariation = s["xsVariation"])
+        else :
+            return cmssmXsHisto(model = model, process = "total", xsVariation = s["xsVariation"])
     else :
         return xsHistoAllOne(model, cutFunc = s["cutFunc"][model])
 
@@ -114,42 +116,6 @@ def effHisto(**args) :
         return cmssmEffHisto(model = model, xsVariation = s["xsVariation"], **args)
     else :
         return smsEffHisto(model = model, **args)
-
-#def cmssmLoXsHisto(model) :
-#    s = hs.histoSpec(model = model, box = "had", scale = "1")
-#    out = ratio(s["file"], s["beforeDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi_noweight")
-#    out.Scale(conf.switches()["icfDefaultNEventsIn"]/conf.switches()["icfDefaultLumi"])
-#    #mData = mEv.GetSusyCrossSection()*mDesiredLumi/10000;
-#    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/framework/src/common/Compute_Helpers.cc
-#    #http://svnweb.cern.ch/world/wsvn/icfsusy/trunk/AnalysisV2/hadronic/src/common/mSuGraPlottingOps.cc
-#    return out
-#
-#def cmssmLoEffHisto(**args) :
-#    s = hs.histoSpec(**args)
-#    out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
-#    return out
-#
-#def cmssmNloXsHisto(model, scale = "1") :
-#    s = hs.histoSpec(model = model, box = "had", scale = scale)
-#    out = None
-#    for process in conf.processes() :
-#        h = ratio(s["file"], s["beforeDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process)
-#        if out is None : out = h.Clone("nloXsHisto")
-#        else :           out.Add(h)
-#    out.SetDirectory(0)
-#    #see links in loXsHisto
-#    return out
-#
-#def cmssmNloEffHisto(**args) :
-#    s = hs.histoSpec(**args)
-#    out = None
-#    for process in conf.processes() :
-#        h = ratio(s["file"], s["afterDir"], "m0_m12_%s"%process, s["beforeDir"], "m0_m12_%s_noweight"%process) #eff weighted by xs
-#        if out is None : out = h.Clone("nloEffHisto")
-#        else :           out.Add(h)
-#    out.SetDirectory(0)
-#    out.Divide(cmssmNloXsHisto(model = args["model"], scale = args["scale"])) #divide by total xs
-#    return out
 
 def cmssmXsHisto(model, process = "", xsVariation = "") :
     #get example histo and reset
@@ -192,6 +158,22 @@ def xsHistoAllOne(model, cutFunc = None) :
             content = 0.0
         h.SetBinContent(iX, iY, iZ, content)
     return h
+
+def smsXsHisto(model, process = "", xsVariation = "") :
+    assert False,"this function is broken"
+    #get example histo and reset
+    s = hs.histoSpec(model = model, box = "had")
+    out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_mChi_noweight")
+    out.Reset()
+
+    print "FIXME: hard-coded SMS XS version"
+    fileName = "%s/v5/8TeV.root"%conf.locations()["xs"]
+    h = oneHisto(fileName, "/", "_".join([process, xsVariation]))
+
+    #Note! Implement some check of the agreement in binning between these histos
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
+        out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
+    return out
 
 def smsEffHisto(**args) :
     switches = conf.switches()
