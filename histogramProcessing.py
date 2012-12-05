@@ -1,6 +1,5 @@
 import collections,utils,signalAux
 import configuration as conf
-import histogramSpecs as hs
 import ROOT as r
 
 ##helper functions
@@ -102,7 +101,7 @@ def xsHisto() :
 
 def nEventsInHisto() :
     model = conf.switches()["signalModel"]
-    s = hs.histoSpec(model = model, box = "had")
+    s = signalAux.effHistoSpec(model = model, box = "had")
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 def effHisto(**args) :
@@ -119,7 +118,7 @@ def effHisto(**args) :
 
 def cmssmXsHisto(model, process = "", xsVariation = "") :
     #get example histo and reset
-    s = hs.histoSpec(model = model, box = "had")
+    s = signalAux.effHistoSpec(model = model, box = "had")
     out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_gg_noweight")
     out.Reset()
 
@@ -133,7 +132,7 @@ def cmssmXsHisto(model, process = "", xsVariation = "") :
     return out
 
 def cmssmEffHisto(**args) :
-    s = hs.histoSpec(**args)
+    s = signalAux.effHistoSpec(**args)
     out = None
 
     #Note! Implement some check of the agreement in sets of processes between yield file and xs file
@@ -162,7 +161,7 @@ def xsHistoAllOne(model, cutFunc = None) :
 def smsXsHisto(model, process = "", xsVariation = "") :
     assert False,"this function is broken"
     #get example histo and reset
-    s = hs.histoSpec(model = model, box = "had")
+    s = signalAux.effHistoSpec(model = model, box = "had")
     out = ratio(s["file"], s["beforeDir"], "m0_m12_gg", s["beforeDir"], "m0_m12_mChi_noweight")
     out.Reset()
 
@@ -177,7 +176,7 @@ def smsXsHisto(model, process = "", xsVariation = "") :
 
 def smsEffHisto(**args) :
     switches = conf.switches()
-    s = hs.histoSpec(**args)
+    s = signalAux.effHistoSpec(**args)
     #out = ratio(s["file"], s["afterDir"], "m0_m12_mChi", s["beforeDir"], "m0_m12_mChi")
     out = ratio(s["file"], s["afterDir"], "m0_m12_mChi_noweight", s["beforeDir"], "m0_m12_mChi_noweight")
     fillPoints(out, points = switches["overwriteInput"][switches["signalModel"]])

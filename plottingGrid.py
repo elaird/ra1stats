@@ -1,10 +1,10 @@
 import os,sys,math,utils,pickling,signalAux
-
+hs = signalAux
 from histogramProcessing import printHoles,fillPoints,killPoints
 from utils import threeToTwo, shifted
 
 import configuration as conf
-import histogramSpecs as hs
+
 import refXsProcessing as rxs
 import ROOT as r
 
