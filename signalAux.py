@@ -1,17 +1,20 @@
-from configuration import switches
-
 #joint SMS-CMSSM
-def xsHistoSpec(model) :
+def xsHistoSpec(model = "", cmssmProcess = "", xsVariation = "") :
+    if not cmssmProcess :
+        if xsVariation!="default":
+            print 'WARNING: variation "%s" for SMS %s will need to use error bars in xs file.'%(xsVariation, model)
+    else :
+        print "WARNING: using 7 TeV xs for model %s, process %s"%(model, cmssmProcess)
+
     base = "xs"
-    variation = switches()["xsVariation"]
-    seven = "%s/v5/7TeV.root"%base
-    eight = "%s/v5/8TeV.root"%base
+    #seven = "%s/v5/7TeV.root"%base
+    eight = "%s/v5/8TeV.root"%base;
     tgqFile = "%s/v1/TGQ_xSec.root"%base
     tanBeta10 = "%s/v5/7TeV_cmssm.root"%base
     d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": eight},
          "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
          "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
-         #"tanBeta10":   {"histo": "total_%s"%variation,  "factor": 1.0,  "file": tanBeta10},#7TeV
+         "tanBeta10":   {"histo": "%s_%s"%(cmssmProcess, xsVariation),  "factor": 1.0,  "file": tanBeta10},
          }
 
     for item in ["T1", "T1bbbb", "T1tttt", "T5zz"] :
