@@ -276,7 +276,7 @@ def main():
     setup()
 
     model = 'T2tt'
-    hSpec = signalAux.xsHistoSpec(model)
+    hSpec = signalAux.xsHistoSpec(model = model, xsVariation = "default")
     
     options = {
         'refProcess': hSpec['histo'],

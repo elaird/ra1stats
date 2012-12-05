@@ -4,7 +4,7 @@ from configuration import switches
 from signalAux import xsHistoSpec
 
 def refXsHisto(model) :
-    hs = xsHistoSpec(model)
+    hs = xsHistoSpec(model = model, xsVariation = "default")
     f = r.TFile(hs["file"])
     h = f.Get(hs["histo"])
     if not h :
