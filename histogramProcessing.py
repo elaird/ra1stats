@@ -113,6 +113,19 @@ def xsHistoPhysical(model = "", cmssmProcess = "", xsVariation = "") :
         out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
 
+def xsHistoAllOne(model, cutFunc = None) :
+    ls = conf.likelihoodSpec()
+    kargs = {} if ls._dataset=="2012ichep" else {"bJets":"eq0b", "jets":"le3j"}
+
+    h = smsEffHisto(model = model, box = "had", scale = None,
+                    htLower = 875, htUpper = None, **kargs)
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
+        content = 1.0
+        if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
+            content = 0.0
+        h.SetBinContent(iX, iY, iZ, content)
+    return h
+
 def nEventsInHisto() :
     model = conf.switches()["signalModel"]
     s = signalAux.effHistoSpec(model = model, box = "had")
@@ -143,19 +156,6 @@ def cmssmEffHisto(**args) :
     out.SetDirectory(0)
     out.Divide(xsHistoPhysical(model = args["model"], cmssmProcess = "total", xsVariation = args["xsVariation"])) #divide by total xs
     return out
-
-def xsHistoAllOne(model, cutFunc = None) :
-    ls = conf.likelihoodSpec()
-    kargs = {} if ls._dataset=="2012ichep" else {"bJets":"eq0b", "jets":"le3j"}
-
-    h = smsEffHisto(model = model, box = "had", scale = None,
-                    htLower = 875, htUpper = None, **kargs)
-    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
-        content = 1.0
-        if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
-            content = 0.0
-        h.SetBinContent(iX, iY, iZ, content)
-    return h
 
 def smsEffHisto(**args) :
     switches = conf.switches()

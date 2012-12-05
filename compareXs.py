@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os,ROOT as r
-import utils,configuration,plottingGrid,signalAux
+import utils,plottingGrid,signalAux
 
 def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     canvas.cd()
@@ -45,7 +45,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
     return histoD
 
 
-def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0):
+def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0, model = ""):
     limitHistoDict = {
         'UpperLimit': {
             'label': 'Observed Limit (95% C.L.)',
@@ -87,7 +87,7 @@ def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0):
     rfile = r.TFile(limitFile,'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
         limitHisto = utils.threeToTwo(rfile.Get(limitHistoName))
-        plottingGrid.modifyHisto(limitHisto, configuration.switches())
+        plottingGrid.modifyHisto(limitHisto, model)
 
         yBin = limitHisto.GetYaxis().FindBin(yValue)
 
@@ -190,7 +190,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         plotOpts.update(plotOptOverrides)
 
     refHisto = getReferenceXsHisto(refProcess, refName, refXsFile)
-    exclusionHistos = getExclusionHistos(limitFile, yValue = yValue, nSmooth = nSmooth)
+    exclusionHistos = getExclusionHistos(limitFile, yValue = yValue, nSmooth = nSmooth, model = model)
 
     canvas = r.TCanvas('c1','c1',700,600)
     utils.divideCanvas(canvas)
