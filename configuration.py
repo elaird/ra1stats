@@ -1,4 +1,3 @@
-import patches
 import likelihoodSpec as ls
 
 batchHost = [ "FNAL", "IC" ][1]
@@ -17,25 +16,21 @@ def ignoreEff() :
     return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"]}}
 
 def effUncRel() :
-    return {"effUncRel":{"T1":0.140,
-                         "T2":0.134,
-                         "T2bb":0.131,
-                         "T2tt":0.139,
-                         "T1bbbb":0.160,
-                         "T1tttt":0.230,
-                         }}
+    return {"effUncRel":{"T1":0.140, "T1bbbb":0.160, "T1tttt":0.230,
+                         "T2":0.134, "T2bb":0.131, "T2tt":0.139, }}
 
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_ichep", "T2bw"]
-
     variations = ["default", "up", "down"]
+
     out = {}
-    for item in ["overwriteInput", "overwriteOutput",
-                 "graphBlackLists", "graphReplacePoints", "graphAdditionalPoints",
-                 "cutFunc", "nEventsIn", "curves"] :
-        out[item] = getattr(patches, item)()
+    out["nEventsIn"] = {""         :(1,     None),
+                        "T5zz"     :(5.0e3, None),
+                        "tanBeta10":(9.0e3, 11.0e3),
+                        }
+
     out["drawBenchmarkPoints"] = True
     out["effRatioPlots"] = False
     out["xsVariation"] = dict(zip(variations, variations))["default"]
@@ -50,6 +45,7 @@ def likelihoodSpec() :
            "T1bbbb"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
            "T1tttt"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
            "T1tttt_ichep": {"whiteList":["2b", "ge3b"], "dataset":"2012ichep"},
+           "tanBeta10"   : {},
            }
     return ls.spec(**dct[signal()["signalModel"]])
 
@@ -61,7 +57,6 @@ def whiteListOfPoints() : #GeV
     #out += [( 450.0,  20.0)]  #T2tt
     #out += [( 550.0,  20.0)]  #T2tt
     #out += [( 400.0,   0.0)]  #T2tt
-    #out += [( 410.0,  20.0)]  #T2tt
     #out += [( 410.0,  20.0)]  #T2tt
     #out += [( 420.0,  20.0)]  #T2tt
     #out += [( 500.0, 150.0)]  #T2bb
