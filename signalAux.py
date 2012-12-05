@@ -1,21 +1,9 @@
-import socket
 from configuration import switches
 
 #joint SMS-CMSSM
 def locations() :
-    dct = {
-        "ic.ac.uk"   : "/vols/cms02/elaird1",
-        "phosphorus" : "/home/elaird/71_stats_files/",
-        "kinitos"    : "/home/hyper/Documents/02_ra1stats_files/",
-        "fnal.gov"   : "/uscms_data/d2/elaird/",
-        "brown02"    : "/vols/cms02/elaird1"
-    }
-    lst = filter(lambda x: socket.gethostname().endswith(x), dct.keys())
-    assert len(lst) == 1, lst
-    s = dct[ lst[0] ]
-
-    return {"eff": "%s/20_yieldHistograms/2012/"%s,
-            "xs" : "%s/25_sms_reference_xs_from_mariarosaria"%s}
+    return {"eff": "ra1e/2012/",
+            "xs" : "xs/"}
 
 def xsHistoSpec(model) :
     base = locations()["xs"]
