@@ -295,7 +295,7 @@ class spec(object) :
 
         self.add([selection(name = "55",
                             samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
-                            data = module.data2011_4(),
+                            data = module.data_2011_4(),
                             fZinvRange = (0.2, 0.8),
                             ),
                   ])
@@ -311,6 +311,6 @@ class spec(object) :
 
         self.add([selection(name = "55",
                             samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
-                            data = module.data2010(),
+                            data = module.data_2010(),
                             ),
                   ])
