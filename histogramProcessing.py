@@ -52,6 +52,10 @@ def checkHistoBinning(histoList = []) :
                 print h,properties([h])
             assert False
 
+def modifyHisto(h = None, model = "") :
+    fillPoints(h, points = patches.overwriteOutput()[model])
+    killPoints(h, cutFunc = patches.cutFunc().get(model, None))
+
 def fillPoints(h, points = []) :
     def avg(items) :
         out = sum(items)
