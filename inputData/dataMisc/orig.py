@@ -302,10 +302,11 @@ class data2011_3_no_cleaning_cuts(data2011_3) :
         
 class data2010(data) :
     def _fill(self) :
-        self._htBinLowerEdges =          (250.0, 300.0, 350.0, 450.0)
+        self._htBinLowerEdges = (250.0, 300.0, 350.0, 450.0)
         self._mergeBins = None
-        self._constantMcRatioAfterHere = (    0,     0,     0,     0)
         self._htMaxForPlot = 600.0
+        self._htMeans = (265.0,  315.0,  375.0,  475.0) #place-holder values
+
         self._lumi = {
             "had":     35.0,
             "hadBulk": 35.0,
@@ -318,7 +319,7 @@ class data2010(data) :
             "mcPhot":  35.0,
             "mcZinv":  35.0,
             }
-        self._htMeans             = ( 265.0,  315.0,  375.0,  475.0) #place-holder values
+
         self._triggerEfficiencies = {
             "hadBulk":(1.0, 1.0, 1.0, 1.0),
             "had":  (  1.0, 1.0, 1.0, 1.0),
@@ -332,18 +333,23 @@ class data2010(data) :
             "nPhot":    (    24,      4,      6,      1),
             "nMuon":    (    13,      5,      5,      2),
             }
-        self._purities = {
-            "phot": (1.0, 1.0, 1.0, 1.0)
-            }
+
         self._mcExpectationsBeforeTrigger = {
             "mcMuon": (  12.2,    5.2,    4.1,    1.9  ),
             "mcTtw":  (  10.5,    4.47,   3.415,  1.692),
             "mcPhot": (  22.4,    7.0,    4.4,    2.1  ),
             "mcZinv": (   8.1,    3.9,    2.586,  1.492),
             }
-        self._mcExpectationsBeforeTrigger["mcGjets"] = self._mcExpectationsBeforeTrigger["mcPhot"]
 
         self._mcStatError = {}
-        self._mcExtraBeforeTrigger = {}
 
-        syst.load(self, mode = self.systMode, nHtBins = 4)
+        self._fixedParameters = {
+            "sigmaLumiLike": 0.04,
+            "sigmaPhotZ": [0.40],
+            "sigmaMuonW": [0.30],
+            }
+
+        self._systBins = {
+            "sigmaPhotZ": (0, 0, 0, 0),
+            "sigmaMuonW": (0, 0, 0, 0),
+            }

@@ -67,15 +67,18 @@ class spec(object) :
         self._REwk = None
         self._selections = []
 
-        assert self._dataset in ["", "2011", "2012ichep", "2012dev"],self._dataset
         if self._dataset=="" :
             self.__initSimple__()
+        elif self._dataset=="2010" :
+            self.__init2010__()
         elif self._dataset=="2011" :
             self.__init2011reorg__(updated = True)
         elif self._dataset=="2012ichep" :
             self.__init2012ichep__()
         elif self._dataset=="2012dev" :
             self.__init2012dev__()
+        else :
+            assert False,"Constructor for dataset %s not known."%self._dataset
 
         assert self._RQcd in ["Zero", "FallingExp", "FallingExpA"]
         assert self._nFZinv in ["All", "One", "Two"]
@@ -279,3 +282,17 @@ class spec(object) :
                             ),
                 ])
 
+    def __init2010__(self) :
+        self._constrainQcdSlope = False
+        self._qcdParameterIsYield = True
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
+        self._legendTitle = "CMS, L = 35 pb^{-1}, #sqrt{s} = 7 TeV"
+        from inputData.dataMisc import orig as module
+
+        self.add([selection(name = "55",
+                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
+                            data = module.data2010(),
+                            ),
+                  ])
