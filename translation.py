@@ -46,7 +46,7 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
 
     return graphs
 
-def plot(datasets = [], tag = "") :
+def plot(datasets = [], tag = "", factors = ["gZ", "mumuZ", "muW"]) :
     canvas = r.TCanvas("canvas", "canvas", 600, 800)
 
     fileName = "translation_factors_%s.pdf"%tag
@@ -68,7 +68,7 @@ def plot(datasets = [], tag = "") :
                 continue
             data = getattr(module, attr)()
             graphs = oneDataset(canvas = canvas,
-                                factors = ["gZ", "mumuZ", "muW"] if name!="ge3b" else ["muHad"],
+                                factors = factors if name!="ge3b" else ["muHad"],
                                 data = getattr(module, "data_%s"%name)(),
                                 name = name,
                                 iDataset = iDataset,
@@ -83,43 +83,64 @@ def plot(datasets = [], tag = "") :
     canvas.Print(fileName+"]")
 
 
-#2011
+##########
+from inputData.dataMisc import orig
 from inputData.data2011reorg import take3
-
-#2012
 from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012 import take6,take6_capped,take6_unweighted
 from inputData.data2012 import take12_weighted,take12_unweighted
 
-datasets = [ {"module": take5,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
-             {"module": take5a,           "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":r.kBlack,   "label": "2012 (fully weighted; hacked)"},
-             {"module": take5_capped,     "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kBlue,    "label": "2012 (weights capped at 5)"},
-             {"module": take5_unweighted, "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kCyan,    "label": "2012 (unweighted)"},
-             {"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kMagenta, "label": "2011"},
-             ]
-
-datasets = [ {"module": take6,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"], "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
-             {"module": take6_capped,     "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kBlue,    "label": "2012 (weights capped at 5)"},
-             {"module": take6_unweighted, "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kCyan,    "label": "2012 (unweighted)"},
-             #{"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],             "color":r.kMagenta, "label": "2011"},
-             ]
-
 setup()
 
-color1 = {"ge2j":r.kBlack,
-          "ge4j":r.kRed,
-          "le3j":r.kBlue,
-          }
-color2 = {"ge2j":r.kGray,
-          "ge4j":r.kOrange,
-          "le3j":r.kCyan,
-          }
-
-for i,j in enumerate(["ge4j", "le3j"]) :
-    bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
-    slices = ["%s_%s"%(b,j) for b in bs]
-    datasets = [ {"module": take12_weighted, "slices": slices, "color":color1[j], "label": "2012 (%s, weighted)"%j}, 
-                 {"module": take12_unweighted, "slices": slices, "color":color2[j], "label": "2012 (%s, unweighted)"%j},
+d = ["2010", "2011eps", "2011", "2012ichep", "2012dev"][4]
+if d=="2010" :
+    datasets = [ {"module": orig, "slices": ["2010"], "color":r.kBlack,  "label": "2010"},
                  ]
-    print datasets
-    plot(datasets, tag = j)
+    plot(datasets, tag = d, factors = ["gZ", "muW"])
+elif d=="2011eps" :
+    datasets = [ {"module": orig, "slices": ["2011_4"], "color":r.kBlue, "label": "2011 (EPS)"},
+                 ]
+    plot(datasets, tag = d, factors = ["gZ", "muW"])
+elif d=="2011" :
+    datasets = [ {"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],
+                  "color":r.kMagenta, "label": "2011"},
+                 ]
+    plot(datasets, tag = d)
+elif d=="2012ichep" :
+    datasets = [ {"module": take5,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"],
+                  "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
+                 {"module": take5a,           "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"],
+                  "color":r.kBlack,   "label": "2012 (fully weighted; hacked)"},
+                 {"module": take5_capped,     "slices": ["0b", "1b", "2b", "ge3b"],
+                  "color":r.kBlue,    "label": "2012 (weights capped at 5)"},
+                 {"module": take5_unweighted, "slices": ["0b", "1b", "2b", "ge3b"],
+                  "color":r.kCyan,    "label": "2012 (unweighted)"},
+                 {"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],
+                  "color":r.kMagenta, "label": "2011"},
+                 ]
+    plot(datasets, tag = d)
+elif d=="2012ichep_5fb" :
+    datasets = [ {"module": take6,            "slices": ["0b_no_aT", "0b", "1b", "2b", "ge3b"],
+                  "color":1+r.kGray,  "label": "2012 (fully weighted; raw)"},
+                 {"module": take6_capped,     "slices": ["0b", "1b", "2b", "ge3b"],
+                  "color":r.kBlue,    "label": "2012 (weights capped at 5)"},
+                 {"module": take6_unweighted, "slices": ["0b", "1b", "2b", "ge3b"],
+                  "color":r.kCyan,    "label": "2012 (unweighted)"},
+                 #{"module": take3,            "slices": ["0b", "1b", "2b", "ge3b"],
+                 # "color":r.kMagenta, "label": "2011"},
+                 ]
+    plot(datasets, tag = d)
+elif d=="2012dev" :
+    color1 = {"ge2j":r.kBlack, "ge4j":r.kRed, "le3j":r.kBlue}
+    color2 = {"ge2j":r.kGray, "ge4j":r.kOrange, "le3j":r.kCyan}
+
+    for i,j in enumerate(["ge4j", "le3j"]) :
+        bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
+        slices = ["%s_%s"%(b,j) for b in bs]
+        datasets = [ {"module": take12_weighted, "slices": slices, "color":color1[j], "label": "2012 (%s, weighted)"%j},
+                     {"module": take12_unweighted, "slices": slices, "color":color2[j], "label": "2012 (%s, unweighted)"%j},
+                     ]
+        #print datasets
+        plot(datasets, tag = j)
+else :
+    print "ERROR: dataset not recognized."
