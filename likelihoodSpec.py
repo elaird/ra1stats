@@ -71,6 +71,8 @@ class spec(object) :
             self.__initSimple__()
         elif self._dataset=="2010" :
             self.__init2010__()
+        elif self._dataset=="2011eps" :
+            self.__init2011eps__()
         elif self._dataset=="2011" :
             self.__init2011reorg__(updated = True)
         elif self._dataset=="2012ichep" :
@@ -282,13 +284,29 @@ class spec(object) :
                             ),
                 ])
 
+    def __init2011eps__(self) :
+        self._constrainQcdSlope = False
+        self._qcdParameterIsYield = True
+        self._REwk = "Constant"
+        self._RQcd = "FallingExp"
+        self._nFZinv = "All"
+        self._legendTitle = "CMS (re-analyzed), L = 1.1 fb^{-1}, #sqrt{s} = 7 TeV"
+        from inputData.dataMisc import orig as module
+
+        self.add([selection(name = "55",
+                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
+                            data = module.data2011_4(),
+                            fZinvRange = (0.2, 0.8),
+                            ),
+                  ])
+
     def __init2010__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
-        self._legendTitle = "CMS, L = 35 pb^{-1}, #sqrt{s} = 7 TeV"
+        self._legendTitle = "CMS (re-analyzed), L = 35 pb^{-1}, #sqrt{s} = 7 TeV"
         from inputData.dataMisc import orig as module
 
         self.add([selection(name = "55",
