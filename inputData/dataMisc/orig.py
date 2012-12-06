@@ -85,7 +85,7 @@ class data2011_55_v6(data) :
         
         syst.load(self, mode = self.systMode)
 
-class data2011_4(data) :
+class data_2011_4(data) :
     """EPS"""
     
     def _fill(self) :
@@ -292,7 +292,7 @@ class data2011_3_no_cleaning_cuts(data2011_3) :
         self._observations["nHad"] = self._observations["nHad55"]
         self._observations["nHadControl"] = tuple([n53-n55 for n53,n55 in zip(self._observations["nHad53"], self._observations["nHad55"])])
         
-class data2010(data) :
+class data_2010(data) :
     def _fill(self) :
         self._htBinLowerEdges = (250.0, 300.0, 350.0, 450.0)
         self._mergeBins = None
