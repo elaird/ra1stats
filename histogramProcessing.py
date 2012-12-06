@@ -87,7 +87,7 @@ def fillPoints(h, points = []) :
                   (h.GetName(), iBinX, iBinY, iBinZ, items.count(0.0), valueOld, value)
 
 def killPoints(h, cutFunc = None) :
-    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = signalAux.interBin()) :
         if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
     return h
 
@@ -111,10 +111,13 @@ def xsHistoPhysical(model = "", cmssmProcess = "", xsVariation = "") :
     spec = signalAux.xsHistoSpec(model = model, cmssmProcess = cmssmProcess, xsVariation = xsVariation)
     assert spec["factor"]==1.0,"will need to accommodate factor of %g"%spec["factor"]
     h = oneHisto(spec["file"], "/", spec["histo"])
+    assert h.ClassName()[:2]=="TH",h.ClassName()
+    dim = int(h.ClassName()[2:3])
+    assert dim in [1,2],dim
 
-    assert False,"FIXME: Implement some check of the agreement in binning between these histos"
-    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
-        out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
+    for iX,x,iY,y,iZ,z in utils.bins(out, interBin = signalAux.interBin()) :
+        iBin = h.FindBin(x) if dim==1 else h.FindBin(x,y)
+        out.SetBinContent(iX, iY, iZ, h.GetBinContent(iBin))
     return out
 
 def xsHistoAllOne(model, cutFunc = None) :
@@ -123,7 +126,7 @@ def xsHistoAllOne(model, cutFunc = None) :
 
     h = smsEffHisto(model = model, box = "had", scale = None,
                     htLower = 875, htUpper = None, **kargs)
-    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = signalAux.interBin()) :
         content = 1.0
         if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
             content = 0.0
@@ -175,7 +178,7 @@ def points() :
     s = conf.switches()
     whiteList = s["whiteListOfPoints"]
     h = xsHisto()
-    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = "LowEdge") :
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = signalAux.interBin()) :
         if whiteList and (x,y) not in whiteList : continue
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content : continue
