@@ -175,8 +175,7 @@ class data2011_4(data) :
         del self._mcExpectationsBeforeTrigger["mcGjets"]
 
         #force constant mc ratios for HT>375
-        i = 2
-        constantMcRatioAfterHere = (0, 0, 1, 0, 0, 0, 0, 0)
+        i = 2 #constantMcRatioAfterHere = (0, 0, 1, 0, 0, 0, 0, 0)
         phot = self._mcExpectationsBeforeTrigger["mcPhot"]
         zinv = self._mcExpectationsBeforeTrigger["mcZinv"]
         rFinal = sum(zinv[i:])/sum(phot[i:])
