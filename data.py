@@ -70,8 +70,20 @@ NOTES
 
         num = value[dct["num"]]
         den = value[dct["den"]]
-        numErr = error[dct["num"]+"Err"]
-        denErr = error[dct["den"]+"Err"]
+
+        key = dct["num"]+"Err"
+        if key in error :
+            numErr = error[key]
+        else :
+            numErr = [0.0]*len(num)
+            print "WARNING: no entry found for %s"%key
+
+        key = dct["den"]+"Err"
+        if key in error :
+            denErr = error[key]
+        else :
+            denErr = [0.0]*len(den)
+            print "WARNING: no entry found for %s"%key
 
         out = []
         scale = lumi["mcHad"]/lumi[dct["num"]] if considerLumi else 1.0
