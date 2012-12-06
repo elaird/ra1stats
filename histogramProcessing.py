@@ -108,7 +108,7 @@ def xsHistoPhysical(model = "", cmssmProcess = "", xsVariation = "") :
     assert spec["factor"]==1.0,"will need to accommodate factor of %g"%spec["factor"]
     h = oneHisto(spec["file"], "/", spec["histo"])
 
-    print "FIXME: Implement some check of the agreement in binning between these histos"
+    assert False,"FIXME: Implement some check of the agreement in binning between these histos"
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = "LowEdge") :
         out.SetBinContent(out.FindBin(x, y, z), h.GetBinContent(iX, iY, iZ))
     return out
