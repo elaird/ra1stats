@@ -1,4 +1,7 @@
 #joint SMS-CMSSM
+def interBin(model = "") :
+    return "LowEdge"
+
 def xsHistoSpec(model = "", cmssmProcess = "", xsVariation = "") :
     if not cmssmProcess :
         if xsVariation!="default":
