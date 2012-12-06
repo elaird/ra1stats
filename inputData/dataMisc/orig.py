@@ -181,6 +181,11 @@ class data_2011_4(data) :
         rFinal = sum(zinv[i:])/sum(phot[i:])
         self._mcExpectationsBeforeTrigger["mcZinv"] = zinv[:i]+tuple([x*rFinal for x in phot[i:]])
 
+        muon = self._mcExpectationsBeforeTrigger["mcMuon"]
+        ttw  = self._mcExpectationsBeforeTrigger["mcTtw"]
+        rFinal = sum(ttw[i:])/sum(muon[i:])
+        self._mcExpectationsBeforeTrigger["mcTtw"] = zinv[:i]+tuple([x*rFinal for x in muon[i:]])
+
 class data2011_3(data) :
     
     def _fill(self) :
