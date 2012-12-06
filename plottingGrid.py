@@ -288,7 +288,13 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     s = conf.switches()
     ranges = sa.ranges(s["signalModel"])
-    if name == "": name = "UpperLimit" if s["method"]=="CLs" else "upperLimit95"
+
+    if name == "":
+        if s["method"]=="CLs":
+            name = "excluded_CLs_95" if s["binaryExclusionRatherThanUpperLimit"] else "UpperLimit"
+        else:
+            name = "upperLimit95"
+
     inFile = pickling.mergedFile()
     outFileRoot = inFile.replace(".root", "_xsLimit.root")
     outFileEps  = inFile.replace(".root", "_xsLimit.eps")
@@ -301,7 +307,11 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
 
     #draw observed limit
     c = squareCanvas()
-    histos[name].Draw("colz")
+    if name in histos :
+        histos[name].Draw("colz")
+    else :
+        print histos
+        histos[name]
     if logZ :
         c.SetLogz()
         setRange("xsZRangeLog", ranges, histos[name], "Z")
@@ -766,7 +776,8 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         print "%s has been written."%fileName
 
 def makePlots(square = False) :
-    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], square = square)
+    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"],
+               blackListMatch = ["eff", "_nEvents"], square = square)
     #multiPlots(tag = "nEvents", whiteListMatch = ["nEvents"], square = square)
     #multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
     #multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
