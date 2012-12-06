@@ -184,7 +184,7 @@ class data_2011_4(data) :
         muon = self._mcExpectationsBeforeTrigger["mcMuon"]
         ttw  = self._mcExpectationsBeforeTrigger["mcTtw"]
         rFinal = sum(ttw[i:])/sum(muon[i:])
-        self._mcExpectationsBeforeTrigger["mcTtw"] = zinv[:i]+tuple([x*rFinal for x in muon[i:]])
+        self._mcExpectationsBeforeTrigger["mcTtw"] = ttw[:i]+tuple([x*rFinal for x in muon[i:]])
 
 class data2011_3(data) :
     
