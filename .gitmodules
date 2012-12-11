@@ -1,3 +1,6 @@
 [submodule "ra1e"]
 	path = ra1e
 	url = git@github.com:elaird/ra1e.git
+[submodule "ra1r"]
+	path = ra1r
+	url = git@github.com:elaird/ra1r.git
