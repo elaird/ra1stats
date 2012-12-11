@@ -94,6 +94,12 @@ class spec(object) :
             assert getattr(self,"_"+item) in [False, True],item
 
     def __initSimple__(self) :
+        self._constrainQcdSlope = False
+        self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
+        self._REwk = ""
+        self._RQcd = "Zero"
+        self._nFZinv = "All"
         self._legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
