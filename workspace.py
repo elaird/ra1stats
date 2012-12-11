@@ -66,14 +66,6 @@ def parametrizedExp(w = None, name = "", label = "", kLabel = "", i = None) :
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
 
-def parametrizedExpA(w = None, name = "", label = "", kLabel = "", i = None) :
-    A = ni("A_%s"%name, label)
-    k = ni("k_%s"%name, kLabel)
-    bulk = ni("nHadBulk", label, i)
-    mean = ni("htMean", label, i)
-    varName = ni(name, label, i)
-    return r.RooFormulaVar(varName, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
-
 def parametrizedLinear(w = None, name = "", label = "", kLabel = "", i = None, iFirst = None, iLast = None) :
     def mean(j) : return ni("htMean", label, j)
     A = ni("A_%s"%name, label)
@@ -160,7 +152,7 @@ def systTerm(w = None, name = "", obsName = "", obsValue = None, muVar = None,
         assert False,pdf
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None, initialValuesFromMuonSample = None,
              zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -169,7 +161,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out = collections.defaultdict(list)
 
     #QCD parameters
-    assert RQcd!="FallingExpA"
     A_ewk_ini = 1.3e-5
     qcdArgs = {}
     for item in ["w", "RQcd", "label", "kQcdLabel", "poi", "zeroQcd", "qcdParameterIsYield"] :
@@ -195,10 +186,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
 
-        if RQcd=="FallingExpA" :
-            wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
-            qcd = w.function(ni("qcd", label, i))
-        elif qcdParameterIsYield :
+        if qcdParameterIsYield :
             if i :
                 wimport(w, parametrizedExpViaYield(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
                 qcd = w.function(ni("qcd", label, i))
@@ -209,6 +197,19 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             qcd = w.function(ni("qcd", label, i))
 
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
+        if initialValuesFromMuonSample :
+            ewk.setVal(inputData.observations()["nMuon"][i]*inputData.mcExpectations()["mcHad"][i]/inputData.mcExpectations()["mcMuon"][i])
+
+            if RQcd!="Zero" and i==0 :
+                qcd.setRange(0.0, max(1, 2.0*obs["nHad"][i]))
+                qcd.setVal(inputData.observations()["nHad"][i]-ewk.getVal())
+
+            if RQcd!="Zero" and i==1 :
+                qcd0 = w.var(ni("qcd", label, 0)).getVal()
+                qcd1 = max(1.0, inputData.observations()["nHad"][i]-ewk.getVal())
+                someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
+                w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
+
         if not muonForFullEwk :
             fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni, minMax = fZinvRange)
             wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
@@ -519,7 +520,7 @@ def dataset(obsSet) :
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
                     extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
                     REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
-                    constrainQcdSlope = None, qcdParameterIsYield = None) :
+                    constrainQcdSlope = None, qcdParameterIsYield = None, initialValuesFromMuonSample = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -544,7 +545,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax"] :
         moreArgs["had"][item] = getattr(selection, item)
-    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield"] :
+    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield", "initialValuesFromMuonSample"] :
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
@@ -618,7 +619,7 @@ class foo(object) :
         args["injectSignal"] = self.injectSignal()
 
         for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
-                     "constrainQcdSlope", "qcdParameterIsYield"] :
+                     "constrainQcdSlope", "qcdParameterIsYield", "initialValuesFromMuonSample"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
@@ -652,13 +653,17 @@ class foo(object) :
     def checkInputs(self) :
         l = self.likelihoodSpec
         assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
-        assert l.RQcd() in ["FallingExp", "FallingExpA", "Zero"]
+        assert l.RQcd() in ["FallingExp", "Zero"]
         assert l.nFZinv() in ["One", "Two", "All"]
         assert len(l.poi())==1, len(l.poi())
         if not l.standardPoi() :
             assert self.smOnly()
             assert "FallingExp" in l.RQcd()
             #assert len(l.selections())==1,"%d!=1"%len(l.selections())
+
+        if l.initialValuesFromMuonSample() :
+            if l.RQcd()!="Zero" :
+                assert l.qcdParameterIsYield()
 
         if l.constrainQcdSlope() :
             assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()

@@ -35,6 +35,8 @@ class spec(object) :
         return False if self._ignoreHad else self._constrainQcdSlope
     def qcdParameterIsYield(self) :
         return self._qcdParameterIsYield
+    def initialValuesFromMuonSample(self) :
+        return self._initialValuesFromMuonSample
     def legendTitle(self) :
         return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
     def ignoreHad(self) :
@@ -62,9 +64,12 @@ class spec(object) :
         for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
             setattr(self, "_"+item, eval(item))
 
+        self._REwk = None
         self._RQcd = None
         self._nFZinv = None
-        self._REwk = None
+        self._qcdParameterIsYield = None
+        self._constrainQcdSlope = None
+        self._initialValuesFromMuonSample = None
         self._selections = []
 
         if self._dataset=="" :
@@ -82,13 +87,19 @@ class spec(object) :
         else :
             assert False,"Constructor for dataset %s not known."%self._dataset
 
-        assert self._RQcd in ["Zero", "FallingExp", "FallingExpA"]
+        assert self._RQcd in ["Zero", "FallingExp"]
         assert self._nFZinv in ["All", "One", "Two"]
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
+        for item in ["qcdParameterIsYield", "constrainQcdSlope", "initialValuesFromMuonSample"]:
+            assert getattr(self,"_"+item) in [False, True],item
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
-        self._qcdParameterIsYield = False
+        self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
+        self._REwk = ""
+        self._RQcd = "Zero"
+        self._nFZinv = "All"
         self._legendTitle = "SIMPLE TEST"
         from inputData.dataMisc import simpleOneBin as module
         self.add([
@@ -101,11 +112,20 @@ class spec(object) :
     def __init2012dev__(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take14 as module
+
+        #QCD test
+        if False :
+            print "WARNING: QCD test"
+            self._constrainQcdSlope = False
+            self._initialValuesFromMuonSample = True
+            self._legendTitle += "[NO MHT/MET CUT]"
+            from inputData.data2012 import take15a as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
@@ -161,6 +181,7 @@ class spec(object) :
     def __init2012ichep__(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
+        self._initialValuesFromMuonSample = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -214,6 +235,7 @@ class spec(object) :
     def __init2011reorg__(self, updated = True) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
+        self._initialValuesFromMuonSample = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -287,6 +309,7 @@ class spec(object) :
     def __init2011eps__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
         self._REwk = "Constant"
         self._RQcd = "FallingExp"
         self._nFZinv = "All"
@@ -303,6 +326,7 @@ class spec(object) :
     def __init2010__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
