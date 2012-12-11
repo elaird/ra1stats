@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 import ROOT as r
-import common,workspace,likelihoodSpec,signals,plotting
+import common,workspace,likelihoodSpec,signals,signals2,plotting
 
 def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], ignoreHad = False) :
-    examples = {("0b_le3j",):{},
-                ("0b_ge4j",):signals.t1_1,
-                ("1b_le3j",):{},
-                ("1b_ge4j",):signals.t2tt_1,
-                ("2b_le3j",):{},
-                ("2b_ge4j",):signals.t2tt_1,
+    examples = {("0b_le3j",):signals2.t2,
+                ("0b_ge4j",):signals2.t1,
+                ("1b_le3j",):signals2.t2bb,
+                ("1b_ge4j",):signals2.t2tt,
+                ("2b_le3j",):signals2.t2bb,
+                ("2b_ge4j",):signals2.t2tt,
                 ("3b_le3j",):{},
-                ("3b_ge4j",):signals.t1bbbb_1,
-                ("ge4b_ge4j",):signals.t1bbbb_1,
+                ("3b_ge4j",):signals2.t1bbbb,
+                ("ge4b_ge4j",):signals2.t1tttt,
                 }
     signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
     f = workspace.foo(likelihoodSpec = likelihoodSpec.spec(whiteList = whiteList, dataset = dataset, ignoreHad = ignoreHad,
@@ -27,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                       )
 
     out = None
-    nToys = 0 if (ignoreHad and not ensemble) else {"2011":3000, "2012ichep":1000, "2012dev":0}[dataset]
+    nToys = 0 if (ignoreHad and not ensemble) else {"2010":300, "2011eps":300, "2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
@@ -44,14 +44,14 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
     #
     #f.profile()
     #f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
-    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys, signalLineStyle = signalLineStyle)
-    out = f.bestFit(drawMc = False, drawComponents = True, errorsFromToys = nToys)
+    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
+    out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #f.debug()
     #f.cppDrive(tool = "")
     return out
 
-kargs = {"dataset" : ["2011", "2012ichep", "2012dev"][2],
+kargs = {"dataset" : ["2010", "2011eps", "2011", "2012ichep", "2012dev"][4],
          "ensemble": False,
          }
 if kargs["dataset"]=="2011" :
@@ -69,6 +69,7 @@ else :
         dct = go(**args)
         if not dct : continue
         for key,pValue in dct.iteritems() :
+            if key not in hMap : continue
             hMap[key].GetXaxis().SetBinLabel(1+iSel, sel.name)
             hMap[key].SetBinContent(1+iSel, pValue)
 

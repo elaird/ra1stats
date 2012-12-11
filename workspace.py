@@ -729,7 +729,7 @@ class foo(object) :
         return name if sum(k)!=1 else selections[k.index(True)].name
 
     def note(self) :
-        return note(likelihoodSpec = self.likelihoodSpec)
+        return note(likelihoodSpec = self.likelihoodSpec)+("_signal" if not self.smOnly() else "")
 
     def debug(self) :
         self.wspace.Print("v")
@@ -865,16 +865,16 @@ class foo(object) :
 
         args = {}
         args["activeBins"] = activeBins(selection)
-        args["legendXSub"] = 0.0
         args["systematicsLabel"] = self.systematicsLabel(selection.name)
 
         for item in ["smOnly", "note"] :
             args[item] = getattr(self, item)()
 
-        for item in ["wspace", "signalExampleToStack"] :
+        for item in ["wspace", "signalExampleToStack", "signalToTest"] :
             args[item] = getattr(self, item)
 
-        for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data",
+                           "muonForFullEwk":"muonForFullEwk", "yAxisLogMinMax":"yAxisLogMinMax"}.iteritems() :
             args[arg] = getattr(selection, member)
 
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
@@ -913,7 +913,7 @@ class foo(object) :
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
                 errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5,
-                pullThreshold = 2.0, signalLineStyle = 1) :
+                pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         utils.checkResults(results)
@@ -933,8 +933,7 @@ class foo(object) :
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
                          "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
-                         "drawRatios" : drawRatios, "signalLineStyle" :
-                         signalLineStyle,
+                         "drawRatios" : drawRatios,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
