@@ -87,7 +87,7 @@ class spec(object) :
         else :
             assert False,"Constructor for dataset %s not known."%self._dataset
 
-        assert self._RQcd in ["Zero", "FallingExp", "FallingExpA"]
+        assert self._RQcd in ["Zero", "FallingExp"]
         assert self._nFZinv in ["All", "One", "Two"]
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
         for item in ["qcdParameterIsYield", "constrainQcdSlope", "initialValuesFromMuonSample"]:
