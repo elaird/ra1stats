@@ -567,11 +567,6 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         args.update(commonArgs)
         if item in moreArgs :
             args.update(moreArgs[item])
-        print item
-        for key,value in args.iteritems() :
-            if key=="inputData" : continue
-            print key,value
-        print
         d = func(**args)
         if (item in boxes) and (item not in samples) : continue
         for key in variables : #include terms, obs, etc. in likelihood
