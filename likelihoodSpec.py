@@ -64,12 +64,12 @@ class spec(object) :
         for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
             setattr(self, "_"+item, eval(item))
 
-        self._REwk = ""
-        self._RQcd = "FallingExp"
-        self._nFZinv = "Two"
-        self._qcdParameterIsYield = True
-        self._constrainQcdSlope = True
-        self._initialValuesFromMuonSample = False
+        self._REwk = None
+        self._RQcd = None
+        self._nFZinv = None
+        self._qcdParameterIsYield = None
+        self._constrainQcdSlope = None
+        self._initialValuesFromMuonSample = None
         self._selections = []
 
         if self._dataset=="" :
@@ -90,6 +90,8 @@ class spec(object) :
         assert self._RQcd in ["Zero", "FallingExp", "FallingExpA"]
         assert self._nFZinv in ["All", "One", "Two"]
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
+        for item in ["qcdParameterIsYield", "constrainQcdSlope", "initialValuesFromMuonSample"]:
+            assert getattr(self,"_"+item) in [False, True],item
 
     def __initSimple__(self) :
         self._legendTitle = "SIMPLE TEST"
@@ -104,6 +106,8 @@ class spec(object) :
     def __init2012dev__(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
+        self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
@@ -168,7 +172,12 @@ class spec(object) :
         self.add(lst)
 
     def __init2012ichep__(self) :
+        self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
+        self._initialValuesFromMuonSample = False
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012 import take5_unweighted as module
 
@@ -217,7 +226,12 @@ class spec(object) :
                 ])
 
     def __init2011reorg__(self, updated = True) :
+        self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
+        self._initialValuesFromMuonSample = False
+        self._REwk = ""
+        self._RQcd = "FallingExp"
+        self._nFZinv = "Two"
         self._legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
             from inputData.data2011reorg import take3 as module
@@ -288,6 +302,7 @@ class spec(object) :
     def __init2011eps__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
         self._REwk = "Constant"
         self._RQcd = "FallingExp"
         self._nFZinv = "All"
@@ -304,6 +319,7 @@ class spec(object) :
     def __init2010__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
+        self._initialValuesFromMuonSample = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
