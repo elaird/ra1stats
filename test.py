@@ -18,7 +18,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                                                            separateSystObs = not ensemble
                                                            ),
                       #signalToTest = signal,
-                      #signalExampleToStack = signal,
+                      signalExampleToStack = signal,
                       #signalToInject = signal,
                       #trace = True
                       #rhoSignalMin = 0.1,
