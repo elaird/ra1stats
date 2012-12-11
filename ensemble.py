@@ -97,7 +97,7 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note = "") :
+def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note = "", nToys = None) :
     src = {}
     lst = []
     for key,q in quantiles.iteritems() :
@@ -113,13 +113,15 @@ def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note =
         for item in sorted(lst) :
             print item
 
-    from makeTables import ensembleResultsBySelection as ltxResults
-    from makeTables import ensembleResultsBySample as ltxSummary
-    ltxResults( src, [ x.data for x in selections ], note = note )
-    ltxSummary( src, [ x.data for x in selections ], note = note )
+    from makeTables import ensembleResultsBySelection,ensembleResultsBySample
+    rootFile = rootFileName(note = note, nToys = nToys)
+    ensembleResultsBySelection(src, [ x.data for x in selections ],
+                               fileName = rootFile.replace(".root","_bySelection.tex"))
+    ensembleResultsBySample(src, [ x.data for x in selections ],
+                            fileName = rootFile.replace(".root","_bySample.tex"))
 
 def rootFileName(note = "", nToys = None) :
-    return "ensemble_%s_%dtoys.root"%(note, nToys)
+    return "ra1r/ensemble/ensemble_%s_%dtoys.root"%(note, nToys)
 
 def pickledFileName(note = "", nToys = None) :
     return rootFileName(note, nToys).replace(".root", ".obs")
