@@ -121,6 +121,7 @@ class spec(object) :
 
         #QCD test
         if False :
+            print "WARNING: QCD test"
             self._constrainQcdSlope = False
             self._initialValuesFromMuonSample = True
             self._legendTitle += "[NO MHT/MET CUT]"
