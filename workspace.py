@@ -66,14 +66,6 @@ def parametrizedExp(w = None, name = "", label = "", kLabel = "", i = None) :
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
 
-def parametrizedExpA(w = None, name = "", label = "", kLabel = "", i = None) :
-    A = ni("A_%s"%name, label)
-    k = ni("k_%s"%name, kLabel)
-    bulk = ni("nHadBulk", label, i)
-    mean = ni("htMean", label, i)
-    varName = ni(name, label, i)
-    return r.RooFormulaVar(varName, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
-
 def parametrizedLinear(w = None, name = "", label = "", kLabel = "", i = None, iFirst = None, iLast = None) :
     def mean(j) : return ni("htMean", label, j)
     A = ni("A_%s"%name, label)
@@ -169,7 +161,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out = collections.defaultdict(list)
 
     #QCD parameters
-    assert RQcd!="FallingExpA"
     A_ewk_ini = 1.3e-5
     qcdArgs = {}
     for item in ["w", "RQcd", "label", "kQcdLabel", "poi", "zeroQcd", "qcdParameterIsYield"] :
@@ -195,10 +186,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
 
-        if RQcd=="FallingExpA" :
-            wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
-            qcd = w.function(ni("qcd", label, i))
-        elif qcdParameterIsYield :
+        if qcdParameterIsYield :
             if i :
                 wimport(w, parametrizedExpViaYield(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
                 qcd = w.function(ni("qcd", label, i))
@@ -681,7 +669,7 @@ class foo(object) :
     def checkInputs(self) :
         l = self.likelihoodSpec
         assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
-        assert l.RQcd() in ["FallingExp", "FallingExpA", "Zero"]
+        assert l.RQcd() in ["FallingExp", "Zero"]
         assert l.nFZinv() in ["One", "Two", "All"]
         assert len(l.poi())==1, len(l.poi())
         if not l.standardPoi() :
