@@ -198,28 +198,19 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
 
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
         if initialValuesFromMuonSample :
-            someVal  = inputData.observations()["nMuon"][i]
-            someVal *= inputData.mcExpectations()["mcHad"][i]/inputData.mcExpectations()["mcMuon"][i]
-            ewk.setVal(someVal)
-            print "setting %s to"%ewk.GetName(),someVal
+            ewk.setVal(inputData.observations()["nMuon"][i]*inputData.mcExpectations()["mcHad"][i]/inputData.mcExpectations()["mcMuon"][i])
 
-            if i==0 :
-                someVal = inputData.observations()["nHad"][i]-ewk.getVal()
-                qcd.setVal(someVal)
-                qcdMin = 0.0
-                qcdMax = max(1, 2.0*obs["nHad"][i])
-                qcd.setRange(qcdMin, qcdMax)
-                print "setting %s to %g in range [%g - %g]"%(qcd.GetName(),someVal, qcdMin, qcdMax)
+            if RQcd!="Zero" and i==0 :
+                qcd.setRange(0.0, max(1, 2.0*obs["nHad"][i]))
+                qcd.setVal(inputData.observations()["nHad"][i]-ewk.getVal())
 
-            if i==1 :
+            if RQcd!="Zero" and i==1 :
                 qcd0 = w.var(ni("qcd", label, 0)).getVal()
                 qcd1 = max(1.0, inputData.observations()["nHad"][i]-ewk.getVal())
-                print "qcd0 = %g, qcd1 = %g"%(qcd0, qcd1)
                 someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
                 k = w.var(ni("k_qcd", label))
-                someVal = 1.0e-2
                 k.setVal(someVal)
-                print "setting %s to"%k.GetName(),someVal
+                print "WARNING: correct k label?"
 
         if not muonForFullEwk :
             fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni, minMax = fZinvRange)
