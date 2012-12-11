@@ -27,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                       )
 
     out = None
-    nToys = 0 if (ignoreHad and not ensemble) else {"":0, "2010":300, "2011eps":300, "2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
+    nToys = {"":0, "2010":300, "2011eps":300, "2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
@@ -63,7 +63,7 @@ else :
     for key in ["chi2ProbSimple", "chi2Prob", "lMax"] :
         hMap[key] = r.TH1D("pValueMap_%s"%key, ";category;p-value", *bins)
 
-    for iSel,sel in enumerate(selections[:1]) :
+    for iSel,sel in enumerate(selections) :
         args = {"whiteList":[sel.name], "allCategories":sorted([x.name for x in selections])}
         args.update(kargs)
         dct = go(**args)
