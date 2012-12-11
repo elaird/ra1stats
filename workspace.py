@@ -208,9 +208,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
                 qcd0 = w.var(ni("qcd", label, 0)).getVal()
                 qcd1 = max(1.0, inputData.observations()["nHad"][i]-ewk.getVal())
                 someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
-                k = w.var(ni("k_qcd", label))
-                k.setVal(someVal)
-                print "WARNING: correct k label?"
+                w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
 
         if not muonForFullEwk :
             fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni, minMax = fZinvRange)
