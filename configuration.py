@@ -109,29 +109,21 @@ def checkAndAdjust(d) :
     d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     return
 
-def mergedFileStem(outputDir, switches) :
-    out  = "%s/%s"%(outputDir, switches["method"])
-    if "CLs" in switches["method"] :
-        out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
-    if switches["binaryExclusionRatherThanUpperLimit"] :
-        out += "_binaryExcl"
-    out += "_%s"%switches["signalModel"]
-    if not switches["isSms"] :
-        out += "_%s"%switches["xsVariation"]
-    return out
+def mergedFileStem() :
+    s = switches()
+    tags = [s["method"]]
+    if "CLs" in s["method"] : tags += [s["calculatorType"], "TS%d"%s["testStatistic"]]
+    if s["binaryExclusionRatherThanUpperLimit"] : tags.append("binaryExcl")
+    tags.append(s["signalModel"])
+    if not s["isSms"] : tags.append(s["xsVariation"])
+    return "ra1r/scan/"+"_".join(tags)
 
-def stringsNoArgs() :
-    d = {}
-    #output name options
-    d["outputDir"]      = "output"
-    d["logDir"]         = "log"
-    d["logStem"]        = "%s/job"%d["logDir"]
-    d["mergedFileStem"] = mergedFileStem(d["outputDir"], switches())
-    return d
+def directories() :
+    return {"job"   : "jobIO",
+            "plot"  : "plots",
+            "log"   : "log",
+            "points": "points",
+            }
 
-def strings(xBin, yBin, zBin) :
-    d = stringsNoArgs()
-    #output name options
-    d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
-    d["pickledFileName"]   = "%s/%s.pickled"%(d["outputDir"], d["tag"])
-    return d
+def pickledFileName(xBin, yBin, zBin) :
+    return "%s/m0_%d_m12_%d_mZ_%d.pickled"%(directories()["job"], xBin, yBin, zBin)
