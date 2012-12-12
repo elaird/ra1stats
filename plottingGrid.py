@@ -478,7 +478,7 @@ def makeEfficiencyUncertaintyPlots() :
     ranges = sa.ranges(s["signalModel"])
 
     def go(name, suffix, zTitle, zRangeKey) :
-        fileName = "%s/%s_%s.eps"%(conf.directories()["plot"], s["signalModel"], suffix)
+        fileName = outFileName(tag = "%s_%s"%(s["signalModel"], suffix))["eps"]
         c = squareCanvas()
         h2 = utils.threeToTwo(f.Get(name))
         xyTitle = sa.histoTitle(model = s["signalModel"])
