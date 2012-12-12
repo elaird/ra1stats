@@ -111,7 +111,7 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
 
     def one(point) :
         signal = signalModel(point = point, **args)
-        stem = conf.strings(*point)["pickledFileName"]
+        stem = conf.pickledFileName(*point)
         writeNumbers(fileName = stem + ".in", d = signal)
         if not outFilesAlso : return
         writeNumbers(fileName = stem + ".out", d = signal)
@@ -121,9 +121,8 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         
 ##merge functions
 def mergedFile() :
-    s = conf.switches()
     note = common.note(conf.likelihoodSpec())
-    return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
+    return "%s_%s%s"%(conf.mergedFileStem(), note, ".root")
 
 #note: improve this data format
 def flatten(target = {}, key = None, obj = None) :
@@ -154,7 +153,7 @@ def mergePickledFiles(printExample = False) :
     zTitles = {}
     
     for point in hp.points() :
-        fileName = conf.strings(*point)["pickledFileName"]+".out"
+        fileName = conf.pickledFileName(*point)+".out"
         if not os.path.exists(fileName) :
             print "skipping file",fileName
             continue
