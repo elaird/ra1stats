@@ -60,7 +60,7 @@ class spec(object) :
                 del s.samplesAndSignalEff["had"]
         self._selections += sel
 
-    def __init__(self, dataset = "2012dev", separateSystObs = True, whiteList = [], ignoreHad = False) :
+    def __init__(self, dataset = "2012hcp", separateSystObs = True, whiteList = [], ignoreHad = False) :
         for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
             setattr(self, "_"+item, eval(item))
 
@@ -82,8 +82,8 @@ class spec(object) :
             self.__init2011reorg__(updated = True)
         elif self._dataset=="2012ichep" :
             self.__init2012ichep__()
-        elif self._dataset=="2012dev" :
-            self.__init2012dev__()
+        elif self._dataset=="2012hcp" :
+            self.__init2012hcp()
         else :
             assert False,"Constructor for dataset %s not known."%self._dataset
 
@@ -109,7 +109,7 @@ class spec(object) :
                           ),
                 ])
 
-    def __init2012dev__(self) :
+    def __init2012hcp(self) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
