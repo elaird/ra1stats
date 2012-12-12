@@ -92,7 +92,7 @@ from inputData.data2012 import take12_weighted,take12_unweighted
 
 setup()
 
-d = ["2010", "2011eps", "2011", "2012ichep", "2012dev"][4]
+d = ["2010", "2011eps", "2011", "2012ichep", "2012hcp"][4]
 if d=="2010" :
     datasets = [ {"module": orig, "slices": ["2010"], "color":r.kBlack,  "label": "2010"},
                  ]
@@ -130,15 +130,15 @@ elif d=="2012ichep_5fb" :
                  # "color":r.kMagenta, "label": "2011"},
                  ]
     plot(datasets, tag = d)
-elif d=="2012dev" :
+elif d=="2012hcp" :
     color1 = {"ge2j":r.kBlack, "ge4j":r.kRed, "le3j":r.kBlue}
     color2 = {"ge2j":r.kGray, "ge4j":r.kOrange, "le3j":r.kCyan}
 
     for i,j in enumerate(["ge4j", "le3j"]) :
         bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
         slices = ["%s_%s"%(b,j) for b in bs]
-        datasets = [ {"module": take12_weighted, "slices": slices, "color":color1[j], "label": "2012 (%s, weighted)"%j},
-                     {"module": take12_unweighted, "slices": slices, "color":color2[j], "label": "2012 (%s, unweighted)"%j},
+        datasets = [ {"module": take12_weighted, "slices": slices, "color":color1[j], "label": "2012 HCP (%s, weighted)"%j},
+                     {"module": take12_unweighted, "slices": slices, "color":color2[j], "label": "2012 HCP (%s, unweighted)"%j},
                      ]
         #print datasets
         plot(datasets, tag = j)
