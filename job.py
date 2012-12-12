@@ -29,7 +29,7 @@ def printDict(d, space = "") :
     print "%s}"%space
 
 def onePoint(switches = None, likelihoodSpec = None, point = None) :
-    signal = pickling.readNumbers(fileName = conf.strings(*point)["pickledFileName"]+".in")
+    signal = pickling.readNumbers(fileName = conf.pickledFileName(*point)+".in")
     printDict(signal)
     out = {}
     if signal["eventsInRange"] :
@@ -91,7 +91,7 @@ def go() :
     spec = conf.likelihoodSpec()
 
     for point in points() :
-        pickling.writeNumbers(fileName = conf.strings(*point)["pickledFileName"]+".out",
+        pickling.writeNumbers(fileName = conf.pickledFileName(*point)+".out",
                               d = onePoint(switches = s, likelihoodSpec = spec, point = point))
 
 if False :

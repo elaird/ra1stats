@@ -100,30 +100,23 @@ def stuffVars(switches = None, binsMerged = None, signal = None) :
     return out
 
 def writeSignalFiles(points = [], outFilesAlso = False) :
-    switches = conf.switches()
-    args = {"switches": switches,
+    args = {"switches": conf.switches(),
             "eff": effHistos(),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
             }
-
     hp.checkHistoBinning([args["xs"]]+histoList(args["eff"]))
-
-    def one(point) :
+    for point in points :
         signal = signalModel(point = point, **args)
-        stem = conf.strings(*point)["pickledFileName"]
+        stem = conf.pickledFileName(*point)
         writeNumbers(fileName = stem + ".in", d = signal)
         if not outFilesAlso : return
         writeNumbers(fileName = stem + ".out", d = signal)
         #stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
-
-    map(one, points)
         
 ##merge functions
 def mergedFile() :
-    s = conf.switches()
-    note = common.note(conf.likelihoodSpec())
-    return "%s_%s%s"%(conf.stringsNoArgs()["mergedFileStem"], note, ".root")
+    return "%s_%s.root"%(conf.mergedFileStem(), common.note(conf.likelihoodSpec()))
 
 #note: improve this data format
 def flatten(target = {}, key = None, obj = None) :
@@ -154,7 +147,7 @@ def mergePickledFiles(printExample = False) :
     zTitles = {}
     
     for point in hp.points() :
-        fileName = conf.strings(*point)["pickledFileName"]+".out"
+        fileName = conf.pickledFileName(*point)+".out"
         if not os.path.exists(fileName) :
             print "skipping file",fileName
             continue

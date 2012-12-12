@@ -30,7 +30,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     out = []
     if skip : return out,""
 
-    logStem = conf.stringsNoArgs()["logStem"]
+    logDir = conf.directories()["log"]
     switches = conf.switches()
 
     nJobsMax = switches["nJobsMax"]
@@ -45,7 +45,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     #assert iStart<iFinish,warning
     for iSlice in range(iStart, iFinish) :
         argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
-                   3:"%s/%s_%d.log"%(pwd, logStem, iSlice) if options.output else "/dev/null"}
+                   3:"%s/%s/job_%d.log"%(pwd, logDir, iSlice) if options.output else "/dev/null"}
         keyslice = 1 if ignoreScript else 0
         args = [argDict[key] for key in sorted(argDict.keys())[keyslice:]]
         slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
@@ -73,9 +73,10 @@ def pjobCmds(queue=None) :
     for q_name, num_points in getQueueRanges(n_points,queue).iteritems():
         out[q_name]["args"] = []
         out[q_name]["n_points"] = num_points
-        filename = "points/{host}_{queue}_{pid}.points".format(host=host,
-                                                               queue=q_name,
-                                                               pid=pid)
+        filename = "{dir}/{host}_{queue}_{pid}.points".format(dir=conf.directories()["points"],
+                                                              host=host,
+                                                              queue=q_name,
+                                                              pid=pid)
         pointsToFile( filename, points[pos:pos+num_points] )
         pos += num_points
         n_para_jobs = (num_points/njm) + 1
@@ -173,9 +174,8 @@ def local(nWorkers = None, skip = False) :
     utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jcs)
 ############################################
 def mkdirs() :
-    s = conf.stringsNoArgs()
-    utils.mkdir(s["logDir"])
-    utils.mkdir(s["outputDir"])
+    for d in conf.directories().values() :
+        utils.mkdir(d)
 ############################################
 options = opts()
 

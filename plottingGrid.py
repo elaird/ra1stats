@@ -287,6 +287,14 @@ def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
     print "INFO: %s has been written."%pdf
     print "INFO: %s has been written."%root
 
+def outFileName(tag = "") :
+    base = pickling.mergedFile().split("/")[-1]
+    root = conf.directories()["plot"]+"/"+base.replace(".root", "_%s.root"%tag)
+    return {"root":root,
+            "eps" :root.replace(".root",".eps"),
+            "pdf" :root.replace(".root",".pdf"),
+            }
+
 def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False, name = "",
                           shiftX = False, shiftY = False, interBin = "LowEdge",
                           pruneYMin = False, debug = False, stampPrelim = True) :
@@ -295,12 +303,14 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     ranges = sa.ranges(s["signalModel"])
     if name == "": name = "UpperLimit" if s["method"]=="CLs" else "upperLimit95"
     inFile = pickling.mergedFile()
-    outFileRoot = inFile.replace(".root", "_xsLimit.root")
-    outFileEps  = inFile.replace(".root", "_xsLimit.eps")
+
+    outFiles = outFileName(tag = "xsLimit")
+    outFileEps  = outFiles["eps"]
+
     histos = xsUpperLimitHistograms(fileName = inFile, switches = s, ranges = ranges, shiftX = shiftX, shiftY = shiftY,
                                     upperLimitName = name)
     #output a root file
-    g = r.TFile(outFileRoot, "RECREATE")
+    g = r.TFile(outFiles["root"], "RECREATE")
     for h in histos.values() :
         h.Write()
 
@@ -468,7 +478,7 @@ def makeEfficiencyUncertaintyPlots() :
     ranges = sa.ranges(s["signalModel"])
 
     def go(name, suffix, zTitle, zRangeKey) :
-        fileName = "%s/%s_%s.eps"%(conf.stringsNoArgs()["outputDir"], s["signalModel"], suffix)
+        fileName = outFileName(tag = "%s_%s"%(s["signalModel"], suffix))["eps"]
         c = squareCanvas()
         h2 = utils.threeToTwo(f.Get(name))
         xyTitle = sa.histoTitle(model = s["signalModel"])
@@ -634,8 +644,8 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     f = r.TFile(inFile)
     r.gROOT.cd()
 
-    fileName = inFile.replace(".root","_%s.pdf"%tag)
-    rootFileName = fileName.replace(".pdf", ".root")
+    fileNames = outFileName(tag = tag)
+    fileName = fileNames["pdf"]
 
     if square :
         canvas = squareCanvas(numbered = True)
@@ -657,7 +667,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
     s = conf.switches()
 
     if outputRootFile :
-        outFile = r.TFile(rootFileName, "RECREATE")
+        outFile = r.TFile(fileNames["root"], "RECREATE")
         r.gROOT.cd()
 
     suppressed = []
@@ -675,7 +685,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
             r.gROOT.cd()
 
     if outputRootFile :
-        print "%s has been written."%rootFileName
+        print "%s has been written."%fileNames["root"]
         outFile.Close()
 
     canvas.Clear()
@@ -748,7 +758,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
                 plLimLine.SetLineColor(r.kGreen)
                 graphs[name].append(plLimLine)
 
-    fileName = pickling.mergedFile().replace(".root","_%s_%s.pdf"%(tag, str(cl).replace("0.","")))
+    fileName = outFileName(tag = tag+"_"+str(cl).replace("0.",""))["pdf"]
     if whiteList :
         fileName = fileName.replace(".pdf", ".eps")
         canvas = r.TCanvas("canvas", "", 500*divide[0], 500*divide[1])
