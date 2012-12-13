@@ -27,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                       )
 
     out = None
-    nToys = {"":0, "2010":300, "2011eps":300, "2011":3000, "2012ichep":1000, "2012hcp":300}[dataset]
+    nToys = {"":0, "2010":300, "2011eps":300, "2011":3000, "2012ichep":1000, "2012hcp":300, "2012dev":300}[dataset]
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
@@ -51,7 +51,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
     #f.cppDrive(tool = "")
     return out
 
-kargs = {"dataset" : ["", "2010", "2011eps", "2011", "2012ichep", "2012hcp"][5],
+kargs = {"dataset" : ["", "2010", "2011eps", "2011", "2012ichep", "2012hcp", "2012dev"][-1],
          "ensemble": False,
          }
 if kargs["dataset"]=="2011" :
