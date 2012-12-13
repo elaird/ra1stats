@@ -395,7 +395,8 @@ def write(doc, fileName = "") :
     f = open(fileName, "w")
     f.write(doc)
     f.close()
-    cmd = "pdflatex %s"%fileName
+    dir = "/".join(fileName.split("/")[:-1])
+    cmd = "cd %s; pdflatex ./%s"%(dir, fileName.replace(dir,""))
     if quiet : cmd += " >& /dev/null"
     os.system(cmd)
 
