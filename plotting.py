@@ -15,30 +15,30 @@ def writeGraphVizTree(wspace, pdfName = "model") :
     os.system(cmd)
 
 def magnify(h = None) :
-    h.SetLabelSize(2.0*h.GetLabelSize())
+    for axis in ["X","Y"] :
+        h.SetLabelSize(2.0*h.GetLabelSize(axis), axis)
     h.GetXaxis().SetTitleSize(1.4*h.GetXaxis().GetTitleSize())
     h.GetYaxis().SetTitleSize(1.4*h.GetYaxis().GetTitleSize())
 
-def pValueCategoryPlots(hMap = None, threePanel = False) :
-    if threePanel :
-        can = r.TCanvas("canvas", "", 500, 700)
-        can.Divide(1, 3)
-    else :
-        can = r.TCanvas("canvas", "", 700, 500)
-        can.Divide(1, 2)
+def pValueCategoryPlots(hMap = None) :
+    can = r.TCanvas("canvas", "", 700, 500)
+    can.Divide(2,2)
 
     can.cd(1)
     r.gPad.SetTickx()
     r.gPad.SetTicky()
     r.gPad.SetGridy()
 
+    pValues = [{"key":"chi2ProbSimple", "latex":"#chi^{2} prob.",        "color":602     },
+               {"key":"chi2Prob",       "latex":"#chi^{2} prob. (toys)", "color":r.kBlack},
+               {"key":"lMax",           "latex":"L_{max} (toys)",        "color":r.kCyan },
+               ]
+
     leg = r.TLegend(0.60, 0.65, 0.85, 0.85)
-    for i,(key,latex,color) in enumerate([("chi2ProbSimple", "#chi^{2} prob.", 602),
-                                          ("chi2Prob", "#chi^{2} prob. (toys)", r.kBlack),
-                                          ("lMax", "L_{max} (toys)", r.kCyan),
-                                          ]) :
+    for i,d in enumerate(pValues) :
+        key = d["key"]
         hMap[key].SetMarkerStyle(20)
-        hMap[key].SetMarkerColor(color)
+        hMap[key].SetMarkerColor(d["color"])
         if not i :
             hMap[key].SetStats(False)
             hMap[key].Draw("p")
@@ -47,30 +47,34 @@ def pValueCategoryPlots(hMap = None, threePanel = False) :
             magnify(hMap[key])
         else :
             hMap[key].Draw("psame")
-        leg.AddEntry(hMap[key], latex, "p")
+        leg.AddEntry(hMap[key], d["latex"], "p")
     leg.Draw()
 
-    if threePanel :
-        can.cd(2)
-        hMap2 = hMap["chi2ProbSimple"].Clone(hMap["chi2ProbSimple"].GetName()+"2")
-        hMap2.Draw("p")
-        hMap2.SetMinimum(1.0e-3)
-        hMap2.SetMaximum(2.0)
+    #can.cd(2)
+    #hMap2 = hMap["chi2ProbSimple"].Clone(hMap["chi2ProbSimple"].GetName()+"2")
+    #hMap2.Draw("p")
+    #hMap2.SetMinimum(1.0e-3)
+    #hMap2.SetMaximum(2.0)
+    #r.gPad.SetTickx()
+    #r.gPad.SetTicky()
+    #r.gPad.SetLogy()
+
+    keep = []
+    for i,d in enumerate(pValues) :
+        key = d["key"]
+
+        hDist = r.TH1D("pValueDist"+key, ";p-value;categories / bin", 55, 0.0, 1.1)
+        hDist.SetStats(False)
+        hDist.SetLineColor(d["color"])
+        magnify(hDist)
+        for iBin in range(1, 1+hMap[key].GetNbinsX()) :
+            hDist.Fill(hMap[key].GetBinContent(iBin))
+
+        can.cd(i+2)
         r.gPad.SetTickx()
         r.gPad.SetTicky()
-        r.gPad.SetLogy()
-
-    hDist = r.TH1D("pValueDist", ";p-value;categories / bin", 55, 0.0, 1.1)
-    hDist.SetStats(False)
-    magnify(hDist)
-
-    for iBin in range(1, 1+hMap["chi2ProbSimple"].GetNbinsX()) :
-        hDist.Fill(hMap["chi2ProbSimple"].GetBinContent(iBin))
-
-    can.cd(3 if threePanel else 2)
-    r.gPad.SetTickx()
-    r.gPad.SetTicky()
-    hDist.Draw()
+        hDist.Draw()
+        keep.append(hDist)
 
     can.Print("pValues.pdf")
 
