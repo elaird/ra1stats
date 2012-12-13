@@ -88,7 +88,7 @@ from inputData.dataMisc import orig
 from inputData.data2011reorg import take3
 from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012 import take6,take6_capped,take6_unweighted
-from inputData.data2012 import take12_weighted,take12_unweighted,take18
+from inputData.data2012 import take12_weighted,take12_unweighted,take14,take18
 
 setup()
 
@@ -143,13 +143,14 @@ elif d=="2012hcp" :
         #print datasets
         plot(datasets, tag = j)
 elif d=="2012dev" :
-    color1 = {"ge2j":r.kBlack, "ge4j":r.kRed, "le3j":r.kBlue}
-    color2 = {"ge2j":r.kGray, "ge4j":r.kOrange, "le3j":r.kCyan}
+    color1 = {"ge2j":r.kBlack, "ge4j":r.kRed,    "le3j":r.kBlue}
+    color2 = {"ge2j":r.kGray,  "ge4j":r.kOrange, "le3j":r.kCyan}
 
     for i,j in enumerate(["ge4j", "le3j"]) :
-        bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
+        bs = ["0b", "1b", "2b", "3b"]+(["ge4b"] if j!="le3j" else [])
         slices = ["%s_%s"%(b,j) for b in bs]
         datasets = [ {"module": take18, "slices": slices, "color":color1[j], "label": "2012 dev (%s, weighted)"%j},
+                     {"module": take14, "slices": slices, "color":color2[j], "label": "2012 HCP (%s, weighted)"%j},
                      ]
         #print datasets
         plot(datasets, tag = j)
