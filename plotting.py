@@ -316,7 +316,7 @@ def drawOne(hist = None, goptions = "", errorBand = False, bandFillStyle = 1001)
     noerrors.Draw("h"+goptions)
     return [errors, noerrors]
 
-def printOnePage(canvas, fileName, ext = ".eps", plotsDir = "plots") :
+def printOnePage(canvas, fileName, ext = ".pdf", plotsDir = "plots") :
     if "_logy" in fileName :
         fileName = fileName.replace("_logy","")+"_logy"
     fileName = "%s/%s%s"%(plotsDir, fileName, ext)
