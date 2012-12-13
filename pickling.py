@@ -110,7 +110,7 @@ def writeSignalFiles(points = [], outFilesAlso = False) :
         signal = signalModel(point = point, **args)
         stem = conf.pickledFileName(*point)
         writeNumbers(fileName = stem + ".in", d = signal)
-        if not outFilesAlso : return
+        if not outFilesAlso : continue
         writeNumbers(fileName = stem + ".out", d = signal)
         #stuffVars(switches, binsMerged = args["data"].htBinLowerEdges(), signal = signal))
         
