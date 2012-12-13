@@ -76,7 +76,7 @@ def pValueCategoryPlots(hMap = None) :
         hDist.Draw()
         keep.append(hDist)
 
-    can.Print("pValues.pdf")
+    can.Print("plots/pValues.pdf")
 
 def errorsPlot(wspace, results) :
     results.Print("v")
