@@ -57,7 +57,6 @@ def pjobCmds(queue=None) :
     from socket import gethostname
 
     switches = conf.switches()
-    utils.mkdir("points")
     pwd = os.environ["PWD"]
 
     points = histogramProcessing.points()
