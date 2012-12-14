@@ -20,7 +20,7 @@ def magnify(h = None) :
     h.GetXaxis().SetTitleSize(1.4*h.GetXaxis().GetTitleSize())
     h.GetYaxis().SetTitleSize(1.4*h.GetYaxis().GetTitleSize())
 
-def pValueCategoryPlots(hMap = None) :
+def pValueCategoryPlots(hMap = None, logYMinMax = None) :
     can = r.TCanvas("canvas", "", 700, 500)
     can.Divide(2,2)
 
@@ -42,22 +42,15 @@ def pValueCategoryPlots(hMap = None) :
         if not i :
             hMap[key].SetStats(False)
             hMap[key].Draw("p")
-            hMap[key].SetMinimum(0.0)
-            hMap[key].SetMaximum(1.5)
+            hMap[key].SetMinimum(logYMinMax[0] if logYMinMax else 0.0)
+            hMap[key].SetMaximum(logYMinMax[1] if logYMinMax else 1.5)
             magnify(hMap[key])
         else :
             hMap[key].Draw("psame")
         leg.AddEntry(hMap[key], d["latex"], "p")
     leg.Draw()
-
-    #can.cd(2)
-    #hMap2 = hMap["chi2ProbSimple"].Clone(hMap["chi2ProbSimple"].GetName()+"2")
-    #hMap2.Draw("p")
-    #hMap2.SetMinimum(1.0e-3)
-    #hMap2.SetMaximum(2.0)
-    #r.gPad.SetTickx()
-    #r.gPad.SetTicky()
-    #r.gPad.SetLogy()
+    if logYMinMax :
+        r.gPad.SetLogy()
 
     keep = []
     for i,d in enumerate(pValues) :

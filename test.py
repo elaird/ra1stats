@@ -73,4 +73,4 @@ else :
             hMap[key].GetXaxis().SetBinLabel(1+iSel, sel.name)
             hMap[key].SetBinContent(1+iSel, pValue)
 
-    plotting.pValueCategoryPlots(hMap)
+    plotting.pValueCategoryPlots(hMap, )#logYMinMax = (1.0e-4, 1.0e2))
