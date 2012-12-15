@@ -174,21 +174,21 @@ def exclusions(histos = {}, switches = {}, graphBlackLists = None, graphReplaceP
              "lineStyle":7, "lineWidth":3, "color": r.kViolet},
             ]
 
-#    specs += [
-#        {"name":upperLimitName,                    "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
-#         "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
-#        ]
+    specs += [
+        {"name":upperLimitName,                    "lineStyle":1, "lineWidth":3, "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+         "color": r.kBlack,                                            "simpleLabel":'Observed Limit ("%s" cross section)'%switches["xsVariation"]},
+        ]
 
     curves = patches.curves().get(switches["signalModel"])
     if switches["isSms"] :
         specs += [
-            #{"name":"%s_-1_Sigma"%upperLimitName, "histoName":upperLimitName,
-            # "variation":-1.0, "label":"", "simpleLabel":"Observed Limit - 1 #sigma (theory)",
-            # "lineStyle":1, "lineWidth":1, "color": r.kBlue if debug else r.kBlack},
-            #
-            #{"name":"%s_+1_Sigma"%upperLimitName, "histoName":upperLimitName,
-            # "variation": 1.0, "label":"", "simpleLabel":"Observed Limit + 1 #sigma (theory)",
-            # "lineStyle":1, "lineWidth":1, "color": r.kYellow if debug else r.kBlack},
+            {"name":"%s_-1_Sigma"%upperLimitName, "histoName":upperLimitName,
+             "variation":-1.0, "label":"", "simpleLabel":"Observed Limit - 1 #sigma (theory)",
+             "lineStyle":1, "lineWidth":1, "color": r.kBlue if debug else r.kBlack},
+
+            {"name":"%s_+1_Sigma"%upperLimitName, "histoName":upperLimitName,
+             "variation": 1.0, "label":"", "simpleLabel":"Observed Limit + 1 #sigma (theory)",
+             "lineStyle":1, "lineWidth":1, "color": r.kYellow if debug else r.kBlack},
             ]
     elif curves :
         for spec in specs :
