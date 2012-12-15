@@ -191,6 +191,7 @@ def exclusionGraphs(histos = {}, interBin = "", pruneYMin = False, debug = False
         graph = rxs.graph(h = histos[histoName], model = model, interBin = interBin,
                           printXs = printXs, spec = {"variation":xsVariation})
         graph["graph"].SetName(graphName)
+        graph["histo"].SetName(graphName.replace("_graph","_simpleExcl"))
         key = graphName.replace("m1","-1").replace("p1","+1").replace("_graph","")
         pruneGraph(graph['graph'], debug = False, breakLink = pruneYMin,
                    lst = patches.graphBlackLists()[key][model]+(pointsAtYMin(graph['graph']) if pruneYMin else []))
@@ -339,32 +340,29 @@ def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], drawGr
     c.Print(pdf+"[")
     for d in specs :
         foo = {'color': 880, 'lineWidth': 2, 'lineStyle': 2, 'name': 'ExpectedUpperLimit_m1_Sigma', 'label': ''}
-        h = hFile.Get(d["name"])
-        if not h :
-            continue
+        h = hFile.Get(d["name"]+"_simpleExcl")
+        if not h : continue
         h.Draw("colz")
         h.SetMinimum(-1.0)
         h.SetMaximum(1.0)
         h.SetTitle(d["name"])
-        #set range
-
-        #g = gFile.Get(d["name"]+"_graph")
-        #if drawGraphs :
-        #    d["graphClone"] = d["graph"].Clone()
-        #    d["graphClone"].SetMarkerColor(r.kBlack)
-        #    d["graphClone"].SetMarkerStyle(20)
-        #    d["graphClone"].SetMarkerSize(0.3*d["graphClone"].GetMarkerSize())
-        #    d["graphClone"].SetLineColor(r.kYellow)
-        #    d["graphClone"].SetLineStyle(1)
-        #    d["graphClone"].Draw("cpsame")
-        #if d.get("curve") and d["curve"].GetNp() :
-        #    d["curve"].SetMarkerStyle(20)
-        #    d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
-        #    d["curve"].Draw("lpsame")
         r.gPad.SetGridx()
         r.gPad.SetGridy()
-        #printOnce(c, pdf.replace(".pdf",".eps"))
+
+        g = gFile.Get(d["name"]+"_graph")
+        if g and drawGraphs :
+            g.SetMarkerColor(r.kBlack)
+            g.SetMarkerStyle(20)
+            g.SetMarkerSize(0.3*g.GetMarkerSize())
+            g.SetLineColor(r.kYellow)
+            g.SetLineStyle(1)
+            g.Draw("cpsame")
+        if d.get("curve") and d["curve"].GetNp() :
+            d["curve"].SetMarkerStyle(20)
+            d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
+            d["curve"].Draw("lpsame")
         c.Print(pdf)
+
     c.Print(pdf+"]")
     print "INFO: %s has been written."%pdf
     hFile.Close()
