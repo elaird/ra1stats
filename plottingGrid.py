@@ -267,10 +267,26 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
     makeRootFiles(limitFileName = limitFileName, simpleFileName = simpleFileName,
                   shiftX = shiftX, shiftY = shiftY, interBin = interBin, pruneYMin = pruneYMin)
-    makeLimitPdf(rootFileName = limitFileName, logZ = logZ, exclusionCurves = exclusionCurves, mDeltaFuncs = mDeltaFuncs)
-    #makeSimpleExclPdf(limitFileName = limitFileName, simpleFileName = simpleFileName)
 
-def makeLimitPdf(rootFileName = "", logZ = False, exclusionCurves = False, mDeltaFuncs = False) :
+    specs = [{"name":"ExpectedUpperLimit_m1_Sigma", "label":"",
+               "lineStyle":2, "lineWidth":2, "color":r.kViolet},
+              {"name":"ExpectedUpperLimit_p1_Sigma", "label":"",
+               "lineStyle":2, "lineWidth":2, "color":r.kViolet},
+              {"name":"ExpectedUpperLimit",          "label":"Expected Limit #pm1 #sigma exp.",
+               "lineStyle":7, "lineWidth":3, "color":r.kViolet},
+              {"name":"UpperLimit",                  "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+               "lineStyle":1, "lineWidth":3, "color":r.kBlack},
+              {"name":"UpperLimit_m1_Sigma",         "label":"",
+               "lineStyle":1, "lineWidth":1, "color":r.kBlack},
+              {"name":"UpperLimit_p1_Sigma",         "label":"",
+               "lineStyle":1, "lineWidth":1, "color":r.kBlack},
+              ]
+    makeLimitPdf(rootFileName = limitFileName, specs = specs,
+                 logZ = logZ, exclusionCurves = exclusionCurves, mDeltaFuncs = mDeltaFuncs)
+    makeSimpleExclPdf(histoFileName = simpleFileName, graphFileName = limitFileName, specs = specs,
+                      drawGraphs = exclusionCurves)
+
+def makeLimitPdf(rootFileName = "", logZ = False, exclusionCurves = False, mDeltaFuncs = False, specs = []) :
     ranges = sa.ranges(conf.switches()["signalModel"])
 
     epsFile = rootFileName.replace(".root", ".eps")
@@ -288,19 +304,7 @@ def makeLimitPdf(rootFileName = "", logZ = False, exclusionCurves = False, mDelt
         epsFile = epsFile.replace(".eps", "_linZ.eps")
 
     graphs = []
-    for d in [{"name":"ExpectedUpperLimit_m1_Sigma", "label":"",
-               "lineStyle":2, "lineWidth":2, "color":r.kViolet},
-              {"name":"ExpectedUpperLimit_p1_Sigma", "label":"",
-               "lineStyle":2, "lineWidth":2, "color":r.kViolet},
-              {"name":"ExpectedUpperLimit",          "label":"Expected Limit #pm1 #sigma exp.",
-               "lineStyle":7, "lineWidth":3, "color":r.kViolet},
-              {"name":"UpperLimit",                  "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
-               "lineStyle":1, "lineWidth":3, "color":r.kBlack},
-              {"name":"UpperLimit_m1_Sigma",         "label":"",
-               "lineStyle":1, "lineWidth":1, "color":r.kBlack},
-              {"name":"UpperLimit_p1_Sigma",         "label":"",
-               "lineStyle":1, "lineWidth":1, "color":r.kBlack},
-              ] :
+    for d in specs :
         graph = f.Get(d["name"]+"_graph")
         if not graph : continue
         graph.SetLineColor(d["color"])
@@ -323,40 +327,48 @@ def makeLimitPdf(rootFileName = "", logZ = False, exclusionCurves = False, mDelt
     printOnce(c, epsFile)
     f.Close()
 
-def makeSimpleExclPdf(graphs = [], outFileEps = "", drawGraphs = True) :
+def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], drawGraphs = True) :
     ranges = sa.ranges(conf.switches()["signalModel"])
 
-    c = squareCanvas(name = "canvas_simpleExcl")
-    pdf = outFileEps.replace(".eps","_simpleExcl.pdf")
-    root = pdf.replace(".pdf",".root")
-    tfile = r.TFile(root, "RECREATE")
+    c = squareCanvas()
+    pdf = histoFileName.replace(".root",".pdf")
+
+    hFile = r.TFile(histoFileName)
+    gFile = r.TFile(graphFileName)
+
     c.Print(pdf+"[")
-    for d in graphs :
-        d["histo"].Draw("colz")
-        d["histo"].SetMaximum(1.0)
-        d["histo"].SetMinimum(-1.0)
-        d["histo"].SetTitle(d.get("simpleLabel"))
-        d["histo"].Write()
-        if drawGraphs :
-            d["graphClone"] = d["graph"].Clone()
-            d["graphClone"].SetMarkerColor(r.kBlack)
-            d["graphClone"].SetMarkerStyle(20)
-            d["graphClone"].SetMarkerSize(0.3*d["graphClone"].GetMarkerSize())
-            d["graphClone"].SetLineColor(r.kYellow)
-            d["graphClone"].SetLineStyle(1)
-            d["graphClone"].Draw("cpsame")
-        if d.get("curve") and d["curve"].GetNp() :
-            d["curve"].SetMarkerStyle(20)
-            d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
-            d["curve"].Draw("lpsame")
+    for d in specs :
+        foo = {'color': 880, 'lineWidth': 2, 'lineStyle': 2, 'name': 'ExpectedUpperLimit_m1_Sigma', 'label': ''}
+        h = hFile.Get(d["name"])
+        if not h :
+            continue
+        h.Draw("colz")
+        h.SetMinimum(-1.0)
+        h.SetMaximum(1.0)
+        h.SetTitle(d["name"])
+        #set range
+
+        #g = gFile.Get(d["name"]+"_graph")
+        #if drawGraphs :
+        #    d["graphClone"] = d["graph"].Clone()
+        #    d["graphClone"].SetMarkerColor(r.kBlack)
+        #    d["graphClone"].SetMarkerStyle(20)
+        #    d["graphClone"].SetMarkerSize(0.3*d["graphClone"].GetMarkerSize())
+        #    d["graphClone"].SetLineColor(r.kYellow)
+        #    d["graphClone"].SetLineStyle(1)
+        #    d["graphClone"].Draw("cpsame")
+        #if d.get("curve") and d["curve"].GetNp() :
+        #    d["curve"].SetMarkerStyle(20)
+        #    d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
+        #    d["curve"].Draw("lpsame")
         r.gPad.SetGridx()
         r.gPad.SetGridy()
         #printOnce(c, pdf.replace(".pdf",".eps"))
         c.Print(pdf)
     c.Print(pdf+"]")
-    tfile.Close()
     print "INFO: %s has been written."%pdf
-    print "INFO: %s has been written."%root
+    hFile.Close()
+    gFile.Close()
 
 def efficiencyHistos(key = "") :
     out = {}
