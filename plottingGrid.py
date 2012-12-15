@@ -34,7 +34,7 @@ def adjustHisto(h, title = "") :
     h.GetYaxis().SetTitleOffset(1.5)
     h.GetZaxis().SetTitleOffset(1.5)
 
-def printOnce(canvas, fileName) :
+def printOnce(canvas, fileName, alsoC = False) :
     text = r.TText()
     text.SetNDC()
     text.SetTextAlign(22)
@@ -52,7 +52,8 @@ def printOnce(canvas, fileName) :
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
-    canvas.Print(fileName.replace(".eps",".C"))
+    if alsoC :
+        canvas.Print(fileName.replace(".eps",".C"))
 
 def setRange(var, ranges, histo, axisString) :
     if var not in ranges : return
@@ -325,7 +326,7 @@ def makeLimitPdf(rootFileName = "", logZ = False, exclusionCurves = False, mDelt
             func.Draw("same")
 
     s3 = stamp(text = conf.likelihoodSpec().legendTitle(), x = 0.2075, y = 0.64, factor = 0.65)
-    printOnce(c, epsFile)
+    printOnce(c, epsFile, alsoC = True)
     f.Close()
 
 def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], drawGraphs = True) :
