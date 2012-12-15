@@ -33,7 +33,8 @@ def cutFunc() :
             }
 
 def curves() :
-    return {"tanBeta10":{
+    out = collections.defaultdict(dict)
+    out["tanBeta10"] = {
             ("ExpectedUpperLimit",          "default"): [( 120, 594), ( 160, 595), ( 240, 595), ( 320, 590), ( 400, 580), ( 480, 567),
                                                          ( 560, 550), ( 640, 530), ( 720, 500), ( 800, 465), ( 880, 423),
                                                          ( 960, 370), (1040, 342), (1120, 325), (1200, 310), (1280, 300),
@@ -83,7 +84,7 @@ def curves() :
                                                          (2560, 265), (2640, 265), (2720, 270), (2800, 275), (2880, 283),
                                                          (2960, 292),],
             }
-            }
+    return out
 
 def overwriteInput() :
     return collections.defaultdict(list)
