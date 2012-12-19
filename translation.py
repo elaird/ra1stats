@@ -86,9 +86,10 @@ def plot(datasets = [], tag = "", factors = ["gZ", "mumuZ", "muW"]) :
 ##########
 from inputData.dataMisc import orig
 from inputData.data2011reorg import take3
-from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
-from inputData.data2012 import take6,take6_capped,take6_unweighted
-from inputData.data2012 import take12_weighted,take12_unweighted,take14,take18
+from inputData.data2012hcp import take5,take5a,take5_capped,take5_unweighted
+from inputData.data2012hcp import take6,take6_capped,take6_unweighted
+from inputData.data2012hcp import take12_weighted,take12_unweighted,take14
+from inputData.data2012dev import take0,take1
 
 setup()
 
