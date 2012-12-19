@@ -119,7 +119,7 @@ class spec(object) :
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 18 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take18 as module
+        from inputData.data2012dev import take1 as module
 
         #QCD test
         if False :
@@ -182,7 +182,7 @@ class spec(object) :
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012 import take14 as module
+        from inputData.data2012hcp import take14 as module
 
         #QCD test
         if False :
@@ -190,7 +190,7 @@ class spec(object) :
             self._constrainQcdSlope = False
             self._initialValuesFromMuonSample = True
             self._legendTitle += "[NO MHT/MET CUT]"
-            from inputData.data2012 import take15a as module
+            from inputData.data2012hcp import take15a as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
