@@ -119,7 +119,7 @@ class spec(object) :
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 18 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012dev import take0 as module
+        from inputData.data2012dev import take1 as module
 
         #QCD test
         if False :
