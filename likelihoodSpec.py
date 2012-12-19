@@ -181,7 +181,7 @@ class spec(object) :
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
-        self._legendTitle = "CMS Preliminary, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
+        self._legendTitle = "CMS, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
         from inputData.data2012hcp import take14 as module
 
         #QCD test
