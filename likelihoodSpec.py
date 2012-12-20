@@ -389,7 +389,7 @@ class spec(object) :
                   ])
 
     def __init2010__(self) :
-        self._constrainQcdSlope = False
+        self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._REwk = ""
