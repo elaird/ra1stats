@@ -60,7 +60,7 @@ class spec(object) :
                 del s.samplesAndSignalEff["had"]
         self._selections += sel
 
-    def __init__(self, dataset = "2012hcp", separateSystObs = True, whiteList = [], ignoreHad = False) :
+    def __init__(self, dataset = "", separateSystObs = True, whiteList = [], ignoreHad = False) :
         for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
             setattr(self, "_"+item, eval(item))
 
@@ -72,7 +72,7 @@ class spec(object) :
         self._initialValuesFromMuonSample = None
         self._selections = []
 
-        if self._dataset=="" :
+        if self._dataset=="simple" :
             self.__initSimple__()
         elif self._dataset=="2010" :
             self.__init2010__()
