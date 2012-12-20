@@ -344,6 +344,9 @@ class data_2010(data) :
             "sigmaLumiLike": 0.04,
             "sigmaPhotZ": [0.40],
             "sigmaMuonW": [0.30],
+
+            "k_qcd_nom":2.96e-2, #2011
+            "k_qcd_unc_inp":utils.quadSum([0.61e-2, 0.463e-2]) #2011
             }
 
         self._systBins = {
