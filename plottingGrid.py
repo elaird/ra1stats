@@ -31,7 +31,7 @@ def squareCanvas(margin = 0.18, ticks = True, name = "canvas", numbered = False)
 def adjustHisto(h, title = "") :
     h.SetStats(False)
     h.SetTitle(title)
-    h.GetYaxis().SetTitleOffset(1.5)
+    h.GetYaxis().SetTitleOffset(1.6)
     h.GetZaxis().SetTitleOffset(1.5)
 
 def printOnce(canvas, fileName, alsoC = False) :
@@ -221,7 +221,7 @@ def upperLimitHistos(inFileName = "", shiftX = False, shiftY = False) :
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, model)
         title = sa.histoTitle(model = model)
-        title += ";%g%% CL %s on #sigma (pb)"%(100.0*cl, pretty)
+        title += ";%g%% CL %s on  #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
