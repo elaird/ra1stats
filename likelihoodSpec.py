@@ -152,10 +152,7 @@ class spec(object) :
                 name  = "%sb_%sj"%(b,j)
                 #name  = "%sb_%sj_alphaTmuon"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
-                if j=="le3" :
-                    note += "; 2#le%s#%s"%(nj, j)
-                else :
-                    note += "; %s#%s"%(nj, j)
+                note += "; %s#%s"%(nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
 
                 if b in ["0","1"] :
@@ -219,9 +216,9 @@ class spec(object) :
                 #name  = "%sb_%sj_alphaTmuon"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
                 if j=="le3" :
-                    note += "; 2#le%s#%s"%(nj, j)
+                    note += "; 2 #le%s #%s"%(nj, j)
                 else :
-                    note += "; %s#%s"%(nj, j)
+                    note += "; %s #%s"%(nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
 
                 if b=="0" :
