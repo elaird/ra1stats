@@ -221,7 +221,7 @@ def upperLimitHistos(inFileName = "", shiftX = False, shiftY = False) :
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         modifyHisto(h, model)
         title = sa.histoTitle(model = model)
-        title += ";%g%% C.L. %s on #sigma (pb)"%(100.0*cl, pretty)
+        title += ";%g%% CL %s on #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
         setRange("yRange", ranges, h, "Y")
@@ -262,9 +262,9 @@ def makeRootFiles(limitFileName = "", simpleFileName = "", shiftX = None, shiftY
     writeList(fileName = limitFileName, objects = histos.values()+graphs.values())
     writeList(fileName = simpleFileName, objects = simple.values())
 
-def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, printXs = False,
-                          shiftX = False, shiftY = False, interBin = "LowEdge",
-                          pruneYMin = False, debug = False) :
+def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, diagonalLine = False,
+                          printXs = False, shiftX = False, shiftY = False,
+                          interBin = "LowEdge", pruneYMin = False, debug = False) :
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
     makeRootFiles(limitFileName = limitFileName, simpleFileName = simpleFileName,
@@ -283,12 +283,13 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
               {"name":"UpperLimit_p1_Sigma",         "label":"",
                "lineStyle":1, "lineWidth":1, "color":r.kBlack},
               ]
-    makeLimitPdf(rootFileName = limitFileName, specs = specs,
+    makeLimitPdf(rootFileName = limitFileName, specs = specs, diagonalLine = diagonalLine,
                  logZ = logZ, exclusionCurves = exclusionCurves, mDeltaFuncs = mDeltaFuncs)
     makeSimpleExclPdf(histoFileName = simpleFileName, graphFileName = limitFileName, specs = specs,
                       drawGraphs = exclusionCurves)
 
-def makeLimitPdf(rootFileName = "", logZ = False, exclusionCurves = False, mDeltaFuncs = False, specs = []) :
+def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
+                 exclusionCurves = False, mDeltaFuncs = False, specs = []) :
     ranges = sa.ranges(conf.switches()["signalModel"])
 
     epsFile = rootFileName.replace(".root", ".eps")
@@ -318,6 +319,13 @@ def makeLimitPdf(rootFileName = "", logZ = False, exclusionCurves = False, mDelt
         stuff = rxs.drawGraphs(graphs)
     else :
         epsFile = epsFile.replace(".eps", "_noRef.eps")
+
+    if diagonalLine :
+        yx = r.TF1("yx", "x", ranges["xRange"][0], ranges["xMaxDiag"])
+        yx.SetLineColor(1)
+        yx.SetLineStyle(3)
+        yx.SetLineWidth(2)
+        yx.Draw("same")
 
     if mDeltaFuncs :
         epsFile = epsFile.replace(".eps", "_mDelta.eps")
