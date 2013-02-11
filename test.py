@@ -44,14 +44,14 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
     #
     #f.profile()
     #f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
-    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
-    out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
+    f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
+    #out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #f.debug()
     #f.cppDrive(tool = "")
     return out
 
-kargs = {"dataset" : ["", "2010", "2011eps", "2011", "2012ichep", "2012hcp", "2012dev"][-1],
+kargs = {"dataset" : ["", "2010", "2011eps", "2011", "2012ichep", "2012hcp", "2012dev"][-2],
          "ensemble": False,
          }
 if kargs["dataset"]=="2011" :
