@@ -115,7 +115,7 @@ def ranges(model) :
          "T2tt": ( 300.0, 800.0),
          "T2bb": ( 287.5, 900.0),
          "T1bbbb": ( 287.5, 1400),
-         "T1tttt": ( 400.0, 1400),
+         "T1tttt": ( 387.5, 1400),
          "T1tttt_2012": ( 375.0, 1200.0),
          "tanBeta10": (0.0, 4000.0),
          }
@@ -129,6 +129,14 @@ def ranges(model) :
          "T1tttt_2012": ( 50.0, 800.0),
          "tanBeta10": (0.0, 4000.0),
          }
+
+    xMaxDiag = {"T1":     800.0,
+                "T2":     550.0,
+                "T2tt":   400.0,
+                "T2bb":   500.0,
+                "T1bbbb": 800.0,
+                "T1tttt": 700.0,
+                }
 
     # [ primary, secondary, tertiary ] divisions
     xDivisions = {
@@ -154,6 +162,8 @@ def ranges(model) :
     d = {}
     d["xRange"] = x.get(model, (50.0, 1499.9))
     d["yRange"] = y.get(model, (50.0, 1224.9))
+
+    d["xMaxDiag"] = xMaxDiag.get(model, d["xRange"][0])
 
     d["xDivisions"] = xDivisions.get(model, None)
     d["yDivisions"] = yDivisions.get(model, None)
