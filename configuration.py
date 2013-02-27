@@ -17,7 +17,7 @@ def ignoreEff() :
 
 def effUncRel() :
     return {"effUncRel":{"T1":0.140, "T1bbbb":0.160, "T1tttt":0.230,
-                         "T2":0.134, "T2bb":0.131, "T2tt":0.139, }}
+                         "T2":0.134, "T2bb":0.131, "T2tt":0.139, "T2cc":0.20}}
 
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
@@ -41,11 +41,11 @@ def likelihoodSpec() :
     dataset = "2012hcp"
     dct = {"T1"          : {"dataset":dataset, "whiteList":["0b_ge4j"]},
            "T2"          : {"dataset":dataset, "whiteList":["0b_le3j"]},
-           "T2cc"        : {"dataset":dataset, "whiteList":["0b_le3j"]},
            "T2bb"        : {"dataset":dataset, "whiteList":["1b_le3j", "2b_le3j"]},
            "T2tt"        : {"dataset":dataset, "whiteList":["1b_ge4j", "2b_ge4j"]},
            "T1bbbb"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
            "T1tttt"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T2cc"        : {"dataset":"2012hcp2", "whiteList":["0b_le3j"]},
            "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
            "tanBeta10"   : {},
            }
