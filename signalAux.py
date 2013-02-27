@@ -17,6 +17,7 @@ def xsHistoSpec(model = "", cmssmProcess = "", xsVariation = "") :
     d = {"T2":          {"histo": "squark", "factor": 1.0,  "file": eight},
          "T2tt":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
          "T2bb":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
+         "T2cc":        {"histo": "stop_or_sbottom","factor": 1.0,  "file": eight},
          "tanBeta10":   {"histo": "%s_%s"%(cmssmProcess, xsVariation),  "factor": 1.0,  "file": tanBeta10},
          }
 
@@ -41,6 +42,7 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
 
     sms = {"T1":          {"had": "v5"},
            "T2":          {"had": "v1"},
+           "T2cc":        {"had": "v1"},
            "T2tt":        {"had": "v1", "muon": "v1"},
            "T2bb":        {"had": "v3", "muon": "v3"},
            #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
@@ -93,8 +95,14 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
 
     if bJets :
         tags.append(bJets)
+        if model == "T2cc":
+            print "WARNING: hacking b directory"
+            tags[-1] = bJets.replace("b","")
     if jets :
         tags.append(jets)
+        if model == "T2cc":
+            print "WARNING: hacking j directory"
+            tags[-1] = jets.replace("le3","geq2")
 
     if box=="had":
         tags.append("AlphaT55")
@@ -117,6 +125,7 @@ def ranges(model) :
          "T2":   ( 287.5, 1000),
          "T2tt": ( 300.0, 800.0),
          "T2bb": ( 287.5, 900.0),
+         "T2cc": ( 287.5, 900.0),
          "T1bbbb": ( 287.5, 1400),
          "T1tttt": ( 387.5, 1400),
          "T1tttt_2012": ( 375.0, 1200.0),
@@ -127,6 +136,7 @@ def ranges(model) :
          "T2":     ( 0.0,  825),
          "T2tt":   ( 0.0,  600),
          "T2bb":   ( 0.0,  725),
+         "T2cc":   ( 0.0,  725),
          "T1bbbb": ( 0.0, 1225),
          "T1tttt": ( 0.0, 1050),
          "T1tttt_2012": ( 50.0, 800.0),
@@ -137,6 +147,7 @@ def ranges(model) :
                 "T2":     550.0,
                 "T2tt":   400.0,
                 "T2bb":   500.0,
+                "T2cc":   500.0,
                 "T1bbbb": 800.0,
                 "T1tttt": 700.0,
                 }
@@ -146,6 +157,7 @@ def ranges(model) :
             "T1": [ 10, 4, 0 ],
             "T2": [ 10, 4, 0 ],
             "T2bb": [ 10, 4, 0 ],
+            "T2cc": [ 10, 4, 0 ],
             "T2tt": [ 10, 4, 0 ],
             "T1bbbb": [ 10, 4, 0 ],
             "T1tttt": [ 8, 4, 0 ],
@@ -156,6 +168,7 @@ def ranges(model) :
             "T1": [ 10, 4, 0 ],
             "T2": [ 10, 4, 0 ],
             "T2bb": [ 10, 4, 0 ],
+            "T2cc": [ 10, 4, 0 ],
             "T2tt": [ 12, 4, 0 ],
             "T1bbbb": [ 10, 4, 0 ],
             "T1tttt": [ 10, 4, 0 ],
@@ -200,6 +213,10 @@ def processStamp(key = "") :
         'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t %s; m(#tilde{g})>>m(#tilde{t})"%chi(),
         'xpos': 0.41,
         },
+        'T2cc'   : {
+        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow c %s; m(#tilde{g})>>m(#tilde{t})"%chi(),
+        'xpos': 0.425,
+        },
         'T1'     : {
         'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q #bar{q} %s; m(#tilde{q})>>m(#tilde{g})"%chi(),
         'xpos': 0.4325,
@@ -219,6 +236,7 @@ def histoTitle(model = "") :
     d = {"T1"           : ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T2"           : ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt"         : ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "T2cc"         : ";m_{stop} (GeV);m_{LSP} (GeV)",
          "T2bb"         : ";m_{sbottom} (GeV);m_{LSP} (GeV)",
          "T2bw"         : ";m_{UKNOWN} (GeV);m_{UNKNOWN_2} (GeV)",
          "T5zz"         : ";m_{gluino} (GeV);m_{LSP} (GeV)",
