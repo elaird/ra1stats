@@ -13,7 +13,7 @@ def method() :
             }
 
 def ignoreEff() :
-    return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"]}}
+    return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"], "T2cc":["muon"]}}
 
 def effUncRel() :
     return {"effUncRel":{"T1":0.140, "T1bbbb":0.160, "T1tttt":0.230,
@@ -21,7 +21,7 @@ def effUncRel() :
 
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
-              "T2tt", "T2bb", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+              "T2tt", "T2bb", "T2cc", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
               "T1tttt_ichep", "T2bw"]
     variations = ["default", "up", "down"]
 
@@ -34,13 +34,14 @@ def signal() :
     out["drawBenchmarkPoints"] = True
     out["effRatioPlots"] = False
     out["xsVariation"] = dict(zip(variations, variations))["default"]
-    out["signalModel"] = dict(zip(models, models))["T2"]
+    out["signalModel"] = dict(zip(models, models))["T2cc"]
     return out
 
 def likelihoodSpec() :
-    dataset = "2012dev"
+    dataset = "2012hcp"
     dct = {"T1"          : {"dataset":dataset, "whiteList":["0b_ge4j"]},
            "T2"          : {"dataset":dataset, "whiteList":["0b_le3j"]},
+           "T2cc"        : {"dataset":dataset, "whiteList":["0b_le3j"]},
            "T2bb"        : {"dataset":dataset, "whiteList":["1b_le3j", "2b_le3j"]},
            "T2tt"        : {"dataset":dataset, "whiteList":["1b_ge4j", "2b_ge4j"]},
            "T1bbbb"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
