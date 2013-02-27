@@ -262,9 +262,10 @@ def makeRootFiles(limitFileName = "", simpleFileName = "", shiftX = None, shiftY
     writeList(fileName = limitFileName, objects = histos.values()+graphs.values())
     writeList(fileName = simpleFileName, objects = simple.values())
 
-def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}, diagonalLine = False,
+def makeXsUpperLimitPlots(logZ = False, curveGopts = "", mDeltaFuncs = {}, diagonalLine = False,
                           printXs = False, shiftX = False, shiftY = False,
                           interBin = "LowEdge", pruneYMin = False, debug = False) :
+
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
     makeRootFiles(limitFileName = limitFileName, simpleFileName = simpleFileName,
@@ -283,13 +284,15 @@ def makeXsUpperLimitPlots(logZ = False, exclusionCurves = True, mDeltaFuncs = {}
               {"name":"UpperLimit_p1_Sigma",         "label":"",
                "lineStyle":1, "lineWidth":1, "color":r.kBlack},
               ]
+
     makeLimitPdf(rootFileName = limitFileName, specs = specs, diagonalLine = diagonalLine,
-                 logZ = logZ, exclusionCurves = exclusionCurves, mDeltaFuncs = mDeltaFuncs)
+                 logZ = logZ, curveGopts = curveGopts, mDeltaFuncs = mDeltaFuncs)
     makeSimpleExclPdf(histoFileName = simpleFileName, graphFileName = limitFileName, specs = specs,
-                      drawGraphs = exclusionCurves)
+                      curveGopts = curveGopts)
 
 def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
-                 exclusionCurves = False, mDeltaFuncs = False, specs = []) :
+                 curveGopts = "", mDeltaFuncs = False, specs = []) :
+
     ranges = sa.ranges(conf.switches()["signalModel"])
 
     epsFile = rootFileName.replace(".root", ".eps")
@@ -315,8 +318,8 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
         graph.SetLineStyle(d["lineStyle"])
         graphs.append({"graph":graph, "label":d["label"]})
 
-    if exclusionCurves :
-        stuff = rxs.drawGraphs(graphs)
+    if curveGopts :
+        stuff = rxs.drawGraphs(graphs, gopts = curveGopts)
     else :
         epsFile = epsFile.replace(".eps", "_noRef.eps")
 
@@ -337,7 +340,7 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
     printOnce(c, epsFile, alsoC = True)
     f.Close()
 
-def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], drawGraphs = True) :
+def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], curveGopts = "") :
     ranges = sa.ranges(conf.switches()["signalModel"])
 
     c = squareCanvas()
@@ -359,13 +362,13 @@ def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], drawGr
         r.gPad.SetGridy()
 
         g = gFile.Get(d["name"]+"_graph")
-        if g and drawGraphs :
+        if g and curveGopts :
             g.SetMarkerColor(r.kBlack)
             g.SetMarkerStyle(20)
             g.SetMarkerSize(0.3*g.GetMarkerSize())
             g.SetLineColor(r.kYellow)
             g.SetLineStyle(1)
-            g.Draw("cpsame")
+            g.Draw("%spsame"%curveGopts)
         if d.get("curve") and d["curve"].GetNp() :
             d["curve"].SetMarkerStyle(20)
             d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())

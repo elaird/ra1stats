@@ -153,7 +153,7 @@ def stylize(g, color = None, lineStyle = None, lineWidth = None, markerStyle = N
     g.SetMarkerStyle(markerStyle)
     return
 
-def drawGraphs(graphs, legendTitle="") :
+def drawGraphs(graphs, legendTitle="", gopts = "") :
     count = len(filter(lambda x:x["label"],graphs))
     yMax = 0.755
     legend = r.TLegend(0.19, yMax-0.04*count, 0.69, yMax, legendTitle)
@@ -163,7 +163,7 @@ def drawGraphs(graphs, legendTitle="") :
         g = d["graph"]
         if d['label']:
             legend.AddEntry(g, d["label"], "l")
-        if g.GetN() : g.Draw("csame")
+        if g.GetN() : g.Draw("%ssame"%gopts)
     legend.Draw("same")
     return legend,graphs
 
