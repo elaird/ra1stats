@@ -49,7 +49,7 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
 def plot(datasets = [], tag = "", factors = ["gZ", "mumuZ", "muW"]) :
     canvas = r.TCanvas("canvas", "canvas", 600, 800)
 
-    fileName = "translation_factors_%s.pdf"%tag
+    fileName = "plots/translation_factors_%s.pdf"%tag
     canvas.Print(fileName+"[")
     misc = []
     slices = datasets[0]["slices"] #assume first list of slices contains the subsequent ones
@@ -86,13 +86,14 @@ def plot(datasets = [], tag = "", factors = ["gZ", "mumuZ", "muW"]) :
 ##########
 from inputData.dataMisc import orig
 from inputData.data2011reorg import take3
-from inputData.data2012 import take5,take5a,take5_capped,take5_unweighted
-from inputData.data2012 import take6,take6_capped,take6_unweighted
-from inputData.data2012 import take12_weighted,take12_unweighted
+from inputData.data2012hcp import take5,take5a,take5_capped,take5_unweighted
+from inputData.data2012hcp import take6,take6_capped,take6_unweighted
+from inputData.data2012hcp import take12_weighted,take12_unweighted,take14
+from inputData.data2012dev import take0,take1
 
 setup()
 
-d = ["2010", "2011eps", "2011", "2012ichep", "2012dev"][4]
+d = ["2010", "2011eps", "2011", "2012ichep", "2012hcp", "2012dev"][-1]
 if d=="2010" :
     datasets = [ {"module": orig, "slices": ["2010"], "color":r.kBlack,  "label": "2010"},
                  ]
@@ -130,15 +131,27 @@ elif d=="2012ichep_5fb" :
                  # "color":r.kMagenta, "label": "2011"},
                  ]
     plot(datasets, tag = d)
-elif d=="2012dev" :
+elif d=="2012hcp" :
     color1 = {"ge2j":r.kBlack, "ge4j":r.kRed, "le3j":r.kBlue}
     color2 = {"ge2j":r.kGray, "ge4j":r.kOrange, "le3j":r.kCyan}
 
     for i,j in enumerate(["ge4j", "le3j"]) :
         bs = ["0b", "1b", "2b"]+(["3b", "ge4b"] if j!="le3j" else [])
         slices = ["%s_%s"%(b,j) for b in bs]
-        datasets = [ {"module": take12_weighted, "slices": slices, "color":color1[j], "label": "2012 (%s, weighted)"%j},
-                     {"module": take12_unweighted, "slices": slices, "color":color2[j], "label": "2012 (%s, unweighted)"%j},
+        datasets = [ {"module": take12_weighted, "slices": slices, "color":color1[j], "label": "2012 HCP (%s, weighted)"%j},
+                     {"module": take12_unweighted, "slices": slices, "color":color2[j], "label": "2012 HCP (%s, unweighted)"%j},
+                     ]
+        #print datasets
+        plot(datasets, tag = j)
+elif d=="2012dev" :
+    color1 = {"ge2j":r.kBlack, "ge4j":r.kRed,    "le3j":r.kBlue}
+    color2 = {"ge2j":r.kGray,  "ge4j":r.kOrange, "le3j":r.kCyan}
+
+    for i,j in enumerate(["ge4j", "le3j"]) :
+        bs = ["0b", "1b", "2b", "3b"]+(["ge4b"] if j!="le3j" else [])
+        slices = ["%s_%s"%(b,j) for b in bs]
+        datasets = [ {"module": take18, "slices": slices, "color":color1[j], "label": "2012 dev (%s, weighted)"%j},
+                     {"module": take14, "slices": slices, "color":color2[j], "label": "2012 HCP (%s, weighted)"%j},
                      ]
         #print datasets
         plot(datasets, tag = j)

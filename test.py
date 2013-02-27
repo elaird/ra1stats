@@ -27,7 +27,7 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
                       )
 
     out = None
-    nToys = {"2010":300, "2011eps":300, "2011":3000, "2012ichep":1000, "2012dev":300}[dataset]
+    nToys = {"":0, "2010":300, "2011eps":300, "2011":3000, "2012ichep":1000, "2012hcp":300, "2012dev":300}[dataset]
 
     if ensemble :
         f.ensemble(nToys = nToys, stdout = True)
@@ -44,14 +44,14 @@ def go(whiteList = [], dataset = "2011", ensemble = False, allCategories = [], i
     #
     #f.profile()
     #f.writeMlTable(fileName = "mlTables_%s.tex"%"_".join(whiteList), categories = allCategories)
-    #f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
-    out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
+    f.bestFit(printPages = True, drawComponents = False, errorsFromToys = nToys)
+    #out = f.bestFit(drawMc = False, drawComponents = False, errorsFromToys = nToys)
     #f.qcdPlot()
     #f.debug()
     #f.cppDrive(tool = "")
     return out
 
-kargs = {"dataset" : ["2010", "2011eps", "2011", "2012ichep", "2012dev"][4],
+kargs = {"dataset" : ["", "2010", "2011eps", "2011", "2012ichep", "2012hcp", "2012dev"][-2],
          "ensemble": False,
          }
 if kargs["dataset"]=="2011" :
@@ -73,4 +73,4 @@ else :
             hMap[key].GetXaxis().SetBinLabel(1+iSel, sel.name)
             hMap[key].SetBinContent(1+iSel, pValue)
 
-    plotting.pValueCategoryPlots(hMap)
+    plotting.pValueCategoryPlots(hMap, )#logYMinMax = (1.0e-4, 1.0e2))

@@ -6,7 +6,7 @@ def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
-            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][0],
+            "calculatorType": ["frequentist", "asymptotic", "asymptoticNom"][1],
             "method": ["", "profileLikelihood", "feldmanCousins", "CLs", "CLsCustom"][3],
             "binaryExclusionRatherThanUpperLimit": False,
             "multiplesInGeV": None,
@@ -34,17 +34,18 @@ def signal() :
     out["drawBenchmarkPoints"] = True
     out["effRatioPlots"] = False
     out["xsVariation"] = dict(zip(variations, variations))["default"]
-    out["signalModel"] = dict(zip(models, models))["T2tt"]
+    out["signalModel"] = dict(zip(models, models))["T2"]
     return out
 
 def likelihoodSpec() :
-    dct = {"T1"          : {"whiteList":["0b_ge4j"]},
-           "T2"          : {"whiteList":["0b_le3j"]},
-           "T2bb"        : {"whiteList":["1b_le3j", "2b_le3j"]},
-           "T2tt"        : {"whiteList":["1b_ge4j", "2b_ge4j"]},
-           "T1bbbb"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-           "T1tttt"      : {"whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-           "T1tttt_ichep": {"whiteList":["2b", "ge3b"], "dataset":"2012ichep"},
+    dataset = "2012dev"
+    dct = {"T1"          : {"dataset":dataset, "whiteList":["0b_ge4j"]},
+           "T2"          : {"dataset":dataset, "whiteList":["0b_le3j"]},
+           "T2bb"        : {"dataset":dataset, "whiteList":["1b_le3j", "2b_le3j"]},
+           "T2tt"        : {"dataset":dataset, "whiteList":["1b_ge4j", "2b_ge4j"]},
+           "T1bbbb"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T1tttt"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
            "tanBeta10"   : {},
            }
     return ls.spec(**dct[signal()["signalModel"]])
@@ -109,29 +110,21 @@ def checkAndAdjust(d) :
     d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     return
 
-def mergedFileStem(outputDir, switches) :
-    out  = "%s/%s"%(outputDir, switches["method"])
-    if "CLs" in switches["method"] :
-        out += "_%s_TS%d"%(switches["calculatorType"], switches["testStatistic"])
-    if switches["binaryExclusionRatherThanUpperLimit"] :
-        out += "_binaryExcl"
-    out += "_%s"%switches["signalModel"]
-    if not switches["isSms"] :
-        out += "_%s"%switches["xsVariation"]
-    return out
+def mergedFileStem() :
+    s = switches()
+    tags = [s["method"]]
+    if "CLs" in s["method"] : tags += [s["calculatorType"], "TS%d"%s["testStatistic"]]
+    if s["binaryExclusionRatherThanUpperLimit"] : tags.append("binaryExcl")
+    tags.append(s["signalModel"])
+    if not s["isSms"] : tags.append(s["xsVariation"])
+    return "ra1r/scan/"+"_".join(tags)
 
-def stringsNoArgs() :
-    d = {}
-    #output name options
-    d["outputDir"]      = "output"
-    d["logDir"]         = "log"
-    d["logStem"]        = "%s/job"%d["logDir"]
-    d["mergedFileStem"] = mergedFileStem(d["outputDir"], switches())
-    return d
+def directories() :
+    return {"job"   : "jobIO",
+            "plot"  : "plots",
+            "log"   : "log",
+            "points": "points",
+            }
 
-def strings(xBin, yBin, zBin) :
-    d = stringsNoArgs()
-    #output name options
-    d["tag"]               = "m0_%d_m12_%d_mZ_%d"%(xBin, yBin, zBin)
-    d["pickledFileName"]   = "%s/%s.pickled"%(d["outputDir"], d["tag"])
-    return d
+def pickledFileName(xBin, yBin, zBin) :
+    return "%s/m0_%d_m12_%d_mZ_%d.pickled"%(directories()["job"], xBin, yBin, zBin)

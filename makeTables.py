@@ -255,7 +255,7 @@ def ensembleRow( data, indices, d ) :
         return d
     return [ d[index] for index in indices ]
 
-def ensembleResultsBySample( d, data, note = "", nEmptyPhot = 2 ) :
+def ensembleResultsBySample( d, data, fileName = "", nEmptyPhot = 2 ) :
     samples =  ["had", "muon", "mumu", "phot"]
     samples_long =  [ "Hadronic", "$\mu$+jets",
                       "$\mu\mu$+jets", "$\gamma$+jets"]
@@ -324,10 +324,9 @@ def ensembleResultsBySample( d, data, note = "", nEmptyPhot = 2 ) :
                          lastLine = False,
                        )
     doc += endDocument()
-    write( doc, "ensemble_bySample_%s.tex"%note )
+    write(doc, fileName)
 
-
-def ensembleResultsBySelection( d, data, note = "", nEmptyPhot = 2 ) :
+def ensembleResultsBySelection( d, data, fileName = "", nEmptyPhot = 2 ) :
     mc_out = {}
     data_out = defaultdict(dict)
     samples = [ "had", "muon", "mumu", "phot" ]
@@ -377,9 +376,7 @@ def ensembleResultsBySelection( d, data, note = "", nEmptyPhot = 2 ) :
                          lastLine = False,
                        )
     doc += endDocument()
-
-    write( doc, "ensemble_bySelection_%s.tex"%note )
-
+    write(doc, fileName)
 
 def document() :
     data = data2011()
@@ -398,7 +395,8 @@ def write(doc, fileName = "") :
     f = open(fileName, "w")
     f.write(doc)
     f.close()
-    cmd = "pdflatex %s"%fileName
+    dir = "/".join(fileName.split("/")[:-1])
+    cmd = "cd %s; pdflatex ./%s"%(dir, fileName.replace(dir,""))
     if quiet : cmd += " >& /dev/null"
     os.system(cmd)
 

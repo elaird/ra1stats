@@ -3,7 +3,7 @@
 import os,ROOT as r
 import utils,histogramProcessing,signalAux
 
-def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
+def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = "", preliminary = None):
     canvas.cd()
     tl = r.TLatex()
     tl.SetNDC()
@@ -16,7 +16,12 @@ def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = ""):
     dy = 0.06
 
     tl.DrawLatex(x,y-2*dy, 'm_{%s} = %d GeV'%(signalAux.chi(), int(lspMass)))
-    tl.DrawLatex(x,y, lumiStamp)
+
+    if preliminary :
+        tl.DrawLatex(x, y+dy, "CMS Preliminary")
+        tl.DrawLatex(x, y, lumiStamp)
+    else :
+        tl.DrawLatex(x, y, "CMS, "+lumiStamp)
 
     #tl.SetTextSize(0.07)
     #tl.DrawLatex(0.20,0.75,'#alpha_{T}')
@@ -175,7 +180,7 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
               yValue = None, plotOptOverrides=None, shiftX=False, showRatio=False,
               nSmooth = 0, dumpRatio=False, lumiStamp = "", processStamp = "", model = "",
-              xMin = 300) :
+              xMin = 300, preliminary = None) :
     plotOpts = {
         'yMax': 1e+1,
         'yMin': 1e-3,
@@ -238,7 +243,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
             h2.SetLineWidth(1)
             h2.Draw('lsame')
     leg.Draw()
-    tl = drawStamp(canvas, lspMass = yValue, lumiStamp = lumiStamp, processStamp = processStamp)
+    tl = drawStamp(canvas, lspMass = yValue, lumiStamp = lumiStamp, processStamp = processStamp, preliminary = preliminary)
     pad.RedrawAxis()
     pad.SetLogy()
     pad.SetTickx()
@@ -257,6 +262,8 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
                                 #xMax=plotOpts['xMax'])
 
     epsFile = "_".join([model, "mlsp%d"%int(yValue), "xmin%d"%int(plotOpts['xMin']), "smooth%d"%nSmooth])+".eps"
+    if preliminary :
+        epsFile = epsFile.replace(".eps","_prelim.eps")
     print "Saving to {file}".format(file=epsFile)
     canvas.Print(epsFile)
     canvas.Print(epsFile.replace(".eps",".C"))
@@ -281,8 +288,7 @@ def main():
         'refProcess': hSpec['histo'],
         'refXsFile': hSpec['file'],
         'refName': '#tilde{t} #tilde{t}',
-        'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_frequentist_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
-        #'limitFile': '/home/hep/elaird1/ra1stats/output/CLs_asymptotic_TS3_T2tt_2012dev_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
+        'limitFile': 'ra1r/scan/CLs_frequentist_TS3_T2tt_2012hcp_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
         #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
         #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
         #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
@@ -290,16 +296,16 @@ def main():
         'shiftX': True,
         'showRatio': False,
         'plotOptOverrides': {'xLabel': 'm_{#tilde{t}} (GeV)'},
-        'lumiStamp': 'CMS, L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
+        'lumiStamp': 'L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
+        'preliminary': False,
         'processStamp':signalAux.processStamp(model)['text'],
         'model':model,
         }
 
     lst = []
-    for y in [0,50,100,150] :
-        for nSmooth in [0,1,2,5] :
-            for xMin in [300,350] :
-                lst.append({"yValue":y, "nSmooth":nSmooth, "xMin":xMin})
+    for mlsp,xMin in [(0,300), (50,300), (100,300), (150,350)] :
+        for nSmooth in [0,1,2,5][-1:] :
+            lst.append({"yValue":mlsp, "nSmooth":nSmooth, "xMin":xMin})
 
     for dct in lst :
         options.update(dct)

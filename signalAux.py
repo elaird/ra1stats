@@ -43,9 +43,19 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
            "T2":          {"had": "v1"},
            "T2tt":        {"had": "v1", "muon": "v1"},
            "T2bb":        {"had": "v3", "muon": "v3"},
+           #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
+           #"T2bb":      {"had": "v6_yossof_cteq61"},
+           #"T2bb":      {"had": "v6_yossof_cteq66_normalized"},
+           #"T2bb":      {"had": "v6_yossof_mst08_normalized"},
+           #"T2bb":      {"had": "v6_yossof_nnpdf21_normalized"},
            "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
            "T5zz":        {"had": "v1", "muon": "v1"},
            "T1bbbb":      {"had": "v3", "muon": "v3"},
+           #"T1bbbb":      {"had": "v6_yossof_ct10_normalized"},
+           #"T1bbbb":      {"had": "v6_yossof_cteq61"},
+           #"T1bbbb":      {"had": "v6_yossof_cteq66_normalized"},
+           #"T1bbbb":      {"had": "v6_yossof_mstw08_normalized"},
+           #"T1bbbb":      {"had": "v6_yossof_nnpdf21_normalized"},
            "T1tttt":      {"had": "v1", "muon": "v1"},
            "T1tttt_ichep":{"had": "2012full", "muon": "2012full"},
            "TGQ_0p0":     {"had": "v1"},
@@ -105,25 +115,31 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
 def ranges(model) :
     x = {"T1":   ( 287.5, 1400), #(min, max)
          "T2":   ( 287.5, 1000),
-         #"T2tt": ( 300.0, 800.0),
-         "T2tt": ( 300.0, 500.0),
+         "T2tt": ( 300.0, 800.0),
          "T2bb": ( 287.5, 900.0),
          "T1bbbb": ( 287.5, 1400),
-         "T1tttt": ( 400.0, 1400),
+         "T1tttt": ( 387.5, 1400),
          "T1tttt_2012": ( 375.0, 1200.0),
          "tanBeta10": (0.0, 4000.0),
          }
     y = {"T5zz":   (50.0, 999.9), #(min, max)
          "T1":     ( 0.0, 1225),
          "T2":     ( 0.0,  825),
-         #"T2tt":   ( 0.0,  600),
-         "T2tt":   ( 0.0,  320),
+         "T2tt":   ( 0.0,  600),
          "T2bb":   ( 0.0,  725),
          "T1bbbb": ( 0.0, 1225),
          "T1tttt": ( 0.0, 1050),
          "T1tttt_2012": ( 50.0, 800.0),
          "tanBeta10": (0.0, 4000.0),
          }
+
+    xMaxDiag = {"T1":     800.0,
+                "T2":     550.0,
+                "T2tt":   400.0,
+                "T2bb":   500.0,
+                "T1bbbb": 800.0,
+                "T1tttt": 700.0,
+                }
 
     # [ primary, secondary, tertiary ] divisions
     xDivisions = {
@@ -149,6 +165,8 @@ def ranges(model) :
     d = {}
     d["xRange"] = x.get(model, (50.0, 1499.9))
     d["yRange"] = y.get(model, (50.0, 1224.9))
+
+    d["xMaxDiag"] = xMaxDiag.get(model, d["xRange"][0])
 
     d["xDivisions"] = xDivisions.get(model, None)
     d["yDivisions"] = yDivisions.get(model, None)
