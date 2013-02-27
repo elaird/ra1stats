@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os,ROOT as r
-import utils,plottingGrid,signalAux
+import utils,histogramProcessing,signalAux
 
 def drawStamp(canvas, lspMass = None, lumiStamp = "", processStamp = "", preliminary = None):
     canvas.cd()
@@ -92,7 +92,7 @@ def getExclusionHistos(limitFile, yValue = None, gopts = "c", nSmooth = 0, model
     rfile = r.TFile(limitFile,'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
         limitHisto = utils.threeToTwo(rfile.Get(limitHistoName))
-        plottingGrid.modifyHisto(limitHisto, model)
+        histogramProcessing.modifyHisto(limitHisto, model)
 
         yBin = limitHisto.GetYaxis().FindBin(yValue)
 

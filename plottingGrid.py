@@ -15,11 +15,6 @@ def setupRoot() :
 
 setupRoot()
 
-
-def modifyHisto(h = None, model = "") :
-    hp.fillPoints(h, points = patches.overwriteOutput()[model])
-    hp.killPoints(h, cutFunc = patches.cutFunc().get(model, None))
-
 def squareCanvas(margin = 0.18, ticks = True, name = "canvas", numbered = False) :
     canvas = (utils.numberedCanvas if numbered else r.TCanvas)(name, name, 2)
     for side in ["Left", "Right", "Top", "Bottom"] :
@@ -219,7 +214,7 @@ def upperLimitHistos(inFileName = "", shiftX = False, shiftY = False) :
         h3 = f.Get(name)
         if not h3 : continue
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
-        modifyHisto(h, model)
+        hp.modifyHisto(h, model)
         title = sa.histoTitle(model = model)
         title += ";%g%% CL %s on  #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
@@ -293,13 +288,19 @@ def makeXsUpperLimitPlots(logZ = False, curveGopts = "", mDeltaFuncs = {}, diago
 def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
                  curveGopts = "", mDeltaFuncs = False, specs = []) :
 
-    ranges = sa.ranges(conf.switches()["signalModel"])
+    s = conf.switches()
+    ranges = sa.ranges(s["signalModel"])
 
     epsFile = rootFileName.replace(".root", ".eps")
     f = r.TFile(rootFileName)
 
     c = squareCanvas()
-    h = f.Get("UpperLimit")
+
+    if s["method"]=="CLs":
+        hName = "excluded_CLs_95" if s["binaryExclusionRatherThanUpperLimit"] else "UpperLimit"
+    else:
+        hName = "upperLimit95"
+    h = f.Get(hName)
     h.Draw("colz")
 
     if logZ :
@@ -461,7 +462,7 @@ def makeEfficiencyPlot() :
     h2 = utils.threeToTwo(h3)
 
     assert h2
-    modifyHisto(h2, s["signalModel"])
+    hp.modifyHisto(h2, s["signalModel"])
 
     title = sa.histoTitle(model = s["signalModel"])
     title += ";A #times #epsilon"
@@ -693,7 +694,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
         if any([item in name for item in blackListMatch]) : continue
 
         h2 = utils.threeToTwo(f.Get(name))
-        if modify : modifyHisto(h2, s["signalModel"])
+        if modify : hp.modifyHisto(h2, s["signalModel"])
         printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
                       logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
         if outputRootFile :
@@ -798,7 +799,8 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         print "%s has been written."%fileName
 
 def makePlots(square = False) :
-    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"], square = square)
+    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"],
+               blackListMatch = ["eff", "_nEvents"], square = square)
     #multiPlots(tag = "nEvents", whiteListMatch = ["nEvents"], square = square)
     #multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
     #multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
