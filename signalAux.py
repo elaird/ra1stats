@@ -125,29 +125,33 @@ def ranges(model) :
          "T2":   ( 287.5, 1000),
          "T2tt": ( 300.0, 800.0),
          "T2bb": ( 287.5, 900.0),
-         "T2cc": ( 287.5, 900.0),
+         "T2cc": ( 0.0, 300.0),
          "T1bbbb": ( 287.5, 1400),
          "T1tttt": ( 387.5, 1400),
          "T1tttt_2012": ( 375.0, 1200.0),
          "tanBeta10": (0.0, 4000.0),
          }
+
     y = {"T5zz":   (50.0, 999.9), #(min, max)
          "T1":     ( 0.0, 1225),
          "T2":     ( 0.0,  825),
          "T2tt":   ( 0.0,  600),
          "T2bb":   ( 0.0,  725),
-         "T2cc":   ( 0.0,  725),
+         "T2cc":   ( 0.0,  300),
          "T1bbbb": ( 0.0, 1225),
          "T1tttt": ( 0.0, 1050),
          "T1tttt_2012": ( 50.0, 800.0),
          "tanBeta10": (0.0, 4000.0),
          }
 
+    z = {"T2cc": (1.0, 200.0, 20),
+         }
+
     xMaxDiag = {"T1":     800.0,
                 "T2":     550.0,
                 "T2tt":   400.0,
                 "T2bb":   500.0,
-                "T2cc":   500.0,
+                "T2cc":   300.0,
                 "T1bbbb": 800.0,
                 "T1tttt": 700.0,
                 }
@@ -185,7 +189,7 @@ def ranges(model) :
     d["yDivisions"] = yDivisions.get(model, None)
 
     d["xsZRangeLin"] = (0.0,      2.0, 20) #(zMin, zMax, nContours)
-    d["xsZRangeLog"] = (1.0e-3,  10.0, 20)
+    d["xsZRangeLog"] = z.get(model, (1.0e-3,  10.0, 20))
     d["effZRange"]   = (0.0, 0.35, 35)
 
     d["effUncExpZRange"] = (0.0, 0.20, 20)
