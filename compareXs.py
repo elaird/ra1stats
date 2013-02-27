@@ -288,7 +288,7 @@ def main():
         'refProcess': hSpec['histo'],
         'refXsFile': hSpec['file'],
         'refName': '#tilde{t} #tilde{t}',
-        'limitFile': '/home/hep/elaird1/ra1stats/ra1r/scan/CLs_frequentist_TS3_T2tt_2012hcp_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
+        'limitFile': 'ra1r/scan/CLs_frequentist_TS3_T2tt_2012hcp_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
         #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
         #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
         #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',

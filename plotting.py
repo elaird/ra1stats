@@ -378,7 +378,7 @@ class validationPlotter(object) :
         self.qcdError = r.kGreen-3
 
     def makeLegends(self) :
-        x0 = 0.35; x1 = 0.88
+        x0 = 0.35; x1 = 0.87
         y0 = 0.65; y1 = 0.88
         dx = x1 - x0
         dy = y1 - y0
@@ -474,7 +474,8 @@ class validationPlotter(object) :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
             fileName = ["hadronic"]+(["logy"] if logY else [])
             obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
-                   "desc": "Data (hadronic sample, %s)"%self.selNote}
+                   #"desc": "Data (hadronic sample, %s)"%self.selNote}
+                   "desc": "Data (signal region, %s)"%self.selNote}
 
             self.plot(fileName = fileName, obs = obs, otherVars = vars, logY = logY, stampParams = True,
                       ratioDenom = "hadB", **self.hadLegend)
@@ -1200,7 +1201,7 @@ class validationPlotter(object) :
 
         if self.printPages and fileName :
             #obsHisto.SetTitle("")
-            printOnePage(self.canvas, "_".join(fileName+[self.label]))
+            printOnePage(self.canvas, "_".join(fileName+[self.label]), ext = ".eps")
             #printOnePage(self.canvas, fileName, ext = ".C")
         self.canvas.Print(self.psFileName)
 
