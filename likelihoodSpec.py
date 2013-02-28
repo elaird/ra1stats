@@ -83,7 +83,9 @@ class spec(object) :
         elif self._dataset=="2012ichep" :
             self.__init2012ichep__()
         elif self._dataset=="2012hcp" :
-            self.__init2012hcp()
+            self.__init2012hcp(moduleName = "take14")
+        elif self._dataset=="2012hcp2" :
+            self.__init2012hcp(moduleName = "take14a")
         elif self._dataset=="2012dev" :
             self.__init2012dev()
         else :
@@ -174,7 +176,7 @@ class spec(object) :
                     lst.append(sel)
         self.add(lst)
 
-    def __init2012hcp(self) :
+    def __init2012hcp(self, moduleName = "") :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
@@ -182,7 +184,7 @@ class spec(object) :
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012hcp import take14 as module
+        exec "from inputData.data2012hcp import %s as module"%moduleName
 
         #QCD test
         if False :

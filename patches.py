@@ -19,11 +19,16 @@ def cmssmCut(iX, x, iY, y, iZ, z) :
     if 1500.0 <= x:
         return 200.0 <= y <= 400.0
 
+def t2ccCut(iX, x, iY, y, iZ, z) :
+    fail = any([x < 100.0, x > 270.0, y > x, y < x - 100.0])
+    return not fail
+
 def cutFunc() :
     return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<900.0),
             "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
+            "T2cc":t2ccCut,
             "T2bw":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
