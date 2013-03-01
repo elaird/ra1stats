@@ -42,7 +42,7 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
 
     sms = {"T1":          {"had": "v5"},
            "T2":          {"had": "v1"},
-           "T2cc":        {"had": "v1"},
+           "T2cc":        {"had": "v2_ISRReweighted"},
            "T2tt":        {"had": "v1", "muon": "v1"},
            "T2bb":        {"had": "v3", "muon": "v3"},
            #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
@@ -96,13 +96,13 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
     if bJets :
         tags.append(bJets)
         if model == "T2cc":
-            print "WARNING: hacking b directory"
-            tags[-1] = bJets.replace("b","")
+            if "eq3b" in bJets:
+                print "WARNING: hacking b directory"
+                tags[-1] = bJets.replace("eq3b","geq3b")
     if jets :
         tags.append(jets)
         if model == "T2cc":
-            print "WARNING: hacking j directory"
-            tags[-1] = jets.replace("le3","geq2")
+            tags[-1] = jets.replace("ge","geq")
 
     if box=="had":
         tags.append("AlphaT55")
