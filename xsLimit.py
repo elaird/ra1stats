@@ -14,5 +14,4 @@ plottingGrid.makeXsUpperLimitPlots(logZ = True,
                                    interBin = "Center",
                                    )
 
-#plottingGrid.makeEfficiencyPlot()
 #plottingGrid.makeEfficiencyPlotBinned(key = ["effHad", "effMuon"][0])
