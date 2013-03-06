@@ -245,9 +245,8 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         h.GetYaxis().SetTitle(plotOpts['yLabel'])
         if hname == 'refHisto':
             h2 = h.Clone()
-            brange = range(h2.GetXaxis().GetNbins())
             h2.Reset()
-            for iBin in brange:
+            for iBin in range(h2.GetXaxis().GetNbins()):
                 h2.SetBinContent(iBin, h.GetBinContent(iBin))
             h2.SetFillStyle(0)
             h2.SetLineWidth(1)
