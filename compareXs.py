@@ -177,19 +177,10 @@ def oneD(h=None, yValue=None):
     return h.ProjectionX(h.GetName()+"_", yBin, yBin)
 
 
-def compareXs(histoSpecs={}, model="", xLabel="", yLabel="",
-              yValue=None, xMin=300, nSmooth=0,
-              showRatio=False, dumpRatio=False,
-              lumiStamp="", processStamp="", preliminary=None):
-
-    plotOpts = {'yMax': 1e+1,
-                'yMin': 1e-3,
-                'xMin': xMin,
-                'xMax': 800,
-                'xLabel': xLabel,
-                'yLabel': yLabel,
-                'legendPosition': [0.35, 0.65, 0.85, 0.85],
-                }
+def compareXs(histoSpecs={}, model="", xLabel="", yLabel="", yValue=None,
+              nSmooth=0, xMin=300, xMax=800, yMin=1e-3, yMax=1e+1,
+              showRatio=False, dumpRatio=False, preliminary=None,
+              lumiStamp="", processStamp=""):
 
     canvas = r.TCanvas('c1', 'c1', 700, 600)
     utils.divideCanvas(canvas)
@@ -198,7 +189,7 @@ def compareXs(histoSpecs={}, model="", xLabel="", yLabel="",
     else:
         pad = canvas.cd(0)
 
-    leg = r.TLegend(*plotOpts['legendPosition'])
+    leg = r.TLegend(0.35, 0.65, 0.85, 0.85)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
 
@@ -217,9 +208,9 @@ def compareXs(histoSpecs={}, model="", xLabel="", yLabel="",
 
         h = props['hist']
         h.SetStats(False)
-        h.GetXaxis().SetRangeUser(plotOpts['xMin'], plotOpts['xMax'])
-        h.SetMinimum(plotOpts['yMin'])
-        h.SetMaximum(plotOpts['yMax'])
+        h.GetXaxis().SetRangeUser(xMin, xMax)
+        h.SetMinimum(yMin)
+        h.SetMaximum(yMax)
         if nSmooth and (hname != 'refHisto'):
             h.Smooth(nSmooth, 'R')
         h.Draw("%s%s" % (gopts, "same" if iHisto else ""))
@@ -232,8 +223,8 @@ def compareXs(histoSpecs={}, model="", xLabel="", yLabel="",
                 setAttr(props.get(attr, 1))
         if "Sigma" not in hname:
             leg.AddEntry(h, props['label'], "lf")
-        h.GetXaxis().SetTitle(plotOpts['xLabel'])
-        h.GetYaxis().SetTitle(plotOpts['yLabel'])
+        h.GetXaxis().SetTitle(xLabel)
+        h.GetYaxis().SetTitle(yLabel)
         if hname == 'refHisto':
             hCentral = h.Clone("central")
             hUpper = h.Clone("upper")
@@ -268,12 +259,11 @@ def compareXs(histoSpecs={}, model="", xLabel="", yLabel="",
         #printRatio(obs, ref, errSign='-')
 
     if showRatio:
-        ratio, line = drawRatio(ref, obs, canvas, 2, xMin=plotOpts['xMin'],)
-                                #xMax=plotOpts['xMax'])
+        ratio, line = drawRatio(ref, obs, canvas, 2, xMin=xMin, xMax=xMax)
 
     epsFile = "_".join([model,
                         "mlsp%d" % int(yValue),
-                        "xmin%d" % int(plotOpts['xMin']),
+                        "xmin%d" % int(xMin),
                         "smooth%d" % nSmooth,
                         ]
                        )+".eps"
