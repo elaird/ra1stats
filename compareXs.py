@@ -329,7 +329,7 @@ def main():
         'model': model}
 
     lst = []
-    for mlsp, xMin in [(0, 300), (50, 300), (100, 300), (150, 350)][:1]:
+    for mlsp, xMin in [(0, 300), (50, 300), (100, 300), (150, 350)]:
         for nSmooth in [0, 1, 2, 5][-1:]:
             lst.append({"yValue": mlsp, "nSmooth": nSmooth, "xMin": xMin})
 
