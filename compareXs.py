@@ -47,8 +47,8 @@ def getReferenceXsHisto(refHistoName, refName, filename):
                            'LineWidth': 2,
                            'LineStyle': 1,
                            'LineColor': r.kBlack,
-                           'FillColor': r.kGray+2,
-                           'FillStyle': 3002,#3144,
+                           'FillColor': r.kGray+1,
+                           'FillStyle': 3144,
                            'hasErrors': True,
                            'opts': 'e3l',
                            'label': label,
@@ -74,11 +74,11 @@ def getExclusionHistos(limitFile, yValue=None, gopts="c", nSmooth=0, model=""):
             'opts': gopts,
             'nSmooth': nSmooth,
             # for legend
-            'FillStyle': 3001,
+            'FillStyle': 3144,
             'FillColor': r.kBlue-10},
         'ExpectedUpperLimit_+1_Sigma': {
             'label': 'Expected Upper Limit (+1#sigma)',
-            'FillStyle': 3001,
+            'FillStyle': 3144,
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'FillColor': r.kBlue-10,
@@ -245,13 +245,22 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         h.GetXaxis().SetTitle(plotOpts['xLabel'])
         h.GetYaxis().SetTitle(plotOpts['yLabel'])
         if hname == 'refHisto':
-            h2 = h.Clone()
-            h2.Reset()
-            for iBin in range(1, 1+h2.GetXaxis().GetNbins()):
-                h2.SetBinContent(iBin, h.GetBinContent(iBin))
-            h2.SetFillStyle(0)
-            h2.SetLineWidth(1)
-            h2.Draw('lsame')
+            hCentral = h.Clone("central")
+            hUpper = h.Clone("upper")
+            hLower = h.Clone("lower")
+            for h2 in [hCentral, hUpper, hLower]:
+                h2.Reset()
+                h2.SetFillStyle(0)
+                h2.SetLineWidth(1)
+            for iBin in range(1, 1+h.GetXaxis().GetNbins()):
+                hCentral.SetBinContent(iBin, h.GetBinContent(iBin))
+                hUpper.SetBinContent(iBin, h.GetBinContent(iBin) + h.GetBinError(iBin))
+                hLower.SetBinContent(iBin, h.GetBinContent(iBin) - h.GetBinError(iBin))
+
+            hLower.SetLineColor(h.GetFillColor())
+            hUpper.SetLineColor(h.GetFillColor())
+            for h2 in [hCentral, hUpper, hLower][:1]:
+                h2.Draw('lsame')
     leg.Draw()
     tl = drawStamp(canvas, lspMass=yValue, lumiStamp=lumiStamp,
                    processStamp=processStamp, preliminary=preliminary)
