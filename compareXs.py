@@ -48,7 +48,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
                            'LineStyle': 1,
                            'LineColor': r.kBlack,
                            'FillColor': r.kGray+2,
-                           'FillStyle': 3002,
+                           'FillStyle': 3002,#3144,
                            'hasErrors': True,
                            'opts': 'e3l',
                            'label': label,
@@ -218,7 +218,8 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
                                     'ExpectedUpperLimit',
                                     'ExpectedUpperLimit_-1_Sigma',
                                     'refHisto',
-                                    'UpperLimit']):
+                                    'UpperLimit',
+                                    ]):
         hs[hname]['hist'] = utils.shifted(hs[hname]['hist'], shift=(shiftX,),
                                           shiftErrors=hs[hname].get(
                                               'hasErrors', False)
@@ -246,7 +247,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         if hname == 'refHisto':
             h2 = h.Clone()
             h2.Reset()
-            for iBin in range(h2.GetXaxis().GetNbins()):
+            for iBin in range(1, 1+h2.GetXaxis().GetNbins()):
                 h2.SetBinContent(iBin, h.GetBinContent(iBin))
             h2.SetFillStyle(0)
             h2.SetLineWidth(1)
@@ -289,7 +290,6 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
     os.system("epstopdf "+epsiFile)
     os.system("rm       "+epsiFile)
     os.system("rm       "+epsFile)
-
 
 def setup():
     r.gROOT.SetBatch(True)
