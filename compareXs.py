@@ -299,17 +299,14 @@ def setup():
 
 def points():
     out = []
-    for mlsp, xMin in [(0, 300), (50, 300), (100, 300), (150, 350)][:1]:
+    for mlsp, xMin in [(0, 300), (50, 300), (100, 300), (150, 350)]:
         for nSmooth in [0, 1, 2, 5][-1:]:
             out.append({"yValue": mlsp,
                         "nSmooth": nSmooth,
                         "xMin": xMin})
     return out
 
-
-def main():
-    setup()
-
+def onePoint(yValue=None, nSmooth=None, xMin=None):
     model = 'T2tt'
     hSpec = signalAux.xsHistoSpec(model=model, xsVariation="default")
 
@@ -325,17 +322,21 @@ def main():
         'histoSpecs': dict(refHisto.items() + exclHistos.items()),
         'xLabel': 'm_{#tilde{t}} (GeV)',
         'yLabel': '#sigma (pb)',
-        'yValue': 0.,
         'showRatio': False,
         'lumiStamp': 'L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
         'processStamp': signalAux.processStamp(model)['text'],
-        'model': model,
         }
 
+    compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,
+              **options)
+
+
+def main():
+    setup()
     for dct in points():
-        options.update(dct)
-        compareXs(**options)
+        onePoint(**dct)
+
 
 if __name__ == "__main__":
     main()
