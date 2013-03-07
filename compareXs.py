@@ -3,7 +3,7 @@
 import os
 import ROOT as r
 import utils
-import histogramProcessing
+import histogramProcessing as hp
 import signalAux
 
 
@@ -37,8 +37,8 @@ def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
     return tl
 
 
-def getReferenceXsHisto(refHistoName, refName, filename):
-    refFile = r.TFile(filename, 'READ')
+def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
+    refFile = r.TFile(xsFileName, 'READ')
     refHisto = refFile.Get(refHistoName).Clone()
     refHisto.SetDirectory(0)
     refFile.Close()
@@ -49,8 +49,6 @@ def getReferenceXsHisto(refHistoName, refName, filename):
                            'LineColor': r.kBlack,
                            'FillColor': r.kGray+1,
                            'FillStyle': 3144,
-                           'hasErrors': True,
-                           'opts': 'e3',
                            'label': label,
                            'nSmooth': 0,
                            }
@@ -58,21 +56,18 @@ def getReferenceXsHisto(refHistoName, refName, filename):
     return histoD
 
 
-def getExclusionHistos(limitFile, yValue=None, gopts="c", nSmooth=0, model=""):
+def exclusionHistos(limitFile="", model="", shift = (True, False)):
     limitHistoDict = {
         'UpperLimit': {
             'label': 'Observed Limit (95% CL)',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
-            'opts': gopts,
-            'nSmooth': nSmooth},
+            },
         'ExpectedUpperLimit': {
             'label': 'Median Expected Limit #pm 1#sigma exp.',
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'LineStyle': 9,
-            'opts': gopts,
-            'nSmooth': nSmooth,
             # for legend
             'FillStyle': 1001,
             'FillColor': r.kBlue-10,
@@ -83,29 +78,22 @@ def getExclusionHistos(limitFile, yValue=None, gopts="c", nSmooth=0, model=""):
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'FillColor': r.kBlue-10,
-            'opts': gopts,
-            'nSmooth': nSmooth},
+            },
         'ExpectedUpperLimit_-1_Sigma': {
             'label': 'Expected Upper Limit (-1#sigma)',
             'LineColor': r.kOrange+7,
             'LineWidth': 2,
             'FillStyle': 1001,
             'FillColor': 10,
-            'opts': gopts,
-            'nSmooth': nSmooth}}
+            },
+        }
 
     rfile = r.TFile(limitFile, 'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
-        limitHisto = utils.threeToTwo(rfile.Get(limitHistoName))
-        histogramProcessing.modifyHisto(limitHisto, model)
-
-        yBin = limitHisto.GetYaxis().FindBin(yValue)
-
-        opts['hist'] = limitHisto.ProjectionX(limitHistoName+"_",
-                                              yBin,
-                                              yBin).Clone()
-        opts['hist'].SetDirectory(0)
-
+        h = utils.shifted(utils.threeToTwo(rfile.Get(limitHistoName)),
+                          shift = shift, shiftErrors = False)
+        hp.modifyHisto(h, model)
+        opts['hist'] = h
     rfile.Close()
     return limitHistoDict
 
@@ -184,25 +172,24 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
     return ratio, line
 
 
-def compareXs(refProcess="", refName="", refXsFile="", limitFile="xsLimit.root",
-              yValue=None, plotOptOverrides=None, shiftX=False,
-              showRatio=False, nSmooth=0, dumpRatio=False, lumiStamp="",
-              processStamp="", model="", xMin=300, preliminary=None):
+def oneD(h=None, yValue=None):
+    yBin = h.GetYaxis().FindBin(yValue)
+    return h.ProjectionX(h.GetName()+"_", yBin, yBin)
+
+
+def compareXs(histoSpecs={}, model="", xLabel="", yLabel="",
+              yValue=None, xMin=300, nSmooth=0,
+              showRatio=False, dumpRatio=False,
+              lumiStamp="", processStamp="", preliminary=None):
+
     plotOpts = {'yMax': 1e+1,
                 'yMin': 1e-3,
                 'xMin': xMin,
                 'xMax': 800,
-                'xLabel': "{p} mass (GeV)".format(
-                    p=refProcess.capitalize().replace('_', ' ')),
-                'yLabel': '#sigma (pb)',
-                'legendPosition': [0.40, 0.65, 0.85, 0.88],
+                'xLabel': xLabel,
+                'yLabel': yLabel,
+                'legendPosition': [0.35, 0.65, 0.85, 0.85],
                 }
-    if plotOptOverrides is not None:
-        plotOpts.update(plotOptOverrides)
-
-    refHisto = getReferenceXsHisto(refProcess, refName, refXsFile)
-    exclusionHistos = getExclusionHistos(limitFile, yValue=yValue,
-                                         nSmooth=nSmooth, model=model)
 
     canvas = r.TCanvas('c1', 'c1', 700, 600)
     utils.divideCanvas(canvas)
@@ -210,7 +197,6 @@ def compareXs(refProcess="", refName="", refXsFile="", limitFile="xsLimit.root",
         pad = canvas.cd(1)
     else:
         pad = canvas.cd(0)
-    hs = dict(refHisto.items() + exclusionHistos.items())
 
     leg = r.TLegend(*plotOpts['legendPosition'])
     leg.SetFillStyle(0)
@@ -222,20 +208,21 @@ def compareXs(refProcess="", refName="", refXsFile="", limitFile="xsLimit.root",
                                     'refHisto',
                                     'UpperLimit',
                                     ]):
+        props = histoSpecs[hname]
         if hname != 'refHisto':
-            hs[hname]['hist'] = utils.shifted(hs[hname]['hist'], shift=(shiftX,),
-                                              shiftErrors=hs[hname].get(
-                                                  'hasErrors', False)
-                                              )
-        props = hs[hname]
+            props["hist"] = oneD(props["hist"], yValue)
+            gopts = 'c'
+        else:
+            gopts = 'e3'
+
         h = props['hist']
         h.SetStats(False)
         h.GetXaxis().SetRangeUser(plotOpts['xMin'], plotOpts['xMax'])
         h.SetMinimum(plotOpts['yMin'])
         h.SetMaximum(plotOpts['yMax'])
-        if props['nSmooth']:
-            h.Smooth(props.get('nSmooth', 1), 'R')
-        h.Draw("%s%s" % (props['opts'], "same" if iHisto else ""))
+        if nSmooth and (hname != 'refHisto'):
+            h.Smooth(nSmooth, 'R')
+        h.Draw("%s%s" % (gopts, "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
             setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
             setAttr(props.get(attr, 1))
@@ -272,9 +259,8 @@ def compareXs(refProcess="", refName="", refXsFile="", limitFile="xsLimit.root",
     pad.SetTickx()
     pad.SetTicky()
 
-    r.gStyle.SetHatchesSpacing(1.4*r.gStyle.GetHatchesSpacing())
-    ref = hs['refHisto']
-    obs = hs['UpperLimit']
+    ref = histoSpecs['refHisto']
+    obs = histoSpecs['UpperLimit']
 
     if dumpRatio:
         #printRatio(obs, ref)
@@ -304,9 +290,21 @@ def compareXs(refProcess="", refName="", refXsFile="", limitFile="xsLimit.root",
     os.system("rm       "+epsiFile)
     os.system("rm       "+epsFile)
 
+
 def setup():
     r.gROOT.SetBatch(True)
     r.gErrorIgnoreLevel = 2000
+    r.gStyle.SetHatchesSpacing(1.4*r.gStyle.GetHatchesSpacing())
+
+
+def points():
+    out = []
+    for mlsp, xMin in [(0, 300), (50, 300), (100, 300), (150, 350)][:1]:
+        for nSmooth in [0, 1, 2, 5][-1:]:
+            out.append({"yValue": mlsp,
+                        "nSmooth": nSmooth,
+                        "xMin": xMin})
+    return out
 
 
 def main():
@@ -315,29 +313,27 @@ def main():
     model = 'T2tt'
     hSpec = signalAux.xsHistoSpec(model=model, xsVariation="default")
 
+    refHisto = referenceXsHisto(refHistoName=hSpec['histo'],
+                                refName='#tilde{t} #tilde{t}',
+                                xsFileName=hSpec['file'],
+                                )
+
+    exclFileName = 'CLs_frequentist_TS3_T2tt_2012hcp_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root'
+    exclHistos = exclusionHistos(limitFile='ra1r/scan/%s' % exclFileName, model=model)
+
     options = {
-        'refProcess': hSpec['histo'],
-        'refXsFile': hSpec['file'],
-        'refName': '#tilde{t} #tilde{t}',
-        'limitFile': 'ra1r/scan/CLs_frequentist_TS3_T2tt_2012hcp_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root',
-        #'/vols/cms04/samr/ra1DataFiles/ToyResults/2011/1000_toys/T2tt/'
-        #'CLs_frequentist_TS3_T2tt_2011_RQcdFallingExpExt_fZinvTwo_55_'
-        #'0b-1hx2p_55_1b-1hx2p_55_2b-1hx2p_55_gt2b-1h.root',
+        'histoSpecs': dict(refHisto.items() + exclHistos.items()),
+        'xLabel': 'm_{#tilde{t}} (GeV)',
+        'yLabel': '#sigma (pb)',
         'yValue': 0.,
-        'shiftX': True,
         'showRatio': False,
-        'plotOptOverrides': {'xLabel': 'm_{#tilde{t}} (GeV)'},
         'lumiStamp': 'L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
         'processStamp': signalAux.processStamp(model)['text'],
-        'model': model}
+        'model': model,
+        }
 
-    lst = []
-    for mlsp, xMin in [(0, 300), (50, 300), (100, 300), (150, 350)]:
-        for nSmooth in [0, 1, 2, 5][-1:]:
-            lst.append({"yValue": mlsp, "nSmooth": nSmooth, "xMin": xMin})
-
-    for dct in lst:
+    for dct in points():
         options.update(dct)
         compareXs(**options)
 
