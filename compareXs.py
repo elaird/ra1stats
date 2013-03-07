@@ -189,7 +189,7 @@ def compareXs(histoSpecs={}, model="", xLabel="", yLabel="", yValue=None,
     else:
         pad = canvas.cd(0)
 
-    leg = r.TLegend(0.35, 0.65, 0.85, 0.85)
+    leg = r.TLegend(0.25, 0.65, 0.85, 0.85)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
 
