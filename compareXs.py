@@ -50,7 +50,7 @@ def getReferenceXsHisto(refHistoName, refName, filename):
                            'FillColor': r.kGray+1,
                            'FillStyle': 3144,
                            'hasErrors': True,
-                           'opts': 'e3l',
+                           'opts': 'e3',
                            'label': label,
                            'nSmooth': 0,
                            }
@@ -74,11 +74,12 @@ def getExclusionHistos(limitFile, yValue=None, gopts="c", nSmooth=0, model=""):
             'opts': gopts,
             'nSmooth': nSmooth,
             # for legend
-            'FillStyle': 3144,
-            'FillColor': r.kBlue-10},
+            'FillStyle': 1001,
+            'FillColor': r.kBlue-10,
+            },
         'ExpectedUpperLimit_+1_Sigma': {
             'label': 'Expected Upper Limit (+1#sigma)',
-            'FillStyle': 3144,
+            'FillStyle': 1001,
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'FillColor': r.kBlue-10,
@@ -88,6 +89,7 @@ def getExclusionHistos(limitFile, yValue=None, gopts="c", nSmooth=0, model=""):
             'label': 'Expected Upper Limit (-1#sigma)',
             'LineColor': r.kOrange+7,
             'LineWidth': 2,
+            'FillStyle': 1001,
             'FillColor': 10,
             'opts': gopts,
             'nSmooth': nSmooth}}
@@ -182,7 +184,7 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
     return ratio, line
 
 
-def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
+def compareXs(refProcess="", refName="", refXsFile="", limitFile="xsLimit.root",
               yValue=None, plotOptOverrides=None, shiftX=False,
               showRatio=False, nSmooth=0, dumpRatio=False, lumiStamp="",
               processStamp="", model="", xMin=300, preliminary=None):
@@ -220,10 +222,11 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
                                     'refHisto',
                                     'UpperLimit',
                                     ]):
-        hs[hname]['hist'] = utils.shifted(hs[hname]['hist'], shift=(shiftX,),
-                                          shiftErrors=hs[hname].get(
-                                              'hasErrors', False)
-                                          )
+        if hname != 'refHisto':
+            hs[hname]['hist'] = utils.shifted(hs[hname]['hist'], shift=(shiftX,),
+                                              shiftErrors=hs[hname].get(
+                                                  'hasErrors', False)
+                                              )
         props = hs[hname]
         h = props['hist']
         h.SetStats(False)
@@ -232,7 +235,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
         h.SetMaximum(plotOpts['yMax'])
         if props['nSmooth']:
             h.Smooth(props.get('nSmooth', 1), 'R')
-        h.Draw("%s%s" % (props.get('opts', 'c'), "same" if iHisto else ""))
+        h.Draw("%s%s" % (props['opts'], "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
             setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
             setAttr(props.get(attr, 1))
@@ -269,6 +272,7 @@ def compareXs(refProcess, refName, refXsFile, limitFile="xsLimit.root",
     pad.SetTickx()
     pad.SetTicky()
 
+    r.gStyle.SetHatchesSpacing(1.4*r.gStyle.GetHatchesSpacing())
     ref = hs['refHisto']
     obs = hs['UpperLimit']
 
