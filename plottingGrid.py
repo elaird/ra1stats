@@ -153,7 +153,7 @@ def spline(points = [], title = "") :
         graph.SetPoint(i, x, y)
     return r.TSpline3(title, graph)
 
-def exclusionGraphs(histos = {}, interBin = "", pruneYMin = False, debug = False, printXs = None) :
+def exclusionGraphs(histos={}, interBin="", pruneYMin=False, debug=False, printXs=None):
     switches = conf.switches()
     model = switches["signalModel"]
     cutFunc = patches.cutFunc()[model]
@@ -249,22 +249,23 @@ def outFileName(tag = "") :
             "pdf" :root.replace(".root",".pdf"),
             }
 
-def makeRootFiles(limitFileName = "", simpleFileName = "", shiftX = None, shiftY = None, interBin = None, pruneYMin = None):
+def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
+                  interBin=None, pruneYMin=None, printXs=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
-    histos = upperLimitHistos(inFileName = pickling.mergedFile(), shiftX = shiftX, shiftY = shiftY)
-    graphs,simple = exclusionGraphs(histos, interBin = interBin, pruneYMin = pruneYMin)
+    histos = upperLimitHistos(inFileName=pickling.mergedFile(), shiftX=shiftX, shiftY=shiftY)
+    graphs, simple = exclusionGraphs(histos, interBin=interBin, pruneYMin=pruneYMin, printXs=printXs)
     writeList(fileName = limitFileName, objects = histos.values()+graphs.values())
     writeList(fileName = simpleFileName, objects = simple.values())
 
-def makeXsUpperLimitPlots(logZ = False, curveGopts = "", mDeltaFuncs = {}, diagonalLine = False,
-                          printXs = False, shiftX = False, shiftY = False,
-                          interBin = "LowEdge", pruneYMin = False, debug = False) :
+def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={}, diagonalLine=False,
+                          printXs=False, shiftX=False, shiftY=False,
+                          interBin="LowEdge", pruneYMin=False, debug=False):
 
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
-    makeRootFiles(limitFileName = limitFileName, simpleFileName = simpleFileName,
-                  shiftX = shiftX, shiftY = shiftY, interBin = interBin, pruneYMin = pruneYMin)
+    makeRootFiles(limitFileName=limitFileName, simpleFileName=simpleFileName,
+                  shiftX=shiftX, shiftY=shiftY, interBin=interBin, pruneYMin=pruneYMin, printXs=printXs)
 
     specs = [{"name":"ExpectedUpperLimit_m1_Sigma", "label":"",
                "lineStyle":2, "lineWidth":2, "color":r.kViolet},
