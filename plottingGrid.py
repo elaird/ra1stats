@@ -588,7 +588,6 @@ def drawBenchmarks() :
 def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [], switches = {}, suppressed = []) :
     if "upper" in name :
         hp.printHoles(h2)
-        #printMaxes(h2)
     h2.SetStats(False)
     h2.SetTitle("%s%s"%(name, sa.histoTitle(model = switches["signalModel"])))
     h2.Draw("colz")

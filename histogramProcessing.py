@@ -272,15 +272,3 @@ def printHoles(h):
                                                                        iBinZ,
                                                                        x, y, z)
     return
-
-
-def printMaxes(h):
-    s = conf.switches()
-    for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin="Center"):
-        delta = h.GetBinContent(iBinX, iBinY, iBinZ)-s["masterSignalMax"]
-        if abs(delta) < 2.0:
-            print "found max: (%d, %d, %d) = (%g, %g, %g)" % (iBinX,
-                                                              iBinY,
-                                                              iBinZ,
-                                                              x, y, z)
-    return
