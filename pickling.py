@@ -1,10 +1,12 @@
-import configuration as conf
-import histogramProcessing as hp
-import common
-import utils
 import cPickle
 import math
 import os
+
+import common
+import configuration as conf
+import histogramProcessing as hp
+import likelihoodSpec
+import utils
 import ROOT as r
 
 
@@ -28,8 +30,9 @@ def effHistos(okMerges=[None,
                         (0, 1, 2, 2, 2, 2, 2, 2, 2, 2),
                         (0, 1, 2, 2, 2, 2, 2, 2),
                         ]):
+    model = conf.switches()["signalModel"]
     out = {}
-    for sel in conf.likelihoodSpec().selections():
+    for sel in likelihoodSpec.likelihoodSpec(model).selections():
         badMerge = " ".join(["bin merge",
                              str(sel.data._mergeBins),
                              "not yet supported:",
@@ -162,8 +165,9 @@ def writeSignalFiles(points=[], outFilesAlso=False):
 
 ##merge functions
 def mergedFile():
+    model = conf.switches()["signalModel"]
     return "%s_%s.root" % (conf.mergedFileStem(),
-                           common.note(conf.likelihoodSpec())
+                           common.note(likelihoodSpec.likelihoodSpec(model))
                            )
 
 

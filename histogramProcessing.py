@@ -1,4 +1,5 @@
 import collections
+import likelihoodSpec
 import patches
 import signalAux
 import utils
@@ -159,7 +160,7 @@ def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
 
 
 def xsHistoAllOne(model, cutFunc=None):
-    ls = conf.likelihoodSpec()
+    ls = likelihoodSpec.likelihoodSpec(model)
     if ls._dataset == "2012ichep":
         kargs = {}
     else:

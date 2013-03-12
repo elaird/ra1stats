@@ -1,8 +1,16 @@
-import os,sys,math,utils,pickling,utils,patches
-import signalAux as sa
+import os
+import sys
+import math
+
 import histogramProcessing as hp
 import configuration as conf
+import likelihoodSpec
+import patches
+import pickling
 import refXsProcessing as rxs
+import signalAux as sa
+import utils
+
 import ROOT as r
 
 def setupRoot() :
@@ -293,7 +301,8 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
                  curveGopts = "", mDeltaFuncs = False, specs = []) :
 
     s = conf.switches()
-    ranges = sa.ranges(s["signalModel"])
+    model = s["signalModel"]
+    ranges = sa.ranges(model)
 
     epsFile = rootFileName.replace(".root", ".eps")
     f = r.TFile(rootFileName)
@@ -341,7 +350,7 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
         for func in funcs :
             func.Draw("same")
 
-    s3 = stamp(text = conf.likelihoodSpec().legendTitle(), x = 0.2075, y = 0.64, factor = 0.65)
+    s3 = stamp(text = likelihoodSpec.likelihoodSpec(model).legendTitle(), x = 0.2075, y = 0.64, factor = 0.65)
     printOnce(c, epsFile, alsoC = True)
     f.Close()
 
@@ -525,7 +534,6 @@ def makeEfficiencyUncertaintyPlots() :
     go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "effUncRelMcStatsZRange")
 
 def printTimeStamp() :
-    #l = conf.likelihood()
     text = r.TText()
     text.SetNDC()
     text.DrawText(0.1, 0.1, "file created at %s"%r.TDatime().AsString())

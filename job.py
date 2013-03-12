@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import sys
 import configuration as conf
-import pickling,workspace
+import likelihoodSpec
+import pickling
+import workspace
 
 def points() :
     return [(int(sys.argv[i]), int(sys.argv[i+1]), int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
@@ -88,7 +90,7 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
-    spec = conf.likelihoodSpec()
+    spec = likelihoodSpec.likelihoodSpec(s["signalModel"])
 
     for point in points() :
         pickling.writeNumbers(fileName = conf.pickledFileName(*point)+".out",
