@@ -86,15 +86,18 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
     if model in cmssm:
         oldBase = base
         base = "ra1e/2011/"
-        print 'WARNING: modifying base "%s" to "%s" for model %s.' % (oldBase, base, model)
+        print 'WARNING: modifying base ' + \
+              '"%s" to "%s" for model %s.' % (oldBase, base, model)
         assert box in ["had", "muon"]
         d = cmssm[model]
-        out["file"] = "/".join([base, "%s_scan" % d["cmssw"], model, box, d[box], box+"%s.root" % thresh])
+        out["file"] = "/".join([base, "%s_scan" % d["cmssw"], model, box,
+                                d[box], box+"%s.root" % thresh])
         out["beforeDir"] = "mSuGraScan_before_scale1"
         tags.append("mSuGraScan")
     elif model in sms:
         assert box in ["had", "muon"]
-        out["file"] = "/".join([base, "sms", model, box, sms[model][box], box+"%s.root" % thresh])
+        out["file"] = "/".join([base, "sms", model, box, sms[model][box],
+                                box+"%s.root" % thresh])
         out["beforeDir"] = "smsScan_before"
         tags.append("smsScan")
     else:
@@ -201,6 +204,22 @@ def chi():
     return "#tilde{#chi}^{0}_{1}"
 
 
+def sqProc(q="", daughter=""):
+    if not daughter:
+        daughter = q
+    out = "pp #rightarrow #tilde{%s} #tilde{%s}" % (q, q)
+    out += ", #tilde{%s} #rightarrow %s %s" % (q, daughter, chi())
+    out += "; m(#tilde{g})>>m(#tilde{%s})" % q
+    return out
+
+
+def glProc(q=""):
+    out = "pp #rightarrow #tilde{g} #tilde{g}"
+    out += ", #tilde{g} #rightarrow %s #bar{%s} %s" % (q, q, chi())
+    out += "; m(#tilde{%s})>>m(#tilde{g})" % q
+    return out
+
+
 def processStamp(key=""):
     dct = {
         '': {
@@ -208,31 +227,31 @@ def processStamp(key=""):
         'xpos': 0.4250,
         },
         'T2': {
-        'text': "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q %s; m(#tilde{g})>>m(#tilde{q})" % chi(),
+        'text': sqProc("q"),
         'xpos': 0.4250,
         },
         'T2bb': {
-        'text': "pp #rightarrow #tilde{b} #tilde{b}, #tilde{b} #rightarrow b %s; m(#tilde{g})>>m(#tilde{b})" % chi(),
+        'text': sqProc("b"),
         'xpos': 0.425,
         },
         'T2tt': {
-        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow t %s; m(#tilde{g})>>m(#tilde{t})" % chi(),
+        'text': sqProc("t"),
         'xpos': 0.41,
         },
         'T2cc': {
-        'text': "pp #rightarrow #tilde{t} #tilde{t}, #tilde{t} #rightarrow c %s; m(#tilde{g})>>m(#tilde{t})" % chi(),
+        'text': sqProc("t", "c"),
         'xpos': 0.425,
         },
         'T1': {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q #bar{q} %s; m(#tilde{q})>>m(#tilde{g})" % chi(),
+        'text': glProc("q"),
         'xpos': 0.4325,
         },
         'T1bbbb': {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b #bar{b} %s; m(#tilde{b})>>m(#tilde{g})" % chi(),
+        'text': glProc("b"),
         'xpos': 0.43,
         },
         'T1tttt': {
-        'text': "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t #bar{t} %s; m(#tilde{t})>>m(#tilde{g})" % chi(),
+        'text': glProc("t"),
         'xpos': 0.425,
         }, }
     return dct.get(key, dct[""])
@@ -261,35 +280,35 @@ def histoTitle(model=""):
 def benchmarkPoints():
     out = {}
     fields = ["m0",  "m12",  "A0", "tanBeta", "sgn(mu)"]
-    #out["LM0"] = dict(zip(fields, [200,    160,  -400,        10,         1]))
-    #out["LM1"] = dict(zip(fields,  [60,    250,     0,        10,         1]))
-    out["LM2"] = dict(zip(fields, [185,    350,     0,        35,         1]))
-    out["LM3"] = dict(zip(fields, [330,    240,     0,        20,         1]))
-    #out["LM4"] = dict(zip(fields, [210,    285,     0,        10,         1]))
-    #out["LM5"] = dict(zip(fields, [230,    360,     0,        10,         1]))
-    #out["LM6"] = dict(zip(fields, [85,    400,     0,        10,         1]))
-    out["LM7"] = dict(zip(fields,  [3000,    230,     0,        10,         1]))
-    out["LM8"] = dict(zip(fields,   [500,    300,  -300,        10,         1]))
-    out["LM9"] = dict(zip(fields,  [1450,    175,     0,        50,         1]))
-    out["LM10"] = dict(zip(fields, [3000,    500,     0,        10,         1]))
-    out["LM11"] = dict(zip(fields,  [250,    325,     0,        35,         1]))
-    out["LM12"] = dict(zip(fields, [2545,    247,  -866,        48,         1]))
-    out["LM13"] = dict(zip(fields,  [270,    218,  -553,        40,         1]))
+    #out["LM0"]= dict(zip(fields,   [200,    160,  -400,        10,      1]))
+    #out["LM1"]= dict(zip(fields,    [60,    250,     0,        10,      1]))
+    out["LM2"] = dict(zip(fields,  [185,    350,     0,        35,      1]))
+    out["LM3"] = dict(zip(fields,  [330,    240,     0,        20,      1]))
+    #out["LM4"]= dict(zip(fields,   [210,    285,     0,        10,      1]))
+    #out["LM5"]= dict(zip(fields,   [230,    360,     0,        10,      1]))
+    #out["LM6"]= dict(zip(fields,   [85,     400,     0,        10,      1]))
+    out["LM7"] = dict(zip(fields,  [3000,    230,     0,        10,     1]))
+    out["LM8"] = dict(zip(fields,   [500,    300,  -300,        10,     1]))
+    out["LM9"] = dict(zip(fields,  [1450,    175,     0,        50,     1]))
+    out["LM10"] = dict(zip(fields, [3000,    500,     0,        10,     1]))
+    out["LM11"] = dict(zip(fields,  [250,    325,     0,        35,     1]))
+    out["LM12"] = dict(zip(fields, [2545,    247,  -866,        48,     1]))
+    out["LM13"] = dict(zip(fields,  [270,    218,  -553,        40,     1]))
 
-    #out["IM1"] = dict(zip(fields, [ 100,    510,     0,        10,         1]))
-    #out["IM2"] = dict(zip(fields, [ 180,    510,     0,        10,         1]))
-    #out["IM3"] = dict(zip(fields, [ 260,    450,     0,        10,         1]))
-    out["IM4" ] = dict(zip(fields, [ 820,    390,     0,        10,         1]))
+    #out["IM1"] = dict(zip(fields,   [100,    510,     0,        10,     1]))
+    #out["IM2"] = dict(zip(fields,   [180,    510,     0,        10,     1]))
+    #out["IM3"] = dict(zip(fields,   [260,    450,     0,        10,     1]))
+    out["IM4"] = dict(zip(fields,   [820,    390,     0,        10,     1]))
 
-    out["RM1" ] = dict(zip(fields, [ 320,    520,     0,        10,         1]))
-    out["RM2" ] = dict(zip(fields, [1800,    280,     0,        10,         1]))
+    out["RM1"] = dict(zip(fields,   [320,    520,     0,        10,     1]))
+    out["RM2"] = dict(zip(fields,  [1800,    280,     0,        10,     1]))
     return out
 
 
 def scanParameters():
     out = {}
-    fields =                            ["A0", "tanBeta", "sgn(mu)"]
-    out["tanBeta3" ] = dict(zip(fields, [0,         3,         1]))
+    fields = ["A0", "tanBeta", "sgn(mu)"]
+    out["tanBeta3"] = dict(zip(fields,  [0,         3,         1]))
     out["tanBeta10"] = dict(zip(fields, [0,        10,         1]))
     out["tanBeta50"] = dict(zip(fields, [0,        50,         1]))
     return out
