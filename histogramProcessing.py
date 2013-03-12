@@ -52,9 +52,11 @@ def checkHistoBinning(histoList = []) :
                 print h,properties([h])
             assert False
 
-def modifyHisto(h = None, model = "") :
-    fillPoints(h, points = patches.overwriteOutput()[model])
-    killPoints(h, cutFunc = patches.cutFunc().get(model, None))
+def modifyHisto(h=None, model=""):
+    fillPoints(h, points=patches.overwriteOutput()[model])
+    killPoints(h,
+               cutFunc=patches.cutFunc().get(model, None),
+               interBin=signalAux.interBin(model))
 
 def fillPoints(h, points = []) :
     def avg(items) :
@@ -86,9 +88,10 @@ def fillPoints(h, points = []) :
             print "WARNING: histo %s bin (%3d, %3d, %3d) [%d zero neighbors]: %g has been overwritten with %g"%\
                   (h.GetName(), iBinX, iBinY, iBinZ, items.count(0.0), valueOld, value)
 
-def killPoints(h, cutFunc = None) :
-    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = signalAux.interBin()) :
-        if cutFunc and not cutFunc(iBinX,x,iBinY,y,iBinZ,z) : h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
+def killPoints(h, cutFunc=None, interBin=""):
+    for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
+        if cutFunc and not cutFunc(iBinX, x, iBinY, y, iBinZ, z):
+            h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
     return h
 
 ##signal-related histograms
@@ -115,7 +118,7 @@ def xsHistoPhysical(model = "", cmssmProcess = "", xsVariation = "") :
     dim = int(h.ClassName()[2:3])
     assert dim in [1,2],dim
 
-    for iX,x,iY,y,iZ,z in utils.bins(out, interBin = signalAux.interBin()) :
+    for iX,x,iY,y,iZ,z in utils.bins(out, interBin=signalAux.interBin(model)):
         iBin = h.FindBin(x) if dim==1 else h.FindBin(x,y)
         out.SetBinContent(iX, iY, iZ, h.GetBinContent(iBin))
     return out
@@ -126,7 +129,7 @@ def xsHistoAllOne(model, cutFunc = None) :
 
     h = smsEffHisto(model = model, box = "had",
                     htLower = 875, htUpper = None, **kargs)
-    for iX,x,iY,y,iZ,z in utils.bins(h, interBin = signalAux.interBin()) :
+    for iX,x,iY,y,iZ,z in utils.bins(h, interBin=signalAux.interBin(model)):
         content = 1.0
         if cutFunc and not cutFunc(iX,x,iY,y,iZ,z) :
             content = 0.0
@@ -176,14 +179,15 @@ def smsEffHisto(**args) :
 def points() :
     out = []
     s = conf.switches()
+    model = s["signalModel"]
     whiteList = s["whiteListOfPoints"]
     h = xsHisto()
-    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin = signalAux.interBin()) :
+    for iBinX,x,iBinY,y,iBinZ,z in utils.bins(h, interBin=signalAux.interBin(model)):
         if whiteList and (x,y) not in whiteList : continue
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content : continue
         if s["multiplesInGeV"] and ((x/s["multiplesInGeV"])%1 != 0.0) : continue
-        if patches.cutFunc()[s['signalModel']](iBinX,x,iBinY,y,iBinZ,z):
+        if patches.cutFunc()[model](iBinX,x,iBinY,y,iBinZ,z):
             out.append( (iBinX, iBinY, iBinZ) )
     return out
 
