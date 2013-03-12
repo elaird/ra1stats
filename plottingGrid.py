@@ -261,7 +261,7 @@ def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
 def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={}, diagonalLine=False,
                           printXs=False, pruneYMin=False, debug=False):
 
-    interBin = sa.interBin()
+    interBin = sa.interBin(model=conf.switches()["signalModel"])
     shiftX = (interBin == "LowEdge")
     shiftY = (interBin == "LowEdge")
 
