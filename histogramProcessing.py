@@ -124,7 +124,7 @@ def xsHistoAllOne(model, cutFunc = None) :
     ls = conf.likelihoodSpec()
     kargs = {} if ls._dataset=="2012ichep" else {"bJets":"eq0b", "jets":"le3j"}
 
-    h = smsEffHisto(model = model, box = "had", scale = None,
+    h = smsEffHisto(model = model, box = "had",
                     htLower = 875, htUpper = None, **kargs)
     for iX,x,iY,y,iZ,z in utils.bins(h, interBin = signalAux.interBin()) :
         content = 1.0
