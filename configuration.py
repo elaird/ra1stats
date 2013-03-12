@@ -10,13 +10,6 @@ def method() :
             "multiplesInGeV": None,
             }
 
-def ignoreEff() :
-    return {"ignoreEff":{"T1":["muon"], "T2":["muon"], "T2bb":["muon"], "T2cc":["muon"]}}
-
-def effUncRel() :
-    return {"effUncRel":{"T1":0.140, "T1bbbb":0.160, "T1tttt":0.230,
-                         "T2":0.134, "T2bb":0.131, "T2tt":0.139, "T2cc":0.20}}
-
 def signal() :
     models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
               "T2tt", "T2bb", "T2cc", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
@@ -61,7 +54,7 @@ def other() :
 
 def switches() :
     out = {}
-    lst = [method(), signal(), ignoreEff(), effUncRel(), other()]
+    lst = [method(), signal(), other()]
     for func in ["whiteListOfPoints"] :
         lst.append( {func: eval(func)()} )
     keys = sum([dct.keys() for dct in lst], [])
