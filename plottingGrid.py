@@ -250,7 +250,7 @@ def outFileName(tag = "") :
             }
 
 def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
-                  interBin=None, pruneYMin=None, printXs=None):
+                  interBin="", pruneYMin=None, printXs=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
     histos = upperLimitHistos(inFileName=pickling.mergedFile(), shiftX=shiftX, shiftY=shiftY)
@@ -259,8 +259,11 @@ def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
     writeList(fileName = simpleFileName, objects = simple.values())
 
 def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={}, diagonalLine=False,
-                          printXs=False, shiftX=False, shiftY=False,
-                          interBin="LowEdge", pruneYMin=False, debug=False):
+                          printXs=False, pruneYMin=False, debug=False):
+
+    interBin = sa.interBin()
+    shiftX = (interBin == "LowEdge")
+    shiftY = (interBin == "LowEdge")
 
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
