@@ -266,17 +266,17 @@ def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
     writeList(fileName = limitFileName, objects = histos.values()+graphs.values())
     writeList(fileName = simpleFileName, objects = simple.values())
 
-def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={}, diagonalLine=False,
-                          printXs=False, pruneYMin=False, debug=False):
-
-    interBin = sa.interBin(model=conf.switches()["signalModel"])
-    shiftX = (interBin == "LowEdge")
-    shiftY = (interBin == "LowEdge")
+def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={},
+                          diagonalLine=False, printXs=False, pruneYMin=False,
+                          debug=False):
 
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
+
+    shift = sa.interBin(model=conf.switches()["signalModel"])=="LowEdge"
     makeRootFiles(limitFileName=limitFileName, simpleFileName=simpleFileName,
-                  shiftX=shiftX, shiftY=shiftY, interBin=interBin, pruneYMin=pruneYMin, printXs=printXs)
+                  shiftX=shift, shiftY=shift, interBin="Center",
+                  pruneYMin=pruneYMin, printXs=printXs)
 
     specs = [{"name":"ExpectedUpperLimit_m1_Sigma", "label":"",
                "lineStyle":2, "lineWidth":2, "color":r.kViolet},
