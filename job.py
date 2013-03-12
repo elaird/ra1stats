@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import sys
+
 import configuration as conf
 import likelihoodSpec
 import pickling
+import signalAux
 import workspace
 
 def points() :
@@ -44,8 +46,11 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
                 eff = True
                 break
         if switches["method"] and eff : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
-    else :
-        print "WARNING nEventsIn = {0} not in allowed range[ {1}, {2} ] ".format( signal["nEventsIn"], switches["minEventsIn"], switches["maxEventsIn"] )
+    else:
+        minEventsIn, maxEventsIn = signalAux.nEventsIn(switches["signalModel"])
+        print "WARNING nEventsIn = {0} not in allowed range[ {1}, {2} ] ".format(signal["nEventsIn"],
+                                                                                 minEventsIn,
+                                                                                 maxEventsIn)
     return out
 
 def results(switches = None, likelihoodSpec = None, signal = None) :

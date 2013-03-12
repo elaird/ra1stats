@@ -595,10 +595,11 @@ def drawBenchmarks() :
 def printOneHisto(h2=None, name="", canvas=None, fileName="",
                   effRatioPlots=False, drawBenchmarkPoints=False,
                   logZ=[], switches={}, suppressed=[]):
+    model = switches["signalModel"]
     if "upper" in name :
         hp.printHoles(h2)
     h2.SetStats(False)
-    h2.SetTitle("%s%s"%(name, sa.histoTitle(model = switches["signalModel"])))
+    h2.SetTitle("%s%s"%(name, sa.histoTitle(model = model)))
     h2.Draw("colz")
     if not h2.Integral() :
         suppressed.append(name)
@@ -630,9 +631,10 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-    if "nEventsIn" in name and (switches["minEventsIn"] or switches["maxEventsIn"]):
-        if switches["minEventsIn"] : h2.SetMinimum(switches["minEventsIn"])
-        if switches["maxEventsIn"] : h2.SetMaximum(switches["maxEventsIn"])
+    minEventsIn, maxEventsIn = sa.nEventsIn(model)
+    if "nEventsIn" in name and (minEventsIn or maxEventsIn):
+        if minEventsIn : h2.SetMinimum(minEventsIn)
+        if maxEventsIn : h2.SetMaximum(maxEventsIn)
         canvas.Print(fileName)
 
     #effMu/effHad
@@ -644,7 +646,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
             den = utils.threeToTwo(f.Get(denName))
             num.Divide(den)
             num.SetStats(False)
-            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model = switches["signalModel"])))
+            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model = model)))
             num.Draw("colz")
             if not num.Integral() : continue
             num.SetMinimum(0.0)

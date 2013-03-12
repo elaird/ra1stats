@@ -72,11 +72,12 @@ def histoList(histos={}):
 
 
 def eventsInRange(switches=None, nEventsIn=None):
+    minEventsIn, maxEventsIn = signalAux.nEventsIn(switches["signalModel"])
     out = True
-    if switches["minEventsIn"] is not None:
-        out &= (switches["minEventsIn"] <= nEventsIn)
-    if switches["maxEventsIn"] is not None:
-        out &= (nEventsIn <= switches["maxEventsIn"])
+    if minEventsIn is not None:
+        out &= (minEventsIn <= nEventsIn)
+    if maxEventsIn is not None:
+        out &= (nEventsIn <= maxEventsIn)
     return out
 
 
