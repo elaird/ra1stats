@@ -243,7 +243,7 @@ def points():
     out = []
     s = conf.switches()
     model = s["signalModel"]
-    whiteList = s["whiteListOfPoints"]
+    whiteList = signalAux.whiteListOfPoints()
     interBin = signalAux.interBin(model)
     h = xsHisto()
     for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
