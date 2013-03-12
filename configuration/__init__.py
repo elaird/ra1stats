@@ -1,5 +1,3 @@
-batchHost = [ "FNAL", "IC" ][1]
-
 def method() :
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
@@ -43,18 +41,9 @@ def whiteListOfPoints() : #GeV
     #out += [( 175.0, 95.0)]    #T2cc
     return out
 
-def other() :
-    return {"icfDefaultLumi": 100.0, #/pb
-            "icfDefaultNEventsIn": 10000,
-            "subCmd": getSubCmds(),
-            "subCmdFormat": "qsub -o /dev/null -e /dev/null -q hep%s.q",
-            "queueSelection" : ["short", "medium", "long"][0:1],
-            "envScript": "env.sh",
-            "nJobsMax": getMaxJobs()}
-
 def switches() :
     out = {}
-    lst = [method(), signal(), other()]
+    lst = [method(), signal()]
     for func in ["whiteListOfPoints"] :
         lst.append( {func: eval(func)()} )
     keys = sum([dct.keys() for dct in lst], [])
@@ -62,18 +51,6 @@ def switches() :
     for dct in lst : out.update(dct)
     checkAndAdjust(out)
     return out
-
-def getMaxJobs() :
-    return {
-        "IC": 2000,
-        "FNAL": 0,
-    }[batchHost]
-
-def getSubCmds() :
-    return {
-        "IC": "qsub -o /dev/null -e /dev/null -q hep{queue}.q".format(queue=["short", "medium", "long"][1]),
-        "FNAL": "condor_submit"
-    }[batchHost]
 
 def checkAndAdjust(d) :
     d["isSms"] = "tanBeta" not in d["signalModel"]
