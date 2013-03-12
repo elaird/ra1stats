@@ -1,6 +1,10 @@
 #joint SMS-CMSSM
-def interBin() :
-    return "LowEdge"
+def interBin(model="") :
+    #assert model
+    if model == "T2cc":
+        return "Center"
+    else:
+        return "LowEdge"
 
 def xsHistoSpec(model = "", cmssmProcess = "", xsVariation = "") :
     if not cmssmProcess :
@@ -42,7 +46,7 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
 
     sms = {"T1":          {"had": "v5"},
            "T2":          {"had": "v1"},
-           "T2cc":        {"had": "v2_ISRReweighted"},
+           "T2cc":        {"had": "v3_ISRReweighted"},
            "T2tt":        {"had": "v1", "muon": "v1"},
            "T2bb":        {"had": "v3", "muon": "v3"},
            #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
@@ -90,16 +94,10 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
     else :
         assert False, "model %s not in list"%model
 
-    if bJets :
+    if bJets:
         tags.append(bJets)
-        if model == "T2cc":
-            if "eq3b" in bJets:
-                print "WARNING: hacking b directory"
-                tags[-1] = bJets.replace("eq3b","geq3b")
-    if jets :
+    if jets:
         tags.append(jets)
-        if model == "T2cc":
-            tags[-1] = jets.replace("ge","geq")
 
     if box=="had":
         tags.append("AlphaT55")
