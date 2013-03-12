@@ -576,7 +576,6 @@ def printLumis() :
 def drawBenchmarks() :
     switches = conf.switches()
     parameters =  sa.scanParameters()
-    if not switches["drawBenchmarkPoints"] : return
     if not (switches["signalModel"] in parameters) : return
     params = parameters[switches["signalModel"]]
 
@@ -593,7 +592,9 @@ def drawBenchmarks() :
         out.append(text.DrawText(10+coords["m0"], 10+coords["m12"], label))
     return out
 
-def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [], switches = {}, suppressed = []) :
+def printOneHisto(h2=None, name="", canvas=None, fileName="",
+                  effRatioPlots=False, drawBenchmarkPoints=False,
+                  logZ=[], switches={}, suppressed=[]):
     if "upper" in name :
         hp.printHoles(h2)
     h2.SetStats(False)
@@ -610,7 +611,8 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
         h2.SetMinimum(0.5)
         h2.SetMaximum(3.0)
 
-    stuff = drawBenchmarks()
+    if drawBenchmarkPoints:
+        stuff = drawBenchmarks()
 
     if "excluded" in name and switches["isSms"] : return
 
@@ -634,7 +636,7 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
         canvas.Print(fileName)
 
     #effMu/effHad
-    if switches["effRatioPlots"] :
+    if effRatioPlots:
         for name in names :
             num = utils.threeToTwo(f.Get(name))
             if name[:7]!="effmuon" : continue
@@ -647,7 +649,8 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
             if not num.Integral() : continue
             num.SetMinimum(0.0)
             num.SetMaximum(0.5)
-            stuff = drawBenchmarks()
+            if drawBenchmarkPoints:
+                stuff = drawBenchmarks()
             canvas.Print(fileName)
 
 def sortedNames(histos = [], first = [], last = []) :
@@ -666,7 +669,8 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False, square = False) :
+def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
+               outputRootFile=False, modify=False, square=False):
     assert tag
 
     inFile = pickling.mergedFile()
@@ -706,8 +710,9 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
 
         h2 = utils.threeToTwo(f.Get(name))
         if modify : hp.modifyHisto(h2, s["signalModel"])
-        printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
-                      logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
+        printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
+                      logZ=["xs", "nEventsHad"], switches=s,
+                      suppressed=suppressed)
         if outputRootFile :
             outFile.cd()
             h2.Write()

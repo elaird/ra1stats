@@ -1,4 +1,4 @@
-def method() :
+def method():
     return {"CL": [0.95, 0.90][:1],
             "nToys": 1000,
             "testStatistic": 3,
@@ -8,10 +8,12 @@ def method() :
             "multiplesInGeV": None,
             }
 
-def signal() :
-    models = ["tanBeta10", "tanBeta40", "T5zz", "T1", "T1tttt", "T1bbbb", "T2",
-              "T2tt", "T2bb", "T2cc", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              "T1tttt_ichep", "T2bw"]
+def signal():
+    models = ["tanBeta10", "tanBeta40",
+              "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
+              "T2", "T2tt", "T2bb", "T2cc", "T2bw",
+              "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+              ]
     variations = ["default", "up", "down"]
 
     out = {}
@@ -20,8 +22,6 @@ def signal() :
                         "tanBeta10":(9.0e3, 11.0e3),
                         }
 
-    out["drawBenchmarkPoints"] = True
-    out["effRatioPlots"] = False
     out["xsVariation"] = dict(zip(variations, variations))["default"]
     out["signalModel"] = dict(zip(models, models))["T2cc"]
     return out
