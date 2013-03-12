@@ -7,6 +7,12 @@ def effUncRel(model=""):
             "T2":0.134, "T2bb":0.131, "T2tt":0.139, "T2cc":0.20}[model]
 
 
+def nEventsIn(model=""):
+    return {"T5zz"     :(5.0e3, None),
+            "tanBeta10":(9.0e3, 11.0e3),
+            }.get(model, (1, None))
+
+
 def interBin(model=""):
     assert model
     return "LowEdge"

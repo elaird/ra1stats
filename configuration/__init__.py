@@ -8,6 +8,7 @@ def method():
             "multiplesInGeV": None,
             }
 
+
 def signal():
     models = ["tanBeta10", "tanBeta40",
               "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
@@ -16,15 +17,10 @@ def signal():
               ]
     variations = ["default", "up", "down"]
 
-    out = {}
-    out["nEventsIn"] = {""         :(1,     None),
-                        "T5zz"     :(5.0e3, None),
-                        "tanBeta10":(9.0e3, 11.0e3),
-                        }
+    return {"xsVariation": dict(zip(variations, variations))["default"],
+            "signalModel": dict(zip(models, models))["T2cc"],
+            }
 
-    out["xsVariation"] = dict(zip(variations, variations))["default"]
-    out["signalModel"] = dict(zip(models, models))["T2cc"]
-    return out
 
 def whiteListOfPoints() : #GeV
     out = []
@@ -41,6 +37,7 @@ def whiteListOfPoints() : #GeV
     #out += [( 175.0, 95.0)]    #T2cc
     return out
 
+
 def switches() :
     out = {}
     lst = [method(), signal()]
@@ -52,6 +49,7 @@ def switches() :
     checkAndAdjust(out)
     return out
 
+
 def checkAndAdjust(d) :
     d["isSms"] = "tanBeta" not in d["signalModel"]
     binary = d["binaryExclusionRatherThanUpperLimit"]
@@ -62,9 +60,8 @@ def checkAndAdjust(d) :
     d["plSeedParams"] = {"usePlSeed": False} if binary else \
                         {"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 10, "minFactor": 0.0, "maxFactor":3.0}
                         #{"usePlSeed": True, "plNIterationsMax": 10, "nPoints": 7, "minFactor": 0.5, "maxFactor":2.0}
-
-    d["minEventsIn"],d["maxEventsIn"] = d["nEventsIn"][d["signalModel"] if d["signalModel"] in d["nEventsIn"] else ""]
     return
+
 
 def mergedFileStem() :
     s = switches()
