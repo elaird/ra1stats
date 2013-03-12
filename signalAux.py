@@ -1,6 +1,6 @@
 #joint SMS-CMSSM
 def interBin(model=""):
-    #assert model
+    assert model
     if model == "T2cc":
         return "Center"
     else:
