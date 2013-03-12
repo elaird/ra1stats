@@ -18,6 +18,23 @@ def interBin(model=""):
     return "LowEdge"
 
 
+def whiteListOfPoints():
+    # in GeV
+    out = []
+    #out += [(700.0, 300.0)]  #T1
+    #out += [(900.0, 500.0)]  #T1bbbb
+    #out += [(850.0, 250.0)]  #T1tttt
+    #out += [(450.0,  20.0)]  #T2tt
+    #out += [(550.0,  20.0)]  #T2tt
+    #out += [(400.0,   0.0)]  #T2tt
+    #out += [(410.0,  20.0)]  #T2tt
+    #out += [(420.0,  20.0)]  #T2tt
+    #out += [(500.0, 150.0)]  #T2bb
+    #out += [(600.0, 250.0)]  #T2
+    #out += [(175.0, 95.0)]   #T2cc
+    return out
+
+
 def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
     if not cmssmProcess:
         if xsVariation != "default":
