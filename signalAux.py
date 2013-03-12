@@ -30,9 +30,9 @@ def xsHistoSpec(model = "", cmssmProcess = "", xsVariation = "") :
     assert model in d,"model=%s"%model
     return d[model]
 
-def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper = None,
-                 bJets = None, jets = None, xsVariation = None) :
-    #xsVariation is ignored
+def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
+                 bJets=None, jets=None, **_) :
+
     base = "ra1e/2012/"
 
     cmssm = {"tanBeta10":  {"cmssw":"rw", "had":"v2", "muon":"v2"},
@@ -78,12 +78,9 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
         base = "ra1e/2011/"
         print 'WARNING: modifying base "%s" to "%s" for model %s.'%(oldBase, base, model)
         assert box in ["had", "muon"]
-        if scale not in ["1", "05", "2"] :
-            print "WARNING: assuming scale=1"
-            scale="1"
         d = cmssm[model]
         out["file"] = "/".join([base, "%s_scan"%d["cmssw"], model, box, d[box], box+"%s.root"%thresh])
-        out["beforeDir"] = "mSuGraScan_before_scale%s"%scale
+        out["beforeDir"] = "mSuGraScan_before_scale1"
         tags.append("mSuGraScan")
     elif model in sms :
         assert box in ["had","muon"]
@@ -114,7 +111,7 @@ def effHistoSpec(model = "", box = None, scale = None, htLower = None, htUpper =
     if htUpper :
         tags.append("%d"%htUpper)
     if model in cmssm :
-        tags.append("scale%s"%scale)
+        tags.append("scale1")
 
     out["afterDir"] = "_".join(tags)
     return out
