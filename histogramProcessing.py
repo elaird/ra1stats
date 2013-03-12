@@ -187,8 +187,8 @@ def nEventsInHisto():
 def effHisto(**args):
     s = conf.switches()
     model = s["signalModel"]
-    ignore = s["ignoreEff"]
-    if (model in ignore) and (args["box"] in ignore[model]):
+
+    if args["box"] in signalAux.ignoreEff(model):
         print "WARNING: ignoring %s efficiency for %s" % (args["box"], model)
         return None
     if not s["isSms"]:

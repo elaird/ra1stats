@@ -6,7 +6,9 @@ import common
 import configuration as conf
 import histogramProcessing as hp
 import likelihoodSpec
+import signalAux
 import utils
+
 import ROOT as r
 
 
@@ -80,9 +82,9 @@ def eventsInRange(switches=None, nEventsIn=None):
 
 def signalModel(point=None, eff=None, xs=None, xsLo=None,
                 nEventsIn=None, switches=None):
-    out = common.signal(
-        xs=xs.GetBinContent(*point), label="%d_%d_%d" % point,
-        effUncRel=switches["effUncRel"][switches["signalModel"]])
+    out = common.signal(xs=xs.GetBinContent(*point), label="%d_%d_%d" % point,
+                        effUncRel=signalAux.effUncRel(switches["signalModel"]),
+                        )
 
     if xsLo:
         out["xs_LO"] = xsLo.GetBinContent(*point)
