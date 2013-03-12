@@ -1,5 +1,3 @@
-import likelihoodSpec as ls
-
 batchHost = [ "FNAL", "IC" ][1]
 
 def method() :
@@ -36,20 +34,6 @@ def signal() :
     out["xsVariation"] = dict(zip(variations, variations))["default"]
     out["signalModel"] = dict(zip(models, models))["T2cc"]
     return out
-
-def likelihoodSpec() :
-    dataset = "2012hcp"
-    dct = {"T1"          : {"dataset":dataset, "whiteList":["0b_ge4j"]},
-           "T2"          : {"dataset":dataset, "whiteList":["0b_le3j"]},
-           "T2bb"        : {"dataset":dataset, "whiteList":["1b_le3j", "2b_le3j"]},
-           "T2tt"        : {"dataset":dataset, "whiteList":["1b_ge4j", "2b_ge4j"]},
-           "T1bbbb"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-           "T1tttt"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-           "T2cc"        : {"dataset":"2012hcp2", "whiteList":["0b_le3j"]},
-           "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
-           "tanBeta10"   : {},
-           }
-    return ls.spec(**dct[signal()["signalModel"]])
 
 def whiteListOfPoints() : #GeV
     out = []
