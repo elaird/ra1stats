@@ -1,15 +1,18 @@
 def ignoreEff(model=""):
-    return {"T1":["muon"], "T1bbbb":[], "T1tttt":[],
-            "T2":["muon"], "T2bb":["muon"], "T2tt":[], "T2cc":["muon"]}[model]
+    return {"T1": ["muon"], "T1bbbb": [], "T1tttt": [],
+            "T2": ["muon"], "T2bb": ["muon"], "T2tt": [], "T2cc": ["muon"],
+            }[model]
+
 
 def effUncRel(model=""):
-    return {"T1":0.140, "T1bbbb":0.160, "T1tttt":0.230,
-            "T2":0.134, "T2bb":0.131, "T2tt":0.139, "T2cc":0.20}[model]
+    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
+            "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
+            }[model]
 
 
 def nEventsIn(model=""):
-    return {"T5zz"     :(5.0e3, None),
-            "tanBeta10":(9.0e3, 11.0e3),
+    return {"T5zz":      (5.0e3, None),
+            "tanBeta10": (9.0e3, 11.0e3),
             }.get(model, (1, None))
 
 
