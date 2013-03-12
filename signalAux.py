@@ -9,10 +9,7 @@ def effUncRel(model=""):
 
 def interBin(model=""):
     assert model
-    if model == "T2cc":
-        return "Center"
-    else:
-        return "LowEdge"
+    return "LowEdge"
 
 
 def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
@@ -58,7 +55,7 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
 
     sms = {"T1":          {"had": "v5"},
            "T2":          {"had": "v1"},
-           "T2cc":        {"had": "v3_ISRReweighted"},
+           "T2cc":        {"had": "v4_ISRReweighted"},
            "T2tt":        {"had": "v1", "muon": "v1"},
            "T2bb":        {"had": "v3", "muon": "v3"},
            #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
