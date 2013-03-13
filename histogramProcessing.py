@@ -122,9 +122,8 @@ def killPoints(h, cutFunc=None, interBin=""):
 
 ##signal-related histograms
 def xsHisto():
-    s = conf.switches()
     model = conf.signal.model()
-    if s["binaryExclusionRatherThanUpperLimit"]:
+    if conf.limit.binaryExclusion():
         cmssmProcess = "" if conf.signal.isSms(model) else "total"
         return xsHistoPhysical(model=model,
                                cmssmProcess=cmssmProcess,
@@ -242,7 +241,7 @@ def smsEffHisto(**args):
 ##signal point selection
 def points():
     out = []
-    s = conf.switches()
+    multiples = conf.limit.multiplesInGev()
     model = conf.signal.model()
     whiteList = conf.signal.whiteListOfPoints()
     interBin = conf.signal.interBin(model)
@@ -253,7 +252,7 @@ def points():
         content = h.GetBinContent(iBinX, iBinY, iBinZ)
         if not content:
             continue
-        if s["multiplesInGeV"] and ((x/s["multiplesInGeV"]) % 1 != 0.0):
+        if multiples and ((x/multiples) % 1 != 0.0):
             continue
         if patches.cutFunc()[model](iBinX, x, iBinY, y, iBinZ, z):
             out.append((iBinX, iBinY, iBinZ))
