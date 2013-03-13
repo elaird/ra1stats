@@ -70,7 +70,7 @@ def histoList(histos={}):
     return out
 
 
-def eventsInRange(switches=None, nEventsIn=None):
+def eventsInRange(nEventsIn=None):
     minEventsIn, maxEventsIn = conf.signal.nEventsIn(conf.signal.model())
     out = True
     if minEventsIn is not None:
@@ -81,7 +81,7 @@ def eventsInRange(switches=None, nEventsIn=None):
 
 
 def signalModel(point=None, eff=None, xs=None, xsLo=None,
-                nEventsIn=None, switches=None):
+                nEventsIn=None):
     out = common.signal(xs=xs.GetBinContent(*point), label="%d_%d_%d" % point,
                         effUncRel=conf.signal.effUncRel(conf.signal.model()),
                         )
@@ -93,7 +93,7 @@ def signalModel(point=None, eff=None, xs=None, xsLo=None,
     out["x"] = xs.GetXaxis().GetBinLowEdge(point[0])
     out["y"] = xs.GetYaxis().GetBinLowEdge(point[1])
     out["nEventsIn"] = nEventsIn.GetBinContent(*point)
-    out["eventsInRange"] = eventsInRange(switches, out["nEventsIn"])
+    out["eventsInRange"] = eventsInRange(out["nEventsIn"])
     if not out["eventsInRange"]:
         return out
 
@@ -116,7 +116,7 @@ def signalModel(point=None, eff=None, xs=None, xsLo=None,
     return out
 
 
-def stuffVars(switches=None, binsMerged=None, signal=None):
+def stuffVars(binsMerged=None, signal=None):
     titles = {"xs": "#sigma (pb)",
               "nEventsIn": "N events in",
               "effHadSum": "eff. of hadronic selection (all bins summed)",
@@ -147,8 +147,7 @@ def stuffVars(switches=None, binsMerged=None, signal=None):
 
 
 def writeSignalFiles(points=[], outFilesAlso=False):
-    args = {"switches": conf.switches(),
-            "eff": effHistos(),
+    args = {"eff": effHistos(),
             "xs": hp.xsHisto(),
             "nEventsIn": hp.nEventsInHisto(),
             }
@@ -160,20 +159,19 @@ def writeSignalFiles(points=[], outFilesAlso=False):
         if not outFilesAlso:
             continue
         writeNumbers(fileName=stem+".out", d=signal)
-        #stuffVars(switches,
-        #          binsMerged=args["data"].htBinLowerEdges(),
+        #stuffVars(binsMerged=args["data"].htBinLowerEdges(),
         #          signal=signal)
 
 
 ##merge functions
 def mergedFile():
     model = conf.signal.model()
-    s = conf.switches()
-
-    tags = [s["method"]]
-    if "CLs" in s["method"]:
-        tags += [s["calculatorType"], "TS%d" % s["testStatistic"]]
-    if s["binaryExclusionRatherThanUpperLimit"]:
+    tags = [conf.limit.method()]
+    if "CLs" in conf.limit.method():
+        tags += [conf.limit.calculatorType(),
+                 "TS%d" % conf.limit.testStatistic()
+                 ]
+    if conf.limit.binaryExclusion():
         tags.append("binaryExcl")
     tags.append(model)
     if not conf.signal.isSms(model):
