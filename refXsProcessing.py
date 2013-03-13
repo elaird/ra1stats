@@ -1,4 +1,5 @@
-import collections,signalAux
+import collections
+from configuration import signal as signalAux
 import ROOT as r
 
 def refXsHisto(model) :

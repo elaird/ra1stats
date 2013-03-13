@@ -1,9 +1,11 @@
 import collections
+
+import configuration as conf
+from configuration import signal as signalAux
 import likelihoodSpec
 import patches
-import signalAux
 import utils
-import configuration as conf
+
 import ROOT as r
 
 

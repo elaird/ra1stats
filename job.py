@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import sys
 
+from configuration import signal as signalAux
 import configuration as conf
 import likelihoodSpec
 import pickling
-import signalAux
 import workspace
 
 def points() :

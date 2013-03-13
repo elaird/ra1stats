@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import os
-import ROOT as r
-import utils
-import histogramProcessing as hp
-import signalAux
 
+from configuration import signal
+import histogramProcessing as hp
+import utils
+
+import ROOT as r
 
 def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
               preliminary=None):
@@ -21,7 +22,7 @@ def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
     dy = 0.06
 
     tl.DrawLatex(x, y-2*dy,
-                 'm_{%s} = %d GeV' % (signalAux.chi(), int(lspMass)))
+                 'm_{%s} = %d GeV' % (signal.chi(), int(lspMass)))
 
     if preliminary:
         tl.DrawLatex(x, y+dy, "CMS Preliminary")
@@ -298,7 +299,7 @@ def points():
 
 def onePoint(yValue=None, nSmooth=None, xMin=None):
     model = 'T2tt'
-    hSpec = signalAux.xsHistoSpec(model=model, xsVariation="default")
+    hSpec = signal.xsHistoSpec(model=model, xsVariation="default")
 
     refHisto = referenceXsHisto(refHistoName=hSpec['histo'],
                                 refName='#tilde{t} #tilde{t}',
@@ -315,7 +316,7 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
         'showRatio': False,
         'lumiStamp': 'L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
-        'processStamp': signalAux.processStamp(model)['text'],
+        'processStamp': signal.processStamp(model)['text'],
         }
 
     compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,

@@ -4,11 +4,11 @@ import math
 
 import histogramProcessing as hp
 import configuration as conf
+from configuration import signal as sa
 import likelihoodSpec
 import patches
 import pickling
 import refXsProcessing as rxs
-import signalAux as sa
 import utils
 
 import ROOT as r

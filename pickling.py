@@ -4,9 +4,9 @@ import os
 
 import common
 import configuration as conf
+from configuration import signal as signalAux
 import histogramProcessing as hp
 import likelihoodSpec
-import signalAux
 import utils
 
 import ROOT as r

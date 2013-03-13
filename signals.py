@@ -1,5 +1,8 @@
-import common,ROOT as r
-from signalAux import processStamp
+import common
+from configuration.signal import processStamp
+
+import ROOT as r
+
 
 def scaled(t, factor) :
     return tuple([factor*item for item in t])
