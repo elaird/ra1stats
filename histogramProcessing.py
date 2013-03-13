@@ -125,8 +125,9 @@ def xsHisto():
     s = conf.switches()
     model = conf.signal.model()
     if s["binaryExclusionRatherThanUpperLimit"]:
+        cmssmProcess = "" if conf.signal.isSms(model) else "total"
         return xsHistoPhysical(model=model,
-                               cmssmProcess="" if s["isSms"] else "total",
+                               cmssmProcess=cmssmProcess,
                                xsVariation=conf.signal.xsVariation())
     else:
         return xsHistoAllOne(model, cutFunc=patches.cutFunc()[model])
@@ -185,13 +186,11 @@ def nEventsInHisto():
 
 
 def effHisto(**args):
-    s = conf.switches()
     model = conf.signal.model()
-
     if args["box"] in conf.signal.ignoreEff(model):
         print "WARNING: ignoring %s efficiency for %s" % (args["box"], model)
         return None
-    if not s["isSms"]:
+    if conf.signal.isSms(model):
         return cmssmEffHisto(model=model,
                              xsVariation=conf.signal.xsVariation(),
                              **args)

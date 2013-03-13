@@ -163,7 +163,6 @@ def spline(points = [], title = "") :
     return r.TSpline3(title, graph)
 
 def exclusionGraphs(histos={}, interBin="", pruneYMin=False, debug=False, printXs=None):
-    switches = conf.switches()
     model = conf.signal.model()
     cutFunc = patches.cutFunc()[model]
     curves = patches.curves()[model]
@@ -452,8 +451,8 @@ def makeEfficiencyPlotBinned(key = "effHad") :
     can.Print("%s.pdf"%label)
 
 def makeEfficiencyPlot() :
-    s = conf.switches()
-    if not s["isSms"] : return
+    if not conf.signal.isSms(conf.signal.model()):
+        return
 
     inFile = pickling.mergedFile()
     f = r.TFile(inFile)
@@ -503,8 +502,8 @@ def makeEfficiencyPlot() :
     hp.printHoles(h2)
 
 def makeEfficiencyUncertaintyPlots() :
-    s = conf.switches()
-    if not s["isSms"] : return
+    if not conf.signal.isSms(conf.signal.model()):
+        return
 
     model = conf.signal.model()
     inFile = pickling.mergedFile()
@@ -577,7 +576,6 @@ def printLumis() :
     return text
 
 def drawBenchmarks() :
-    switches = conf.switches()
     model = conf.signal.model()
     parameters =  sa.scanParameters()
     if not (model in parameters) : return
@@ -598,7 +596,7 @@ def drawBenchmarks() :
 
 def printOneHisto(h2=None, name="", canvas=None, fileName="",
                   effRatioPlots=False, drawBenchmarkPoints=False,
-                  logZ=[], switches={}, model="", suppressed=[]):
+                  logZ=[], model="", suppressed=[]):
     if "upper" in name :
         hp.printHoles(h2)
     h2.SetStats(False)
@@ -618,10 +616,11 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
     if drawBenchmarkPoints:
         stuff = drawBenchmarks()
 
-    if "excluded" in name and switches["isSms"] : return
+    isSms = conf.signal.isSms(conf.signal.model())
+    if "excluded" in name and isSms : return
 
-    printSinglePage  = (not switches["isSms"]) and "excluded" in name
-    printSinglePage |= switches["isSms"] and "upperLimit" in name
+    printSinglePage  = (not isSms) and "excluded" in name
+    printSinglePage |= isSms and "upperLimit" in name
 
     if printSinglePage :
         title = h2.GetTitle()
@@ -702,7 +701,6 @@ def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
 
     names = sortedNames(histos = f.GetListOfKeys(), first = first, last = last)
 
-    s = conf.switches()
     model = conf.signal.model()
 
     if outputRootFile :
@@ -829,67 +827,7 @@ def makePlots(square = False) :
     #multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
 
     s = conf.switches()
-    if s["isSms"] and s["method"]=="CLs" :
+    isSms = conf.signal.isSms(conf.signal.model())
+    if isSms and s["method"]=="CLs" :
         for cl in s["CL"] :
             clsValidation(tag = "clsValidation", cl = cl, masterKey = "xs")
-
-def expectedLimit(obsFile, expFile) :
-    def histo(file, name) :
-        f = r.TFile(file)
-        out = f.Get(name).Clone(name+"2")
-        out.SetDirectory(0)
-        out.SetName(name)
-        f.Close()
-        return out
-
-    def check(h1, h2) :
-        def a(h, x) :
-            return getattr(h, "Get%saxis"%x)
-        for x in ["X", "Y"] :
-            for attr in ["GetXmin", "GetXmax", "GetNbins"] :
-                assert getattr(a(h1, x)(), attr)()==getattr(a(h2, x)(), attr)()
-
-    def compare(h1, h2) :
-        check(h1, h2)
-        out = h2.Clone(h1.GetName()+h2.GetName())
-        out.SetTitle(h2.GetName())
-        out.Reset()
-        for iX in range(1, 1+h1.GetNbinsX()) :
-            for iY in range(1, 1+h1.GetNbinsY()) :
-                c1 = h1.GetBinContent(iX, iY)
-                c2 = h2.GetBinContent(iX, iY)
-                if (not c1) or (not c2) :
-                    out.SetBinContent(iX, iY, 0.0)
-                else :
-                    out.SetBinContent(iX, iY, 2.0*(c1<c2)-1.0)
-        return out
-
-    def items() :
-        keys = conf.switches()["expectedPlusMinus"].keys()
-        out = ["Median"]
-        for key in keys :
-            out += ["MedianPlus%s"%key, "MedianMinus%s"%key]
-        return out
-
-    psFileName = expFile.replace(".root", "_results.ps")
-    rootFileName = psFileName.replace(".ps", ".root")
-    outFile = r.TFile(rootFileName, "RECREATE")
-    canvas = r.TCanvas()
-    canvas.SetRightMargin(0.15)
-    canvas.Print(psFileName+"[")
-    ds = histo(obsFile, "ds")
-    for item in items() :
-        h = compare(ds, histo(expFile, item))
-        outFile.cd()
-        h.Write()
-        h.Draw("colz")
-        h.SetStats(False)
-        canvas.Print(psFileName)
-
-    outFile.Close()
-    canvas.Print(psFileName+"]")
-    pdfFileName = psFileName.replace(".ps", ".pdf")
-    os.system("ps2pdf %s %s"%(psFileName, pdfFileName))
-    os.remove(psFileName)
-    print "%s has been written."%pdfFileName
-    print "%s has been written."%rootFileName
