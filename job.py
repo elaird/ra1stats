@@ -39,9 +39,10 @@ def onePoint(likelihoodSpec=None, point=None):
         #out.update(pickling.stuffVars(binsMerged = data.htBinLowerEdges(), signal = signal))
         out.update(signal)
         eff = False
-        for key,dct in signal.iteritems() :
-            if type(dct)!=dict : continue
-            if "effHadSum" in dct and dct["effHadSum"] :
+        for key, dct in signal.iteritems():
+            if type(dct) != dict:
+                continue
+            if "effHadSum" in dct and dct["effHadSum"]:
                 eff = True
                 break
         if conf.limit.method() and eff:
