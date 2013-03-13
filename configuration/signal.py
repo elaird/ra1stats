@@ -95,7 +95,7 @@ def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
 
 
 def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
-                 bJets=None, jets=None, **_):
+                 bJets=None, jets=None):
 
     base = "%s/2012/" % directories.eff()
     cmssm = {"tanBeta10":  {"cmssw": "rw", "had": "v2", "muon": "v2"},
