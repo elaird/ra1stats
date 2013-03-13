@@ -31,12 +31,12 @@ def printDict(d, space = "") :
         print out+","
     print "%s}"%space
 
-def onePoint(switches = None, likelihoodSpec = None, point = None) :
-    signal = pickling.readNumbers(fileName = conf.directories.pickledFileName(*point)+".in")
+def onePoint(likelihoodSpec=None, point=None):
+    signal = pickling.readNumbers(fileName=conf.directories.pickledFileName(*point)+".in")
     printDict(signal)
     out = {}
-    if signal["eventsInRange"] :
-        #out.update(pickling.stuffVars(switches, binsMerged = data.htBinLowerEdges(), signal = signal))
+    if signal["eventsInRange"]:
+        #out.update(pickling.stuffVars(binsMerged = data.htBinLowerEdges(), signal = signal))
         out.update(signal)
         eff = False
         for key,dct in signal.iteritems() :
@@ -44,7 +44,8 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
             if "effHadSum" in dct and dct["effHadSum"] :
                 eff = True
                 break
-        if switches["method"] and eff : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
+        if conf.limit.method() and eff:
+            out.update(results(likelihoodSpec=likelihoodSpec, signal=signal))
     else:
         minEventsIn, maxEventsIn = conf.signal.nEventsIn(conf.signal.model())
         print "WARNING nEventsIn = {0} not in allowed range[ {1}, {2} ] ".format(signal["nEventsIn"],
@@ -52,53 +53,65 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
                                                                                  maxEventsIn)
     return out
 
-def results(switches = None, likelihoodSpec = None, signal = None) :
+def results(likelihoodSpec=None, signal=None):
     out = {}
-    for cl in switches["CL"] :
+    for cl in conf.limit.CL():
         cl2 = 100*cl
-        f = workspace.foo(signalToTest = signal, likelihoodSpec = likelihoodSpec, extraSigEffUncSources = switches["extraSigEffUncSources"],
-                          rhoSignalMin = switches["rhoSignalMin"], fIniFactor = switches["fIniFactor"])
+        f = workspace.foo(signalToTest=signal,
+                          likelihoodSpec=likelihoodSpec,
+                          extraSigEffUncSources=conf.limit.extraSigEffUncSources(),
+                          rhoSignalMin=conf.limit.rhoSignalMin(),
+                          fIniFactor=conf.limit.fIniFactor(),
+                          )
 
-        if switches["method"]=="CLs" :
-            results = f.cls(cl = cl, nToys = switches["nToys"],# plusMinus = switches["expectedPlusMinus"],
-                            testStatType = switches["testStatistic"], calculatorType = switches["calculatorType"],
-                            plSeedParams = switches["plSeedParams"])
-            for key,value in results.iteritems() :
+        if conf.limit.method() == "CLs":
+            results = f.cls(cl=cl,
+                            nToys=conf.limit.nToys(),
+                            testStatType=conf.limit.testStatistic(),
+                            calculatorType=conf.limit.calculatorType(),
+                            plSeedParams=conf.limit.plSeedParams()
+                            )
+            for key, value in results.iteritems():
                 out[key] = (value, description(key))
-                if switches["plSeedParams"]["usePlSeed"] : continue
+                if conf.limit.plSeedParams()["usePlSeed"]:
+                    continue
+                if key == "CLs" or ("Median" in key):
+                    threshold = 1.0 - cl
+                    out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold),
+                                                        "is %s<%g ?"%(key, threshold))
+        elif conf.limit.method() == "CLsCustom":
+            results = f.clsCustom(nToys=conf.limit.nToys(),
+                                  testStatType=conf.limit.testStatistic(),
+                                  )
+            for key, value in results.iteritems():
+                out[key] = (value, description(key))
                 if key=="CLs" or ("Median" in key) :
                     threshold = 1.0 - cl
-                    out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
-        elif switches["method"]=="CLsCustom" :
-            results = f.clsCustom(nToys = switches["nToys"], testStatType = switches["testStatistic"])
-            for key,value in results.iteritems() :
-                out[key] = (value, description(key))
-                if key=="CLs" or ("Median" in key) :
-                    threshold = 1.0 - cl
-                    out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold), "is %s<%g ?"%(key, threshold))
-        else :
-            results = f.interval(cl = cl, method = switches["method"], nIterationsMax = 10)
-            for key,value in results.iteritems() : out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-            out["excluded%g"%cl2] = (compare(results["upperLimit"], 1.0), "is (%g%% upper limit on XS factor)<1?"%cl2)
-        #old expected limit code
-        #else :
-        #    d,nSuccesses = f.expectedLimit(cl = cl, nToys = switches["nToys"], plusMinus = switches["expectedPlusMinus"], makePlots = False)
-        #    for key,value in d.iteritems() :
-        #        out["%s%g"%(key, cl2)] = (value, description(key, cl2))
-        #        out["excluded%s%g"%(key, cl2)] = (compare(value, 1.0), "is (%s %g%% upper limit on XS factor)<1?"%(key, cl2))
-        #    out["nSuccesses%g"%cl2] = (nSuccesses, "# of successfully fit toys")
+                    out["excluded_%s_%g"%(key, cl2)] = (compare(results[key], threshold),
+                                                        "is %s<%g ?"%(key, threshold))
+        else:
+            results = f.interval(cl=cl,
+                                 method=conf.limit.method(),
+                                 nIterationsMax=10,
+                                 )
+            for key, value in results.iteritems():
+                out["%s%g"%(key, cl2)] = (value, description(key, cl2))
+            out["excluded%g"%cl2] = (compare(results["upperLimit"], 1.0),
+                                     "is (%g%% upper limit on XS factor)<1?"%cl2)
     return out
 
-def compare(item, threshold) :
+
+def compare(item, threshold):
     return 2.0*(item<threshold)-1.0
 
-def go() :
-    s = conf.switches()
+
+def go():
     spec = likelihoodSpec.likelihoodSpec(conf.signal.model())
 
     for point in points() :
-        pickling.writeNumbers(fileName = conf.directories.pickledFileName(*point)+".out",
-                              d = onePoint(switches = s, likelihoodSpec = spec, point = point))
+        pickling.writeNumbers(fileName=conf.directories.pickledFileName(*point)+".out",
+                              d=onePoint(likelihoodSpec=spec, point=point),
+                              )
 
 if False :
     import cProfile
