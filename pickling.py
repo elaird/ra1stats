@@ -155,7 +155,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
     hp.checkHistoBinning([args["xs"]]+histoList(args["eff"]))
     for point in points:
         signal = signalModel(point=point, **args)
-        stem = conf.pickledFileName(*point)
+        stem = conf.directories.pickledFileName(*point)
         writeNumbers(fileName=stem+".in", d=signal)
         if not outFilesAlso:
             continue
@@ -217,7 +217,7 @@ def mergePickledFiles(printExample=False):
     zTitles = {}
 
     for point in hp.points():
-        fileName = conf.pickledFileName(*point)+".out"
+        fileName = conf.directories.pickledFileName(*point)+".out"
         if not os.path.exists(fileName):
             print "skipping file", fileName
             continue
