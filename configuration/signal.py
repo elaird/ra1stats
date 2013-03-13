@@ -1,3 +1,19 @@
+def model():
+    models = ["tanBeta10", "tanBeta40",
+              "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
+              "T2", "T2tt", "T2bb", "T2cc", "T2bw",
+              "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
+              ]
+    return dict(zip(models, models))["T2cc"]
+
+def isSms():
+    return "tanBeta" not in model()
+
+def xsVariation():
+    variations = ["default", "up", "down"]
+    return dict(zip(variations, variations))["default"]
+
+
 def ignoreEff(model=""):
     return {"T1": ["muon"], "T1bbbb": [], "T1tttt": [],
             "T2": ["muon"], "T2bb": ["muon"], "T2tt": [], "T2cc": ["muon"],

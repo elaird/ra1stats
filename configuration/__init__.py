@@ -15,22 +15,9 @@ def method():
             }
 
 
-def signalOld():
-    models = ["tanBeta10", "tanBeta40",
-              "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
-              "T2", "T2tt", "T2bb", "T2cc", "T2bw",
-              "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              ]
-    variations = ["default", "up", "down"]
-
-    return {"xsVariation": dict(zip(variations, variations))["default"],
-            "signalModel": dict(zip(models, models))["T2cc"],
-            }
-
-
 def switches():
     out = {}
-    lst = [method(), signalOld()]
+    lst = [method()]
     keys = sum([dct.keys() for dct in lst], [])
     assert len(keys) == len(set(keys))
     for dct in lst:
@@ -40,7 +27,8 @@ def switches():
 
 
 def checkAndAdjust(d):
-    d["isSms"] = "tanBeta" not in d["signalModel"]
+    import signal
+    d["isSms"] = signal.isSms()
     binary = d["binaryExclusionRatherThanUpperLimit"]
     d["rhoSignalMin"] = 0.0 if binary else 0.1
     d["fIniFactor"] = 1.0 if binary else 0.05
@@ -64,13 +52,14 @@ def checkAndAdjust(d):
 
 
 def mergedFileStem():
+    import signal
     s = switches()
     tags = [s["method"]]
     if "CLs" in s["method"]:
         tags += [s["calculatorType"], "TS%d" % s["testStatistic"]]
     if s["binaryExclusionRatherThanUpperLimit"]:
         tags.append("binaryExcl")
-    tags.append(s["signalModel"])
+    tags.append(signal.model())
     if not s["isSms"]:
         tags.append(s["xsVariation"])
     return "ra1r/scan/"+"_".join(tags)
