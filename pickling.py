@@ -168,9 +168,22 @@ def writeSignalFiles(points=[], outFilesAlso=False):
 ##merge functions
 def mergedFile():
     model = conf.signal.model()
-    return "%s_%s.root" % (conf.mergedFileStem(),
-                           common.note(likelihoodSpec.likelihoodSpec(model))
-                           )
+    s = conf.switches()
+
+    tags = [s["method"]]
+    if "CLs" in s["method"]:
+        tags += [s["calculatorType"], "TS%d" % s["testStatistic"]]
+    if s["binaryExclusionRatherThanUpperLimit"]:
+        tags.append("binaryExcl")
+    tags.append(model)
+    if not conf.signal.isSms(model):
+        tags.append(signal.xsVariation())
+
+    tags.append(common.note(likelihoodSpec.likelihoodSpec(model)))
+    return "".join([conf.directories()["mergedFile"],
+                    "_".join(tags),
+                    ".root"
+                    ])
 
 
 #note: improve this data format

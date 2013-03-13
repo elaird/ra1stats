@@ -49,25 +49,12 @@ def checkAndAdjust(d):
                         # "maxFactor": 2.0}
 
 
-def mergedFileStem():
-    import signal
-    s = switches()
-    tags = [s["method"]]
-    if "CLs" in s["method"]:
-        tags += [s["calculatorType"], "TS%d" % s["testStatistic"]]
-    if s["binaryExclusionRatherThanUpperLimit"]:
-        tags.append("binaryExcl")
-    tags.append(signal.model())
-    if not signal.isSms(signal.model()):
-        tags.append(signal.xsVariation())
-    return "ra1r/scan/"+"_".join(tags)
-
-
 def directories():
     return {"job": "jobIO",
             "plot": "plots",
             "log": "log",
             "points": "points",
+            "mergedFile":"ra1r/scan/",
             }
 
 
