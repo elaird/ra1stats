@@ -174,9 +174,7 @@ def local(nWorkers = None, skip = False) :
 ############################################
 def mkdirs():
     module = conf.directories
-    for name in dir(module):
-        if name[:2] == "__":
-            continue
+    for name in ["job", "log", "plot", "points"]:
         dirName = getattr(module, name)()
         utils.mkdir(dirName)
 ############################################
