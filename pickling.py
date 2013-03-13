@@ -180,7 +180,7 @@ def mergedFile():
         tags.append(signal.xsVariation())
 
     tags.append(common.note(likelihoodSpec.likelihoodSpec(model)))
-    return "".join([conf.directories.mergedFile(),
+    return "".join([conf.directories.mergedFile()+"/",
                     "_".join(tags),
                     ".root"
                     ])

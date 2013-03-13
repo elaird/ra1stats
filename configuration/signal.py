@@ -1,3 +1,6 @@
+import directories
+
+
 def model():
     models = ["tanBeta10", "tanBeta40",
               "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
@@ -68,7 +71,7 @@ def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
         print "WARNING: using 7 TeV xs for " + \
               "model %s, process %s" % (model, cmssmProcess)
 
-    base = "xs"
+    base = directories.xs()
     #seven = "%s/v5/7TeV.root"%base
     eight = "%s/v5/8TeV.root" % base
     tgqFile = "%s/v1/TGQ_xSec.root" % base
@@ -94,7 +97,7 @@ def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
 def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
                  bJets=None, jets=None, **_):
 
-    base = "ra1e/2012/"
+    base = "%s/2012/" % directories.eff()
     cmssm = {"tanBeta10":  {"cmssw": "rw", "had": "v2", "muon": "v2"},
              #"tanBeta10":  {"cmssw": "42", "had": "v8", "muon": "v8"},
              "tanBeta40":  {"cmssw": "42", "had": "v2", "muon": "v2"},
