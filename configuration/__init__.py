@@ -60,8 +60,8 @@ def mergedFileStem():
     if s["binaryExclusionRatherThanUpperLimit"]:
         tags.append("binaryExcl")
     tags.append(signal.model())
-    if not s["isSms"]:
-        tags.append(s["xsVariation"])
+    if not signal.isSms():
+        tags.append(signal.xsVariation())
     return "ra1r/scan/"+"_".join(tags)
 
 

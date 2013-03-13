@@ -127,7 +127,7 @@ def xsHisto():
     if s["binaryExclusionRatherThanUpperLimit"]:
         return xsHistoPhysical(model=model,
                                cmssmProcess="" if s["isSms"] else "total",
-                               xsVariation=s["xsVariation"])
+                               xsVariation=conf.signal.xsVariation())
     else:
         return xsHistoAllOne(model, cutFunc=patches.cutFunc()[model])
 
@@ -192,7 +192,9 @@ def effHisto(**args):
         print "WARNING: ignoring %s efficiency for %s" % (args["box"], model)
         return None
     if not s["isSms"]:
-        return cmssmEffHisto(model=model, xsVariation=s["xsVariation"], **args)
+        return cmssmEffHisto(model=model,
+                             xsVariation=conf.signal.xsVariation(),
+                             **args)
     else:
         return smsEffHisto(model=model, **args)
 
