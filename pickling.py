@@ -31,7 +31,7 @@ def effHistos(okMerges=[None,
                         (0, 1, 2, 2, 2, 2, 2, 2, 2, 2),
                         (0, 1, 2, 2, 2, 2, 2, 2),
                         ]):
-    model = conf.switches()["signalModel"]
+    model = conf.signal.model()
     out = {}
     for sel in likelihoodSpec.likelihoodSpec(model).selections():
         badMerge = " ".join(["bin merge",
@@ -71,7 +71,7 @@ def histoList(histos={}):
 
 
 def eventsInRange(switches=None, nEventsIn=None):
-    minEventsIn, maxEventsIn = conf.signal.nEventsIn(switches["signalModel"])
+    minEventsIn, maxEventsIn = conf.signal.nEventsIn(conf.signal.model())
     out = True
     if minEventsIn is not None:
         out &= (minEventsIn <= nEventsIn)
@@ -83,7 +83,7 @@ def eventsInRange(switches=None, nEventsIn=None):
 def signalModel(point=None, eff=None, xs=None, xsLo=None,
                 nEventsIn=None, switches=None):
     out = common.signal(xs=xs.GetBinContent(*point), label="%d_%d_%d" % point,
-                        effUncRel=conf.signal.effUncRel(switches["signalModel"]),
+                        effUncRel=conf.signal.effUncRel(conf.signal.model()),
                         )
 
     if xsLo:
@@ -167,7 +167,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
 
 ##merge functions
 def mergedFile():
-    model = conf.switches()["signalModel"]
+    model = conf.signal.model()
     return "%s_%s.root" % (conf.mergedFileStem(),
                            common.note(likelihoodSpec.likelihoodSpec(model))
                            )

@@ -48,7 +48,7 @@ def printOnce(canvas, fileName, alsoC = False) :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-        current_stamp = sa.processStamp(conf.switches()['signalModel'])
+        current_stamp = sa.processStamp(conf.signal.model())
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
@@ -164,7 +164,7 @@ def spline(points = [], title = "") :
 
 def exclusionGraphs(histos={}, interBin="", pruneYMin=False, debug=False, printXs=None):
     switches = conf.switches()
-    model = switches["signalModel"]
+    model = conf.signal.model()
     cutFunc = patches.cutFunc()[model]
     curves = patches.curves()[model]
 
@@ -210,7 +210,7 @@ def upperLimitHistos(inFileName = "", shiftX = False, shiftY = False) :
     switches = conf.switches()
     assert len(switches["CL"])==1
     cl = switches["CL"][0]
-    model = switches["signalModel"]
+    model = conf.signal.model()
     ranges = sa.ranges(model)
 
     #read and adjust histos
@@ -274,7 +274,7 @@ def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={},
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
 
-    shift = sa.interBin(model=conf.switches()["signalModel"])=="LowEdge"
+    shift = sa.interBin(model=conf.signal.model()) == "LowEdge"
     makeRootFiles(limitFileName=limitFileName, simpleFileName=simpleFileName,
                   shiftX=shift, shiftY=shift, interBin="Center",
                   pruneYMin=pruneYMin, printXs=printXs)
@@ -302,7 +302,7 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
                  curveGopts = "", mDeltaFuncs = False, specs = []) :
 
     s = conf.switches()
-    model = s["signalModel"]
+    model = conf.signal.model()
     ranges = sa.ranges(model)
 
     epsFile = rootFileName.replace(".root", ".eps")
@@ -356,7 +356,7 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
     f.Close()
 
 def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], curveGopts = "") :
-    ranges = sa.ranges(conf.switches()["signalModel"])
+    ranges = sa.ranges(conf.signal.model())
 
     c = squareCanvas()
     pdf = histoFileName.replace(".root",".pdf")
@@ -421,7 +421,7 @@ def makeEfficiencyPlotBinned(key = "effHad") :
     keep = []
     pad = {0:2, 1:1, 2:4, 3:3, 4:6, 5:5, 6:8, 7:7, 8:10}
 
-    model = conf.switches()["signalModel"]
+    model = conf.signal.model()
     label = "%s_%s"%(model, key)
     total = None
     for i,(cat,h) in enumerate(sorted(dct.iteritems())) :
@@ -476,9 +476,10 @@ def makeEfficiencyPlot() :
     h2 = utils.threeToTwo(h3)
 
     assert h2
-    hp.modifyHisto(h2, s["signalModel"])
+    model = conf.signal.model()
+    hp.modifyHisto(h2, model)
 
-    title = sa.histoTitle(model = s["signalModel"])
+    title = sa.histoTitle(model = model)
     title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
 
@@ -487,7 +488,7 @@ def makeEfficiencyPlot() :
     h2.Write()
     g.Close()
 
-    ranges = sa.ranges(s["signalModel"])
+    ranges = sa.ranges(model)
     setRange("xRange", ranges, h2, "X")
     setRange("yRange", ranges, h2, "Y")
 
@@ -505,15 +506,16 @@ def makeEfficiencyUncertaintyPlots() :
     s = conf.switches()
     if not s["isSms"] : return
 
+    model = conf.signal.model()
     inFile = pickling.mergedFile()
     f = r.TFile(inFile)
-    ranges = sa.ranges(s["signalModel"])
+    ranges = sa.ranges(model)
 
     def go(name, suffix, zTitle, zRangeKey) :
-        fileName = outFileName(tag = "%s_%s"%(s["signalModel"], suffix))["eps"]
+        fileName = outFileName(tag = "%s_%s"%(model, suffix))["eps"]
         c = squareCanvas()
         h2 = utils.threeToTwo(f.Get(name))
-        xyTitle = sa.histoTitle(model = s["signalModel"])
+        xyTitle = sa.histoTitle(model=model)
         adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
         setRange("xRange", ranges, h2, "X")
         setRange("yRange", ranges, h2, "Y")
@@ -576,9 +578,10 @@ def printLumis() :
 
 def drawBenchmarks() :
     switches = conf.switches()
+    model = conf.signal.model()
     parameters =  sa.scanParameters()
-    if not (switches["signalModel"] in parameters) : return
-    params = parameters[switches["signalModel"]]
+    if not (model in parameters) : return
+    params = parameters[model]
 
     text = r.TText()
     out = []
@@ -595,8 +598,7 @@ def drawBenchmarks() :
 
 def printOneHisto(h2=None, name="", canvas=None, fileName="",
                   effRatioPlots=False, drawBenchmarkPoints=False,
-                  logZ=[], switches={}, suppressed=[]):
-    model = switches["signalModel"]
+                  logZ=[], switches={}, model="", suppressed=[]):
     if "upper" in name :
         hp.printHoles(h2)
     h2.SetStats(False)
@@ -701,6 +703,7 @@ def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
     names = sortedNames(histos = f.GetListOfKeys(), first = first, last = last)
 
     s = conf.switches()
+    model = conf.signal.model()
 
     if outputRootFile :
         outFile = r.TFile(fileNames["root"], "RECREATE")
@@ -712,9 +715,9 @@ def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
         if any([item in name for item in blackListMatch]) : continue
 
         h2 = utils.threeToTwo(f.Get(name))
-        if modify : hp.modifyHisto(h2, s["signalModel"])
+        if modify : hp.modifyHisto(h2, model)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
-                      logZ=["xs", "nEventsHad"], switches=s,
+                      logZ=["xs", "nEventsHad"], switches=s, model=model,
                       suppressed=suppressed)
         if outputRootFile :
             outFile.cd()

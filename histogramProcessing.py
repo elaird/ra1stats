@@ -123,7 +123,7 @@ def killPoints(h, cutFunc=None, interBin=""):
 ##signal-related histograms
 def xsHisto():
     s = conf.switches()
-    model = s["signalModel"]
+    model = conf.signal.model()
     if s["binaryExclusionRatherThanUpperLimit"]:
         return xsHistoPhysical(model=model,
                                cmssmProcess="" if s["isSms"] else "total",
@@ -180,14 +180,13 @@ def xsHistoAllOne(model, cutFunc=None):
 
 
 def nEventsInHisto():
-    model = conf.switches()["signalModel"]
-    s = conf.signal.effHistoSpec(model=model, box="had")
+    s = conf.signal.effHistoSpec(model=conf.signal.model(), box="had")
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 
 def effHisto(**args):
     s = conf.switches()
-    model = s["signalModel"]
+    model = conf.signal.model()
 
     if args["box"] in conf.signal.ignoreEff(model):
         print "WARNING: ignoring %s efficiency for %s" % (args["box"], model)
@@ -234,7 +233,7 @@ def smsEffHisto(**args):
                 s["afterDir"], "m0_m12_mChi_noweight",
                 s["beforeDir"], "m0_m12_mChi_noweight")
     fillPoints(out,
-               points=patches.overwriteInput()[conf.switches()["signalModel"]],
+               points=patches.overwriteInput()[conf.signal.model()],
                )
     return out
 
@@ -243,7 +242,7 @@ def smsEffHisto(**args):
 def points():
     out = []
     s = conf.switches()
-    model = s["signalModel"]
+    model = conf.signal.model()
     whiteList = conf.signal.whiteListOfPoints()
     interBin = conf.signal.interBin(model)
     h = xsHisto()

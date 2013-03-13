@@ -46,7 +46,7 @@ def onePoint(switches = None, likelihoodSpec = None, point = None) :
                 break
         if switches["method"] and eff : out.update(results(switches = switches, likelihoodSpec = likelihoodSpec, signal = signal))
     else:
-        minEventsIn, maxEventsIn = conf.signal.nEventsIn(switches["signalModel"])
+        minEventsIn, maxEventsIn = conf.signal.nEventsIn(conf.signal.model())
         print "WARNING nEventsIn = {0} not in allowed range[ {1}, {2} ] ".format(signal["nEventsIn"],
                                                                                  minEventsIn,
                                                                                  maxEventsIn)
@@ -94,7 +94,7 @@ def compare(item, threshold) :
 
 def go() :
     s = conf.switches()
-    spec = likelihoodSpec.likelihoodSpec(s["signalModel"])
+    spec = likelihoodSpec.likelihoodSpec(conf.signal.model())
 
     for point in points() :
         pickling.writeNumbers(fileName = conf.pickledFileName(*point)+".out",
