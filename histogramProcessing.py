@@ -162,14 +162,18 @@ def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
 
 def xsHistoAllOne(model, cutFunc=None):
     ls = likelihoodSpec.likelihoodSpec(model)
-    if ls._dataset == "2012ichep":
+    if ls._dataset in ["2011", "2012ichep"]:
         kargs = {}
     else:
         kargs = {"bJets": "eq0b", "jets": "le3j"}
 
-    h = smsEffHisto(model=model, box="had",
-                    htLower=875, htUpper=None, **kargs)
+    spec = conf.signal.effHistoSpec(model=model,
+                                    box="had",
+                                    htLower=875,
+                                    htUpper=None,
+                                    **kargs)
 
+    h = smsEffHisto(spec)
     interBin = conf.signal.interBin(model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=interBin):
         content = 1.0
@@ -184,33 +188,41 @@ def nEventsInHisto():
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 
-def effHisto(**args):
+def effHisto(box="", htLower=None, htUpper=None, bJets="", jets=""):
     model = conf.signal.model()
-    if args["box"] in conf.signal.ignoreEff(model):
-        print "WARNING: ignoring %s efficiency for %s" % (args["box"], model)
+    if box in conf.signal.ignoreEff(model):
+        print "WARNING: ignoring %s efficiency for %s" % (box, model)
         return None
+
+    spec = conf.signal.effHistoSpec(model=model,
+                                    box=box,
+                                    htLower=htLower,
+                                    htUpper=htUpper,
+                                    bJets=bJets,
+                                    jets=jets)
     if conf.signal.isSms(model):
-        smsEffHisto(model=model, **args)
+        return smsEffHisto(spec)
     else:
-        return cmssmEffHisto(model=model,
+        return cmssmEffHisto(spec=spec,
+                             model=model,
                              xsVariation=conf.signal.xsVariation(),
-                             **args)
+                             )
 
 
-def cmssmEffHisto(**args):
-    s = conf.signal.effHistoSpec(**args)
+def cmssmEffHisto(spec={}, model="", xsVariation=""):
     out = None
 
     # FIXME: Implement some check of the agreement
     # in sets of processes between yield file and xs file
     for proc in conf.signal.processes():
         # efficiency of a process
-        h = ratio(s["file"], s["afterDir"], "m0_m12_%s" % proc,
-                  s["beforeDir"], "m0_m12_%s" % proc)
+        h = ratio(spec["file"],
+                  spec["afterDir"], "m0_m12_%s" % proc,
+                  spec["beforeDir"], "m0_m12_%s" % proc)
 
         # weight by xs of the process
-        h.Multiply(xsHistoPhysical(model=args["model"], cmssmProcess=proc,
-                                   xsVariation=args["xsVariation"]))
+        h.Multiply(xsHistoPhysical(model=model, cmssmProcess=proc,
+                                   xsVariation=xsVariation))
         if out is None:
             out = h.Clone("effHisto")
         else:
@@ -218,20 +230,19 @@ def cmssmEffHisto(**args):
 
     out.SetDirectory(0)
     # divide by total xs
-    out.Divide(xsHistoPhysical(model=args["model"],
+    out.Divide(xsHistoPhysical(model=model,
                                cmssmProcess="total",
-                               xsVariation=args["xsVariation"]))
+                               xsVariation=xsVariation))
     return out
 
 
-def smsEffHisto(**args):
-    s = conf.signal.effHistoSpec(**args)
+def smsEffHisto(spec={}):
     #out = ratio(s["file"],
     #            s["afterDir"], "m0_m12_mChi",
     #            s["beforeDir"], "m0_m12_mChi")
-    out = ratio(s["file"],
-                s["afterDir"], "m0_m12_mChi_noweight",
-                s["beforeDir"], "m0_m12_mChi_noweight")
+    out = ratio(spec["file"],
+                spec["afterDir"], "m0_m12_mChi_noweight",
+                spec["beforeDir"], "m0_m12_mChi_noweight")
     fillPoints(out,
                points=patches.overwriteInput()[conf.signal.model()],
                )
@@ -243,7 +254,7 @@ def points():
     out = []
     multiples = conf.limit.multiplesInGeV()
     model = conf.signal.model()
-    whiteList = conf.signal.whiteListOfPoints()
+    whiteList = conf.signal.whiteListOfPoints(model)
     interBin = conf.signal.interBin(model)
     h = xsHisto()
     for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
