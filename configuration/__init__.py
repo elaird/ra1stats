@@ -15,7 +15,7 @@ def method():
             }
 
 
-def signal():
+def signalOld():
     models = ["tanBeta10", "tanBeta40",
               "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
               "T2", "T2tt", "T2bb", "T2cc", "T2bw",
@@ -30,7 +30,7 @@ def signal():
 
 def switches():
     out = {}
-    lst = [method(), signal()]
+    lst = [method(), signalOld()]
     keys = sum([dct.keys() for dct in lst], [])
     assert len(keys) == len(set(keys))
     for dct in lst:
