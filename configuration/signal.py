@@ -6,12 +6,15 @@ def model():
               ]
     return dict(zip(models, models))["T2cc"]
 
-def isSms():
-    return "tanBeta" not in model()
 
 def xsVariation():
     variations = ["default", "up", "down"]
     return dict(zip(variations, variations))["default"]
+
+
+def isSms(model=""):
+    assert model
+    return "tanBeta" not in model
 
 
 def ignoreEff(model=""):
@@ -37,21 +40,23 @@ def interBin(model=""):
     return "LowEdge"
 
 
-def whiteListOfPoints():
+def whiteListOfPoints(model="", respect=False):
+    if not respect:
+        return []
+
     # in GeV
-    out = []
-    #out += [(700.0, 300.0)]  #T1
-    #out += [(900.0, 500.0)]  #T1bbbb
-    #out += [(850.0, 250.0)]  #T1tttt
-    #out += [(450.0,  20.0)]  #T2tt
-    #out += [(550.0,  20.0)]  #T2tt
-    #out += [(400.0,   0.0)]  #T2tt
-    #out += [(410.0,  20.0)]  #T2tt
-    #out += [(420.0,  20.0)]  #T2tt
-    #out += [(500.0, 150.0)]  #T2bb
-    #out += [(600.0, 250.0)]  #T2
-    #out += [(175.0, 95.0)]   #T2cc
-    return out
+    return {"T1": [(700.0, 300.0)],
+            "T1bbbb": [(900.0, 500.0)],
+            "T1tttt": [(850.0, 250.0)],
+            "T2tt": [(450.0,  20.0)],
+            #"T2tt": [(550.0,  20.0)],
+            #"T2tt": [(400.0,   0.0)],
+            #"T2tt": [(410.0,  20.0)],
+            #"T2tt": [(420.0,  20.0)],
+            "T2bb": [(500.0, 150.0)],
+            "T2": [(600.0, 250.0)],
+            "T2cc": [(175.0, 95.0)],
+            }[model]
 
 
 def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
@@ -267,7 +272,7 @@ def glProc(q=""):
     return out
 
 
-def processStamp(key=""):
+def processStamp(model=""):
     dct = {
         '': {
         'text': "",
@@ -301,7 +306,7 @@ def processStamp(key=""):
         'text': glProc("t"),
         'xpos': 0.425,
         }, }
-    return dct.get(key, dct[""])
+    return dct.get(model, dct[""])
 
 
 def histoTitle(model=""):
@@ -320,7 +325,7 @@ def histoTitle(model=""):
          "TGQ_0p8": ";m_{gluino} (GeV);m_{squark} (GeV)",
          "": ";m_{0} (GeV);m_{1/2} (GeV)",
          }
-    return d[model] if model in d else d[""]
+    return d.get(model, d[""])
 
 
 #CMSSM

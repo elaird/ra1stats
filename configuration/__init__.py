@@ -27,8 +27,6 @@ def switches():
 
 
 def checkAndAdjust(d):
-    import signal
-    d["isSms"] = signal.isSms()
     binary = d["binaryExclusionRatherThanUpperLimit"]
     d["rhoSignalMin"] = 0.0 if binary else 0.1
     d["fIniFactor"] = 1.0 if binary else 0.05
@@ -60,7 +58,7 @@ def mergedFileStem():
     if s["binaryExclusionRatherThanUpperLimit"]:
         tags.append("binaryExcl")
     tags.append(signal.model())
-    if not signal.isSms():
+    if not signal.isSms(signal.model()):
         tags.append(signal.xsVariation())
     return "ra1r/scan/"+"_".join(tags)
 
