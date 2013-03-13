@@ -1,7 +1,6 @@
 import collections
 
 import configuration as conf
-from configuration import signal as signalAux
 import likelihoodSpec
 import patches
 import utils
@@ -66,7 +65,7 @@ def modifyHisto(h=None, model=""):
     fillPoints(h, points=patches.overwriteOutput()[model])
     killPoints(h,
                cutFunc=patches.cutFunc().get(model, None),
-               interBin=signalAux.interBin(model))
+               interBin=conf.signal.interBin(model))
 
 
 def fillPoints(h, points=[]):
@@ -137,13 +136,13 @@ def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
     #get example histo and reset
     isSms = not cmssmProcess
     dummyHisto = "m0_m12_mChi_noweight" if isSms else "m0_m12_gg"
-    s = signalAux.effHistoSpec(model=model, box="had")
+    s = conf.signal.effHistoSpec(model=model, box="had")
     out = ratio(s["file"],
                 s["beforeDir"], dummyHisto,
                 s["beforeDir"], dummyHisto)
     out.Reset()
 
-    spec = signalAux.xsHistoSpec(model=model,
+    spec = conf.signal.xsHistoSpec(model=model,
                                  cmssmProcess=cmssmProcess,
                                  xsVariation=xsVariation)
     warning = "will need to accommodate factor of %g" % spec["factor"]
@@ -154,7 +153,7 @@ def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
     dim = int(h.ClassName()[2:3])
     assert dim in [1, 2], dim
 
-    interBin = signalAux.interBin(model)
+    interBin = conf.signal.interBin(model)
     for iX, x, iY, y, iZ, z in utils.bins(out, interBin=interBin):
         iBin = h.FindBin(x) if dim == 1 else h.FindBin(x, y)
         out.SetBinContent(iX, iY, iZ, h.GetBinContent(iBin))
@@ -171,7 +170,7 @@ def xsHistoAllOne(model, cutFunc=None):
     h = smsEffHisto(model=model, box="had",
                     htLower=875, htUpper=None, **kargs)
 
-    interBin = signalAux.interBin(model)
+    interBin = conf.signal.interBin(model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=interBin):
         content = 1.0
         if cutFunc and not cutFunc(iX, x, iY, y, iZ, z):
@@ -182,7 +181,7 @@ def xsHistoAllOne(model, cutFunc=None):
 
 def nEventsInHisto():
     model = conf.switches()["signalModel"]
-    s = signalAux.effHistoSpec(model=model, box="had")
+    s = conf.signal.effHistoSpec(model=model, box="had")
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 
@@ -190,7 +189,7 @@ def effHisto(**args):
     s = conf.switches()
     model = s["signalModel"]
 
-    if args["box"] in signalAux.ignoreEff(model):
+    if args["box"] in conf.signal.ignoreEff(model):
         print "WARNING: ignoring %s efficiency for %s" % (args["box"], model)
         return None
     if not s["isSms"]:
@@ -200,12 +199,12 @@ def effHisto(**args):
 
 
 def cmssmEffHisto(**args):
-    s = signalAux.effHistoSpec(**args)
+    s = conf.signal.effHistoSpec(**args)
     out = None
 
     # FIXME: Implement some check of the agreement
     # in sets of processes between yield file and xs file
-    for proc in signalAux.processes():
+    for proc in conf.signal.processes():
         # efficiency of a process
         h = ratio(s["file"], s["afterDir"], "m0_m12_%s" % proc,
                   s["beforeDir"], "m0_m12_%s" % proc)
@@ -227,7 +226,7 @@ def cmssmEffHisto(**args):
 
 
 def smsEffHisto(**args):
-    s = signalAux.effHistoSpec(**args)
+    s = conf.signal.effHistoSpec(**args)
     #out = ratio(s["file"],
     #            s["afterDir"], "m0_m12_mChi",
     #            s["beforeDir"], "m0_m12_mChi")
@@ -245,8 +244,8 @@ def points():
     out = []
     s = conf.switches()
     model = s["signalModel"]
-    whiteList = signalAux.whiteListOfPoints()
-    interBin = signalAux.interBin(model)
+    whiteList = conf.signal.whiteListOfPoints()
+    interBin = conf.signal.interBin(model)
     h = xsHisto()
     for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
         if whiteList and (x, y) not in whiteList:

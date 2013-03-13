@@ -4,7 +4,6 @@ import os
 
 import common
 import configuration as conf
-from configuration import signal as signalAux
 import histogramProcessing as hp
 import likelihoodSpec
 import utils
@@ -72,7 +71,7 @@ def histoList(histos={}):
 
 
 def eventsInRange(switches=None, nEventsIn=None):
-    minEventsIn, maxEventsIn = signalAux.nEventsIn(switches["signalModel"])
+    minEventsIn, maxEventsIn = conf.signal.nEventsIn(switches["signalModel"])
     out = True
     if minEventsIn is not None:
         out &= (minEventsIn <= nEventsIn)
@@ -84,7 +83,7 @@ def eventsInRange(switches=None, nEventsIn=None):
 def signalModel(point=None, eff=None, xs=None, xsLo=None,
                 nEventsIn=None, switches=None):
     out = common.signal(xs=xs.GetBinContent(*point), label="%d_%d_%d" % point,
-                        effUncRel=signalAux.effUncRel(switches["signalModel"]),
+                        effUncRel=conf.signal.effUncRel(switches["signalModel"]),
                         )
 
     if xsLo:

@@ -4,7 +4,6 @@ import math
 
 import histogramProcessing as hp
 import configuration as conf
-from configuration import signal as sa
 import likelihoodSpec
 import patches
 import pickling
@@ -12,6 +11,8 @@ import refXsProcessing as rxs
 import utils
 
 import ROOT as r
+
+sa = conf.signal  # compatibility
 
 def setupRoot() :
     #r.gROOT.SetStyle("Plain")
