@@ -1,14 +1,7 @@
-def directories():
-    return {"job": "jobIO",
-            "plot": "plots",
-            "log": "log",
-            "points": "points",
-            "mergedFile": "ra1r/scan/",
-            }
-
+import directories
 
 def pickledFileName(xBin, yBin, zBin):
-    return "%s/m0_%d_m12_%d_mZ_%d.pickled" % (directories()["job"],
+    return "%s/m0_%d_m12_%d_mZ_%d.pickled" % (directories.job(),
                                               xBin, yBin, zBin)
 
 
