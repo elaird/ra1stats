@@ -143,8 +143,8 @@ def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
     out.Reset()
 
     spec = conf.signal.xsHistoSpec(model=model,
-                                 cmssmProcess=cmssmProcess,
-                                 xsVariation=xsVariation)
+                                   cmssmProcess=cmssmProcess,
+                                   xsVariation=xsVariation)
     warning = "will need to accommodate factor of %g" % spec["factor"]
     assert spec["factor"] == 1.0, warning
 
@@ -190,11 +190,11 @@ def effHisto(**args):
         print "WARNING: ignoring %s efficiency for %s" % (args["box"], model)
         return None
     if conf.signal.isSms(model):
+        smsEffHisto(model=model, **args)
+    else:
         return cmssmEffHisto(model=model,
                              xsVariation=conf.signal.xsVariation(),
                              **args)
-    else:
-        return smsEffHisto(model=model, **args)
 
 
 def cmssmEffHisto(**args):
@@ -241,7 +241,7 @@ def smsEffHisto(**args):
 ##signal point selection
 def points():
     out = []
-    multiples = conf.limit.multiplesInGev()
+    multiples = conf.limit.multiplesInGeV()
     model = conf.signal.model()
     whiteList = conf.signal.whiteListOfPoints()
     interBin = conf.signal.interBin(model)
