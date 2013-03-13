@@ -33,7 +33,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     out = []
     if skip : return out,""
 
-    logDir = conf.directories()["log"]
+    logDir = conf.directories.log()
 
     nJobsMax = batchConf.nJobsMax()
     iStart = offset*nJobsMax
@@ -73,7 +73,7 @@ def pjobCmds(queue=None) :
     for q_name, num_points in getQueueRanges(n_points,queue).iteritems():
         out[q_name]["args"] = []
         out[q_name]["n_points"] = num_points
-        filename = "{dir}/{host}_{queue}_{pid}.points".format(dir=conf.directories()["points"],
+        filename = "{dir}/{host}_{queue}_{pid}.points".format(dir=conf.directories.points(),
                                                               host=host,
                                                               queue=q_name,
                                                               pid=pid)
@@ -172,9 +172,13 @@ def local(nWorkers = None, skip = False) :
     if skip : return
     utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jcs)
 ############################################
-def mkdirs() :
-    for d in conf.directories().values() :
-        utils.mkdir(d)
+def mkdirs():
+    module = conf.directories
+    for name in dir(module):
+        if name[:2] == "__":
+            continue
+        dirName = getattr(module, name)()
+        utils.mkdir(dirName)
 ############################################
 options = opts()
 

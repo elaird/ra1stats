@@ -251,7 +251,7 @@ def writeList(fileName = "", objects = []) :
 
 def outFileName(tag = "") :
     base = pickling.mergedFile().split("/")[-1]
-    root = conf.directories()["plot"]+"/"+base.replace(".root", "_%s.root"%tag)
+    root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root"%tag)
     return {"root":root,
             "eps" :root.replace(".root",".eps"),
             "pdf" :root.replace(".root",".pdf"),
