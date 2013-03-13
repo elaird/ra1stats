@@ -2,8 +2,8 @@ import os
 import sys
 import math
 
-import histogramProcessing as hp
 import configuration as conf
+import histogramProcessing as hp
 import likelihoodSpec
 import patches
 import pickling
@@ -205,17 +205,17 @@ def exclusionGraphs(histos={}, interBin="", pruneYMin=False, debug=False, printX
         simpleExclHistos[graphName] = graph["histo"]
     return graphs,simpleExclHistos
 
-def upperLimitHistos(inFileName = "", shiftX = False, shiftY = False) :
-    switches = conf.switches()
-    assert len(switches["CL"])==1
-    cl = switches["CL"][0]
+def upperLimitHistos(inFileName="", shiftX=False, shiftY=False):
+    assert len(conf.limit.CL()) == 1
+    cl = conf.limit.CL()[0]
     model = conf.signal.model()
     ranges = sa.ranges(model)
 
     #read and adjust histos
     f = r.TFile(inFileName)
     histos = {}
-    for name,pretty in [("UpperLimit" if switches["method"]=="CLs" else "upperLimit95", "upper limit"),
+    for name,pretty in [("UpperLimit" if conf.limit.method() == "CLs" else "upperLimit95",
+                         "upper limit"),
                         ("ExpectedUpperLimit", "expected upper limit"),
                         ("ExpectedUpperLimit_-1_Sigma", "title"),
                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
@@ -300,7 +300,6 @@ def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={},
 def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
                  curveGopts = "", mDeltaFuncs = False, specs = []) :
 
-    s = conf.switches()
     model = conf.signal.model()
     ranges = sa.ranges(model)
 
@@ -309,8 +308,8 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
 
     c = squareCanvas()
 
-    if s["method"]=="CLs":
-        hName = "excluded_CLs_95" if s["binaryExclusionRatherThanUpperLimit"] else "UpperLimit"
+    if conf.limit.method() == "CLs":
+        hName = "excluded_CLs_95" if conf.limit.binaryExclusion() else "UpperLimit"
     else:
         hName = "upperLimit95"
     h = f.Get(hName)
@@ -715,7 +714,7 @@ def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
         h2 = utils.threeToTwo(f.Get(name))
         if modify : hp.modifyHisto(h2, model)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
-                      logZ=["xs", "nEventsHad"], switches=s, model=model,
+                      logZ=["xs", "nEventsHad"], model=model,
                       suppressed=suppressed)
         if outputRootFile :
             outFile.cd()
@@ -826,8 +825,7 @@ def makePlots(square = False) :
     #multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
     #multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
 
-    s = conf.switches()
     isSms = conf.signal.isSms(conf.signal.model())
-    if isSms and s["method"]=="CLs" :
-        for cl in s["CL"] :
-            clsValidation(tag = "clsValidation", cl = cl, masterKey = "xs")
+    if isSms and conf.limit.method() == "CLs":
+        for cl in conf.limit.CL():
+            clsValidation(tag="clsValidation", cl=cl, masterKey="xs")
