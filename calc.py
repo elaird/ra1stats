@@ -1,7 +1,17 @@
-import math,array,copy,collections,string
-import utils,cpp,plotting
-import ROOT as r
+import array
+import collections
+import copy
+import math
+import string
+
 import common
+import configuration as conf
+import cpp
+import plotting
+import utils
+
+import ROOT as r
+
 
 cpp.compile()
 
@@ -35,7 +45,8 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
         canvas = r.TCanvas()
         canvas.SetTickx()
         canvas.SetTicky()
-        psFile = "intervalPlot_%s_%g.pdf"%(note, 100*cl)
+        psFile = "%s/intervalPlot_%s_%g.pdf"%(conf.directories.plot(),
+                                              note, 100*cl)
         plot = r.RooStats.LikelihoodIntervalPlot(lInt)
         plot.Draw(); print
         canvas.Print(psFile)
@@ -355,12 +366,18 @@ def profilePlots(dataset, modelconfig, note) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "profilePlots_%s.pdf"%note
+    psFile = "%s/profilePlots_%s.pdf" % (conf.directories.plot(), note)
     canvas.Print(psFile+"[")
 
     plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print
     for i in range(plots.GetSize()) :
-        plots.At(i).Draw("al")
+        graph = plots.At(i)
+        graph.Draw("al")
+        graph.SetLineWidth(2)
+        graph.SetLineColor(r.kBlue)
+        h = graph.GetHistogram()
+        h.SetMinimum(0.0)
+        h.SetMaximum(1.1*h.GetMaximum())
         canvas.Print(psFile)
     canvas.Print(psFile+"]")
     #utils.ps2pdf(psFile)
