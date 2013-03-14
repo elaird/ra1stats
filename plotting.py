@@ -10,7 +10,9 @@ import ensemble
 import utils
 import ROOT as r
 
-ni = common.ni  # compatibility
+# compatibility
+ni = common.ni
+inDict = utils.inDict
 
 def rootSetup() :
     #r.gROOT.SetStyle("Plain")
