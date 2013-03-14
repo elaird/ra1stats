@@ -1,8 +1,16 @@
-import os,array,math,copy,collections
-from common import ni,floatingVars
-from utils import inDict
-import utils,ensemble
+import array
+import collections
+import copy
+import math
+import os
+
+import configuration as conf
+import common
+import ensemble
+import utils
 import ROOT as r
+
+ni = common.ni  # compatibility
 
 def rootSetup() :
     #r.gROOT.SetStyle("Plain")
@@ -703,7 +711,7 @@ class validationPlotter(object) :
 
         self.canvas.Clear()
 
-        for i,d in enumerate(floatingVars(self.wspace)) :
+        for i, d in enumerate(common.floatingVars(self.wspace)):
             if not (i%nLines) :
                 x += 0.5
                 y = y0
