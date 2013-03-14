@@ -2,12 +2,12 @@
 *.pyc
 plots*
 log
-output*
+jobIO
+points
 *.d
 *.so
 .*.swp
 *.pdf
-points/
 *.log
 *.aux
 *.tex

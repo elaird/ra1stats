@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import os
-import ROOT as r
-import utils
-import histogramProcessing as hp
-import signalAux
 
+import configuration.signal
+import histogramProcessing
+import utils
+
+import ROOT as r
 
 def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
               preliminary=None):
@@ -21,7 +22,9 @@ def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
     dy = 0.06
 
     tl.DrawLatex(x, y-2*dy,
-                 'm_{%s} = %d GeV' % (signalAux.chi(), int(lspMass)))
+                 'm_{%s} = %d GeV' % (configuration.signal.chi(),
+                                      int(lspMass))
+                 )
 
     if preliminary:
         tl.DrawLatex(x, y+dy, "CMS Preliminary")
@@ -92,7 +95,7 @@ def exclusionHistos(limitFile="", model="", shift = (True, False)):
     for limitHistoName, opts in limitHistoDict.iteritems():
         h = utils.shifted(utils.threeToTwo(rfile.Get(limitHistoName)),
                           shift = shift, shiftErrors = False)
-        hp.modifyHisto(h, model)
+        histogramProcessing.modifyHisto(h, model)
         opts['hist'] = h
     rfile.Close()
     return limitHistoDict
@@ -298,7 +301,8 @@ def points():
 
 def onePoint(yValue=None, nSmooth=None, xMin=None):
     model = 'T2tt'
-    hSpec = signalAux.xsHistoSpec(model=model, xsVariation="default")
+    hSpec = configuration.signal.xsHistoSpec(model=model,
+                                             xsVariation="default")
 
     refHisto = referenceXsHisto(refHistoName=hSpec['histo'],
                                 refName='#tilde{t} #tilde{t}',
@@ -315,7 +319,7 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
         'showRatio': False,
         'lumiStamp': 'L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
-        'processStamp': signalAux.processStamp(model)['text'],
+        'processStamp': configuration.signal.processStamp(model)['text'],
         }
 
     compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,

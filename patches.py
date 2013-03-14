@@ -20,7 +20,7 @@ def cmssmCut(iX, x, iY, y, iZ, z) :
         return 200.0 <= y <= 400.0
 
 def t2ccCut(iX, x, iY, y, iZ, z) :
-    fail = any([x < 100.0, x > 270.0, y > x, y < x - 100.0])
+    fail = any([x > 270.0, y > x, y < x - 100.0])
     return not fail
 
 def cutFunc() :

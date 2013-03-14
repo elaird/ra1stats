@@ -1,9 +1,18 @@
-import os,sys,math,utils,pickling,utils,patches
-import signalAux as sa
-import histogramProcessing as hp
+import os
+import sys
+import math
+
 import configuration as conf
+import histogramProcessing as hp
+import likelihoodSpec
+import patches
+import pickling
 import refXsProcessing as rxs
+import utils
+
 import ROOT as r
+
+sa = conf.signal  # compatibility
 
 def setupRoot() :
     #r.gROOT.SetStyle("Plain")
@@ -39,7 +48,7 @@ def printOnce(canvas, fileName, alsoC = False) :
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-        current_stamp = sa.processStamp(conf.switches()['signalModel'])
+        current_stamp = sa.processStamp(conf.signal.model())
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
@@ -153,9 +162,8 @@ def spline(points = [], title = "") :
         graph.SetPoint(i, x, y)
     return r.TSpline3(title, graph)
 
-def exclusionGraphs(histos = {}, interBin = "", pruneYMin = False, debug = False, printXs = None) :
-    switches = conf.switches()
-    model = switches["signalModel"]
+def exclusionGraphs(histos={}, interBin="", pruneYMin=False, debug=False, printXs=None):
+    model = conf.signal.model()
     cutFunc = patches.cutFunc()[model]
     curves = patches.curves()[model]
 
@@ -180,7 +188,7 @@ def exclusionGraphs(histos = {}, interBin = "", pruneYMin = False, debug = False
 
         if curves :
             assert False,"fix me"
-            key = (spec["name"], switches["xsVariation"])
+            key = (spec["name"], conf.signal.xsVariation())
             if key in curves :
                 spec["curve"] = spline(points = curves[key])
 
@@ -197,17 +205,17 @@ def exclusionGraphs(histos = {}, interBin = "", pruneYMin = False, debug = False
         simpleExclHistos[graphName] = graph["histo"]
     return graphs,simpleExclHistos
 
-def upperLimitHistos(inFileName = "", shiftX = False, shiftY = False) :
-    switches = conf.switches()
-    assert len(switches["CL"])==1
-    cl = switches["CL"][0]
-    model = switches["signalModel"]
+def upperLimitHistos(inFileName="", shiftX=False, shiftY=False):
+    assert len(conf.limit.CL()) == 1
+    cl = conf.limit.CL()[0]
+    model = conf.signal.model()
     ranges = sa.ranges(model)
 
     #read and adjust histos
     f = r.TFile(inFileName)
     histos = {}
-    for name,pretty in [("UpperLimit" if switches["method"]=="CLs" else "upperLimit95", "upper limit"),
+    for name,pretty in [("UpperLimit" if conf.limit.method() == "CLs" else "upperLimit95",
+                         "upper limit"),
                         ("ExpectedUpperLimit", "expected upper limit"),
                         ("ExpectedUpperLimit_-1_Sigma", "title"),
                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
@@ -243,28 +251,32 @@ def writeList(fileName = "", objects = []) :
 
 def outFileName(tag = "") :
     base = pickling.mergedFile().split("/")[-1]
-    root = conf.directories()["plot"]+"/"+base.replace(".root", "_%s.root"%tag)
+    root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root"%tag)
     return {"root":root,
             "eps" :root.replace(".root",".eps"),
             "pdf" :root.replace(".root",".pdf"),
             }
 
-def makeRootFiles(limitFileName = "", simpleFileName = "", shiftX = None, shiftY = None, interBin = None, pruneYMin = None):
+def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
+                  interBin="", pruneYMin=None, printXs=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
-    histos = upperLimitHistos(inFileName = pickling.mergedFile(), shiftX = shiftX, shiftY = shiftY)
-    graphs,simple = exclusionGraphs(histos, interBin = interBin, pruneYMin = pruneYMin)
+    histos = upperLimitHistos(inFileName=pickling.mergedFile(), shiftX=shiftX, shiftY=shiftY)
+    graphs, simple = exclusionGraphs(histos, interBin=interBin, pruneYMin=pruneYMin, printXs=printXs)
     writeList(fileName = limitFileName, objects = histos.values()+graphs.values())
     writeList(fileName = simpleFileName, objects = simple.values())
 
-def makeXsUpperLimitPlots(logZ = False, curveGopts = "", mDeltaFuncs = {}, diagonalLine = False,
-                          printXs = False, shiftX = False, shiftY = False,
-                          interBin = "LowEdge", pruneYMin = False, debug = False) :
+def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={},
+                          diagonalLine=False, printXs=False, pruneYMin=False,
+                          debug=False):
 
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
-    makeRootFiles(limitFileName = limitFileName, simpleFileName = simpleFileName,
-                  shiftX = shiftX, shiftY = shiftY, interBin = interBin, pruneYMin = pruneYMin)
+
+    shift = sa.interBin(model=conf.signal.model()) == "LowEdge"
+    makeRootFiles(limitFileName=limitFileName, simpleFileName=simpleFileName,
+                  shiftX=shift, shiftY=shift, interBin="Center",
+                  pruneYMin=pruneYMin, printXs=printXs)
 
     specs = [{"name":"ExpectedUpperLimit_m1_Sigma", "label":"",
                "lineStyle":2, "lineWidth":2, "color":r.kViolet},
@@ -288,16 +300,16 @@ def makeXsUpperLimitPlots(logZ = False, curveGopts = "", mDeltaFuncs = {}, diago
 def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
                  curveGopts = "", mDeltaFuncs = False, specs = []) :
 
-    s = conf.switches()
-    ranges = sa.ranges(s["signalModel"])
+    model = conf.signal.model()
+    ranges = sa.ranges(model)
 
     epsFile = rootFileName.replace(".root", ".eps")
     f = r.TFile(rootFileName)
 
     c = squareCanvas()
 
-    if s["method"]=="CLs":
-        hName = "excluded_CLs_95" if s["binaryExclusionRatherThanUpperLimit"] else "UpperLimit"
+    if conf.limit.method() == "CLs":
+        hName = "excluded_CLs_95" if conf.limit.binaryExclusion() else "UpperLimit"
     else:
         hName = "upperLimit95"
     h = f.Get(hName)
@@ -337,12 +349,12 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
         for func in funcs :
             func.Draw("same")
 
-    s3 = stamp(text = conf.likelihoodSpec().legendTitle(), x = 0.2075, y = 0.64, factor = 0.65)
+    s3 = stamp(text = likelihoodSpec.likelihoodSpec(model).legendTitle(), x = 0.2075, y = 0.64, factor = 0.65)
     printOnce(c, epsFile, alsoC = True)
     f.Close()
 
 def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], curveGopts = "") :
-    ranges = sa.ranges(conf.switches()["signalModel"])
+    ranges = sa.ranges(conf.signal.model())
 
     c = squareCanvas()
     pdf = histoFileName.replace(".root",".pdf")
@@ -407,7 +419,7 @@ def makeEfficiencyPlotBinned(key = "effHad") :
     keep = []
     pad = {0:2, 1:1, 2:4, 3:3, 4:6, 5:5, 6:8, 7:7, 8:10}
 
-    model = conf.switches()["signalModel"]
+    model = conf.signal.model()
     label = "%s_%s"%(model, key)
     total = None
     for i,(cat,h) in enumerate(sorted(dct.iteritems())) :
@@ -438,8 +450,8 @@ def makeEfficiencyPlotBinned(key = "effHad") :
     can.Print("%s.pdf"%label)
 
 def makeEfficiencyPlot() :
-    s = conf.switches()
-    if not s["isSms"] : return
+    if not conf.signal.isSms(conf.signal.model()):
+        return
 
     inFile = pickling.mergedFile()
     f = r.TFile(inFile)
@@ -462,9 +474,10 @@ def makeEfficiencyPlot() :
     h2 = utils.threeToTwo(h3)
 
     assert h2
-    hp.modifyHisto(h2, s["signalModel"])
+    model = conf.signal.model()
+    hp.modifyHisto(h2, model)
 
-    title = sa.histoTitle(model = s["signalModel"])
+    title = sa.histoTitle(model = model)
     title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
 
@@ -473,7 +486,7 @@ def makeEfficiencyPlot() :
     h2.Write()
     g.Close()
 
-    ranges = sa.ranges(s["signalModel"])
+    ranges = sa.ranges(model)
     setRange("xRange", ranges, h2, "X")
     setRange("yRange", ranges, h2, "Y")
 
@@ -488,18 +501,19 @@ def makeEfficiencyPlot() :
     hp.printHoles(h2)
 
 def makeEfficiencyUncertaintyPlots() :
-    s = conf.switches()
-    if not s["isSms"] : return
+    if not conf.signal.isSms(conf.signal.model()):
+        return
 
+    model = conf.signal.model()
     inFile = pickling.mergedFile()
     f = r.TFile(inFile)
-    ranges = sa.ranges(s["signalModel"])
+    ranges = sa.ranges(model)
 
     def go(name, suffix, zTitle, zRangeKey) :
-        fileName = outFileName(tag = "%s_%s"%(s["signalModel"], suffix))["eps"]
+        fileName = outFileName(tag = "%s_%s"%(model, suffix))["eps"]
         c = squareCanvas()
         h2 = utils.threeToTwo(f.Get(name))
-        xyTitle = sa.histoTitle(model = s["signalModel"])
+        xyTitle = sa.histoTitle(model=model)
         adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
         setRange("xRange", ranges, h2, "X")
         setRange("yRange", ranges, h2, "Y")
@@ -521,7 +535,6 @@ def makeEfficiencyUncertaintyPlots() :
     go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "effUncRelMcStatsZRange")
 
 def printTimeStamp() :
-    #l = conf.likelihood()
     text = r.TText()
     text.SetNDC()
     text.DrawText(0.1, 0.1, "file created at %s"%r.TDatime().AsString())
@@ -562,11 +575,10 @@ def printLumis() :
     return text
 
 def drawBenchmarks() :
-    switches = conf.switches()
+    model = conf.signal.model()
     parameters =  sa.scanParameters()
-    if not switches["drawBenchmarkPoints"] : return
-    if not (switches["signalModel"] in parameters) : return
-    params = parameters[switches["signalModel"]]
+    if not (model in parameters) : return
+    params = parameters[model]
 
     text = r.TText()
     out = []
@@ -581,12 +593,13 @@ def drawBenchmarks() :
         out.append(text.DrawText(10+coords["m0"], 10+coords["m12"], label))
     return out
 
-def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [], switches = {}, suppressed = []) :
+def printOneHisto(h2=None, name="", canvas=None, fileName="",
+                  effRatioPlots=False, drawBenchmarkPoints=False,
+                  logZ=[], model="", suppressed=[]):
     if "upper" in name :
         hp.printHoles(h2)
-        #printMaxes(h2)
     h2.SetStats(False)
-    h2.SetTitle("%s%s"%(name, sa.histoTitle(model = switches["signalModel"])))
+    h2.SetTitle("%s%s"%(name, sa.histoTitle(model = model)))
     h2.Draw("colz")
     if not h2.Integral() :
         suppressed.append(name)
@@ -599,12 +612,14 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
         h2.SetMinimum(0.5)
         h2.SetMaximum(3.0)
 
-    stuff = drawBenchmarks()
+    if drawBenchmarkPoints:
+        stuff = drawBenchmarks()
 
-    if "excluded" in name and switches["isSms"] : return
+    isSms = conf.signal.isSms(conf.signal.model())
+    if "excluded" in name and isSms : return
 
-    printSinglePage  = (not switches["isSms"]) and "excluded" in name
-    printSinglePage |= switches["isSms"] and "upperLimit" in name
+    printSinglePage  = (not isSms) and "excluded" in name
+    printSinglePage |= isSms and "upperLimit" in name
 
     if printSinglePage :
         title = h2.GetTitle()
@@ -617,13 +632,14 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-    if "nEventsIn" in name and (switches["minEventsIn"] or switches["maxEventsIn"]):
-        if switches["minEventsIn"] : h2.SetMinimum(switches["minEventsIn"])
-        if switches["maxEventsIn"] : h2.SetMaximum(switches["maxEventsIn"])
+    minEventsIn, maxEventsIn = sa.nEventsIn(model)
+    if "nEventsIn" in name and (minEventsIn or maxEventsIn):
+        if minEventsIn : h2.SetMinimum(minEventsIn)
+        if maxEventsIn : h2.SetMaximum(maxEventsIn)
         canvas.Print(fileName)
 
     #effMu/effHad
-    if switches["effRatioPlots"] :
+    if effRatioPlots:
         for name in names :
             num = utils.threeToTwo(f.Get(name))
             if name[:7]!="effmuon" : continue
@@ -631,12 +647,13 @@ def printOneHisto(h2 = None, name = "", canvas = None, fileName = "", logZ = [],
             den = utils.threeToTwo(f.Get(denName))
             num.Divide(den)
             num.SetStats(False)
-            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model = switches["signalModel"])))
+            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model = model)))
             num.Draw("colz")
             if not num.Integral() : continue
             num.SetMinimum(0.0)
             num.SetMaximum(0.5)
-            stuff = drawBenchmarks()
+            if drawBenchmarkPoints:
+                stuff = drawBenchmarks()
             canvas.Print(fileName)
 
 def sortedNames(histos = [], first = [], last = []) :
@@ -655,7 +672,8 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMatch = [], outputRootFile = False, modify = False, square = False) :
+def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
+               outputRootFile=False, modify=False, square=False):
     assert tag
 
     inFile = pickling.mergedFile()
@@ -682,7 +700,7 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
 
     names = sortedNames(histos = f.GetListOfKeys(), first = first, last = last)
 
-    s = conf.switches()
+    model = conf.signal.model()
 
     if outputRootFile :
         outFile = r.TFile(fileNames["root"], "RECREATE")
@@ -694,9 +712,10 @@ def multiPlots(tag = "", first = [], last = [], whiteListMatch = [], blackListMa
         if any([item in name for item in blackListMatch]) : continue
 
         h2 = utils.threeToTwo(f.Get(name))
-        if modify : hp.modifyHisto(h2, s["signalModel"])
-        printOneHisto(h2 = h2, name = name, canvas = canvas, fileName = fileName,
-                      logZ = ["xs", "nEventsHad"], switches = s, suppressed = suppressed)
+        if modify : hp.modifyHisto(h2, model)
+        printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
+                      logZ=["xs", "nEventsHad"], model=model,
+                      suppressed=suppressed)
         if outputRootFile :
             outFile.cd()
             h2.Write()
@@ -806,68 +825,7 @@ def makePlots(square = False) :
     #multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
     #multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
 
-    s = conf.switches()
-    if s["isSms"] and s["method"]=="CLs" :
-        for cl in s["CL"] :
-            clsValidation(tag = "clsValidation", cl = cl, masterKey = "xs")
-
-def expectedLimit(obsFile, expFile) :
-    def histo(file, name) :
-        f = r.TFile(file)
-        out = f.Get(name).Clone(name+"2")
-        out.SetDirectory(0)
-        out.SetName(name)
-        f.Close()
-        return out
-
-    def check(h1, h2) :
-        def a(h, x) :
-            return getattr(h, "Get%saxis"%x)
-        for x in ["X", "Y"] :
-            for attr in ["GetXmin", "GetXmax", "GetNbins"] :
-                assert getattr(a(h1, x)(), attr)()==getattr(a(h2, x)(), attr)()
-
-    def compare(h1, h2) :
-        check(h1, h2)
-        out = h2.Clone(h1.GetName()+h2.GetName())
-        out.SetTitle(h2.GetName())
-        out.Reset()
-        for iX in range(1, 1+h1.GetNbinsX()) :
-            for iY in range(1, 1+h1.GetNbinsY()) :
-                c1 = h1.GetBinContent(iX, iY)
-                c2 = h2.GetBinContent(iX, iY)
-                if (not c1) or (not c2) :
-                    out.SetBinContent(iX, iY, 0.0)
-                else :
-                    out.SetBinContent(iX, iY, 2.0*(c1<c2)-1.0)
-        return out
-
-    def items() :
-        keys = conf.switches()["expectedPlusMinus"].keys()
-        out = ["Median"]
-        for key in keys :
-            out += ["MedianPlus%s"%key, "MedianMinus%s"%key]
-        return out
-
-    psFileName = expFile.replace(".root", "_results.ps")
-    rootFileName = psFileName.replace(".ps", ".root")
-    outFile = r.TFile(rootFileName, "RECREATE")
-    canvas = r.TCanvas()
-    canvas.SetRightMargin(0.15)
-    canvas.Print(psFileName+"[")
-    ds = histo(obsFile, "ds")
-    for item in items() :
-        h = compare(ds, histo(expFile, item))
-        outFile.cd()
-        h.Write()
-        h.Draw("colz")
-        h.SetStats(False)
-        canvas.Print(psFileName)
-
-    outFile.Close()
-    canvas.Print(psFileName+"]")
-    pdfFileName = psFileName.replace(".ps", ".pdf")
-    os.system("ps2pdf %s %s"%(psFileName, pdfFileName))
-    os.remove(psFileName)
-    print "%s has been written."%pdfFileName
-    print "%s has been written."%rootFileName
+    isSms = conf.signal.isSms(conf.signal.model())
+    if isSms and conf.limit.method() == "CLs":
+        for cl in conf.limit.CL():
+            clsValidation(tag="clsValidation", cl=cl, masterKey="xs")

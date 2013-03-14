@@ -1,3 +1,18 @@
+def likelihoodSpec(model=""):
+    dataset = "2012hcp"
+    dct = {"T1"          : {"dataset":dataset, "whiteList":["0b_ge4j"]},
+           "T2"          : {"dataset":dataset, "whiteList":["0b_le3j"]},
+           "T2bb"        : {"dataset":dataset, "whiteList":["1b_le3j", "2b_le3j"]},
+           "T2tt"        : {"dataset":dataset, "whiteList":["1b_ge4j", "2b_ge4j"]},
+           "T1bbbb"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T1tttt"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+           "T2cc"        : {"dataset":"2012hcp2", "whiteList":["0b_le3j"]},
+           "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
+           "tanBeta10"   : {"dataset":"2011", "whiteList":[]},
+           }
+    return spec(**dct[model])
+
+
 nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript)
 nj = "n_{j}^{#color[0]{j}}" #graphical hack (white superscript)
 
