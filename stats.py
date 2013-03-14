@@ -4,8 +4,6 @@ from collections import defaultdict
 from optparse import OptionParser
 import os
 
-import configuration as conf
-
 
 def opts() :
     parser = OptionParser("usage: %prog [options]")
@@ -181,6 +179,7 @@ def mkdirs():
 ############################################
 options = opts()
 
+import configuration as conf
 import cpp
 import histogramProcessing
 import pickling
