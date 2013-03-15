@@ -378,6 +378,7 @@ def profilePlots(dataset, modelconfig, note) :
         h = graph.GetHistogram()
         h.SetMinimum(0.0)
         h.SetMaximum(1.1*h.GetMaximum())
+        canvas.SetGridy()
         canvas.Print(psFile)
     canvas.Print(psFile+"]")
     #utils.ps2pdf(psFile)
