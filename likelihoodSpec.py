@@ -198,7 +198,7 @@ class spec(object) :
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
-        self._legendTitle = "CMS, 11.7 fb^{-1}, #sqrt{s} = 8 TeV"
+        self._legendTitle = "11.7 fb^{-1}, #sqrt{s} = 8 TeV"
         exec "from inputData.data2012hcp import %s as module"%moduleName
 
         #QCD test
