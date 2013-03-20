@@ -1,3 +1,4 @@
+import math
 from signals import common,pruned,processStamp
 
 t1 = common.signal(xs = 0.433971, effUncRel = 0.140,
@@ -61,3 +62,15 @@ t2cc2.insert("1b_ge4j", {"effHad":[0.000004, 0.000003, 0.000008, 0.000012, 0.000
 t2cc2.insert("1b_le3j", {"effHad":[0.000076, 0.000028, 0.000031, 0.000011, 0.000004, 0.000002, 0.000001, 0.000000]})
 t2cc2.insert("2b_ge4j", {"effHad":[0.000003, 0.000001, 0.000002, 0.000001, 0.000000, 0.000000, 0.000000, 0.000000]})
 t2cc2.insert("2b_le3j", {"effHad":[0.000013, 0.000001, 0.000004, 0.000000, 0.000001, 0.000000, 0.000000, 0.000000]})
+
+def effQcdLike(k=None, eff0=None, iBin=None):
+    # take14a
+    htMeans = (298.0, 348.0, 416.0, 517.0, 617.0, 719.0, 819.0, 1044.)
+    bulk = (559500000, 252400000, 180600000, 51650000,  # le3j
+            17060000, 6499000, 2674000, 2501000)
+    f = math.exp(-k*(htMeans[iBin]-htMeans[0]))*bulk[i]/(0.0+bulk[0])
+    return eff0*f
+
+t2ccQcdLike = common.signal(xs=36.8, effUncRel=0.20, label="SM + QCD-like (k=0.03)")
+t2ccQcdLike.insert("0b_le3j", {"effHad":[effQcdLike(k=0.03, eff0=0.005, iBin=i) for i in range(8)]})
+
