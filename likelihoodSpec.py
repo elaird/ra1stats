@@ -38,8 +38,8 @@ class spec(object) :
     def poi(self) :
         return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
                 {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
-                {"A_qcd_55": (1.0e-2, 0.0, 1.0e-2)},
-                {"k_qcd_55": (3.0e-2, 0.01, 0.04)}][0]
+                {"qcd_0b_le3j_0": (0.0, 0.0, 1.0e3)},
+                {"k_qcd_0b_le3j": (3.0e-2, 0.01, 0.04)}][0]
     def REwk(self) :
         return "" if self._ignoreHad else self._REwk
     def RQcd(self) :
