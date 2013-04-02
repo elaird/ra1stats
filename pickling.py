@@ -51,7 +51,8 @@ def effHistos(okMerges=[None,
                 d[item] = [0.0]*len(bins)
                 continue
 
-            d[item] = [hp.effHisto(box=box,
+            d[item] = [hp.effHisto(model=model,
+                                   box=box,
                                    htLower=l,
                                    htUpper=u,
                                    bJets=sel.bJets,
@@ -147,9 +148,10 @@ def stuffVars(binsMerged=None, signal=None):
 
 
 def writeSignalFiles(points=[], outFilesAlso=False):
+    model = conf.signal.model()
     args = {"eff": effHistos(),
-            "xs": hp.xsHisto(),
-            "nEventsIn": hp.nEventsInHisto(),
+            "xs": hp.xsHisto(model),
+            "nEventsIn": hp.nEventsInHisto(model),
             }
     hp.checkHistoBinning([args["xs"]]+histoList(args["eff"]))
     for point in points:
