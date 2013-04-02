@@ -2,12 +2,39 @@ import directories
 
 
 def model():
-    models = ["tanBeta10", "tanBeta40",
-              "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
-              "T2", "T2tt", "T2bb", "T2cc", "T2bw",
-              "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              ]
-    return dict(zip(models, models))["T2cc"]
+    return "T2cc"
+
+
+def models():
+    return {
+        "tanBeta10":  {"cmssw": "rw", "had": "v2", "muon": "v2"},
+        #"tanBeta10":  {"cmssw": "42", "had": "v8", "muon": "v8"},
+        "tanBeta40":  {"cmssw": "42", "had": "v2", "muon": "v2"},
+
+        "T1":          {"had": "v5"},
+        "T2":          {"had": "v1"},
+        "T2cc":        {"had": "v4_ISRReweighted"},
+        "T2tt":        {"had": "v1", "muon": "v1"},
+        "T2bb":        {"had": "v3", "muon": "v3"},
+        #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
+        #"T2bb":      {"had": "v6_yossof_cteq61"},
+        #"T2bb":      {"had": "v6_yossof_cteq66_normalized"},
+        #"T2bb":      {"had": "v6_yossof_mst08_normalized"},
+        #"T2bb":      {"had": "v6_yossof_nnpdf21_normalized"},
+        "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
+        "T5zz":        {"had": "v1", "muon": "v1"},
+        "T1bbbb":      {"had": "v3", "muon": "v3"},
+        #"T1bbbb":      {"had": "v6_yossof_ct10_normalized"},
+        #"T1bbbb":      {"had": "v6_yossof_cteq61"},
+        #"T1bbbb":      {"had": "v6_yossof_cteq66_normalized"},
+        #"T1bbbb":      {"had": "v6_yossof_mstw08_normalized"},
+        #"T1bbbb":      {"had": "v6_yossof_nnpdf21_normalized"},
+        "T1tttt":      {"had": "v1", "muon": "v1"},
+        "T1tttt_ichep": {"had": "2012full", "muon": "2012full"},
+        "TGQ_0p0":     {"had": "v1"},
+        "TGQ_0p2":     {"had": "v1"},
+        "TGQ_0p4":     {"had": "v1"},
+        "TGQ_0p8":     {"had": "v1"}}
 
 
 def xsVariation():
@@ -98,37 +125,7 @@ def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
 def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
                  bJets=None, jets=None):
 
-    base = "%s/2012/" % directories.eff()
-    cmssm = {"tanBeta10":  {"cmssw": "rw", "had": "v2", "muon": "v2"},
-             #"tanBeta10":  {"cmssw": "42", "had": "v8", "muon": "v8"},
-             "tanBeta40":  {"cmssw": "42", "had": "v2", "muon": "v2"},
-             }
-
-    sms = {"T1":          {"had": "v5"},
-           "T2":          {"had": "v1"},
-           "T2cc":        {"had": "v4_ISRReweighted"},
-           "T2tt":        {"had": "v1", "muon": "v1"},
-           "T2bb":        {"had": "v3", "muon": "v3"},
-           #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
-           #"T2bb":      {"had": "v6_yossof_cteq61"},
-           #"T2bb":      {"had": "v6_yossof_cteq66_normalized"},
-           #"T2bb":      {"had": "v6_yossof_mst08_normalized"},
-           #"T2bb":      {"had": "v6_yossof_nnpdf21_normalized"},
-           "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
-           "T5zz":        {"had": "v1", "muon": "v1"},
-           "T1bbbb":      {"had": "v3", "muon": "v3"},
-           #"T1bbbb":      {"had": "v6_yossof_ct10_normalized"},
-           #"T1bbbb":      {"had": "v6_yossof_cteq61"},
-           #"T1bbbb":      {"had": "v6_yossof_cteq66_normalized"},
-           #"T1bbbb":      {"had": "v6_yossof_mstw08_normalized"},
-           #"T1bbbb":      {"had": "v6_yossof_nnpdf21_normalized"},
-           "T1tttt":      {"had": "v1", "muon": "v1"},
-           "T1tttt_ichep": {"had": "2012full", "muon": "2012full"},
-           "TGQ_0p0":     {"had": "v1"},
-           "TGQ_0p2":     {"had": "v1"},
-           "TGQ_0p4":     {"had": "v1"},
-           "TGQ_0p8":     {"had": "v1"},
-           }
+    assert box in ["had", "muon"], box
 
     #remove these hard-coded numbers
     thresh = ""
@@ -139,25 +136,22 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
 
     out = {}
     tags = []
-    if model in cmssm:
-        oldBase = base
-        base = "ra1e/2011/"
-        print 'WARNING: modifying base ' + \
-              '"%s" to "%s" for model %s.' % (oldBase, base, model)
-        assert box in ["had", "muon"]
-        d = cmssm[model]
-        out["file"] = "/".join([base, "%s_scan" % d["cmssw"], model, box,
-                                d[box], box+"%s.root" % thresh])
+    dct = models()[model]
+
+    if not isSms(model):
+        subDirs = ["2011", "%s_scan" % dct["cmssw"]]
         out["beforeDir"] = "mSuGraScan_before_scale1"
         tags.append("mSuGraScan")
-    elif model in sms:
-        assert box in ["had", "muon"]
-        out["file"] = "/".join([base, "sms", model, box, sms[model][box],
-                                box+"%s.root" % thresh])
+    else:
+        subDirs = ["2012", "sms"]
         out["beforeDir"] = "smsScan_before"
         tags.append("smsScan")
-    else:
-        assert False, "model %s not in list" % model
+
+    out["file"] = "/".join([directories.eff()] + subDirs + [
+        model,
+        box,
+        dct[box],
+        box+"%s.root" % thresh])
 
     if bJets:
         tags.append(bJets)
@@ -173,7 +167,7 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
         tags.append("%d" % htLower)
     if htUpper:
         tags.append("%d" % htUpper)
-    if model in cmssm:
+    if not isSms(model):
         tags.append("scale1")
 
     out["afterDir"] = "_".join(tags)
