@@ -242,7 +242,7 @@ def mergePickledFiles(printExample=False):
     for key, histo in histos.iteritems():
         histo.GetZaxis().SetTitle(zTitles[key])
 
-    f = r.TFile(mergedFile(model), "RECREATE")
+    f = r.TFile(mergedFile(model=model), "RECREATE")
     for histo in histos.values():
         histo.Write()
     f.Close()
