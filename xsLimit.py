@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import configuration
 import plottingGrid
 
-plottingGrid.makeXsUpperLimitPlots(logZ=True,
+plottingGrid.makeXsUpperLimitPlots(model=configuration.signal.model(),
+                                   logZ=True,
                                    debug=False,
                                    pruneYMin=True,
                                    curveGopts="l",
