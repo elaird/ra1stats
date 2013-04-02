@@ -249,32 +249,37 @@ def writeList(fileName = "", objects = []) :
         obj.Write()
     f.Close()
 
-def outFileName(tag = "") :
-    base = pickling.mergedFile().split("/")[-1]
+def outFileName(model="", tag=""):
+    base = pickling.mergedFile(model=model).split("/")[-1]
     root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root"%tag)
     return {"root":root,
             "eps" :root.replace(".root",".eps"),
             "pdf" :root.replace(".root",".pdf"),
             }
 
-def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
-                  interBin="", pruneYMin=None, printXs=None):
+def makeRootFiles(model="", limitFileName="", simpleFileName="",
+                  shiftX=None, shiftY=None, interBin="",
+                  pruneYMin=None, printXs=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
-    histos = upperLimitHistos(inFileName=pickling.mergedFile(), shiftX=shiftX, shiftY=shiftY)
+    histos = upperLimitHistos(inFileName=pickling.mergedFile(model=model),
+                              shiftX=shiftX, shiftY=shiftY)
     graphs, simple = exclusionGraphs(histos, interBin=interBin, pruneYMin=pruneYMin, printXs=printXs)
     writeList(fileName = limitFileName, objects = histos.values()+graphs.values())
     writeList(fileName = simpleFileName, objects = simple.values())
 
-def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={},
+def makeXsUpperLimitPlots(model="", logZ=False, curveGopts="", mDeltaFuncs={},
                           diagonalLine=False, printXs=False, pruneYMin=False,
                           expectedOnly=False, debug=False):
 
-    limitFileName = outFileName(tag = "xsLimit")["root"]
-    simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
+    limitFileName = outFileName(model=model,
+                                tag="xsLimit")["root"]
+    simpleFileName = outFileName(model=model,
+                                 tag="xsLimit_simpleExcl")["root"]
 
-    shift = sa.interBin(model=conf.signal.model()) == "LowEdge"
-    makeRootFiles(limitFileName=limitFileName, simpleFileName=simpleFileName,
+    shift = sa.interBin(model=model) == "LowEdge"
+    makeRootFiles(model=model, limitFileName=limitFileName,
+                  simpleFileName=simpleFileName,
                   shiftX=shift, shiftY=shift, interBin="Center",
                   pruneYMin=pruneYMin, printXs=printXs)
 
@@ -472,11 +477,12 @@ def makeEfficiencyPlotBinned(key = "effHad") :
     can.cd(0)
     can.Print("%s.pdf"%label)
 
-def makeEfficiencyPlot() :
-    if not conf.signal.isSms(conf.signal.model()):
+def makeEfficiencyPlot():
+    model = conf.signal.model()
+    if not conf.signal.isSms(model):
         return
 
-    inFile = pickling.mergedFile()
+    inFile = pickling.mergedFile(model=model)
     f = r.TFile(inFile)
     fileName = inFile.replace(".root","_efficiency.eps")
 
@@ -524,16 +530,17 @@ def makeEfficiencyPlot() :
     hp.printHoles(h2)
 
 def makeEfficiencyUncertaintyPlots() :
-    if not conf.signal.isSms(conf.signal.model()):
+    model = conf.signal.model()
+    if not conf.signal.isSms(model):
         return
 
-    model = conf.signal.model()
-    inFile = pickling.mergedFile()
+    inFile = pickling.mergedFile(model=model)
     f = r.TFile(inFile)
     ranges = sa.ranges(model)
 
     def go(name, suffix, zTitle, zRangeKey) :
-        fileName = outFileName(tag = "%s_%s"%(model, suffix))["eps"]
+        fileName = outFileName(model=model,
+                               tag="%s_%s"%(model, suffix))["eps"]
         c = squareCanvas()
         h2 = utils.threeToTwo(f.Get(name))
         xyTitle = sa.histoTitle(model=model)
@@ -695,15 +702,15 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
+def multiPlots(model="", tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
                outputRootFile=False, modify=False, square=False):
     assert tag
 
-    inFile = pickling.mergedFile()
+    inFile = pickling.mergedFile(model=model)
     f = r.TFile(inFile)
     r.gROOT.cd()
 
-    fileNames = outFileName(tag = tag)
+    fileNames = outFileName(model=model, tag=tag)
     fileName = fileNames["pdf"]
 
     if square :
@@ -756,7 +763,9 @@ def multiPlots(tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
 
     print "%s has been written."%fileName
 
-def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, lineHeight = 0.5, divide = (4,3), whiteList = [], stampTitle = True) :
+def clsValidation(model="", cl=None, tag="", masterKey="",
+                  yMin=0.0, yMax=1.0, lineHeight=0.5,
+                  divide=(4,3), whiteList=[], stampTitle=True):
     def allHistos(fileName = "") :
         f = r.TFile(fileName)
         r.gROOT.cd()
@@ -774,7 +783,7 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
     if whiteList :
         assert len(whiteList)==divide[0]*divide[1], "%d != %d"%(len(whiteList), divide[0]*divide[1])
 
-    histos = allHistos(fileName = pickling.mergedFile())
+    histos = allHistos(fileName=pickling.mergedFile(model=model))
     master = histos[masterKey]
     graphs = {}
     for iBinX in range(1, 1 + master.GetNbinsX()) :
@@ -818,7 +827,8 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
                 plLimLine.SetLineColor(r.kGreen)
                 graphs[name].append(plLimLine)
 
-    fileName = outFileName(tag = tag+"_"+str(cl).replace("0.",""))["pdf"]
+    fileName = outFileName(model=model,
+                           tag=tag+"_"+str(cl).replace("0.",""))["pdf"]
     if whiteList :
         fileName = fileName.replace(".pdf", ".eps")
         canvas = r.TCanvas("canvas", "", 500*divide[0], 500*divide[1])
@@ -840,15 +850,47 @@ def clsValidation(cl = None, tag = "", masterKey = "", yMin = 0.0, yMax = 1.0, l
         canvas.Print(fileName+"]")
         print "%s has been written."%fileName
 
-def makePlots(square = False) :
-    multiPlots(tag = "validation", first = ["excluded", "upperLimit", "CLs", "CLb", "xs"], last = ["lowerLimit"],
-               blackListMatch = ["eff", "_nEvents"], square = square)
-    #multiPlots(tag = "nEvents", whiteListMatch = ["nEvents"], square = square)
-    #multiPlots(tag = "effHad", whiteListMatch = ["effHad"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
-    #multiPlots(tag = "effMu", whiteListMatch = ["effMu"], blackListMatch = ["UncRel"], outputRootFile = True, modify = True, square = square)
-    #multiPlots(tag = "xs", whiteListMatch = ["xs"], outputRootFile = True, modify = True, square = square)
+def makePlots(square=False):
+    model = conf.signal.model()
+    multiPlots(model=model,
+               tag="validation",
+               first=["excluded", "upperLimit", "CLs", "CLb", "xs"],
+               last=["lowerLimit"],
+               blackListMatch=["eff", "_nEvents"],
+               square=square)
 
-    isSms = conf.signal.isSms(conf.signal.model())
+    #multiPlots(model=model,
+    #           tag="nEvents",
+    #           whiteListMatch=["nEvents"],
+    #           square=square)
+    #
+    #multiPlots(model=model,
+    #           tag="effHad",
+    #           whiteListMatch=["effHad"],
+    #           blackListMatch=["UncRel"],
+    #           outputRootFile=True,
+    #           modify=True,
+    #           square=square)
+    #
+    #multiPlots(model=model,
+    #           tag="effMu",
+    #           whiteListMatch=["effMu"],
+    #           blackListMatch=["UncRel"],
+    #           outputRootFile=True,
+    #           modify=True,
+    #           square=square)
+    #
+    #multiPlots(model=model,
+    #           tag="xs",
+    #           whiteListMatch=["xs"],
+    #           outputRootFile=True,
+    #           modify=True,
+    #           square=square)
+
+    isSms = conf.signal.isSms(model)
     if isSms and conf.limit.method() == "CLs":
         for cl in conf.limit.CL():
-            clsValidation(tag="clsValidation", cl=cl, masterKey="xs")
+            clsValidation(model=model,
+                          tag="clsValidation",
+                          cl=cl,
+                          masterKey="xs")
