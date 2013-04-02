@@ -784,17 +784,19 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
     if whiteList :
         assert len(whiteList)==divide[0]*divide[1], "%d != %d"%(len(whiteList), divide[0]*divide[1])
 
+    # FIXME: remove hard-coded 2
+    specialKey = "%s_CLb_2" % model
     histos = allHistos(fileName=pickling.mergedFile(model=model))
-    master = histos[masterKey]
+    master = histos[model+"_"+masterKey]
     graphs = {}
     for iBinX in range(1, 1 + master.GetNbinsX()) :
         for iBinY in range(1, 1 + master.GetNbinsY()) :
             if whiteList and (iBinX, iBinY) not in whiteList : continue
             if not master.GetBinContent(iBinX, iBinY) : continue
-            if "CLb_2" not in histos or not histos["CLb_2"] : continue
-            if not histos["CLb_2"].GetBinContent(iBinX, iBinY) : continue
+            if specialKey not in histos or not histos[specialKey] : continue
+            if not histos[specialKey].GetBinContent(iBinX, iBinY) : continue
 
-            name = "CLs_%d_%d"%(iBinX, iBinY)
+            name = "%s_CLs_%d_%d"%(model, iBinX, iBinY)
             graph = r.TGraphErrors()
             graph.SetName(name)
             graph.SetTitle("%s;#sigma (pb);CL_{s}"%(name.replace("CLs_","") if stampTitle else ""))
@@ -802,14 +804,16 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
             graph.SetMinimum(yMin)
             graph.SetMaximum(yMax)
             iPoint = 0
-            while True :
+            while True:
                 s = "" if not iPoint else "_%d"%iPoint
-                if "CLs%s"%s not in histos : break
-                x = histos["PoiValue%s"%s].GetBinContent(iBinX, iBinY)
-                if not iPoint : xMin = x
+                if "%s_CLs%s" % (model, s) not in histos:
+                    break
+                x = histos["%s_PoiValue%s" % (model, s)].GetBinContent(iBinX, iBinY)
+                if not iPoint:
+                    xMin = x
                 xMax = x
-                graph.SetPoint(iPoint, x, histos["CLs%s"%s].GetBinContent(iBinX, iBinY))
-                graph.SetPointError(iPoint, 0.0, histos["CLsError%s"%s].GetBinContent(iBinX, iBinY))
+                graph.SetPoint(iPoint, x, histos["%s_CLs%s" % (model, s)].GetBinContent(iBinX, iBinY))
+                graph.SetPointError(iPoint, 0.0, histos["%s_CLsError%s" %(model, s)].GetBinContent(iBinX, iBinY))
                 iPoint += 1
 
             e = 0.1*(xMax-xMin)
@@ -817,13 +821,13 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
             clLine = r.TLine(xMin-e, y, xMax+e, y)
             clLine.SetLineColor(r.kRed)
 
-            xLim = histos["UpperLimit"].GetBinContent(iBinX, iBinY)
+            xLim = histos["%s_UpperLimit" % model].GetBinContent(iBinX, iBinY)
             limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
             limLine.SetLineColor(r.kBlue)
             graphs[name] = [graph, clLine, limLine]
 
             if not whiteList :
-                xLimPl = histos["PlUpperLimit"].GetBinContent(iBinX, iBinY)
+                xLimPl = histos["%s_PlUpperLimit" % model].GetBinContent(iBinX, iBinY)
                 plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
                 plLimLine.SetLineColor(r.kGreen)
                 graphs[name].append(plLimLine)
