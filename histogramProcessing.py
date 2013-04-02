@@ -249,20 +249,22 @@ def smsEffHisto(spec={}, model=""):
 def points():
     out = []
     multiples = conf.limit.multiplesInGeV()
-    model = conf.signal.model()
-    whiteList = conf.signal.whiteListOfPoints(model)
-    interBin = conf.signal.interBin(model)
-    h = xsHisto(model)
-    for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
-        if whiteList and (x, y) not in whiteList:
-            continue
-        content = h.GetBinContent(iBinX, iBinY, iBinZ)
-        if not content:
-            continue
-        if multiples and ((x/multiples) % 1 != 0.0):
-            continue
-        if patches.cutFunc()[model](iBinX, x, iBinY, y, iBinZ, z):
-            out.append((iBinX, iBinY, iBinZ))
+
+    for model in conf.signal.models():
+        name = model.name
+        whiteList = conf.signal.whiteListOfPoints(name)
+        interBin = conf.signal.interBin(name)
+        h = xsHisto(name)
+    	for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
+    	    if whiteList and (x, y) not in whiteList:
+    	        continue
+    	    content = h.GetBinContent(iBinX, iBinY, iBinZ)
+    	    if not content:
+    	        continue
+    	    if multiples and ((x/multiples) % 1 != 0.0):
+    	        continue
+    	    if patches.cutFunc()[name](iBinX, x, iBinY, y, iBinZ, z):
+    	        out.append((name, iBinX, iBinY, iBinZ))
     return out
 
 
