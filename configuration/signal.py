@@ -20,16 +20,43 @@ class mod(object):
         return not ("tanBeta" in self.dataset)
 
 
+def xsVariation():
+    variations = ["default", "up", "down"]
+    return dict(zip(variations, variations))["default"]
+
+
 # deprecated
 def isSms(model=""):
     assert model
     return "tanBeta" not in model
 
 
-# deprecated
-def model():
-    assert len(models()) == 1
-    return models()[0].name
+# to be deprecated
+def nEventsIn(model=""):
+    assert model
+    return {"T5zz":      (5.0e3, None),
+            "tanBeta10": (9.0e3, 11.0e3),
+            }.get(model, (1, None))
+
+
+# to be deprecated
+def interBin(model=""):
+    assert model
+    return "LowEdge"
+
+
+# to be deprecated
+def ignoreEff(model=""):
+    return {"T1": ["muon"], "T1bbbb": [], "T1tttt": [],
+            "T2": ["muon"], "T2bb": ["muon"], "T2tt": [], "T2cc": ["muon"],
+            }[model]
+
+
+# to be deprecated
+def effUncRel(model=""):
+    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
+            "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
+            }[model]
 
 
 def models():
@@ -66,34 +93,6 @@ def models():
         #mod(dataset="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
         #mod(dataset="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
         ]
-
-
-def xsVariation():
-    variations = ["default", "up", "down"]
-    return dict(zip(variations, variations))["default"]
-
-
-def ignoreEff(model=""):
-    return {"T1": ["muon"], "T1bbbb": [], "T1tttt": [],
-            "T2": ["muon"], "T2bb": ["muon"], "T2tt": [], "T2cc": ["muon"],
-            }[model]
-
-
-def effUncRel(model=""):
-    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
-            "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
-            }[model]
-
-
-def nEventsIn(model=""):
-    return {"T5zz":      (5.0e3, None),
-            "tanBeta10": (9.0e3, 11.0e3),
-            }.get(model, (1, None))
-
-
-def interBin(model=""):
-    assert model
-    return "LowEdge"
 
 
 def whiteListOfPoints(model="", respect=False):
@@ -375,3 +374,6 @@ def scanParameters():
 
 def processes():
     return ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
+
+
+print "check models() for dups"
