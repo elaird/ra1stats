@@ -8,9 +8,25 @@ class mod(object):
 
     @property
     def name(self):
-        return self.dataset+("" if not self.tag else "_"+self.tag)
+        out = self.dataset
+        if self.tag:
+            out += "_"+self.tag
+        if self.com != 8:
+            out += "_%d" % self.com
+        return out
+
+    @property
+    def isSms(self):
+        return not ("tanBeta" in self.dataset)
 
 
+# deprecated
+def isSms(model=""):
+    assert model
+    return "tanBeta" not in model
+
+
+# deprecated
 def model():
     assert len(models()) == 1
     return models()[0].name
@@ -55,11 +71,6 @@ def models():
 def xsVariation():
     variations = ["default", "up", "down"]
     return dict(zip(variations, variations))["default"]
-
-
-def isSms(model=""):
-    assert model
-    return "tanBeta" not in model
 
 
 def ignoreEff(model=""):
