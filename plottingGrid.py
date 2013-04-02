@@ -415,9 +415,9 @@ def makeSimpleExclPdf(histoFileName = "", graphFileName = "", specs = [], curveG
     hFile.Close()
     gFile.Close()
 
-def efficiencyHistos(key = "") :
+def efficiencyHistos(model="", key=""):
     out = {}
-    for cat,dct in pickling.effHistos().iteritems() :
+    for cat,dct in pickling.effHistos(model).iteritems() :
         total = None
         for histo in dct[key] :
             if not total :
@@ -436,7 +436,8 @@ def makeEfficiencyPlotBinned(key = "effHad") :
 
     can = r.TCanvas("canvas", "canvas", 400, 1000)
     can.Divide(2, 5)
-    dct = efficiencyHistos(key = key)
+    model = conf.signal.model()
+    dct = efficiencyHistos(model=model, key=key)
     maximum = max([h.GetMaximum() for h in dct.values()])
     keep = []
     pad = {0:2, 1:1, 2:4, 3:3, 4:6, 5:5, 6:8, 7:7, 8:10}
