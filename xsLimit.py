@@ -3,7 +3,9 @@
 import configuration
 import plottingGrid
 
-plottingGrid.makeXsUpperLimitPlots(model=configuration.signal.model(),
+model = configuration.signal.model()
+
+plottingGrid.makeXsUpperLimitPlots(model=model,
                                    logZ=True,
                                    debug=False,
                                    pruneYMin=True,
@@ -18,4 +20,5 @@ plottingGrid.makeXsUpperLimitPlots(model=configuration.signal.model(),
                                    expectedOnly=False,
                                    )
 
-#plottingGrid.makeEfficiencyPlotBinned(key=["effHad", "effMuon"][0])
+#plottingGrid.makeEfficiencyPlotBinned(model=model,
+#                                      key=["effHad", "effMuon"][0])
