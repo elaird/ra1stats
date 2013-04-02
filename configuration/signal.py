@@ -2,53 +2,53 @@ import directories
 
 
 class mod(object):
-    def __init__(self, name="", tag="", com=None, had="", muon=""):
-        for item in ["name", "tag", "com", "had", "muon"]:
+    def __init__(self, dataset="", tag="", com=None, had="", muon=""):
+        for item in ["dataset", "tag", "com", "had", "muon"]:
             setattr(self, item, eval(item))
+
+    @property
+    def name(self):
+        return self.dataset+("" if not self.tag else "_"+self.tag)
 
 
 def model():
     assert len(models()) == 1
-    model = models()[0]
-    out = model.name
-    if model.tag:
-        out += "_"+model.tag
-    return out
+    return models()[0].name
 
 
 def models():
     return [
-        #mod(name="T1", com=8, had="v5"),
-        #mod(name="T2", com=8, had="v1"),
-        mod(name="T2cc", com=8, had="v4_ISRReweighted"),
-        #mod(name="T2tt", com=8, had="v1", muon="v1"),
-        #mod(name="T2bb", com=8, had="v3", muon="v3"),
-        #mod(name="T1bbbb", com=8, had="v3", muon="v3"),
-        #mod(name="T1tttt", com=8, had="v1", muon="v1"),
+        #mod(dataset="T1", com=8, had="v5"),
+        #mod(dataset="T2", com=8, had="v1"),
+        mod(dataset="T2cc", com=8, had="v4_ISRReweighted"),
+        #mod(dataset="T2tt", com=8, had="v1", muon="v1"),
+        #mod(dataset="T2bb", com=8, had="v3", muon="v3"),
+        #mod(dataset="T1bbbb", com=8, had="v3", muon="v3"),
+        #mod(dataset="T1tttt", com=8, had="v1", muon="v1"),
         #
-        #mod(name="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
-        #mod(name="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
-        #mod(name="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
-        #mod(name="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized"),
-        #mod(name="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #mod(dataset="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
+        #mod(dataset="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
+        #mod(dataset="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
+        #mod(dataset="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized"),
+        #mod(dataset="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
         #
-        #mod(name="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
-        #mod(name="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
-        #mod(name="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
-        #mod(name="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized"),
-        #mod(name="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #mod(dataset="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
+        #mod(dataset="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
+        #mod(dataset="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
+        #mod(dataset="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized"),
+        #mod(dataset="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
         #
-        #mod(name="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full"),
+        #mod(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full"),
         #
-        #mod(name="T5zz", com=7, had="v1", muon="v1"),
-        #mod(name="TGQ_0p0", com=7, had="v1"),
-        #mod(name="TGQ_0p2", com=7, had="v1"),
-        #mod(name="TGQ_0p4", com=7, had="v1"),
-        #mod(name="TGQ_0p8", com=7, had="v1"),
+        #mod(dataset="T5zz", com=7, had="v1", muon="v1"),
+        #mod(dataset="TGQ_0p0", com=7, had="v1"),
+        #mod(dataset="TGQ_0p2", com=7, had="v1"),
+        #mod(dataset="TGQ_0p4", com=7, had="v1"),
+        #mod(dataset="TGQ_0p8", com=7, had="v1"),
         #
-        #mod(name="tanBeta10", com=7, had="v2", muon="v2"),
-        #mod(name="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
-        #mod(name="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
+        #mod(dataset="tanBeta10", com=7, had="v2", muon="v2"),
+        #mod(dataset="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
+        #mod(dataset="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
         ]
 
 
@@ -155,10 +155,7 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
     # FIXME: improve
     dct = {}
     for m in models():
-        match = m.name
-        if m.tag:
-            match += "_"+m.tag
-        if match == model:
+        if m.name == model:
             dct = {"tag": m.tag,
                    "had": m.had,
                    "muon": m.muon,
