@@ -268,7 +268,7 @@ def makeRootFiles(limitFileName="", simpleFileName="", shiftX=None, shiftY=None,
 
 def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={},
                           diagonalLine=False, printXs=False, pruneYMin=False,
-                          debug=False):
+                          expectedOnly=False, debug=False):
 
     limitFileName = outFileName(tag = "xsLimit")["root"]
     simpleFileName = outFileName(tag = "xsLimit_simpleExcl")["root"]
@@ -278,27 +278,42 @@ def makeXsUpperLimitPlots(logZ=False, curveGopts="", mDeltaFuncs={},
                   shiftX=shift, shiftY=shift, interBin="Center",
                   pruneYMin=pruneYMin, printXs=printXs)
 
-    specs = [{"name":"ExpectedUpperLimit_m1_Sigma", "label":"",
-               "lineStyle":2, "lineWidth":2, "color":r.kViolet},
-              {"name":"ExpectedUpperLimit_p1_Sigma", "label":"",
-               "lineStyle":2, "lineWidth":2, "color":r.kViolet},
-              {"name":"ExpectedUpperLimit",          "label":"Expected Limit #pm1 #sigma exp.",
-               "lineStyle":7, "lineWidth":3, "color":r.kViolet},
-              {"name":"UpperLimit",                  "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
-               "lineStyle":1, "lineWidth":3, "color":r.kBlack},
-              {"name":"UpperLimit_m1_Sigma",         "label":"",
-               "lineStyle":1, "lineWidth":1, "color":r.kBlack},
-              {"name":"UpperLimit_p1_Sigma",         "label":"",
-               "lineStyle":1, "lineWidth":1, "color":r.kBlack},
-              ]
+    specs = [
+        {"name":"ExpectedUpperLimit", "label":"Expected Limit",
+         "lineStyle":7, "lineWidth":3, "color":r.kViolet},
+        ]
+    if not expectedOnly:
+        specs[0]["label"] += " #pm1 #sigma exp."
+        specs = [
+            {"name":"ExpectedUpperLimit_m1_Sigma", "label":"",
+             "lineStyle":2, "lineWidth":2, "color":r.kViolet},
+            {"name":"ExpectedUpperLimit_p1_Sigma", "label":"",
+             "lineStyle":2, "lineWidth":2, "color":r.kViolet},
+            ] + specs + [
+            {"name":"UpperLimit",                  "label":"#sigma^{NLO+NLL} #pm1 #sigma theory",
+             "lineStyle":1, "lineWidth":3, "color":r.kBlack},
+            {"name":"UpperLimit_m1_Sigma",         "label":"",
+             "lineStyle":1, "lineWidth":1, "color":r.kBlack},
+            {"name":"UpperLimit_p1_Sigma",         "label":"",
+             "lineStyle":1, "lineWidth":1, "color":r.kBlack},
+            ]
 
-    makeLimitPdf(rootFileName = limitFileName, specs = specs, diagonalLine = diagonalLine,
-                 logZ = logZ, curveGopts = curveGopts, mDeltaFuncs = mDeltaFuncs)
-    makeSimpleExclPdf(histoFileName = simpleFileName, graphFileName = limitFileName, specs = specs,
-                      curveGopts = curveGopts)
+    makeLimitPdf(rootFileName=limitFileName,
+                 specs=specs,
+                 diagonalLine=diagonalLine,
+                 logZ=logZ,
+                 curveGopts=curveGopts,
+                 mDeltaFuncs=mDeltaFuncs,
+                 )
 
-def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
-                 curveGopts = "", mDeltaFuncs = False, specs = []) :
+    makeSimpleExclPdf(histoFileName=simpleFileName,
+                      graphFileName=limitFileName,
+                      specs=specs,
+                      curveGopts=curveGopts,
+                      )
+
+def makeLimitPdf(rootFileName="", diagonalLine=False, logZ=False,
+                 curveGopts="", mDeltaFuncs=False, specs=[]):
 
     model = conf.signal.model()
     ranges = sa.ranges(model)
@@ -308,8 +323,15 @@ def makeLimitPdf(rootFileName = "", diagonalLine = False, logZ = False,
 
     c = squareCanvas()
 
+    expectedOnly = len(specs) == 1
     if conf.limit.method() == "CLs":
-        hName = "excluded_CLs_95" if conf.limit.binaryExclusion() else "UpperLimit"
+        if conf.limit.binaryExclusion():
+            # FIXME: handle expected
+            hName = "excluded_CLs_95"
+        elif expectedOnly:
+            hName = "ExpectedUpperLimit"
+        else:
+            hName = "UpperLimit"
     else:
         hName = "upperLimit95"
     h = f.Get(hName)
