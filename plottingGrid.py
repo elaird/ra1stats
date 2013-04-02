@@ -852,46 +852,46 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
         print "%s has been written."%fileName
 
 def makePlots(square=False):
-    model = conf.signal.model()
-    multiPlots(model=model,
-               tag="validation",
-               first=["excluded", "upperLimit", "CLs", "CLb", "xs"],
-               last=["lowerLimit"],
-               blackListMatch=["eff", "_nEvents"],
-               square=square)
+    for model in conf.signal.models():
+        name = model.name
+        multiPlots(model=name,
+                   tag="validation",
+                   first=["excluded", "upperLimit", "CLs", "CLb", "xs"],
+                   last=["lowerLimit"],
+                   blackListMatch=["eff", "_nEvents"],
+                   square=square)
 
-    #multiPlots(model=model,
-    #           tag="nEvents",
-    #           whiteListMatch=["nEvents"],
-    #           square=square)
-    #
-    #multiPlots(model=model,
-    #           tag="effHad",
-    #           whiteListMatch=["effHad"],
-    #           blackListMatch=["UncRel"],
-    #           outputRootFile=True,
-    #           modify=True,
-    #           square=square)
-    #
-    #multiPlots(model=model,
-    #           tag="effMu",
-    #           whiteListMatch=["effMu"],
-    #           blackListMatch=["UncRel"],
-    #           outputRootFile=True,
-    #           modify=True,
-    #           square=square)
-    #
-    #multiPlots(model=model,
-    #           tag="xs",
-    #           whiteListMatch=["xs"],
-    #           outputRootFile=True,
-    #           modify=True,
-    #           square=square)
+    	#multiPlots(model=name,
+    	#           tag="nEvents",
+    	#           whiteListMatch=["nEvents"],
+    	#           square=square)
+    	#
+    	#multiPlots(model=name,
+    	#           tag="effHad",
+    	#           whiteListMatch=["effHad"],
+    	#           blackListMatch=["UncRel"],
+    	#           outputRootFile=True,
+    	#           modify=True,
+    	#           square=square)
+    	#
+    	#multiPlots(model=name,
+    	#           tag="effMu",
+    	#           whiteListMatch=["effMu"],
+    	#           blackListMatch=["UncRel"],
+    	#           outputRootFile=True,
+    	#           modify=True,
+    	#           square=square)
+    	#
+    	#multiPlots(model=name,
+    	#           tag="xs",
+    	#           whiteListMatch=["xs"],
+    	#           outputRootFile=True,
+    	#           modify=True,
+    	#           square=square)
 
-    isSms = conf.signal.isSms(model)
-    if isSms and conf.limit.method() == "CLs":
-        for cl in conf.limit.CL():
-            clsValidation(model=model,
-                          tag="clsValidation",
-                          cl=cl,
-                          masterKey="xs")
+    	if model.isSms and conf.limit.method() == "CLs":
+    	    for cl in conf.limit.CL():
+    	        clsValidation(model=name,
+    	                      tag="clsValidation",
+    	                      cl=cl,
+    	                      masterKey="xs")
