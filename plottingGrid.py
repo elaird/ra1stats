@@ -173,13 +173,13 @@ def exclusionGraphs(model="", histos={}, interBin="", pruneYMin=False, debug=Fal
 
     graphs = {}
     simpleExclHistos = {}
-    for histoName,xsVariation in [("ExpectedUpperLimit_m1_Sigma", 0.0),
-                                  ("ExpectedUpperLimit_p1_Sigma", 0.0),
-                                  ("ExpectedUpperLimit",          0.0),
-                                  ("UpperLimit",                  0.0),
-                                  ("UpperLimit",                 -1.0),
-                                  ("UpperLimit",                  1.0),
-                                  ] :
+    for histoName, xsVariation in [("ExpectedUpperLimit_m1_Sigma", 0.0),
+                                   ("ExpectedUpperLimit_p1_Sigma", 0.0),
+                                   ("ExpectedUpperLimit",          0.0),
+                                   ("UpperLimit",                  0.0),
+                                   ("UpperLimit",                 -1.0),
+                                   ("UpperLimit",                  1.0),
+                                   ]:
         graphName = histoName
         if xsVariation==1.0 :
             graphName += "_p1_Sigma"
@@ -188,13 +188,14 @@ def exclusionGraphs(model="", histos={}, interBin="", pruneYMin=False, debug=Fal
         graphName += "_graph"
 
         if curves :
-            assert False,"fix me"
+            assert False, "FIXME"
             key = (spec["name"], conf.signal.xsVariation())
             if key in curves :
                 spec["curve"] = spline(points = curves[key])
 
-        graph = rxs.graph(h = histos[histoName], model = model, interBin = interBin,
-                          printXs = printXs, spec = {"variation":xsVariation})
+        graph = rxs.graph(h=histos["%s_%s" % (model, histoName)],
+                          model=model, interBin=interBin,
+                          printXs=printXs, spec={"variation": xsVariation})
         graph["graph"].SetName(graphName)
         graph["histo"].SetName(graphName.replace("_graph","_simpleExcl"))
         key = graphName.replace("m1","-1").replace("p1","+1").replace("_graph","")
@@ -214,12 +215,12 @@ def upperLimitHistos(model="", inFileName="", shiftX=False, shiftY=False):
     #read and adjust histos
     f = r.TFile(inFileName)
     histos = {}
-    for name,pretty in [("UpperLimit" if conf.limit.method() == "CLs" else "upperLimit95",
-                         "upper limit"),
-                        ("ExpectedUpperLimit", "expected upper limit"),
-                        ("ExpectedUpperLimit_-1_Sigma", "title"),
-                        ("ExpectedUpperLimit_+1_Sigma", "title")] :
-        h3 = f.Get(name)
+    for name, pretty in [("UpperLimit" if conf.limit.method() == "CLs" else "upperLimit95",
+                          "upper limit"),
+                         ("ExpectedUpperLimit", "expected upper limit"),
+                         ("ExpectedUpperLimit_-1_Sigma", "title"),
+                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
+        h3 = f.Get("%s_%s" % (model, name))
         if not h3 : continue
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         hp.modifyHisto(h, model)
@@ -346,7 +347,7 @@ def makeLimitPdf(model="", rootFileName="", diagonalLine=False, logZ=False,
             hName = "UpperLimit"
     else:
         hName = "upperLimit95"
-    h = f.Get(hName)
+    h = f.Get("%s_%s" % (model, hName))
     h.Draw("colz")
 
     if logZ :
