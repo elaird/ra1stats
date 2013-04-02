@@ -13,6 +13,7 @@ plottingGrid.makeXsUpperLimitPlots(logZ=True,
                                    #             },
                                    #printXs=True,
                                    diagonalLine=True,
+                                   expectedOnly=False,
                                    )
 
 #plottingGrid.makeEfficiencyPlotBinned(key=["effHad", "effMuon"][0])
