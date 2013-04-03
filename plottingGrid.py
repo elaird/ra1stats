@@ -250,7 +250,7 @@ def writeList(fileName = "", objects = []) :
         obj.Write()
     f.Close()
 
-def outFileName(model="", tag=""):
+def outFileName(model=None, tag=""):
     base = pickling.mergedFile(model=model).split("/")[-1]
     root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root"%tag)
     return {"root":root,
@@ -258,16 +258,16 @@ def outFileName(model="", tag=""):
             "pdf" :root.replace(".root",".pdf"),
             }
 
-def makeRootFiles(model="", limitFileName="", simpleFileName="",
+def makeRootFiles(model=None, limitFileName="", simpleFileName="",
                   shiftX=None, shiftY=None, interBin="",
                   pruneYMin=None, printXs=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
-    histos = upperLimitHistos(model=model,
+    histos = upperLimitHistos(model=model.name,
                               inFileName=pickling.mergedFile(model=model),
                               shiftX=shiftX,
                               shiftY=shiftY)
-    graphs, simple = exclusionGraphs(model=model,
+    graphs, simple = exclusionGraphs(model=model.name,
                                      histos=histos,
                                      interBin=interBin,
                                      pruneYMin=pruneYMin,
@@ -275,7 +275,7 @@ def makeRootFiles(model="", limitFileName="", simpleFileName="",
     writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
     writeList(fileName=simpleFileName, objects=simple.values())
 
-def makeXsUpperLimitPlots(model="", logZ=False, curveGopts="", mDeltaFuncs={},
+def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
                           diagonalLine=False, printXs=False, pruneYMin=False,
                           expectedOnly=False, debug=False):
 
@@ -284,7 +284,7 @@ def makeXsUpperLimitPlots(model="", logZ=False, curveGopts="", mDeltaFuncs={},
     simpleFileName = outFileName(model=model,
                                  tag="xsLimit_simpleExcl")["root"]
 
-    shift = sa.interBin(model=model) == "LowEdge"
+    shift = sa.interBin(model.name) == "LowEdge"
     makeRootFiles(model=model, limitFileName=limitFileName,
                   simpleFileName=simpleFileName,
                   shiftX=shift, shiftY=shift, interBin="Center",
@@ -310,7 +310,7 @@ def makeXsUpperLimitPlots(model="", logZ=False, curveGopts="", mDeltaFuncs={},
              "lineStyle":1, "lineWidth":1, "color":r.kBlack},
             ]
 
-    makeLimitPdf(model=model,
+    makeLimitPdf(model=model.name,
                  rootFileName=limitFileName,
                  specs=specs,
                  diagonalLine=diagonalLine,
@@ -319,7 +319,7 @@ def makeXsUpperLimitPlots(model="", logZ=False, curveGopts="", mDeltaFuncs={},
                  mDeltaFuncs=mDeltaFuncs,
                  )
 
-    makeSimpleExclPdf(model=model,
+    makeSimpleExclPdf(model=model.name,
                       histoFileName=simpleFileName,
                       graphFileName=limitFileName,
                       specs=specs,
@@ -485,8 +485,8 @@ def makeEfficiencyPlotBinned(model="", key="effHad"):
     can.cd(0)
     can.Print("%s.pdf"%label)
 
-def makeEfficiencyPlot(model=""):
-    if not conf.signal.isSms(model):
+def makeEfficiencyPlot(model=None):
+    if not model.isSms:
         return
 
     inFile = pickling.mergedFile(model=model)
@@ -510,9 +510,9 @@ def makeEfficiencyPlot(model=""):
     h2 = utils.threeToTwo(h3)
     assert h2
 
-    hp.modifyHisto(h2, model)
+    hp.modifyHisto(h2, model.name)
 
-    title = sa.histoTitle(model = model)
+    title = sa.histoTitle(model=model.name)
     title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
 
@@ -521,7 +521,7 @@ def makeEfficiencyPlot(model=""):
     h2.Write()
     g.Close()
 
-    ranges = sa.ranges(model)
+    ranges = sa.ranges(model.name)
     setRange("xRange", ranges, h2, "X")
     setRange("yRange", ranges, h2, "Y")
 
@@ -532,42 +532,8 @@ def makeEfficiencyPlot(model=""):
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
 
-    printOnce(model=model, canvas=c, fileName=printName)
+    printOnce(model=model.name, canvas=c, fileName=printName)
     hp.printHoles(h2)
-
-def makeEfficiencyUncertaintyPlots(model=""):
-    if not conf.signal.isSms(model):
-        return
-
-    inFile = pickling.mergedFile(model=model)
-    f = r.TFile(inFile)
-    ranges = sa.ranges(model)
-
-    def go(name, suffix, zTitle, zRangeKey) :
-        fileName = outFileName(model=model,
-                               tag="%s_%s"%(model, suffix))["eps"]
-        c = squareCanvas()
-        h2 = utils.threeToTwo(f.Get(name))
-        xyTitle = sa.histoTitle(model=model)
-        adjustHisto(h2, title = "%s;%s"%(xyTitle, zTitle))
-        setRange("xRange", ranges, h2, "X")
-        setRange("yRange", ranges, h2, "Y")
-        h2.Draw("colz")
-        setRange(zRangeKey, ranges, h2, "Z")
-
-        #output a root file
-        g = r.TFile(fileName.replace(".eps",".root"), "RECREATE")
-        h2.Write()
-        g.Close()
-
-        printOnce(model=model, canvas=c, fileName=fileName)
-
-    go(name = "effUncRelExperimental", suffix = "effUncRelExp", zTitle = "#sigma^{exp}_{#epsilon} / #epsilon", zRangeKey = "effUncExpZRange")
-    go(name = "effUncRelTheoretical", suffix = "effUncRelTh", zTitle = "#sigma^{theo}_{#epsilon} / #epsilon", zRangeKey = "effUncThZRange")
-    go(name = "effUncRelIsr", suffix = "effUncRelIsr", zTitle = "#sigma^{ISR}_{#epsilon} / #epsilon", zRangeKey = "effUncRelIsrZRange")
-    go(name = "effUncRelPdf", suffix = "effUncRelPdf", zTitle = "#sigma^{PDF}_{#epsilon} / #epsilon", zRangeKey = "effUncRelPdfZRange")
-    go(name = "effUncRelJes", suffix = "effUncRelJes", zTitle = "#sigma^{JES}_{#epsilon} / #epsilon", zRangeKey = "effUncRelJesZRange")
-    go(name = "effUncRelMcStats", suffix = "effUncRelMcStats", zTitle = "#sigma^{MC stats}_{#epsilon} / #epsilon", zRangeKey = "effUncRelMcStatsZRange")
 
 def printTimeStamp() :
     text = r.TText()
@@ -706,7 +672,7 @@ def sortedNames(histos = [], first = [], last = []) :
         names.remove(item)
     return start+names+end
 
-def multiPlots(model="", tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
+def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackListMatch=[],
                outputRootFile=False, modify=False, square=False):
     assert tag
 
@@ -744,7 +710,8 @@ def multiPlots(model="", tag="", first=[], last=[], whiteListMatch=[], blackList
         if any([item in name for item in blackListMatch]) : continue
 
         h2 = utils.threeToTwo(f.Get(name))
-        if modify : hp.modifyHisto(h2, model)
+        if modify:
+            hp.modifyHisto(h2, model.name)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
                       logZ=["xs", "nEventsHad"], model=model,
                       suppressed=suppressed)
@@ -765,7 +732,7 @@ def multiPlots(model="", tag="", first=[], last=[], whiteListMatch=[], blackList
 
     print "%s has been written."%fileName
 
-def clsValidation(model="", cl=None, tag="", masterKey="",
+def clsValidation(model=None, cl=None, tag="", masterKey="",
                   yMin=0.0, yMax=1.0, lineHeight=0.5,
                   divide=(4,3), whiteList=[], stampTitle=True):
     def allHistos(fileName = "") :
@@ -786,9 +753,9 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
         assert len(whiteList)==divide[0]*divide[1], "%d != %d"%(len(whiteList), divide[0]*divide[1])
 
     # FIXME: remove hard-coded 2
-    specialKey = "%s_CLb_2" % model
+    specialKey = "%s_CLb_2" % model.name
     histos = allHistos(fileName=pickling.mergedFile(model=model))
-    master = histos[model+"_"+masterKey]
+    master = histos[model.name+"_"+masterKey]
     graphs = {}
     for iBinX in range(1, 1 + master.GetNbinsX()) :
         for iBinY in range(1, 1 + master.GetNbinsY()) :
@@ -797,7 +764,7 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
             if specialKey not in histos or not histos[specialKey] : continue
             if not histos[specialKey].GetBinContent(iBinX, iBinY) : continue
 
-            name = "%s_CLs_%d_%d"%(model, iBinX, iBinY)
+            name = "%s_CLs_%d_%d"%(model.name, iBinX, iBinY)
             graph = r.TGraphErrors()
             graph.SetName(name)
             graph.SetTitle("%s;#sigma (pb);CL_{s}"%(name.replace("CLs_","") if stampTitle else ""))
@@ -807,14 +774,14 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
             iPoint = 0
             while True:
                 s = "" if not iPoint else "_%d"%iPoint
-                if "%s_CLs%s" % (model, s) not in histos:
+                if "%s_CLs%s" % (model.name, s) not in histos:
                     break
-                x = histos["%s_PoiValue%s" % (model, s)].GetBinContent(iBinX, iBinY)
+                x = histos["%s_PoiValue%s" % (model.name, s)].GetBinContent(iBinX, iBinY)
                 if not iPoint:
                     xMin = x
                 xMax = x
-                graph.SetPoint(iPoint, x, histos["%s_CLs%s" % (model, s)].GetBinContent(iBinX, iBinY))
-                graph.SetPointError(iPoint, 0.0, histos["%s_CLsError%s" %(model, s)].GetBinContent(iBinX, iBinY))
+                graph.SetPoint(iPoint, x, histos["%s_CLs%s" % (model.name, s)].GetBinContent(iBinX, iBinY))
+                graph.SetPointError(iPoint, 0.0, histos["%s_CLsError%s" %(model.name, s)].GetBinContent(iBinX, iBinY))
                 iPoint += 1
 
             e = 0.1*(xMax-xMin)
@@ -822,13 +789,13 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
             clLine = r.TLine(xMin-e, y, xMax+e, y)
             clLine.SetLineColor(r.kRed)
 
-            xLim = histos["%s_UpperLimit" % model].GetBinContent(iBinX, iBinY)
+            xLim = histos["%s_UpperLimit" % model.name].GetBinContent(iBinX, iBinY)
             limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
             limLine.SetLineColor(r.kBlue)
             graphs[name] = [graph, clLine, limLine]
 
             if not whiteList :
-                xLimPl = histos["%s_PlUpperLimit" % model].GetBinContent(iBinX, iBinY)
+                xLimPl = histos["%s_PlUpperLimit" % model.name].GetBinContent(iBinX, iBinY)
                 plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
                 plLimLine.SetLineColor(r.kGreen)
                 graphs[name].append(plLimLine)
@@ -858,20 +825,19 @@ def clsValidation(model="", cl=None, tag="", masterKey="",
 
 def makePlots(square=False):
     for model in conf.signal.models():
-        name = model.name
-        multiPlots(model=name,
+        multiPlots(model=model,
                    tag="validation",
                    first=["excluded", "upperLimit", "CLs", "CLb", "xs"],
                    last=["lowerLimit"],
                    blackListMatch=["eff", "_nEvents"],
                    square=square)
 
-    	#multiPlots(model=name,
+    	#multiPlots(model=model,
     	#           tag="nEvents",
     	#           whiteListMatch=["nEvents"],
     	#           square=square)
     	#
-    	#multiPlots(model=name,
+    	#multiPlots(model=model,
     	#           tag="effHad",
     	#           whiteListMatch=["effHad"],
     	#           blackListMatch=["UncRel"],
@@ -879,7 +845,7 @@ def makePlots(square=False):
     	#           modify=True,
     	#           square=square)
     	#
-    	#multiPlots(model=name,
+    	#multiPlots(model=model,
     	#           tag="effMu",
     	#           whiteListMatch=["effMu"],
     	#           blackListMatch=["UncRel"],
@@ -887,7 +853,7 @@ def makePlots(square=False):
     	#           modify=True,
     	#           square=square)
     	#
-    	#multiPlots(model=name,
+    	#multiPlots(model=model,
     	#           tag="xs",
     	#           whiteListMatch=["xs"],
     	#           outputRootFile=True,
@@ -896,7 +862,7 @@ def makePlots(square=False):
 
     	if model.isSms and conf.limit.method() == "CLs":
     	    for cl in conf.limit.CL():
-    	        clsValidation(model=name,
+    	        clsValidation(model=model,
     	                      tag="clsValidation",
     	                      cl=cl,
     	                      masterKey="xs")
