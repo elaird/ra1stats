@@ -126,7 +126,7 @@ def xsHisto(model=None):
         cmssmProcess = "" if model.isSms else "total"
         return xsHistoPhysical(model=model,
                                cmssmProcess=cmssmProcess,
-                               xsVariation=conf.signal.xsVariation())
+                               xsVariation=model.xsVariation)
     else:
         return xsHistoAllOne(model=model, cutFunc=patches.cutFunc()[model.name])
 
@@ -200,7 +200,7 @@ def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
     else:
         return cmssmEffHisto(spec=spec,
                              model=model,
-                             xsVariation=conf.signal.xsVariation(),
+                             xsVariation=model.xsVariation,
                              )
 
 

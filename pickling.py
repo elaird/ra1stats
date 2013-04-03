@@ -180,7 +180,7 @@ def mergedFile(model=None):
         tags.append("binaryExcl")
     tags.append(model.name)
     if not model.isSms:
-        tags.append(signal.xsVariation())
+        tags.append(model.xsVariation)
 
     tags.append(common.note(likelihoodSpec.likelihoodSpec(model.name)))
     return "".join([conf.directories.mergedFile()+"/",

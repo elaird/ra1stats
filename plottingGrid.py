@@ -189,7 +189,7 @@ def exclusionGraphs(model=None, histos={}, pruneYMin=False, debug=False, printXs
 
         if curves :
             assert False, "FIXME"
-            key = (spec["name"], conf.signal.xsVariation())
+            key = (spec["name"], model.xsVariation)
             if key in curves :
                 spec["curve"] = spline(points = curves[key])
 
