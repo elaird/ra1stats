@@ -27,6 +27,10 @@ class scan(object):
         return not ("tanBeta" in self._dataset)
 
     @property
+    def com(self):
+        return self._com
+
+    @property
     def interBin(self):
         return self._interBin
 
@@ -75,11 +79,9 @@ def models():
         #scan(dataset="TGQ_0p4", com=7, had="v1"),
         #scan(dataset="TGQ_0p8", com=7, had="v1"),
         #
-        #scan(dataset="tanBeta10", com=7, tag="rw", had="v2", muon="v2"),
-        #scan(dataset="tanBeta10", com=7, tag="rw", had="v2", muon="v2", xsVariation="up"),
-        #scan(dataset="tanBeta10", com=7, tag="rw", had="v2", muon="v2", xsVariation="down"),
-        #scan(dataset="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
-        #scan(dataset="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down"),
         ]
 
 
@@ -156,12 +158,10 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         subDirs = [directories.eff(), "2012", "sms"]
         beforeDir = "smsScan_before"
         tags.append("smsScan")
-    elif model.com==7:
-        subDirs = [directories.eff(), "2011", "%s_scan" % model._tag]
+    else:
+        subDirs = [directories.eff(), "cmssm_%d" % model.com]
         beforeDir = "mSuGraScan_before_scale1"
         tags.append("mSuGraScan")
-    else:
-        assert False, model.name
 
     if bJets:
         tags.append(bJets)
