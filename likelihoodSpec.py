@@ -8,7 +8,7 @@ def likelihoodSpec(model=""):
            "T1tttt"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
            "T2cc"        : {"dataset":"2012hcp2", "whiteList":["0b_le3j"]},
            "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
-           "tanBeta10"   : {"dataset":"2011", "whiteList":[]},
+           "tanBeta10_7":  {"dataset":"2011", "whiteList":[]},
            }
     return spec(**dct[model])
 
