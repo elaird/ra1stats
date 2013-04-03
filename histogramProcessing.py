@@ -182,27 +182,27 @@ def xsHistoAllOne(model="", cutFunc=None):
     return h
 
 
-def nEventsInHisto(model=""):
-    s = conf.signal.effHistoSpec(model=model, box="had")
+def nEventsInHisto(model=None):
+    s = conf.signal.effHistoSpec(model=model.name, box="had")
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 
-def effHisto(model="", box="", htLower=None, htUpper=None, bJets="", jets=""):
-    if box in conf.signal.ignoreEff(model):
+def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
+    if model.ignoreEff(box):
         print "WARNING: ignoring %s efficiency for %s" % (box, model)
         return None
 
-    spec = conf.signal.effHistoSpec(model=model,
+    spec = conf.signal.effHistoSpec(model=model.name,
                                     box=box,
                                     htLower=htLower,
                                     htUpper=htUpper,
                                     bJets=bJets,
                                     jets=jets)
-    if conf.signal.isSms(model):
-        return smsEffHisto(spec=spec, model=model)
+    if model.isSms:
+        return smsEffHisto(spec=spec, model=model.name)
     else:
         return cmssmEffHisto(spec=spec,
-                             model=model,
+                             model=model.name,
                              xsVariation=conf.signal.xsVariation(),
                              )
 
