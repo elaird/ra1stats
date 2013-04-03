@@ -301,8 +301,7 @@ def points():
 
 def onePoint(yValue=None, nSmooth=None, xMin=None):
     model = configuration.signal.scan(dataset='T2tt', com=8)  # FIXME: use interBin
-    hSpec = configuration.signal.xsHistoSpec(model=model.name,
-                                             xsVariation="default")
+    hSpec = configuration.signal.xsHistoSpec(model)
 
     refHisto = referenceXsHisto(refHistoName=hSpec['histo'],
                                 refName='#tilde{t} #tilde{t}',

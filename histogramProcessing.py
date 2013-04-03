@@ -140,9 +140,7 @@ def xsHistoPhysical(model=None, cmssmProcess="", xsVariation=""):
                 s["beforeDir"], dummyHisto)
     out.Reset()
 
-    spec = conf.signal.xsHistoSpec(model=model.name,
-                                   cmssmProcess=cmssmProcess,
-                                   xsVariation=xsVariation)
+    spec = conf.signal.xsHistoSpec(model=model, cmssmProcess=cmssmProcess)
     warning = "will need to accommodate factor of %g" % spec["factor"]
     assert spec["factor"] == 1.0, warning
 

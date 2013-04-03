@@ -4,7 +4,7 @@ import ROOT as r
 
 
 def refXsHisto(model=None):
-    hs = configuration.signal.xsHistoSpec(model=model.name, xsVariation=model.xsVariation)
+    hs = configuration.signal.xsHistoSpec(model=model)
     f = r.TFile(hs["file"])
     h = f.Get(hs["histo"])
     if not h:
