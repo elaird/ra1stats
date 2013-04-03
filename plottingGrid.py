@@ -12,8 +12,6 @@ import utils
 
 import ROOT as r
 
-sa = conf.signal  # compatibility
-
 def setupRoot() :
     #r.gROOT.SetStyle("Plain")
     r.gROOT.SetBatch(True)
@@ -50,7 +48,7 @@ def printOnce(model="", canvas=None, fileName="", alsoC=False):
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-        current_stamp = sa.processStamp(model)
+        current_stamp = conf.signal.processStamp(model)
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
@@ -210,7 +208,7 @@ def exclusionGraphs(model=None, histos={}, pruneYMin=False, debug=False, printXs
 def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
     assert len(conf.limit.CL()) == 1
     cl = conf.limit.CL()[0]
-    ranges = sa.ranges(model.name)
+    ranges = conf.signal.ranges(model.name)
 
     #read and adjust histos
     f = r.TFile(inFileName)
@@ -224,7 +222,7 @@ def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
         if not h3 : continue
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         hp.modifyHisto(h, model)
-        title = sa.histoTitle(model=model.name)
+        title = conf.signal.histoTitle(model=model.name)
         title += ";%g%% CL %s on  #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
@@ -328,7 +326,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
 def makeLimitPdf(model="", rootFileName="", diagonalLine=False, logZ=False,
                  curveGopts="", mDeltaFuncs=False, specs=[]):
 
-    ranges = sa.ranges(model)
+    ranges = conf.signal.ranges(model)
 
     epsFile = rootFileName.replace(".root", ".eps")
     f = r.TFile(rootFileName)
@@ -389,7 +387,7 @@ def makeLimitPdf(model="", rootFileName="", diagonalLine=False, logZ=False,
 
 def makeSimpleExclPdf(model="", histoFileName="", graphFileName="",
                       specs=[], curveGopts=""):
-    ranges = sa.ranges(model)
+    ranges = conf.signal.ranges(model)
 
     c = squareCanvas()
     pdf = histoFileName.replace(".root",".pdf")
@@ -511,7 +509,7 @@ def makeEfficiencyPlot(model=None):
 
     hp.modifyHisto(h2, model)
 
-    title = sa.histoTitle(model=model.name)
+    title = conf.signal.histoTitle(model=model.name)
     title += ";A #times #epsilon"
     adjustHisto(h2, title = title)
 
@@ -520,7 +518,7 @@ def makeEfficiencyPlot(model=None):
     h2.Write()
     g.Close()
 
-    ranges = sa.ranges(model.name)
+    ranges = conf.signal.ranges(model.name)
     setRange("xRange", ranges, h2, "X")
     setRange("yRange", ranges, h2, "Y")
 
@@ -575,13 +573,13 @@ def printLumis() :
     return text
 
 def drawBenchmarks(model=""):
-    parameters =  sa.scanParameters()
+    parameters =  conf.signal.scanParameters()
     if not (model in parameters) : return
     params = parameters[model]
 
     text = r.TText()
     out = []
-    for label,coords in sa.benchmarkPoints().iteritems() :
+    for label,coords in conf.signal.benchmarkPoints().iteritems() :
         drawIt = True
         for key,value in coords.iteritems() :
             if key in params and value!=params[key] : drawIt = False
@@ -598,7 +596,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
     if "upper" in name :
         hp.printHoles(h2)
     h2.SetStats(False)
-    h2.SetTitle("%s%s"%(name, sa.histoTitle(model=model.name)))
+    h2.SetTitle("%s%s"%(name, conf.signal.histoTitle(model=model.name)))
     h2.Draw("colz")
     if not h2.Integral() :
         suppressed.append(name)
@@ -631,7 +629,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-    minEventsIn, maxEventsIn = sa.nEventsIn(model.name)
+    minEventsIn, maxEventsIn = conf.signal.nEventsIn(model.name)
     if "nEventsIn" in name and (minEventsIn or maxEventsIn):
         if minEventsIn : h2.SetMinimum(minEventsIn)
         if maxEventsIn : h2.SetMaximum(maxEventsIn)
@@ -646,7 +644,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
             den = utils.threeToTwo(f.Get(denName))
             num.Divide(den)
             num.SetStats(False)
-            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model=model.name)))
+            num.SetTitle("%s/%s%s;"%(name, denName, conf.signal.histoTitle(model=model.name)))
             num.Draw("colz")
             if not num.Integral() : continue
             num.SetMinimum(0.0)
