@@ -164,9 +164,9 @@ def spline(points = [], title = "") :
         graph.SetPoint(i, x, y)
     return r.TSpline3(title, graph)
 
-def exclusionGraphs(model="", histos={}, interBin="", pruneYMin=False, debug=False, printXs=None):
-    cutFunc = patches.cutFunc()[model]
-    curves = patches.curves()[model]
+def exclusionGraphs(model=None, histos={}, interBin="", pruneYMin=False, debug=False, printXs=None):
+    cutFunc = patches.cutFunc()[model.name]
+    curves = patches.curves()[model.name]
 
     graphReplacePoints = patches.graphReplacePoints()
     graphAdditionalPoints = patches.graphAdditionalPoints()
@@ -193,16 +193,16 @@ def exclusionGraphs(model="", histos={}, interBin="", pruneYMin=False, debug=Fal
             if key in curves :
                 spec["curve"] = spline(points = curves[key])
 
-        graph = rxs.graph(h=histos["%s_%s" % (model, histoName)],
-                          model=model, interBin=interBin,
+        graph = rxs.graph(h=histos["%s_%s" % (model.name, histoName)],
+                          model=model.name, interBin=interBin,
                           printXs=printXs, spec={"variation": xsVariation})
         graph["graph"].SetName(graphName)
         graph["histo"].SetName(graphName.replace("_graph","_simpleExcl"))
         key = graphName.replace("m1","-1").replace("p1","+1").replace("_graph","")
         pruneGraph(graph['graph'], debug = False, breakLink = pruneYMin,
-                   lst = patches.graphBlackLists()[key][model]+(pointsAtYMin(graph['graph']) if pruneYMin else []))
-        modifyGraph(graph['graph'], dct = patches.graphReplacePoints()[key][model], debug = False)
-        insertPoints(graph['graph'], lst = patches.graphAdditionalPoints()[key][model])
+                   lst = patches.graphBlackLists()[key][model.name]+(pointsAtYMin(graph['graph']) if pruneYMin else []))
+        modifyGraph(graph['graph'], dct = patches.graphReplacePoints()[key][model.name], debug = False)
+        insertPoints(graph['graph'], lst = patches.graphAdditionalPoints()[key][model.name])
         graphs[graphName] = graph["graph"]
         simpleExclHistos[graphName] = graph["histo"]
     return graphs,simpleExclHistos
@@ -267,7 +267,7 @@ def makeRootFiles(model=None, limitFileName="", simpleFileName="",
                               inFileName=pickling.mergedFile(model=model),
                               shiftX=shiftX,
                               shiftY=shiftY)
-    graphs, simple = exclusionGraphs(model=model.name,
+    graphs, simple = exclusionGraphs(model=model,
                                      histos=histos,
                                      interBin=interBin,
                                      pruneYMin=pruneYMin,
