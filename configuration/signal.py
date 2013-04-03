@@ -2,10 +2,13 @@ import directories
 
 
 class scan(object):
-    def __init__(self, dataset="", tag="", com=None,
+    def __init__(self, dataset="", tag="",
+                 com=None, xsVariation="default",
                  had="", muon="", phot="", mumu="",
                  interBin="LowEdge"):
-        for item in ["dataset", "tag", "com",
+        assert xsVariation in ["default", "up", "down"], xsVariation
+        for item in ["dataset", "tag",
+                     "com", "xsVariation",
                      "had", "muon", "phot", "mumu",
                      "interBin"]:
             setattr(self, "_"+item, eval(item))
@@ -27,26 +30,15 @@ class scan(object):
     def interBin(self):
         return self._interBin
 
+    @property
+    def xsVariation(self):
+        return self._xsVariation
+
     def ignoreEff(self, box):
         assert box in ["had", "muon", "phot", "mumu"], box
         return not getattr(self, "_"+box)
 
 
-# to be deprecated
-def xsVariation():
-    variations = ["default", "up", "down"]
-    return dict(zip(variations, variations))["default"]
-
-
-# to be deprecated
-def nEventsIn(model=""):
-    assert model
-    return {"T5zz":      (5.0e3, None),
-            "tanBeta10": (9.0e3, 11.0e3),
-            }.get(model, (1, None))
-
-
-# to be deprecated
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
@@ -203,7 +195,13 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
             }
 
 
-#SMS
+def nEventsIn(model=""):
+    assert model
+    return {"T5zz":      (5.0e3, None),
+            "tanBeta10": (9.0e3, 11.0e3),
+            }.get(model, (1, None))
+
+
 def ranges(model):
     x = {"T1":   (287.5, 1400),  # (min, max)
          "T2":   (287.5, 1000),
