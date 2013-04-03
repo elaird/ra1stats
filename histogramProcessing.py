@@ -134,7 +134,7 @@ def xsHisto(model=None):
 def xsHistoPhysical(model=None, cmssmProcess="", xsVariation=""):
     #get example histo and reset
     dummyHisto = "m0_m12_mChi_noweight" if model.isSms else "m0_m12_gg"
-    s = conf.signal.effHistoSpec(model=model.name, box="had")
+    s = conf.signal.effHistoSpec(model=model, box="had")
     out = ratio(s["file"],
                 s["beforeDir"], dummyHisto,
                 s["beforeDir"], dummyHisto)
@@ -162,7 +162,7 @@ def xsHistoAllOne(model=None, cutFunc=None):
     else:
         kargs = {"bJets": "eq0b", "jets": "le3j"}
 
-    spec = conf.signal.effHistoSpec(model=model.name,
+    spec = conf.signal.effHistoSpec(model=model,
                                     box="had",
                                     htLower=875,
                                     htUpper=None,
@@ -178,7 +178,7 @@ def xsHistoAllOne(model=None, cutFunc=None):
 
 
 def nEventsInHisto(model=None):
-    s = conf.signal.effHistoSpec(model=model.name, box="had")
+    s = conf.signal.effHistoSpec(model=model, box="had")
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 
@@ -187,7 +187,7 @@ def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
         print "WARNING: ignoring %s efficiency for %s" % (box, model)
         return None
 
-    spec = conf.signal.effHistoSpec(model=model.name,
+    spec = conf.signal.effHistoSpec(model=model,
                                     box=box,
                                     htLower=htLower,
                                     htUpper=htUpper,
