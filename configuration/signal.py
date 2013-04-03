@@ -112,6 +112,7 @@ def xsHistoSpec(model=None, cmssmProcess=""):
         print "WARNING: using 7 TeV xs for " + \
               "model %s, process %s" % (model.name, cmssmProcess)
 
+    # FIXME: use model.com
     base = directories.xs()
     #seven = "%s/v5/7TeV.root"%base
     eight = "%s/v5/8TeV.root" % base
@@ -135,7 +136,7 @@ def xsHistoSpec(model=None, cmssmProcess=""):
     return d[model.name]
 
 
-def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
+def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
                  bJets=None, jets=None):
 
     assert box in ["had", "muon"], box
@@ -150,18 +151,8 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
 
     tags = []
 
-    # FIXME: improve
-    dct = {}
-    for m in models():
-        if m.name == model:
-            dct = {"tag": m._tag,
-                   "had": m._had,
-                   "muon": m._muon,
-                   "isSms": m.isSms
-                   }
-
-    if not dct["isSms"]:
-        dir2 = "rw_scan" if not dct["tag"] else "%s_scan" % dct["tag"]
+    if not model.isSms:
+        dir2 = "rw_scan" if not model._tag else "%s_scan" % model._tag
         subDirs = ["2011", dir2]
         beforeDir = "mSuGraScan_before_scale1"
         tags.append("mSuGraScan")
@@ -184,14 +175,14 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
         tags.append("%d" % htLower)
     if htUpper:
         tags.append("%d" % htUpper)
-    if not dct["isSms"]:
+    if not model.isSms:
         tags.append("scale1")
 
     return {"beforeDir": beforeDir,
             "afterDir": "_".join(tags),
             "file": "/".join([directories.eff()] + subDirs + [model,
                                                               box,
-                                                              dct[box],
+                                                              getattr(model, "_"+box),
                                                               fileName]
                              )
             }
