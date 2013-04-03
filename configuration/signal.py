@@ -1,9 +1,11 @@
 import directories
 
 
-class mod(object):
-    def __init__(self, dataset="", tag="", com=None, had="", muon=""):
-        for item in ["dataset", "tag", "com", "had", "muon"]:
+class scan(object):
+    def __init__(self, dataset="", tag="", com=None,
+                 had="", muon="", phot="", mumu=""):
+        for item in ["dataset", "tag", "com",
+                     "had", "muon", "phot", "mumu"]:
             setattr(self, item, eval(item))
 
     @property
@@ -18,6 +20,10 @@ class mod(object):
     @property
     def isSms(self):
         return not ("tanBeta" in self.dataset)
+
+    def ignoreEff(self, box):
+        assert box in ["had", "muon", "phot", "mumu"], box
+        return not getattr(self, box)
 
 
 def xsVariation():
@@ -46,13 +52,6 @@ def interBin(model=""):
 
 
 # to be deprecated
-def ignoreEff(model=""):
-    return {"T1": ["muon"], "T1bbbb": [], "T1tttt": [],
-            "T2": ["muon"], "T2bb": ["muon"], "T2tt": [], "T2cc": ["muon"],
-            }[model]
-
-
-# to be deprecated
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
@@ -61,37 +60,37 @@ def effUncRel(model=""):
 
 def models():
     return [
-        #mod(dataset="T1", com=8, had="v5"),
-        #mod(dataset="T2", com=8, had="v1"),
-        mod(dataset="T2cc", com=8, had="v4_ISRReweighted"),
-        #mod(dataset="T2tt", com=8, had="v1", muon="v1"),
-        #mod(dataset="T2bb", com=8, had="v3", muon="v3"),
-        #mod(dataset="T1bbbb", com=8, had="v3", muon="v3"),
-        #mod(dataset="T1tttt", com=8, had="v1", muon="v1"),
+        #scan(dataset="T1", com=8, had="v5"),
+        #scan(dataset="T2", com=8, had="v1"),
+        scan(dataset="T2cc", com=8, had="v4_ISRReweighted"),
+        #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
+        #scan(dataset="T2bb", com=8, had="v3", muon="v3"),  # ignore muon?
+        #scan(dataset="T1bbbb", com=8, had="v3", muon="v3"),
+        #scan(dataset="T1tttt", com=8, had="v1", muon="v1"),
         #
-        #mod(dataset="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
-        #mod(dataset="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
-        #mod(dataset="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
-        #mod(dataset="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized"),
-        #mod(dataset="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #scan(dataset="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
+        #scan(dataset="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
+        #scan(dataset="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
+        #scan(dataset="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized"),
+        #scan(dataset="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
         #
-        #mod(dataset="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
-        #mod(dataset="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
-        #mod(dataset="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
-        #mod(dataset="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized"),
-        #mod(dataset="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
+        #scan(dataset="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
         #
-        #mod(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full"),
+        #scan(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full"),
         #
-        #mod(dataset="T5zz", com=7, had="v1", muon="v1"),
-        #mod(dataset="TGQ_0p0", com=7, had="v1"),
-        #mod(dataset="TGQ_0p2", com=7, had="v1"),
-        #mod(dataset="TGQ_0p4", com=7, had="v1"),
-        #mod(dataset="TGQ_0p8", com=7, had="v1"),
+        #scan(dataset="T5zz", com=7, had="v1", muon="v1"),
+        #scan(dataset="TGQ_0p0", com=7, had="v1"),
+        #scan(dataset="TGQ_0p2", com=7, had="v1"),
+        #scan(dataset="TGQ_0p4", com=7, had="v1"),
+        #scan(dataset="TGQ_0p8", com=7, had="v1"),
         #
-        #mod(dataset="tanBeta10", com=7, had="v2", muon="v2"),
-        #mod(dataset="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
-        #mod(dataset="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
+        #scan(dataset="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
+        #scan(dataset="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
         ]
 
 
