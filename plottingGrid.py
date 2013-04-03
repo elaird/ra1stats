@@ -192,8 +192,8 @@ def exclusionGraphs(model=None, histos={}, pruneYMin=False, debug=False, printXs
                 spec["curve"] = spline(points = curves[key])
 
         graph = rxs.graph(h=histos["%s_%s" % (model.name, histoName)],
-                          model=model.name, interBin=model.interBin,
-                          printXs=printXs, spec={"variation": xsVariation})
+                          model=model, printXs=printXs,
+                          spec={"variation": xsVariation})
         graph["graph"].SetName(graphName)
         graph["histo"].SetName(graphName.replace("_graph","_simpleExcl"))
         key = graphName.replace("m1","-1").replace("p1","+1").replace("_graph","")

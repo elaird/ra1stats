@@ -3,8 +3,8 @@ import configuration.signal
 import ROOT as r
 
 
-def refXsHisto(model="", xsVariation="default"):
-    hs = configuration.signal.xsHistoSpec(model=model, xsVariation=xsVariation)
+def refXsHisto(model=None):
+    hs = configuration.signal.xsHistoSpec(model=model.name, xsVariation=model.xsVariation)
     f = r.TFile(hs["file"])
     h = f.Get(hs["histo"])
     if not h:
@@ -36,7 +36,7 @@ def mDeltaFuncs(mDeltaMin=None, mDeltaMax=None, nSteps=None, mGMax=None):
     return out
 
 
-def graph(h=None, model="", interBin="", printXs=False, spec={}):
+def graph(h=None, model=None, printXs=False, spec={}):
     d = {"color": r.kBlack,
          "lineStyle": 1,
          "lineWidth": 3,
@@ -50,7 +50,6 @@ def graph(h=None, model="", interBin="", printXs=False, spec={}):
                                factor=d["factor"],
                                variation=d["variation"],
                                model=model,
-                               interBin=interBin,
                                printXs=printXs
                                )
 
@@ -64,7 +63,6 @@ def graph(h=None, model="", interBin="", printXs=False, spec={}):
     d["histo"] = excludedHistoSimple(h,
                                      d["factor"],
                                      model,
-                                     interBin,
                                      variation=d["variation"]
                                      )
     return d
@@ -92,8 +90,8 @@ def content(h=None, coords=(0.0,), variation=0.0, factor=1.0):
 
 
 def excludedGraph(h, factor=None, variation=0.0, model=None,
-                  interBin="", prune=False, printXs=False):
-    assert interBin in ["Center", "LowEdge"], interBin
+                  prune=False, printXs=False):
+    assert model.interBin in ["Center", "LowEdge"], model.interBin
 
     def fail(xs, xsLimit):
         return (xs <= xsLimit) or not xsLimit
@@ -101,9 +99,9 @@ def excludedGraph(h, factor=None, variation=0.0, model=None,
     refHisto = refXsHisto(model)
     d = collections.defaultdict(list)
     for iBinX in range(1, 1+h.GetNbinsX()):
-        x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
+        x = getattr(h.GetXaxis(), "GetBin%s" % model.interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()):
-            y = getattr(h.GetYaxis(), "GetBin%s" % interBin)(iBinY)
+            y = getattr(h.GetYaxis(), "GetBin%s" % model.interBin)(iBinY)
             xs = content(h=refHisto, coords=(x, y),
                          variation=variation, factor=factor)
             if not xs:
@@ -147,18 +145,17 @@ def excludedGraph(h, factor=None, variation=0.0, model=None,
     return out
 
 
-def excludedHistoSimple(h, factor=None, model=None,
-                        interBin="", variation=0.0):
-    assert interBin in ["Center", "LowEdge"], interBin
+def excludedHistoSimple(h, factor=None, model=None, variation=0.0):
+    assert model.interBin in ["Center", "LowEdge"], model.interBin
     cutFunc = None
     refHisto = refXsHisto(model)
     out = h.Clone("%s_excludedHistoSimple" % h.GetName())
     out.Reset()
     out.GetZaxis().SetTitle("bin excluded or not")
     for iBinX in range(1, 1+h.GetNbinsX()):
-        x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
+        x = getattr(h.GetXaxis(), "GetBin%s" % model.interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()):
-            y = getattr(h.GetYaxis(), "GetBin%s" % interBin)(iBinY)
+            y = getattr(h.GetYaxis(), "GetBin%s" % model.interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             if not xsLimit:
                 continue
@@ -254,7 +251,7 @@ def extrapolatedGraph(h, gr, yValueToPrune):
     return grOut
 
 
-def excludedGraphOld(h, factor=None, model=None, interBin="CenterOrLowEdge",
+def excludedGraphOld(h, factor=None, model=None,
                      pruneAndExtrapolate=False, yValueToPrune=-80):
 
     def fail(xs, xsLimit):
@@ -266,12 +263,12 @@ def excludedGraphOld(h, factor=None, model=None, interBin="CenterOrLowEdge",
     out.SetName("%s_graph" % h.GetName())
     index = 0
     for iBinX in range(1, 1+h.GetNbinsX()):
-        x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
+        x = getattr(h.GetXaxis(), "GetBin%s" % model.interBin)(iBinX)
         xs = factor*refHisto.GetBinContent(refHisto.FindBin(x))
         nHit = 0
         lastHit = None
         for iBinY in range(1, 1+h.GetNbinsY()):
-            y = getattr(h.GetYaxis(), "GetBin%s" % interBin)(iBinY)
+            y = getattr(h.GetYaxis(), "GetBin%s" % model.interBin)(iBinY)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
