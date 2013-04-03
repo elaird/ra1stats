@@ -169,7 +169,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
 
 
 ##merge functions
-def mergedFile(model=""):
+def mergedFile(model=None):
     assert model
     tags = [conf.limit.method()]
     if "CLs" in conf.limit.method():
@@ -178,11 +178,11 @@ def mergedFile(model=""):
                  ]
     if conf.limit.binaryExclusion():
         tags.append("binaryExcl")
-    tags.append(model)
-    if not conf.signal.isSms(model):
+    tags.append(model.name)
+    if not model.isSms:
         tags.append(signal.xsVariation())
 
-    tags.append(common.note(likelihoodSpec.likelihoodSpec(model)))
+    tags.append(common.note(likelihoodSpec.likelihoodSpec(model.name)))
     return "".join([conf.directories.mergedFile()+"/",
                     "_".join(tags),
                     ".root"
@@ -248,7 +248,7 @@ def mergePickledFiles(printExamples=False):
 
     for model in conf.signal.models():
         name = model.name
-        f = r.TFile(mergedFile(model=name), "RECREATE")
+        f = r.TFile(mergedFile(model=model), "RECREATE")
 
         for key, histo in histos[name].iteritems():
             histo.GetZaxis().SetTitle(zTitles[name][key])
