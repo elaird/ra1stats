@@ -103,14 +103,14 @@ def whiteListOfPoints(model="", respect=False):
             }[model]
 
 
-def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
+def xsHistoSpec(model=None, cmssmProcess=""):
     if not cmssmProcess:
-        if xsVariation != "default":
-            print 'WARNING: variation "%s" (%s)' % (xsVariation, model) + \
+        if model.xsVariation != "default":
+            print 'WARNING: variation "%s" (%s)' % (model.xsVariation, model.name) + \
                   ' will need to use error bars in xs file.'
     else:
         print "WARNING: using 7 TeV xs for " + \
-              "model %s, process %s" % (model, cmssmProcess)
+              "model %s, process %s" % (model.name, cmssmProcess)
 
     base = directories.xs()
     #seven = "%s/v5/7TeV.root"%base
@@ -121,7 +121,7 @@ def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
          "T2tt":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
          "T2bb":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
          "T2cc":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
-         "tanBeta10": {"histo": "%s_%s" % (cmssmProcess, xsVariation),
+         "tanBeta10": {"histo": "%s_%s" % (cmssmProcess, model.xsVariation),
                        "factor": 1.0, "file": tanBeta10},
          }
 
@@ -131,8 +131,8 @@ def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
     for item in ["TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]:
         d[item] = {"histo": "clone", "factor": 1.0, "file": tgqFile}
 
-    assert model in d, "model=%s" % model
-    return d[model]
+    assert model.name in d, "model=%s" % model.name
+    return d[model.name]
 
 
 def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
