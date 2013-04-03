@@ -595,11 +595,11 @@ def drawBenchmarks(model=""):
 
 def printOneHisto(h2=None, name="", canvas=None, fileName="",
                   effRatioPlots=False, drawBenchmarkPoints=False,
-                  logZ=[], model="", suppressed=[]):
+                  logZ=[], model=None, suppressed=[]):
     if "upper" in name :
         hp.printHoles(h2)
     h2.SetStats(False)
-    h2.SetTitle("%s%s"%(name, sa.histoTitle(model=model)))
+    h2.SetTitle("%s%s"%(name, sa.histoTitle(model=model.name)))
     h2.Draw("colz")
     if not h2.Integral() :
         suppressed.append(name)
@@ -613,13 +613,13 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetMaximum(3.0)
 
     if drawBenchmarkPoints:
-        stuff = drawBenchmarks(model)
+        stuff = drawBenchmarks(model.name)
 
-    isSms = conf.signal.isSms(model)
-    if "excluded" in name and isSms : return
+    if "excluded" in name and model.isSms:
+        return
 
-    printSinglePage  = (not isSms) and "excluded" in name
-    printSinglePage |= isSms and "upperLimit" in name
+    printSinglePage  = (not model.isSms) and "excluded" in name
+    printSinglePage |= model.isSms and "upperLimit" in name
 
     if printSinglePage :
         title = h2.GetTitle()
@@ -632,7 +632,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-    minEventsIn, maxEventsIn = sa.nEventsIn(model)
+    minEventsIn, maxEventsIn = sa.nEventsIn(model.name)
     if "nEventsIn" in name and (minEventsIn or maxEventsIn):
         if minEventsIn : h2.SetMinimum(minEventsIn)
         if maxEventsIn : h2.SetMaximum(maxEventsIn)
@@ -647,13 +647,13 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
             den = utils.threeToTwo(f.Get(denName))
             num.Divide(den)
             num.SetStats(False)
-            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model=model)))
+            num.SetTitle("%s/%s%s;"%(name, denName, sa.histoTitle(model=model.name)))
             num.Draw("colz")
             if not num.Integral() : continue
             num.SetMinimum(0.0)
             num.SetMaximum(0.5)
             if drawBenchmarkPoints:
-                stuff = drawBenchmarks(model)
+                stuff = drawBenchmarks(model.name)
             canvas.Print(fileName)
 
 def sortedNames(histos = [], first = [], last = []) :
@@ -713,7 +713,7 @@ def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackLi
         if modify:
             hp.modifyHisto(h2, model.name)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
-                      logZ=["xs", "nEventsHad"], model=model.name,
+                      logZ=["xs", "nEventsHad"], model=model,
                       suppressed=suppressed)
         if outputRootFile :
             outFile.cd()
