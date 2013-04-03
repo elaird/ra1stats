@@ -65,7 +65,7 @@ def modifyHisto(h=None, model=None):
     fillPoints(h, points=patches.overwriteOutput()[model.name])
     killPoints(h,
                cutFunc=patches.cutFunc().get(model.name, None),
-               interBin=conf.signal.interBin(model.name))
+               interBin=model.interBin)
 
 
 def fillPoints(h, points=[]):
@@ -151,8 +151,7 @@ def xsHistoPhysical(model=None, cmssmProcess="", xsVariation=""):
     dim = int(h.ClassName()[2:3])
     assert dim in [1, 2], dim
 
-    interBin = conf.signal.interBin(model.name)
-    for iX, x, iY, y, iZ, z in utils.bins(out, interBin=interBin):
+    for iX, x, iY, y, iZ, z in utils.bins(out, interBin=model.interBin):
         iBin = h.FindBin(x) if dim == 1 else h.FindBin(x, y)
         out.SetBinContent(iX, iY, iZ, h.GetBinContent(iBin))
     return out
@@ -172,8 +171,7 @@ def xsHistoAllOne(model=None, cutFunc=None):
                                     **kargs)
 
     h = smsEffHisto(spec=spec, model=model.name)
-    interBin = conf.signal.interBin(model.name)
-    for iX, x, iY, y, iZ, z in utils.bins(h, interBin=interBin):
+    for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
         content = 1.0
         if cutFunc and not cutFunc(iX, x, iY, y, iZ, z):
             content = 0.0
@@ -252,9 +250,8 @@ def points():
     for model in conf.signal.models():
         name = model.name
         whiteList = conf.signal.whiteListOfPoints(name)
-        interBin = conf.signal.interBin(name)
         h = xsHisto(model)
-    	for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
+    	for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=model.interBin):
     	    if whiteList and (x, y) not in whiteList:
     	        continue
     	    content = h.GetBinContent(iBinX, iBinY, iBinZ)
