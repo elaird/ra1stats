@@ -121,27 +121,26 @@ def killPoints(h, cutFunc=None, interBin=""):
 
 
 ##signal-related histograms
-def xsHisto(model=""):
+def xsHisto(model=None):
     if conf.limit.binaryExclusion():
-        cmssmProcess = "" if conf.signal.isSms(model) else "total"
+        cmssmProcess = "" if model.isSms else "total"
         return xsHistoPhysical(model=model,
                                cmssmProcess=cmssmProcess,
                                xsVariation=conf.signal.xsVariation())
     else:
-        return xsHistoAllOne(model=model, cutFunc=patches.cutFunc()[model])
+        return xsHistoAllOne(model=model, cutFunc=patches.cutFunc()[model.name])
 
 
-def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
+def xsHistoPhysical(model=None, cmssmProcess="", xsVariation=""):
     #get example histo and reset
-    isSms = not cmssmProcess
-    dummyHisto = "m0_m12_mChi_noweight" if isSms else "m0_m12_gg"
-    s = conf.signal.effHistoSpec(model=model, box="had")
+    dummyHisto = "m0_m12_mChi_noweight" if model.isSms else "m0_m12_gg"
+    s = conf.signal.effHistoSpec(model=model.name, box="had")
     out = ratio(s["file"],
                 s["beforeDir"], dummyHisto,
                 s["beforeDir"], dummyHisto)
     out.Reset()
 
-    spec = conf.signal.xsHistoSpec(model=model,
+    spec = conf.signal.xsHistoSpec(model=model.name,
                                    cmssmProcess=cmssmProcess,
                                    xsVariation=xsVariation)
     warning = "will need to accommodate factor of %g" % spec["factor"]
@@ -152,28 +151,28 @@ def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
     dim = int(h.ClassName()[2:3])
     assert dim in [1, 2], dim
 
-    interBin = conf.signal.interBin(model)
+    interBin = conf.signal.interBin(model.name)
     for iX, x, iY, y, iZ, z in utils.bins(out, interBin=interBin):
         iBin = h.FindBin(x) if dim == 1 else h.FindBin(x, y)
         out.SetBinContent(iX, iY, iZ, h.GetBinContent(iBin))
     return out
 
 
-def xsHistoAllOne(model="", cutFunc=None):
-    ls = likelihoodSpec.likelihoodSpec(model)
+def xsHistoAllOne(model=None, cutFunc=None):
+    ls = likelihoodSpec.likelihoodSpec(model.name)
     if ls._dataset in ["2011", "2012ichep"]:
         kargs = {}
     else:
         kargs = {"bJets": "eq0b", "jets": "le3j"}
 
-    spec = conf.signal.effHistoSpec(model=model,
+    spec = conf.signal.effHistoSpec(model=model.name,
                                     box="had",
                                     htLower=875,
                                     htUpper=None,
                                     **kargs)
 
-    h = smsEffHisto(spec=spec, model=model)
-    interBin = conf.signal.interBin(model)
+    h = smsEffHisto(spec=spec, model=model.name)
+    interBin = conf.signal.interBin(model.name)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=interBin):
         content = 1.0
         if cutFunc and not cutFunc(iX, x, iY, y, iZ, z):
@@ -202,12 +201,12 @@ def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
         return smsEffHisto(spec=spec, model=model.name)
     else:
         return cmssmEffHisto(spec=spec,
-                             model=model.name,
+                             model=model,
                              xsVariation=conf.signal.xsVariation(),
                              )
 
 
-def cmssmEffHisto(spec={}, model="", xsVariation=""):
+def cmssmEffHisto(spec={}, model=None, xsVariation=""):
     out = None
 
     # FIXME: Implement some check of the agreement
@@ -254,7 +253,7 @@ def points():
         name = model.name
         whiteList = conf.signal.whiteListOfPoints(name)
         interBin = conf.signal.interBin(name)
-        h = xsHisto(name)
+        h = xsHisto(model)
     	for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
     	    if whiteList and (x, y) not in whiteList:
     	        continue
