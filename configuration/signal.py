@@ -3,29 +3,36 @@ import directories
 
 class scan(object):
     def __init__(self, dataset="", tag="", com=None,
-                 had="", muon="", phot="", mumu=""):
+                 had="", muon="", phot="", mumu="",
+                 interBin="LowEdge"):
         for item in ["dataset", "tag", "com",
-                     "had", "muon", "phot", "mumu"]:
-            setattr(self, item, eval(item))
+                     "had", "muon", "phot", "mumu",
+                     "interBin"]:
+            setattr(self, "_"+item, eval(item))
 
     @property
     def name(self):
-        out = self.dataset
-        if self.tag:
-            out += "_"+self.tag
-        if self.com != 8:
-            out += "_%d" % self.com
+        out = self._dataset
+        if self._tag:
+            out += "_"+self._tag
+        if self._com != 8:
+            out += "_%d" % self._com
         return out
 
     @property
     def isSms(self):
-        return not ("tanBeta" in self.dataset)
+        return not ("tanBeta" in self._dataset)
+
+    @property
+    def interBin(self):
+        return self._interBin
 
     def ignoreEff(self, box):
         assert box in ["had", "muon", "phot", "mumu"], box
-        return not getattr(self, box)
+        return not getattr(self, "_"+box)
 
 
+# to be deprecated
 def xsVariation():
     variations = ["default", "up", "down"]
     return dict(zip(variations, variations))["default"]
@@ -37,12 +44,6 @@ def nEventsIn(model=""):
     return {"T5zz":      (5.0e3, None),
             "tanBeta10": (9.0e3, 11.0e3),
             }.get(model, (1, None))
-
-
-# to be deprecated
-def interBin(model=""):
-    assert model
-    return "LowEdge"
 
 
 # to be deprecated
@@ -159,9 +160,9 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
     dct = {}
     for m in models():
         if m.name == model:
-            dct = {"tag": m.tag,
-                   "had": m.had,
-                   "muon": m.muon,
+            dct = {"tag": m._tag,
+                   "had": m._had,
+                   "muon": m._muon,
                    "isSms": m.isSms
                    }
 
