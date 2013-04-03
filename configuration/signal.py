@@ -31,12 +31,6 @@ def xsVariation():
     return dict(zip(variations, variations))["default"]
 
 
-# deprecated
-def isSms(model=""):
-    assert model
-    return "tanBeta" not in model
-
-
 # to be deprecated
 def nEventsIn(model=""):
     assert model
