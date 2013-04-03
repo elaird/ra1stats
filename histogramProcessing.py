@@ -61,11 +61,11 @@ def checkHistoBinning(histoList=[]):
             assert False
 
 
-def modifyHisto(h=None, model=""):
-    fillPoints(h, points=patches.overwriteOutput()[model])
+def modifyHisto(h=None, model=None):
+    fillPoints(h, points=patches.overwriteOutput()[model.name])
     killPoints(h,
-               cutFunc=patches.cutFunc().get(model, None),
-               interBin=conf.signal.interBin(model))
+               cutFunc=patches.cutFunc().get(model.name, None),
+               interBin=conf.signal.interBin(model.name))
 
 
 def fillPoints(h, points=[]):
