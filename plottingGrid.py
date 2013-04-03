@@ -207,10 +207,10 @@ def exclusionGraphs(model=None, histos={}, interBin="", pruneYMin=False, debug=F
         simpleExclHistos[graphName] = graph["histo"]
     return graphs,simpleExclHistos
 
-def upperLimitHistos(model="", inFileName="", shiftX=False, shiftY=False):
+def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
     assert len(conf.limit.CL()) == 1
     cl = conf.limit.CL()[0]
-    ranges = sa.ranges(model)
+    ranges = sa.ranges(model.name)
 
     #read and adjust histos
     f = r.TFile(inFileName)
@@ -220,11 +220,11 @@ def upperLimitHistos(model="", inFileName="", shiftX=False, shiftY=False):
                          ("ExpectedUpperLimit", "expected upper limit"),
                          ("ExpectedUpperLimit_-1_Sigma", "title"),
                          ("ExpectedUpperLimit_+1_Sigma", "title")] :
-        h3 = f.Get("%s_%s" % (model, name))
+        h3 = f.Get("%s_%s" % (model.name, name))
         if not h3 : continue
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         hp.modifyHisto(h, model)
-        title = sa.histoTitle(model = model)
+        title = sa.histoTitle(model=model.name)
         title += ";%g%% CL %s on  #sigma (pb)"%(100.0*cl, pretty)
         adjustHisto(h, title = title)
         setRange("xRange", ranges, h, "X")
@@ -263,7 +263,7 @@ def makeRootFiles(model=None, limitFileName="", simpleFileName="",
                   pruneYMin=None, printXs=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
-    histos = upperLimitHistos(model=model.name,
+    histos = upperLimitHistos(model=model,
                               inFileName=pickling.mergedFile(model=model),
                               shiftX=shiftX,
                               shiftY=shiftY)
@@ -510,7 +510,7 @@ def makeEfficiencyPlot(model=None):
     h2 = utils.threeToTwo(h3)
     assert h2
 
-    hp.modifyHisto(h2, model.name)
+    hp.modifyHisto(h2, model)
 
     title = sa.histoTitle(model=model.name)
     title += ";A #times #epsilon"
@@ -711,7 +711,7 @@ def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackLi
 
         h2 = utils.threeToTwo(f.Get(name))
         if modify:
-            hp.modifyHisto(h2, model.name)
+            hp.modifyHisto(h2, model)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
                       logZ=["xs", "nEventsHad"], model=model,
                       suppressed=suppressed)
