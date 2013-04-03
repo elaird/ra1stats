@@ -26,14 +26,14 @@ def readNumbers(fileName):
 
 
 ##number collection
-def effHistos(model="",
+def effHistos(model=None,
               okMerges=[None,
                         (0, 1, 2, 3, 4, 5, 6, 7, 7, 7),
                         (0, 1, 2, 2, 2, 2, 2, 2, 2, 2),
                         (0, 1, 2, 2, 2, 2, 2, 2),
                         ]):
     out = {}
-    for sel in likelihoodSpec.likelihoodSpec(model).selections():
+    for sel in likelihoodSpec.likelihoodSpec(model.name).selections():
         badMerge = " ".join(["bin merge",
                              str(sel.data._mergeBins),
                              "not yet supported:",
@@ -152,9 +152,9 @@ def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
     for model in conf.signal.models():
         name = model.name
-        args[name] = {"eff": effHistos(name),
-                      "xs": hp.xsHisto(name),
-                      "nEventsIn": hp.nEventsInHisto(name),
+        args[name] = {"eff": effHistos(model),
+                      "xs": hp.xsHisto(model),
+                      "nEventsIn": hp.nEventsInHisto(model),
                       }
         hp.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
 
@@ -213,7 +213,7 @@ def mergePickledFiles(printExamples=False):
 
     for model in conf.signal.models():
         name = model.name
-        examples[name] = hp.xsHisto(name)
+        examples[name] = hp.xsHisto(model)
         histos[name] = {}
         zTitles[name] = {}
         if printExamples:
