@@ -162,7 +162,8 @@ def spline(points = [], title = "") :
         graph.SetPoint(i, x, y)
     return r.TSpline3(title, graph)
 
-def exclusionGraphs(model=None, histos={}, pruneYMin=False, debug=False, printXs=None):
+def exclusionGraphs(model=None, histos={}, interBin="",
+                    pruneYMin=False, debug=False, printXs=None):
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves()[model.name]
 
@@ -192,7 +193,7 @@ def exclusionGraphs(model=None, histos={}, pruneYMin=False, debug=False, printXs
                 spec["curve"] = spline(points = curves[key])
 
         graph = rxs.graph(h=histos["%s_%s" % (model.name, histoName)],
-                          model=model, printXs=printXs,
+                          model=model, interBin=interBin, printXs=printXs,
                           spec={"variation": xsVariation})
         graph["graph"].SetName(graphName)
         graph["histo"].SetName(graphName.replace("_graph","_simpleExcl"))
@@ -267,6 +268,7 @@ def makeRootFiles(model=None, limitFileName="", simpleFileName="",
                               shiftY=shiftY)
     graphs, simple = exclusionGraphs(model=model,
                                      histos=histos,
+                                     interBin=interBin,
                                      pruneYMin=pruneYMin,
                                      printXs=printXs)
     writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
