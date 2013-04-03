@@ -76,6 +76,8 @@ def models():
         #scan(dataset="TGQ_0p8", com=7, had="v1"),
         #
         #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down"),
         #scan(dataset="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
         #scan(dataset="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
         ]
