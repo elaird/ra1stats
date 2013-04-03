@@ -124,14 +124,12 @@ def killPoints(h, cutFunc=None, interBin=""):
 def xsHisto(model=None):
     if conf.limit.binaryExclusion():
         cmssmProcess = "" if model.isSms else "total"
-        return xsHistoPhysical(model=model,
-                               cmssmProcess=cmssmProcess,
-                               xsVariation=model.xsVariation)
+        return xsHistoPhysical(model=model, cmssmProcess=cmssmProcess)
     else:
         return xsHistoAllOne(model=model, cutFunc=patches.cutFunc()[model.name])
 
 
-def xsHistoPhysical(model=None, cmssmProcess="", xsVariation=""):
+def xsHistoPhysical(model=None, cmssmProcess=""):
     #get example histo and reset
     dummyHisto = "m0_m12_mChi_noweight" if model.isSms else "m0_m12_gg"
     s = conf.signal.effHistoSpec(model=model, box="had")
@@ -196,13 +194,10 @@ def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
     if model.isSms:
         return smsEffHisto(spec=spec, model=model.name)
     else:
-        return cmssmEffHisto(spec=spec,
-                             model=model,
-                             xsVariation=model.xsVariation,
-                             )
+        return cmssmEffHisto(spec=spec, model=model)
 
 
-def cmssmEffHisto(spec={}, model=None, xsVariation=""):
+def cmssmEffHisto(spec={}, model=None):
     out = None
 
     # FIXME: Implement some check of the agreement
@@ -214,8 +209,8 @@ def cmssmEffHisto(spec={}, model=None, xsVariation=""):
                   spec["beforeDir"], "m0_m12_%s" % proc)
 
         # weight by xs of the process
-        h.Multiply(xsHistoPhysical(model=model, cmssmProcess=proc,
-                                   xsVariation=xsVariation))
+        h.Multiply(xsHistoPhysical(model=model, cmssmProcess=proc))
+
         if out is None:
             out = h.Clone("effHisto")
         else:
@@ -223,9 +218,7 @@ def cmssmEffHisto(spec={}, model=None, xsVariation=""):
 
     out.SetDirectory(0)
     # divide by total xs
-    out.Divide(xsHistoPhysical(model=model,
-                               cmssmProcess="total",
-                               xsVariation=xsVariation))
+    out.Divide(xsHistoPhysical(model=model, cmssmProcess="total"))
     return out
 
 
