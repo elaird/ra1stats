@@ -162,9 +162,10 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
             dct = {"tag": m.tag,
                    "had": m.had,
                    "muon": m.muon,
+                   "isSms": m.isSms
                    }
 
-    if not isSms(model):
+    if not dct["isSms"]:
         dir2 = "rw_scan" if not dct["tag"] else "%s_scan" % dct["tag"]
         subDirs = ["2011", dir2]
         beforeDir = "mSuGraScan_before_scale1"
@@ -188,7 +189,7 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
         tags.append("%d" % htLower)
     if htUpper:
         tags.append("%d" % htUpper)
-    if not isSms(model):
+    if not dct["isSms"]:
         tags.append("scale1")
 
     return {"beforeDir": beforeDir,
