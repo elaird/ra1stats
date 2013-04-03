@@ -180,7 +180,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
 
     return {"beforeDir": beforeDir,
             "afterDir": "_".join(tags),
-            "file": "/".join([directories.eff()] + subDirs + [model,
+            "file": "/".join([directories.eff()] + subDirs + [model.name,
                                                               box,
                                                               getattr(model, "_"+box),
                                                               fileName]
