@@ -713,7 +713,7 @@ def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackLi
         if modify:
             hp.modifyHisto(h2, model.name)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
-                      logZ=["xs", "nEventsHad"], model=model,
+                      logZ=["xs", "nEventsHad"], model=model.name,
                       suppressed=suppressed)
         if outputRootFile :
             outFile.cd()
