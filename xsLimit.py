@@ -4,7 +4,7 @@ import configuration as conf
 import plottingGrid as pg
 
 for model in conf.signal.models():
-    pg.makeXsUpperLimitPlots(model=model.name,
+    pg.makeXsUpperLimitPlots(model=model,
                              logZ=True,
                              debug=False,
                              pruneYMin=True,
