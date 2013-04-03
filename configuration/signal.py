@@ -75,9 +75,9 @@ def models():
         #scan(dataset="TGQ_0p4", com=7, had="v1"),
         #scan(dataset="TGQ_0p8", com=7, had="v1"),
         #
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up"),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down"),
+        #scan(dataset="tanBeta10", com=7, tag="rw", had="v2", muon="v2"),
+        #scan(dataset="tanBeta10", com=7, tag="rw", had="v2", muon="v2", xsVariation="up"),
+        #scan(dataset="tanBeta10", com=7, tag="rw", had="v2", muon="v2", xsVariation="down"),
         #scan(dataset="tanBeta10", com=7, tag="42", had="v8", muon="v8"),
         #scan(dataset="tanBeta40", com=7, tag="42", had="v2", muon="v2"),
         ]
@@ -106,7 +106,8 @@ def whiteListOfPoints(model="", respect=False):
 def xsHistoSpec(model=None, cmssmProcess=""):
     if not cmssmProcess:
         if model.xsVariation != "default":
-            print 'WARNING: variation "%s" (%s)' % (model.xsVariation, model.name) + \
+            print 'WARNING: variation "%s" (%s)' % (model.xsVariation,
+                                                    model.name) + \
                   ' will need to use error bars in xs file.'
     else:
         print "WARNING: using 7 TeV xs for " + \
@@ -151,15 +152,16 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
 
     tags = []
 
-    if not model.isSms:
-        dir2 = "rw_scan" if not model._tag else "%s_scan" % model._tag
-        subDirs = ["2011", dir2]
+    if model.isSms:
+        subDirs = [directories.eff(), "2012", "sms"]
+        beforeDir = "smsScan_before"
+        tags.append("smsScan")
+    elif model.com==7:
+        subDirs = [directories.eff(), "2011", "%s_scan" % model._tag]
         beforeDir = "mSuGraScan_before_scale1"
         tags.append("mSuGraScan")
     else:
-        subDirs = ["2012", "sms"]
-        beforeDir = "smsScan_before"
-        tags.append("smsScan")
+        assert False, model.name
 
     if bJets:
         tags.append(bJets)
@@ -178,13 +180,10 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     if not model.isSms:
         tags.append("scale1")
 
+    fileFields = [model.name, box, getattr(model, "_"+box), fileName]
     return {"beforeDir": beforeDir,
             "afterDir": "_".join(tags),
-            "file": "/".join([directories.eff()] + subDirs + [model.name,
-                                                              box,
-                                                              getattr(model, "_"+box),
-                                                              fileName]
-                             )
+            "file": "/".join(subDirs + fileFields),
             }
 
 
