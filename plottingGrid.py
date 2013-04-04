@@ -36,9 +36,7 @@ def adjustHisto(h, title = "") :
     h.GetYaxis().SetTitleOffset(1.6)
     h.GetZaxis().SetTitleOffset(1.5)
 
-def printOnce(model="", canvas=None, fileName="", alsoC=False):
-    assert model
-
+def printOnce(model=None, canvas=None, fileName="", alsoC=False):
     text = r.TText()
     text.SetNDC()
     text.SetTextAlign(22)
@@ -48,7 +46,7 @@ def printOnce(model="", canvas=None, fileName="", alsoC=False):
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(22)
-        current_stamp = conf.signal.processStamp(model)
+        current_stamp = conf.signal.processStamp(model.name)
 
         latex.SetTextSize(0.6*latex.GetTextSize())
         if current_stamp:
@@ -309,7 +307,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
              "lineStyle":1, "lineWidth":1, "color":r.kBlack},
             ]
 
-    makeLimitPdf(model=model.name,
+    makeLimitPdf(model=model,
                  rootFileName=limitFileName,
                  specs=specs,
                  diagonalLine=diagonalLine,
@@ -318,17 +316,17 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
                  mDeltaFuncs=mDeltaFuncs,
                  )
 
-    makeSimpleExclPdf(model=model.name,
+    makeSimpleExclPdf(model=model,
                       histoFileName=simpleFileName,
                       graphFileName=limitFileName,
                       specs=specs,
                       curveGopts=curveGopts,
                       )
 
-def makeLimitPdf(model="", rootFileName="", diagonalLine=False, logZ=False,
+def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
                  curveGopts="", mDeltaFuncs=False, specs=[]):
 
-    ranges = conf.signal.ranges(model)
+    ranges = conf.signal.ranges(model.name)
 
     epsFile = rootFileName.replace(".root", ".eps")
     f = r.TFile(rootFileName)
@@ -346,7 +344,7 @@ def makeLimitPdf(model="", rootFileName="", diagonalLine=False, logZ=False,
             hName = "UpperLimit"
     else:
         hName = "upperLimit95"
-    h = f.Get("%s_%s" % (model, hName))
+    h = f.Get("%s_%s" % (model.name, hName))
     h.Draw("colz")
 
     if logZ :
@@ -383,13 +381,14 @@ def makeLimitPdf(model="", rootFileName="", diagonalLine=False, logZ=False,
         for func in funcs :
             func.Draw("same")
 
-    s3 = stamp(text = likelihoodSpec.likelihoodSpec(model).legendTitle(), x = 0.2075, y = 0.64, factor = 0.65)
+    s3 = stamp(text = likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
+               x=0.2075, y=0.64, factor=0.65)
     printOnce(model=model, canvas=c, fileName=epsFile, alsoC=True)
     f.Close()
 
-def makeSimpleExclPdf(model="", histoFileName="", graphFileName="",
+def makeSimpleExclPdf(model=None, histoFileName="", graphFileName="",
                       specs=[], curveGopts=""):
-    ranges = conf.signal.ranges(model)
+    ranges = conf.signal.ranges(model.name)
 
     c = squareCanvas()
     pdf = histoFileName.replace(".root",".pdf")
@@ -531,7 +530,7 @@ def makeEfficiencyPlot(model=None):
 
     s2 = stamp(text = "#alpha_{T}", x = 0.22, y = 0.55, factor = 1.3)
 
-    printOnce(model=model.name, canvas=c, fileName=printName)
+    printOnce(model=model, canvas=c, fileName=printName)
     hp.printHoles(h2)
 
 def printTimeStamp() :
