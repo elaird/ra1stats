@@ -106,34 +106,28 @@ def whiteListOfPoints(model="", respect=False):
 
 
 def xsHistoSpec(model=None, cmssmProcess=""):
-    if not cmssmProcess:
-        if model.xsVariation != "default":
-            print 'WARNING: variation "%s" (%s)' % (model.xsVariation,
-                                                    model.name) + \
-                  ' will need to use error bars in xs file.'
-    else:
-        print "WARNING: using 7 TeV xs for " + \
-              "model %s, process %s" % (model.name, cmssmProcess)
+    if model.isSms and (model.xsVariation != "default"):
+        error = 'ERROR: variation "%s" (%s)' % (model.xsVariation, model.name)
+        error += ' will need to use error bars in xs file.'
+        assert False, error
 
-    # FIXME: use model.com
     base = directories.xs()
-    #seven = "%s/v5/7TeV.root"%base
-    eight = "%s/v5/8TeV.root" % base
-    tgqFile = "%s/v1/TGQ_xSec.root" % base
-    tanBeta10 = "%s/v5/7TeV_cmssm.root" % base
-    d = {"T2":      {"histo": "squark", "factor": 1.0, "file": eight},
-         "T2tt":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
-         "T2bb":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
-         "T2cc":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
-         "tanBeta10": {"histo": "%s_%s" % (cmssmProcess, model.xsVariation),
-                       "factor": 1.0, "file": tanBeta10},
+    assert model.com in [7, 8], model.com
+    sms = "%s/v5/%dTeV.root" % (base, model.com)
+
+    d = {"T2":      {"histo": "squark", "factor": 1.0, "file": sms},
+         "T2tt":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
+         "T2bb":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
+         "T2cc":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
+         "tanBeta10_7": {"histo": "%s_%s" % (cmssmProcess, model.xsVariation),
+                         "factor": 1.0, "file": "%s/v5/7TeV_cmssm.root" % base},
          }
 
-    for item in ["T1", "T1bbbb", "T1tttt", "T5zz"]:
-        d[item] = {"histo": "gluino", "factor": 1.0, "file": eight}
+    for item in ["T1", "T1bbbb", "T1tttt", "T5zz_7"]:
+        d[item] = {"histo": "gluino", "factor": 1.0, "file": sms}
 
-    for item in ["TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]:
-        d[item] = {"histo": "clone", "factor": 1.0, "file": tgqFile}
+    for item in ["TGQ_0p0_7", "TGQ_0p2_7", "TGQ_0p4_7", "TGQ_0p8_7"]:
+        d[item] = {"histo": "clone", "factor": 1.0, "file": "%s/v1/TGQ_xSec.root" % base}
 
     assert model.name in d, "model=%s" % model.name
     return d[model.name]
@@ -189,8 +183,8 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
 
 def nEventsIn(model=""):
     assert model
-    return {"T5zz":      (5.0e3, None),
-            "tanBeta10": (9.0e3, 11.0e3),
+    return {"T5zz_7":      (5.0e3, None),
+            "tanBeta10_7": (9.0e3, 11.0e3),
             }.get(model, (1, None))
 
 
@@ -202,11 +196,11 @@ def ranges(model):
          "T2cc":   (87.5, 300.0),
          "T1bbbb": (287.5, 1400),
          "T1tttt": (387.5, 1400),
-         "T1tttt_2012": (375.0, 1200.0),
-         "tanBeta10": (0.0, 4000.0),
+         "T1tttt_ichep": (375.0, 1200.0),
+         "tanBeta10_7": (0.0, 4000.0),
          }
 
-    y = {"T5zz":   (50.0, 999.9),  # (min, max)
+    y = {"T5zz_7":   (50.0, 999.9),  # (min, max)
          "T1":      (0.0, 1225),
          "T2":      (0.0,  825),
          "T2tt":    (0.0,  600),
@@ -214,8 +208,8 @@ def ranges(model):
          "T2cc":    (0.0,  300),
          "T1bbbb":  (0.0, 1225),
          "T1tttt":  (0.0, 1050),
-         "T1tttt_2012":  (50.0, 800.0),
-         "tanBeta10": (0.0, 4000.0),
+         "T1tttt_ichep":  (50.0, 800.0),
+         "tanBeta10_7": (0.0, 4000.0),
          }
 
     z = {"T2cc": (1.0, 200.0, 20),
