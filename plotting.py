@@ -351,12 +351,12 @@ class validationPlotter(object) :
         if not hasattr(self,"drawRatios") : setattr(self,"drawRatios",False)
 
         if self.printPages :
-            print "printing individual pages; drawMc = False"
+            print "INFO: printing individual pages; setting drawMc = False"
             self.drawMc = False
 
         self.quantiles = {}
         if self.errorsFromToys:
-            print "using quantiles from previously generated toys"
+            print "INFO: using quantiles from previously generated toys"
             self.quantiles = ensemble.functionQuantiles(self.note, nToys=self.errorsFromToys)
 
         self.toPrint = []
@@ -421,7 +421,7 @@ class validationPlotter(object) :
         self.ewkPlots()
         #self.mcFactorPlots()
         self.alphaTRatioPlots()
-        self.significancePlots()
+        #self.significancePlots()
         self.rhoPlots()
         self.printPars()
         self.correlationHist()
@@ -454,7 +454,7 @@ class validationPlotter(object) :
                       obs = {"var":"nSimple", "desc": obsString(self.obsLabel, "simple sample", self.lumi["simple"])},
                       otherVars = vars, logY = logY, stampParams = False)
 
-    def hadPlots(self) :
+    def hadPlots(self, extraPage=False):
         if "had" not in self.lumi:
             return
 
@@ -480,22 +480,57 @@ class validationPlotter(object) :
                  "errorBand":r.kGray} if self.drawMc else {},
                 ]
         if self.drawComponents :
-            vars +=[
-            {"var":"ewk",  "type":self.ewkType, "desc":"EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
-             "color":self.ewk, "style":2, "width":self.width1, "stack":"background", "suppress":["min","max"]},
-            #{"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcd", "k_qcd", errors = True),
-            # "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
-            {"var":"zInv", "type":"function", "desc":"Z#rightarrow#nu#bar{#nu}",  "color":r.kOrange+7, "style":2, "width":self.width1, "stack":"ewk"},
-            #{"var":"ttw",  "type":"function", "desc":"t#bar{t} + W",
-            # "desc2": "#rho_{#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMuonW").getVal(), self.wspace.var("rhoMuonW").getError()) if self.wspace.var("rhoMuonW") else "",
-            # "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
+            vars +=[{"var": "ewk",
+                     "type": self.ewkType,
+                     "desc": "EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
+                     "color": self.ewk,
+                     "style": 2,
+                     "width": self.width1,
+                     "stack": "background",
+                     "suppress": ["min", "max"],
+                     },
+                    #{"var": "qcd",
+                    # "type": "function",
+                    # "desc": "QCD",
+                    # "desc2": akDesc(self.wspace, "A_qcd", "k_qcd", errors=True),
+                    # "color": r.kMagenta,
+                    # "style": 3,
+                    # "width": 2,
+                    # "stack": "background",
+                    # },
+                    {"var": "zInv",
+                     "type": "function",
+                     "desc": "Z#rightarrow#nu#bar{#nu}",
+                     "color": r.kOrange+7,
+                     "style": 2,
+                     "width": self.width1,
+                     "stack": "ewk",
+                     },
+                    #{"var": "ttw",
+                    # "type": "function",
+                    # "desc": "t#bar{t} + W",
+                    # "color": r.kGreen,
+                    # "style": 2,
+                    # "width": 2,
+                    # "stack": "ewk",
+                    # },
             ]
-        if not self.smOnly :
-            vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
-        elif self.signalExampleToStack :
-            vars += [{"example":self.signalExampleToStack, "box":"had", "desc":self.signalExampleToStack.label,
-                      "color":self.signalExampleToStack.lineColor, "style":self.signalExampleToStack.lineStyle,
-                      "width":self.width1, "stack":"total"}]
+        if not self.smOnly:
+            vars += [{"var":"hadS",
+                      "type":"function",
+                      "desc":self.signalDesc,
+                      "desc2":self.signalDesc2,
+                      "color":self.sig,
+                      "style":1,
+                      "width":self.width1,
+                      "stack":"total"}]
+        elif self.signalExampleToStack:
+            vars += [{"example": self.signalExampleToStack,
+                      "box": "had",
+                      "desc": self.signalExampleToStack.label,
+                      "color": self.signalExampleToStack.lineColor,
+                      "style": self.signalExampleToStack.lineStyle,
+                      "width": self.width1, "stack":"total"}]
 
         obs = {"var":"nHad",
                #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"]),
@@ -513,19 +548,18 @@ class validationPlotter(object) :
                       ratioDenom="hadB",
                       **self.hadLegend)
 
-
-        for var in [obs]+vars:
-            var.update({"dens": ["hadB"], "denTypes": ["function"]})
-
-        self.plot(note="",
-                  fileName=["b_over_b"],
-                  legend0=(0.2, 0.75),
-                  legend1=(0.6, 0.88),
-                  yLabel="Events / b",
-                  yAxisMinMax=(0.0, 2.0),
-                  obs=obs,
-                  otherVars=vars,
-                  )
+        if extraPage:
+            for var in [obs]+vars:
+                var.update({"dens": ["hadB"], "denTypes": ["function"]})
+                self.plot(note="",
+                          fileName=["b_over_b"],
+                          legend0=(0.2, 0.75),
+                          legend1=(0.6, 0.88),
+                          yLabel="Events / b",
+                          yAxisMinMax=(0.0, 2.0),
+                          obs=obs,
+                          otherVars=vars,
+                          )
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
