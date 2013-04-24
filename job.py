@@ -42,7 +42,6 @@ def printDict(d, space=""):
 
 
 def onePoint(likelihoodSpec=None, point=None):
-    name = point[0]
     fileName = conf.directories.pickledFileName(*point)+".in"
     signal = pickling.readNumbers(fileName=fileName)
     printDict(signal)
@@ -64,7 +63,7 @@ def onePoint(likelihoodSpec=None, point=None):
                                       )
                        )
     else:
-        minEventsIn, maxEventsIn = conf.signal.nEventsIn(name)
+        minEventsIn, maxEventsIn = conf.signal.nEventsIn(model=point[0])
         warning = "WARNING: nEventsIn = %d not in" % signal["nEventsIn"]
         warning += " allowed range[ %s, %s ] " % (str(minEventsIn),
                                                   str(maxEventsIn))

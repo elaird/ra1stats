@@ -170,7 +170,6 @@ def writeSignalFiles(points=[], outFilesAlso=False):
 
 ##merge functions
 def mergedFile(model=None):
-    assert model
     tags = [conf.limit.method()]
     if "CLs" in conf.limit.method():
         tags += [conf.limit.calculatorType(),
@@ -247,10 +246,8 @@ def mergePickledFiles(printExamples=False):
         os.remove(fileName.replace(".out", ".in"))
 
     for model in conf.signal.models():
-        name = model.name
         f = r.TFile(mergedFile(model=model), "RECREATE")
-
-        for key, histo in histos[name].iteritems():
-            histo.GetZaxis().SetTitle(zTitles[name][key])
+        for key, histo in histos[model.name].iteritems():
+            histo.GetZaxis().SetTitle(zTitles[model.name][key])
             histo.Write()
-    f.Close()
+        f.Close()

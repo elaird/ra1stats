@@ -574,17 +574,21 @@ def printLumis() :
     return text
 
 def drawBenchmarks(model=None):
-    parameters =  conf.signal.scanParameters()
-    if not (model in parameters) : return
+    parameters = conf.signal.scanParameters()
+    if not (model in parameters):
+        return
+
     params = parameters[model.name]
 
     text = r.TText()
     out = []
-    for label,coords in conf.signal.benchmarkPoints().iteritems() :
+    for label, coords in conf.signal.benchmarkPoints().iteritems():
         drawIt = True
-        for key,value in coords.iteritems() :
-            if key in params and value!=params[key] : drawIt = False
-        if not drawIt : continue
+        for key, value in coords.iteritems():
+            if key in params and value != params[key]:
+                drawIt = False
+        if not drawIt:
+            continue
         marker = r.TMarker(coords["m0"], coords["m12"], 20)
         marker.Draw()
         out.append(marker)
