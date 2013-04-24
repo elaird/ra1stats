@@ -351,13 +351,13 @@ class validationPlotter(object) :
         if not hasattr(self,"drawRatios") : setattr(self,"drawRatios",False)
 
         if self.printPages :
-            print "printing individual pages; drawMc = False"
+            print "INFO: printing individual pages; setting drawMc = False"
             self.drawMc = False
 
         self.quantiles = {}
-        if self.errorsFromToys :
-            print "drawing error bands from previously generated toys"
-            self.quantiles = ensemble.functionQuantiles(self.note, nToys = self.errorsFromToys)
+        if self.errorsFromToys:
+            print "INFO: using quantiles from previously generated toys"
+            self.quantiles = ensemble.functionQuantiles(self.note, nToys=self.errorsFromToys)
 
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
@@ -421,6 +421,7 @@ class validationPlotter(object) :
         self.ewkPlots()
         #self.mcFactorPlots()
         self.alphaTRatioPlots()
+        #self.significancePlots()
         self.rhoPlots()
         self.printPars()
         self.correlationHist()
@@ -453,42 +454,112 @@ class validationPlotter(object) :
                       obs = {"var":"nSimple", "desc": obsString(self.obsLabel, "simple sample", self.lumi["simple"])},
                       otherVars = vars, logY = logY, stampParams = False)
 
-    def hadPlots(self) :
-        if "had" not in self.lumi : return
-        vars = [
-            {"var":"hadB", "type":"function", "desc":"SM (QCD + EWK)" if self.drawComponents else self.smDesc,
-             "color":self.sm, "style":1, "width":self.width2, "stack":"total",
-             "errorBand":self.smError, "repeatNoBand":True, "bandStyle":self.smBandStyle, "errorsFrom":""},
-            {"var":"mcHad", "type":None, "color":r.kGray+2, "style":2, "width":2,
-             "desc":"SM MC #pm stat. error", "stack":None, "errorBand":r.kGray} if self.drawMc else {},
-            ]
+    def hadPlots(self, extraPage=False):
+        if "had" not in self.lumi:
+            return
+
+        vars = [{"var": "hadB",
+                 "type": "function",
+                 "desc": "SM (QCD + EWK)" if self.drawComponents else self.smDesc,
+                 "color": self.sm,
+                 "style": 1,
+                 "width": self.width2,
+                 "stack": "total",
+                 "errorBand": self.smError,
+                 "repeatNoBand": True,
+                 "bandStyle": self.smBandStyle,
+                 "errorsFrom": "",
+                },
+                {"var":"mcHad",
+                 "type":None,
+                 "color":r.kGray+2,
+                 "style":2,
+                 "width":2,
+                 "desc":"SM MC #pm stat. error",
+                 "stack":None,
+                 "errorBand":r.kGray} if self.drawMc else {},
+                ]
         if self.drawComponents :
-            vars +=[
-            {"var":"ewk",  "type":self.ewkType, "desc":"EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
-             "color":self.ewk, "style":2, "width":self.width1, "stack":"background", "suppress":["min","max"]},
-            #{"var":"qcd",  "type":"function", "desc":"QCD", "desc2":akDesc(self.wspace, "A_qcd", "k_qcd", errors = True),
-            # "color":r.kMagenta, "style":3, "width":2, "stack":"background"},
-            {"var":"zInv", "type":"function", "desc":"Z#rightarrow#nu#bar{#nu}",  "color":r.kOrange+7, "style":2, "width":self.width1, "stack":"ewk"},
-            #{"var":"ttw",  "type":"function", "desc":"t#bar{t} + W",
-            # "desc2": "#rho_{#mu} = %4.2f #pm %4.2f"%(self.wspace.var("rhoMuonW").getVal(), self.wspace.var("rhoMuonW").getError()) if self.wspace.var("rhoMuonW") else "",
-            # "color":r.kGreen, "style":2, "width":2, "stack":"ewk"},
+            vars +=[{"var": "ewk",
+                     "type": self.ewkType,
+                     "desc": "EWK (t#bar{t} + t + W + Z#rightarrow#nu#bar{#nu})",
+                     "color": self.ewk,
+                     "style": 2,
+                     "width": self.width1,
+                     "stack": "background",
+                     "suppress": ["min", "max"],
+                     },
+                    #{"var": "qcd",
+                    # "type": "function",
+                    # "desc": "QCD",
+                    # "desc2": akDesc(self.wspace, "A_qcd", "k_qcd", errors=True),
+                    # "color": r.kMagenta,
+                    # "style": 3,
+                    # "width": 2,
+                    # "stack": "background",
+                    # },
+                    {"var": "zInv",
+                     "type": "function",
+                     "desc": "Z#rightarrow#nu#bar{#nu}",
+                     "color": r.kOrange+7,
+                     "style": 2,
+                     "width": self.width1,
+                     "stack": "ewk",
+                     },
+                    #{"var": "ttw",
+                    # "type": "function",
+                    # "desc": "t#bar{t} + W",
+                    # "color": r.kGreen,
+                    # "style": 2,
+                    # "width": 2,
+                    # "stack": "ewk",
+                    # },
             ]
-        if not self.smOnly :
-            vars += [{"var":"hadS", "type":"function", "desc":self.signalDesc, "desc2":self.signalDesc2, "color":self.sig, "style":1, "width":self.width1, "stack":"total"}]
-        elif self.signalExampleToStack :
-            vars += [{"example":self.signalExampleToStack, "box":"had", "desc":self.signalExampleToStack.label,
-                      "color":self.signalExampleToStack.lineColor, "style":self.signalExampleToStack.lineStyle,
-                      "width":self.width1, "stack":"total"}]
+        if not self.smOnly:
+            vars += [{"var":"hadS",
+                      "type":"function",
+                      "desc":self.signalDesc,
+                      "desc2":self.signalDesc2,
+                      "color":self.sig,
+                      "style":1,
+                      "width":self.width1,
+                      "stack":"total"}]
+        elif self.signalExampleToStack:
+            vars += [{"example": self.signalExampleToStack,
+                      "box": "had",
+                      "desc": self.signalExampleToStack.label,
+                      "color": self.signalExampleToStack.lineColor,
+                      "style": self.signalExampleToStack.lineStyle,
+                      "width": self.width1, "stack":"total"}]
+
+        obs = {"var":"nHad",
+               #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"]),
+               #"desc": "Data (hadronic sample, %s)" % self.selNote,
+               "desc": "Data (signal region, %s)" % self.selNote,
+               }
 
         for logY in [False, True] :
             thisNote = "Hadronic Signal Sample%s"%(" (logY)" if logY else "")
-            fileName = ["hadronic"]+(["logy"] if logY else [])
-            obs = {"var":"nHad", #"desc": obsString(self.obsLabel, "hadronic sample", self.lumi["had"])},
-                   #"desc": "Data (hadronic sample, %s)"%self.selNote}
-                   "desc": "Data (signal region, %s)"%self.selNote}
+            self.plot(fileName=["hadronic"]+(["logy"] if logY else []),
+                      obs=obs,
+                      otherVars=vars,
+                      logY=logY,
+                      stampParams=True,
+                      ratioDenom="hadB",
+                      **self.hadLegend)
 
-            self.plot(fileName = fileName, obs = obs, otherVars = vars, logY = logY, stampParams = True,
-                      ratioDenom = "hadB", **self.hadLegend)
+        if extraPage:
+            for var in [obs]+vars:
+                var.update({"dens": ["hadB"], "denTypes": ["function"]})
+                self.plot(note="",
+                          fileName=["b_over_b"],
+                          legend0=(0.2, 0.75),
+                          legend1=(0.6, 0.88),
+                          yLabel="Events / b",
+                          yAxisMinMax=(0.0, 2.0),
+                          obs=obs,
+                          otherVars=vars,
+                          )
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
@@ -596,6 +667,83 @@ class validationPlotter(object) :
             self.plot(note = "mumu translation factor (from MC)", legend0 = (0.5, 0.8),
                       otherVars = [{"var":"rMumu", "type":"var", "color":r.kBlue, "style":1, "desc":"MC Z#rightarrow#mu#bar{#mu} / MC Z#rightarrow#nu#bar{#nu} / P", "stack":None}],
                       yLabel = "", scale = self.lumi["had"]/self.lumi["mumu"])
+
+    def significancePlots(self):
+        if "had" not in self.lumi or not self.signalExampleToStack:
+            return
+
+        self.plot(note="",
+                  fileName=["s_over_b"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="s / b",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "had",
+                              "desc": self.signalExampleToStack.label+" / b",
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              "dens": ["hadB"],
+                              "denTypes": ["function"],
+                              }],
+                  )
+
+        self.plot(note="",
+                  fileName=["s_over_root_b"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="s / #sqrt{b}",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "had",
+                              "desc": self.signalExampleToStack.label+" / b",
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              "dens": ["hadB"],
+                              "denTypes": ["function"],
+                              "denFuncs": [lambda x:math.sqrt(x)],
+                              }],
+                  )
+
+        self.plot(note="",
+                  fileName=["s_over_func_of_b"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="s / #sqrt{b + (0.1b)^{2}}",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "had",
+                              "desc": self.signalExampleToStack.label+" / b",
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              "dens": ["hadB"],
+                              "denTypes": ["function"],
+                              "denFuncs": [lambda x:math.sqrt(x + (0.1*x)**2)],
+                              }],
+                  )
+
+        self.plot(note="",
+                  fileName=["s_over_unc_b"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="s / #sigma_{b}",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "had",
+                              "desc": self.signalExampleToStack.label+" / b",
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              "dens": ["hadB"],
+                              "denTypes": ["function"],
+                              "denKeys": ["uncFromToys"],
+                              }],
+                  )
+        return
+
 
     def alphaTRatioPlots(self) :
         if "had" not in self.lumi : return
@@ -919,56 +1067,53 @@ class validationPlotter(object) :
         out.GetYaxis().SetTitleSize(1.5*out.GetYaxis().GetTitleSize())
         return out
 
-    def signalExampleHisto(self, d = {}) :
-        box = d["box"]
-
-        out = self.htHisto(name = box + d["extraName"])
-        out.SetLineColor(d["color"])
-        out.SetLineStyle(inDict(d, "style", 1))
-        out.SetLineWidth(inDict(d, "width", 1))
-
-        out.SetMarkerColor(d["color"])
-        out.SetMarkerStyle(inDict(d, "style", 1))
-
+    def fillSignalExampleYield(self, spec={}, histo=None):
+        box = spec["box"]
         l = self.lumi[box]
-        xs = d["example"].xs
-        eff = inDict(d["example"][self.label], "eff%s"%box.capitalize(), [0.0]*len(self.htBinLowerEdges))
-        activeBins = self.activeBins["n%s"%box.capitalize()]
-        for i in range(len(self.htBinLowerEdges)) :
-            if not activeBins[i] : continue
-            out.SetBinContent(i+1, l*xs*eff[i])
-        return out
+        xs = spec["example"].xs
+        eff = inDict(spec["example"][self.label],
+                     "eff%s" % spec["box"].capitalize(),
+                     [0.0]*len(self.htBinLowerEdges))
+        activeBins = self.activeBins["n%s" % spec["box"].capitalize()]
+        for i in range(len(self.htBinLowerEdges)):
+            if not activeBins[i]:
+                continue
+            histo.SetBinContent(i+1, l*xs*eff[i])
 
-    def varHisto(self, spec = {}, extraName = "", yLabel = "", note = "", lumiString = "") :
-        varName = spec["var"]
-        wspaceMemberFunc = spec["type"]
-        color       = inDict(spec, "color",       r.kBlack)
-        lineStyle   = inDict(spec, "style",       1)
-        lineWidth   = inDict(spec, "width",       1)
-        markerStyle = inDict(spec, "markerStyle", 1)
-        fillStyle   = inDict(spec, "fillStyle",   0)
-        fillColor   = inDict(spec, "fillColor",   color)
-        errorsFrom  = inDict(spec, "errorsFrom",  "")
-        systMap     = inDict(spec, "systMap",  False)
+
+    def varHisto(self, spec={}, extraName="", yLabel="", note="", lumiString=""):
+        color       = spec.get("color", r.kBlack)
+        lineStyle   = spec.get("style", 1)
+        lineWidth   = spec.get("width", 1)
+        markerStyle = spec.get("markerStyle", 1)
+        fillStyle   = spec.get("fillStyle", 0)
+        fillColor   = spec.get("fillColor", color)
+        errorsFrom  = spec.get("errorsFrom", "")
+        systMap     = spec.get("systMap", False)
+
+        varName = spec["box" if "example" in spec else "var"]
+        wspaceMemberFunc = "" if "example" in spec else spec["type"]
 
         d = {}
-        d["value"] = self.htHisto(name = varName+extraName, note = note, yLabel = yLabel)
+        d["value"] = self.htHisto(name=varName + extraName,
+                                  note=note,
+                                  yLabel=yLabel)
         d["value"].Reset()
 
-        if wspaceMemberFunc=="var" :
-            for item in ["min", "max"] :
+        if wspaceMemberFunc == "var":
+            for item in ["min", "max"]:
                 d[item] = d["value"].Clone(d["value"].GetName()+item)
 
-        for item in ["errors", "noErrors", "errorsLo", "errorsHi"] :
+        for item in ["errors", "noErrors", "errorsLo", "errorsHi", "uncFromToys"]:
             d[item] = d["value"].Clone(d["value"].GetName()+item)
 
         #style
-        for key,histo in d.iteritems() :
+        for key,histo in d.iteritems():
             histo.SetLineColor(color)
             histo.SetLineWidth(lineWidth)
             histo.SetFillStyle(fillStyle)
             histo.SetFillColor(fillColor)
-            if key=="value" :
+            if key == "value":
                 histo.SetMarkerColor(color)
                 histo.SetMarkerStyle(markerStyle)
                 histo.SetLineStyle(lineStyle)
@@ -976,6 +1121,10 @@ class validationPlotter(object) :
                 # FIXME: lineStyle increment
                 histo.SetLineStyle(lineStyle+0)
 
+        if "example" in spec:
+            assert "func" not in spec, "func will not be applied here"
+            self.fillSignalExampleYield(spec=spec, histo=d["value"])
+            return d
 
         toPrint = []
         for i in range(len(self.htBinLowerEdges)) :
@@ -990,6 +1139,8 @@ class validationPlotter(object) :
                 if (not var) and (not func) : continue
 
                 value = (var if var else func).getVal()
+                if spec.get("func"):
+                    value = spec["func"](value)
                 d["value"].SetBinContent(i+1, value)
                 if var :
                     if varName[0]=="n" :
@@ -1010,6 +1161,7 @@ class validationPlotter(object) :
                     q = self.quantiles[ni(varName, self.label, i)]
                     d["errors"].SetBinContent(i+1, (q[2]+q[0])/2.0)
                     d["errors"].SetBinError(i+1, (q[2]-q[0])/2.0)
+                    d["uncFromToys"].SetBinContent(i+1, d["errors"].GetBinError(i+1))
                     d["noErrors"].SetBinContent(i+1, value)
                     d["noErrors"].SetBinError(i+1, 0.0)
                     d["errorsLo"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)-d["errors"].GetBinError(i+1)) #used in ratioPlots
@@ -1078,43 +1230,59 @@ class validationPlotter(object) :
             text.DrawLatex(x, y-i*s, label%(obj.getVal(), obj.getError()))
         return
 
-    def stacks(self, specs, extraName = "", lumiString = "", scale = 1.0) :
+    def divide(self, histo=None, spec={}):
+        for den, denType, denFunc, denKey in zip(spec["dens"],
+                                                 spec["denTypes"],
+                                                 spec.get("denFuncs", [lambda x:x]*len(spec["dens"])),
+                                                 spec.get("denKeys", ["value"]*len(spec["dens"])),
+                                                 ):
+            histo.Divide(self.varHisto(spec={"var": den,
+                                             "type": denType,
+                                             "func": denFunc,
+                                             },
+                                       )[denKey])
+
+    def stacks(self, specs=[], extraName="", lumiString="", scale=1.0):
         stacks = {}
         histoList = []
         legEntries = []
 
-        for iSpec,d in enumerate(specs) :
-            extraName = "%s%s"%(extraName, "_".join(d["dens"]) if "dens" in d else "")
+        for iSpec, spec in enumerate(specs):
+            if "dens" in spec:
+                extraName += "_".join([""]+spec["dens"])
 
-            if "example" not in d :
-                if "var" not in d : continue
-                histos = self.varHisto(extraName = extraName, lumiString = lumiString, spec = d)
-            else :
-                d2 = copy.deepcopy(d)
-                d2["extraName"] = extraName
-                histos = {"value":self.signalExampleHisto(d2)}
-            if not histos["value"].GetEntries() : continue
+            if ("var" not in spec) and ("example" not in spec):
+                continue
 
-            if "dens" in d :
-                for h in histos.values() :
-                    for den,denType in zip(d["dens"], d["denTypes"]) :
-                        h.Divide(self.varHisto(spec = {"var":den, "type":denType})["value"])
+            histos = self.varHisto(spec=spec, extraName=extraName, lumiString=lumiString)
+            if not histos["value"].GetEntries():
+                continue
+
+            if "dens" in spec:
+                for h in histos.values():
+                    self.divide(histo=h, spec=spec)
 
             legHisto = histos["value"]
             legGopts = "l"
 
-            if d.get("errorBand") and self.bandInLegend :
+            if spec.get("errorBand") and self.bandInLegend:
                 legHisto = histos["legend"] = histos["value"].Clone("%s_legendClone"%histos["value"].GetName())
-                legHisto.SetFillColor(d["errorBand"])
-                legHisto.SetFillStyle(d.get("bandStyle",1001))
+                legHisto.SetFillColor(spec["errorBand"])
+                legHisto.SetFillStyle(spec.get("bandStyle", 1001))
                 legGopts += "f"
-            legEntries.append( (legHisto, "%s %s"%(d["desc"], d.get("desc2", "")), d.get("legSpec", legGopts)) )
+            legEntries.append((legHisto,
+                               "%s %s" % (spec["desc"], spec.get("desc2", "")),
+                               spec.get("legSpec", legGopts))
+                              )
 
-            stack = inDict(d, "stack", "")
-            if not stack : stack = "_".join(["NONE","%03d"%iSpec]+[d["var"]]*3) #hacky default stack name
-            if stack not in stacks : stacks[stack] = utils.thstackMulti(name = stack, drawErrors = (self.errorsFromToys or d.get("errorsFrom")))
-            stacks[stack].Add(histos, d)
-        return stacks,legEntries
+            stack = spec.get("stack", "")
+            if not stack:
+                stack = "_".join(["NONE","%03d" % iSpec]+[spec["var"]]*3) #hacky default stack name
+            if stack not in stacks:
+                stacks[stack] = utils.thstackMulti(name=stack, drawErrors=(self.errorsFromToys or spec.get("errorsFrom")))
+            stacks[stack].Add(histos, spec)
+        return stacks, legEntries
+
 
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
              selNoteCoords = (0.13, 0.85), yAxisMinMax = (0.0, None), customMaxFactor = (1.1, 2.0),
@@ -1138,9 +1306,8 @@ class validationPlotter(object) :
         obsHisto = self.varHisto(extraName = extraName, yLabel = yLabel, note = note, lumiString = lumiString,
                                  spec = {"var":obs["var"], "type":"var"})["value"]
 
-        if "dens" in obs :
-            for den,denType in zip(obs["dens"], obs["denTypes"]) :
-                obsHisto.Divide(self.varHisto(spec = {"var":den, "type": denType})["value"])
+        if "dens" in obs:
+            self.divide(histo=obsHisto, spec=obs)
 
         obsHisto.SetMarkerStyle(inDict(obs, "markerStyle", 20))
         obsHisto.SetStats(False)
@@ -1159,7 +1326,7 @@ class validationPlotter(object) :
         for item in ["extraName", "lumiString", "scale"] :
             args[item] = eval(item)
 
-        stackDict,legEntries = self.stacks(otherVars, **args)
+        stackDict, legEntries = self.stacks(specs=otherVars, **args)
 
         maxes = [utils.histoMax(h) for h in [obsHisto]]+[s.Maximum() for s in stackDict.values()]
         if maxes and not maximum :

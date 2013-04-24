@@ -8,8 +8,15 @@ import workspace
 import ROOT as r
 
 
-def go(whiteList=[], dataset="", ensemble=False,
-       allCategories=[], ignoreHad=False):
+def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
+       bestFit=False, interval=False, ensemble=False):
+
+    ls = likelihoodSpec.spec(whiteList=whiteList,
+                             dataset=dataset,
+                             ignoreHad=ignoreHad,
+                             separateSystObs=not ensemble
+                             )
+
 
     examples_paper = {("0b_le3j",): signals2.t2,
                       ("0b_ge4j",): signals2.t1,
@@ -36,16 +43,22 @@ def go(whiteList=[], dataset="", ensemble=False,
     examples = examples_t2cc
     signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
 
-    ls = likelihoodSpec.spec(whiteList=whiteList,
-                             dataset=dataset,
-                             ignoreHad=ignoreHad,
-                             separateSystObs=not ensemble
-                             )
+    assert not (interval and bestFit)
+
+    if interval:
+        signalToTest = signal
+        signalToInject = {}
+        signalExampleToStack = {}
+
+    if bestFit:
+        signalToTest = {}
+        signalToInject = {}
+        signalExampleToStack = signal
 
     f = workspace.foo(likelihoodSpec=ls,
-                      #signalToTest=signal,
-                      signalExampleToStack=signal,
-                      #signalToInject=signal,
+                      signalToTest=signalToTest,
+                      signalExampleToStack=signalExampleToStack,
+                      signalToInject=signalToInject,
                       #trace=True
                       #rhoSignalMin=0.1,
                       #fIniFactor=0.1,
@@ -61,12 +74,14 @@ def go(whiteList=[], dataset="", ensemble=False,
         f.ensemble(nToys=nToys, stdout=True)
         return out
 
-    #cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
-    #out = f.interval(cl=cl,
-    #                 method=["profileLikelihood", "feldmanCousins"][0],
-    #                 makePlots=True,
-    #                 ); print out
-    #f.profile()
+    if interval:
+        cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
+        out = f.interval(cl=cl,
+                         method=["profileLikelihood", "feldmanCousins"][0],
+                         makePlots=True,
+                         ); print out
+        #f.profile()
+
     #out = f.cls(cl=cl,
     #            makePlots=True,
     #            testStatType=3,
@@ -91,14 +106,19 @@ def go(whiteList=[], dataset="", ensemble=False,
     #
     #f.writeMlTable(fileName="mlTables_%s.tex" % "_".join(whiteList),
     #               categories=allCategories)
-    #f.bestFit(printPages=True, drawComponents=False, errorsFromToys=nToys)
-    out = f.bestFit(drawMc=False, drawComponents=False, errorsFromToys=nToys)
+
+    if bestFit:
+        #f.bestFit(printPages=True, drawComponents=False, errorsFromToys=nToys)
+        out = f.bestFit(drawMc=False, drawComponents=False, errorsFromToys=nToys)
+
     #f.qcdPlot()
     #f.debug()
     #f.cppDrive(tool="")
     return out
 
-kargs = {"ensemble": False,
+kargs = {"bestFit": True,
+         "interval": False,
+         "ensemble": False,
          "dataset": ["", "2010", "2011eps", "2011",
                      "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-2],
          }
