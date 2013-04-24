@@ -427,7 +427,7 @@ def makeSimpleExclPdf(model=None, histoFileName="", graphFileName="",
     hFile.Close()
     gFile.Close()
 
-def efficiencyHistos(model="", key=""):
+def efficiencyHistos(model=None, key=""):
     out = {}
     for cat, dct in pickling.effHistos(model).iteritems():
         total = None
@@ -439,7 +439,7 @@ def efficiencyHistos(model="", key=""):
         out[cat] = total
     return out
 
-def makeEfficiencyPlotBinned(model="", key="effHad"):
+def makeEfficiencyPlotBinned(model=None, key="effHad"):
     def prep(p) :
         p.SetTopMargin(0.15)
         p.SetBottomMargin(0.15)
@@ -454,7 +454,7 @@ def makeEfficiencyPlotBinned(model="", key="effHad"):
     keep = []
     pad = {0:2, 1:1, 2:4, 3:3, 4:6, 5:5, 6:8, 7:7, 8:10}
 
-    label = "%s_%s"%(model, key)
+    label = "%s_%s"%(model.name, key)
     total = None
     for i,(cat,h) in enumerate(sorted(dct.iteritems())) :
         can.cd(pad[i])
@@ -573,10 +573,10 @@ def printLumis() :
     text.DrawText(x, y-(i+1)*s, "HT bins: %s"%str(inputData.htBinLowerEdges()))
     return text
 
-def drawBenchmarks(model=""):
+def drawBenchmarks(model=None):
     parameters =  conf.signal.scanParameters()
     if not (model in parameters) : return
-    params = parameters[model]
+    params = parameters[model.name]
 
     text = r.TText()
     out = []
@@ -611,7 +611,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetMaximum(3.0)
 
     if drawBenchmarkPoints:
-        stuff = drawBenchmarks(model.name)
+        stuff = drawBenchmarks(model)
 
     if "excluded" in name and model.isSms:
         return
@@ -651,7 +651,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
             num.SetMinimum(0.0)
             num.SetMaximum(0.5)
             if drawBenchmarkPoints:
-                stuff = drawBenchmarks(model.name)
+                stuff = drawBenchmarks(model)
             canvas.Print(fileName)
 
 def sortedNames(histos = [], first = [], last = []) :
