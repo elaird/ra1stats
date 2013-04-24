@@ -360,7 +360,5 @@ def checkModels():
     names = [model.name for model in models()]
     assert len(names) == len(set(names)), names
 
-    # temporary
-    assert len(models()) == 1, "test loop over models"
 
 checkModels()
