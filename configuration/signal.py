@@ -355,4 +355,12 @@ def processes():
     return ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
 
 
-print "check models() for dups"
+def checkModels():
+    # check for duplicates
+    names = [model.name for model in models()]
+    assert len(names) == len(set(names)), names
+
+    # temporary
+    assert len(models()) == 1, "test loop over models"
+
+checkModels()
