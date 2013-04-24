@@ -26,14 +26,14 @@ def readNumbers(fileName):
 
 
 ##number collection
-def effHistos(okMerges=[None,
+def effHistos(model=None,
+              okMerges=[None,
                         (0, 1, 2, 3, 4, 5, 6, 7, 7, 7),
                         (0, 1, 2, 2, 2, 2, 2, 2, 2, 2),
                         (0, 1, 2, 2, 2, 2, 2, 2),
                         ]):
-    model = conf.signal.model()
     out = {}
-    for sel in likelihoodSpec.likelihoodSpec(model).selections():
+    for sel in likelihoodSpec.likelihoodSpec(model.name).selections():
         badMerge = " ".join(["bin merge",
                              str(sel.data._mergeBins),
                              "not yet supported:",
@@ -51,7 +51,8 @@ def effHistos(okMerges=[None,
                 d[item] = [0.0]*len(bins)
                 continue
 
-            d[item] = [hp.effHisto(box=box,
+            d[item] = [hp.effHisto(model=model,
+                                   box=box,
                                    htLower=l,
                                    htUpper=u,
                                    bJets=sel.bJets,
@@ -70,8 +71,8 @@ def histoList(histos={}):
     return out
 
 
-def eventsInRange(nEventsIn=None):
-    minEventsIn, maxEventsIn = conf.signal.nEventsIn(conf.signal.model())
+def eventsInRange(model="", nEventsIn=None):
+    minEventsIn, maxEventsIn = conf.signal.nEventsIn(model)
     out = True
     if minEventsIn is not None:
         out &= (minEventsIn <= nEventsIn)
@@ -80,20 +81,21 @@ def eventsInRange(nEventsIn=None):
     return out
 
 
-def signalModel(point=None, eff=None, xs=None, xsLo=None,
+def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
                 nEventsIn=None):
-    out = common.signal(xs=xs.GetBinContent(*point), label="%d_%d_%d" % point,
-                        effUncRel=conf.signal.effUncRel(conf.signal.model()),
+    out = common.signal(xs=xs.GetBinContent(*point3), label="%s_%d_%d_%d" % ((model,)+point3),
+                        effUncRel=conf.signal.effUncRel(model),
                         )
 
     if xsLo:
-        out["xs_LO"] = xsLo.GetBinContent(*point)
+        out["xs_LO"] = xsLo.GetBinContent(*point3)
 
     out["xs"] = out.xs
-    out["x"] = xs.GetXaxis().GetBinLowEdge(point[0])
-    out["y"] = xs.GetYaxis().GetBinLowEdge(point[1])
-    out["nEventsIn"] = nEventsIn.GetBinContent(*point)
-    out["eventsInRange"] = eventsInRange(out["nEventsIn"])
+    out["x"] = xs.GetXaxis().GetBinLowEdge(point3[0])
+    out["y"] = xs.GetYaxis().GetBinLowEdge(point3[1])
+    out["nEventsIn"] = nEventsIn.GetBinContent(*point3)
+    out["eventsInRange"] = eventsInRange(model=model,
+                                         nEventsIn=out["nEventsIn"])
     if not out["eventsInRange"]:
         return out
 
@@ -103,7 +105,7 @@ def signalModel(point=None, eff=None, xs=None, xsLo=None,
             if not all([hasattr(item, "GetBinContent") for item in effHistos]):
                 continue
 
-            d[box] = map(lambda x: x.GetBinContent(*point), effHistos)
+            d[box] = map(lambda x: x.GetBinContent(*point3), effHistos)
 
             d[box+"Sum"] = sum(d[box])
             key = box.replace("eff", "nEvents")
@@ -111,7 +113,7 @@ def signalModel(point=None, eff=None, xs=None, xsLo=None,
             if d[key] > 0.0:
                 d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
             elif d[key] < 0.0:
-                print "ERROR: negative value: ", point, d[key], box
+                print "ERROR: negative value: ", point3, d[key], box
         out[selName] = d
     return out
 
@@ -147,25 +149,27 @@ def stuffVars(binsMerged=None, signal=None):
 
 
 def writeSignalFiles(points=[], outFilesAlso=False):
-    args = {"eff": effHistos(),
-            "xs": hp.xsHisto(),
-            "nEventsIn": hp.nEventsInHisto(),
-            }
-    hp.checkHistoBinning([args["xs"]]+histoList(args["eff"]))
+    args = {}
+    for model in conf.signal.models():
+        name = model.name
+        args[name] = {"eff": effHistos(model),
+                      "xs": hp.xsHisto(model),
+                      "nEventsIn": hp.nEventsInHisto(model),
+                      }
+        hp.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
+
     for point in points:
-        signal = signalModel(point=point, **args)
+        name = point[0]
+        signal = signalModel(model=name, point3=point[1:], **args[name])
         stem = conf.directories.pickledFileName(*point)
         writeNumbers(fileName=stem+".in", d=signal)
         if not outFilesAlso:
             continue
         writeNumbers(fileName=stem+".out", d=signal)
-        #stuffVars(binsMerged=args["data"].htBinLowerEdges(),
-        #          signal=signal)
 
 
 ##merge functions
-def mergedFile():
-    model = conf.signal.model()
+def mergedFile(model=None):
     tags = [conf.limit.method()]
     if "CLs" in conf.limit.method():
         tags += [conf.limit.calculatorType(),
@@ -173,18 +177,18 @@ def mergedFile():
                  ]
     if conf.limit.binaryExclusion():
         tags.append("binaryExcl")
-    tags.append(model)
-    if not conf.signal.isSms(model):
-        tags.append(signal.xsVariation())
+    tags.append(model.name)
+    if not model.isSms:
+        tags.append(model.xsVariation)
 
-    tags.append(common.note(likelihoodSpec.likelihoodSpec(model)))
+    tags.append(common.note(likelihoodSpec.likelihoodSpec(model.name)))
     return "".join([conf.directories.mergedFile()+"/",
                     "_".join(tags),
                     ".root"
                     ])
 
 
-#note: improve this data format
+# FIXME: improve this data format
 def flatten(target={}, key=None, obj=None):
     if type(obj) == dict:
         for k, v in obj.iteritems():
@@ -201,21 +205,27 @@ def flatten(target={}, key=None, obj=None):
         assert False, type(obj)
 
 
-def mergePickledFiles(printExample=False):
-    example = hp.xsHisto()
-    if printExample:
-        print "Here are the example binnings:"
-        for c in ["X", "Y", "Z"]:
-            print " ".join(["%s:" % c,
-                            getattr(example, "GetNbins%s" % c)(),
-                            getattr(example, "Get%saxis" % c)().GetXmin(),
-                            getattr(example, "Get%saxis" % c)().GetXmax(),
-                            ])
+def mergePickledFiles(printExamples=False):
+    examples = {}
     histos = {}
     zTitles = {}
 
-    for point in hp.points():
-        fileName = conf.directories.pickledFileName(*point)+".out"
+    for model in conf.signal.models():
+        name = model.name
+        examples[name] = hp.xsHisto(model)
+        histos[name] = {}
+        zTitles[name] = {}
+        if printExamples:
+            print "Here are the example binnings for %s:" % name
+            for c in ["X", "Y", "Z"]:
+                print " ".join(["%s:" % c,
+                                str(getattr(examples[name], "GetNbins%s" % c)()),
+                                str(getattr(examples[name], "Get%saxis" % c)().GetXmin()),
+                                str(getattr(examples[name], "Get%saxis" % c)().GetXmax()),
+                                ])
+
+    for name, iX, iY, iZ in hp.points():
+        fileName = conf.directories.pickledFileName(name, iX, iY, iZ)+".out"
         if not os.path.exists(fileName):
             print "skipping file", fileName
             continue
@@ -226,19 +236,18 @@ def mergePickledFiles(printExample=False):
             flatten(contents, key, value)
 
         for key, value in contents.iteritems():
-            if key not in histos:
-                histos[key] = example.Clone(key)
-                histos[key].Reset()
-            histos[key].SetBinContent(point[0], point[1], point[2], value[0])
-            zTitles[key] = value[1]
+            if key not in histos[name]:
+                histos[name][key] = examples[name].Clone(name+"_"+key)
+                histos[name][key].Reset()
+            histos[name][key].SetBinContent(iX, iY, iZ, value[0])
+            zTitles[name][key] = value[1]
 
         os.remove(fileName)
         os.remove(fileName.replace(".out", ".in"))
 
-    for key, histo in histos.iteritems():
-        histo.GetZaxis().SetTitle(zTitles[key])
-
-    f = r.TFile(mergedFile(), "RECREATE")
-    for histo in histos.values():
-        histo.Write()
-    f.Close()
+    for model in conf.signal.models():
+        f = r.TFile(mergedFile(model=model), "RECREATE")
+        for key, histo in histos[model.name].iteritems():
+            histo.GetZaxis().SetTitle(zTitles[model.name][key])
+            histo.Write()
+        f.Close()

@@ -26,5 +26,5 @@ def xs():
     return "xs"
 
 
-def pickledFileName(xBin, yBin, zBin):
-    return "%s/m0_%d_m12_%d_mZ_%d.pickled" % (job(), xBin, yBin, zBin)
+def pickledFileName(name, xBin, yBin, zBin):
+    return "%s/%s_%d_%d_%d.pickled" % (job(), name, xBin, yBin, zBin)

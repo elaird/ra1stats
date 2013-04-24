@@ -8,9 +8,10 @@ import workspace
 
 
 def points():
-    return [(int(sys.argv[i]),
+    return [(sys.argv[i],
              int(sys.argv[i+1]),
-             int(sys.argv[i+2])) for i in range(4, len(sys.argv), 3)]
+             int(sys.argv[i+2]),
+             int(sys.argv[i+3])) for i in range(4, len(sys.argv), 4)]
 
 
 def description(key, cl=None):
@@ -62,9 +63,11 @@ def onePoint(likelihoodSpec=None, point=None):
                                       )
                        )
     else:
-        minEventsIn, maxEventsIn = conf.signal.nEventsIn(conf.signal.model())
-        print "WARNING nEventsIn = %d not in" % (signal["nEventsIn"],) + \
-              " allowed range[ %d, %d ] " % (minEventsIn, maxEventsIn)
+        minEventsIn, maxEventsIn = conf.signal.nEventsIn(model=point[0])
+        warning = "WARNING: nEventsIn = %d not in" % signal["nEventsIn"]
+        warning += " allowed range[ %s, %s ] " % (str(minEventsIn),
+                                                  str(maxEventsIn))
+        print warning
     return out
 
 
@@ -133,12 +136,16 @@ def compare(item, threshold):
 
 
 def go():
-    spec = likelihoodSpec.likelihoodSpec(conf.signal.model())
+    specs = {}
+    for model in conf.signal.models():
+        specs[model.name] = likelihoodSpec.likelihoodSpec(model.name)
 
     for point in points():
+        name = point[0]
         fileName = conf.directories.pickledFileName(*point)+".out"
         pickling.writeNumbers(fileName=fileName,
-                              d=onePoint(likelihoodSpec=spec, point=point),
+                              d=onePoint(likelihoodSpec=specs[name],
+                                         point=point),
                               )
 
 if False:

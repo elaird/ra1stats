@@ -49,7 +49,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
                    3:"%s/%s/job_%d.log"%(pwd, logDir, iSlice) if options.output else "/dev/null"}
         keyslice = 1 if ignoreScript else 0
         args = [argDict[key] for key in sorted(argDict.keys())[keyslice:]]
-        slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
+        slices = ["%s %d %d %d" % point for point in points[iSlice::nSlices]]
         out.append(" ".join(args+slices))
 
     return out,warning

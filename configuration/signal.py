@@ -1,29 +1,46 @@
 import directories
 
 
-def model():
-    models = ["tanBeta10", "tanBeta40",
-              "T1", "T1tttt", "T1bbbb", "T1tttt_ichep",
-              "T2", "T2tt", "T2bb", "T2cc", "T2bw",
-              "T5zz", "TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8",
-              ]
-    return dict(zip(models, models))["T2cc"]
+class scan(object):
+    def __init__(self, dataset="", tag="",
+                 com=None, xsVariation="default",
+                 had="", muon="", phot="", mumu="",
+                 interBin="LowEdge"):
+        assert xsVariation in ["default", "up", "down"], xsVariation
+        for item in ["dataset", "tag",
+                     "com", "xsVariation",
+                     "had", "muon", "phot", "mumu",
+                     "interBin"]:
+            setattr(self, "_"+item, eval(item))
 
+    @property
+    def name(self):
+        out = self._dataset
+        if self._tag:
+            out += "_"+self._tag
+        if self._com != 8:
+            out += "_%d" % self._com
+        return out
 
-def xsVariation():
-    variations = ["default", "up", "down"]
-    return dict(zip(variations, variations))["default"]
+    @property
+    def isSms(self):
+        return not ("tanBeta" in self._dataset)
 
+    @property
+    def com(self):
+        return self._com
 
-def isSms(model=""):
-    assert model
-    return "tanBeta" not in model
+    @property
+    def interBin(self):
+        return self._interBin
 
+    @property
+    def xsVariation(self):
+        return self._xsVariation
 
-def ignoreEff(model=""):
-    return {"T1": ["muon"], "T1bbbb": [], "T1tttt": [],
-            "T2": ["muon"], "T2bb": ["muon"], "T2tt": [], "T2cc": ["muon"],
-            }[model]
+    def ignoreEff(self, box):
+        assert box in ["had", "muon", "phot", "mumu"], box
+        return not getattr(self, "_"+box)
 
 
 def effUncRel(model=""):
@@ -32,15 +49,40 @@ def effUncRel(model=""):
             }[model]
 
 
-def nEventsIn(model=""):
-    return {"T5zz":      (5.0e3, None),
-            "tanBeta10": (9.0e3, 11.0e3),
-            }.get(model, (1, None))
-
-
-def interBin(model=""):
-    assert model
-    return "LowEdge"
+def models():
+    return [
+        #scan(dataset="T1", com=8, had="v5"),
+        #scan(dataset="T2", com=8, had="v1"),
+        scan(dataset="T2cc", com=8, had="v4_ISRReweighted"),
+        #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
+        #scan(dataset="T2bb", com=8, had="v3", muon="v3"),  # ignore muon?
+        #scan(dataset="T1bbbb", com=8, had="v3", muon="v3"),
+        #scan(dataset="T1tttt", com=8, had="v1", muon="v1"),
+        #
+        #scan(dataset="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
+        #scan(dataset="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
+        #scan(dataset="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
+        #scan(dataset="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized"),
+        #scan(dataset="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #
+        #scan(dataset="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
+        #scan(dataset="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #
+        #scan(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full"),
+        #
+        #scan(dataset="T5zz", com=7, had="v1", muon="v1"),
+        #scan(dataset="TGQ_0p0", com=7, had="v1"),
+        #scan(dataset="TGQ_0p2", com=7, had="v1"),
+        #scan(dataset="TGQ_0p4", com=7, had="v1"),
+        #scan(dataset="TGQ_0p8", com=7, had="v1"),
+        #
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down"),
+        ]
 
 
 def whiteListOfPoints(model="", respect=False):
@@ -63,101 +105,57 @@ def whiteListOfPoints(model="", respect=False):
             }[model]
 
 
-def xsHistoSpec(model="", cmssmProcess="", xsVariation=""):
-    if not cmssmProcess:
-        if xsVariation != "default":
-            print 'WARNING: variation "%s" (%s)' % (xsVariation, model) + \
-                  ' will need to use error bars in xs file.'
-    else:
-        print "WARNING: using 7 TeV xs for " + \
-              "model %s, process %s" % (model, cmssmProcess)
+def xsHistoSpec(model=None, cmssmProcess=""):
+    if model.isSms and (model.xsVariation != "default"):
+        error = 'ERROR: variation "%s" (%s)' % (model.xsVariation, model.name)
+        error += ' will need to use error bars in xs file.'
+        assert False, error
 
     base = directories.xs()
-    #seven = "%s/v5/7TeV.root"%base
-    eight = "%s/v5/8TeV.root" % base
-    tgqFile = "%s/v1/TGQ_xSec.root" % base
-    tanBeta10 = "%s/v5/7TeV_cmssm.root" % base
-    d = {"T2":      {"histo": "squark", "factor": 1.0, "file": eight},
-         "T2tt":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
-         "T2bb":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
-         "T2cc":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": eight},
-         "tanBeta10": {"histo": "%s_%s" % (cmssmProcess, xsVariation),
-                       "factor": 1.0, "file": tanBeta10},
+    assert model.com in [7, 8], model.com
+    sms = "%s/v5/%dTeV.root" % (base, model.com)
+
+    d = {"T2":      {"histo": "squark", "factor": 1.0, "file": sms},
+         "T2tt":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
+         "T2bb":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
+         "T2cc":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
+         "tanBeta10_7": {"histo": "%s_%s" % (cmssmProcess, model.xsVariation),
+                         "factor": 1.0, "file": "%s/v5/7TeV_cmssm.root" % base},
          }
 
-    for item in ["T1", "T1bbbb", "T1tttt", "T5zz"]:
-        d[item] = {"histo": "gluino", "factor": 1.0, "file": eight}
+    for item in ["T1", "T1bbbb", "T1tttt", "T5zz_7"]:
+        d[item] = {"histo": "gluino", "factor": 1.0, "file": sms}
 
-    for item in ["TGQ_0p0", "TGQ_0p2", "TGQ_0p4", "TGQ_0p8"]:
-        d[item] = {"histo": "clone", "factor": 1.0, "file": tgqFile}
+    for item in ["TGQ_0p0_7", "TGQ_0p2_7", "TGQ_0p4_7", "TGQ_0p8_7"]:
+        d[item] = {"histo": "clone", "factor": 1.0, "file": "%s/v1/TGQ_xSec.root" % base}
 
-    assert model in d, "model=%s" % model
-    return d[model]
+    assert model.name in d, "model=%s" % model.name
+    return d[model.name]
 
 
-def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
+def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
                  bJets=None, jets=None):
 
-    base = "%s/2012/" % directories.eff()
-    cmssm = {"tanBeta10":  {"cmssw": "rw", "had": "v2", "muon": "v2"},
-             #"tanBeta10":  {"cmssw": "42", "had": "v8", "muon": "v8"},
-             "tanBeta40":  {"cmssw": "42", "had": "v2", "muon": "v2"},
-             }
+    assert box in ["had", "muon"], box
 
-    sms = {"T1":          {"had": "v5"},
-           "T2":          {"had": "v1"},
-           "T2cc":        {"had": "v4_ISRReweighted"},
-           "T2tt":        {"had": "v1", "muon": "v1"},
-           "T2bb":        {"had": "v3", "muon": "v3"},
-           #"T2bb":      {"had": "v6_yossof_ct10_normalized"},
-           #"T2bb":      {"had": "v6_yossof_cteq61"},
-           #"T2bb":      {"had": "v6_yossof_cteq66_normalized"},
-           #"T2bb":      {"had": "v6_yossof_mst08_normalized"},
-           #"T2bb":      {"had": "v6_yossof_nnpdf21_normalized"},
-           "T2bw":        {"had": "mchi0.75", "muon": "mchi0.75"},
-           "T5zz":        {"had": "v1", "muon": "v1"},
-           "T1bbbb":      {"had": "v3", "muon": "v3"},
-           #"T1bbbb":      {"had": "v6_yossof_ct10_normalized"},
-           #"T1bbbb":      {"had": "v6_yossof_cteq61"},
-           #"T1bbbb":      {"had": "v6_yossof_cteq66_normalized"},
-           #"T1bbbb":      {"had": "v6_yossof_mstw08_normalized"},
-           #"T1bbbb":      {"had": "v6_yossof_nnpdf21_normalized"},
-           "T1tttt":      {"had": "v1", "muon": "v1"},
-           "T1tttt_ichep": {"had": "2012full", "muon": "2012full"},
-           "TGQ_0p0":     {"had": "v1"},
-           "TGQ_0p2":     {"had": "v1"},
-           "TGQ_0p4":     {"had": "v1"},
-           "TGQ_0p8":     {"had": "v1"},
-           }
-
-    #remove these hard-coded numbers
-    thresh = ""
+    # FIXME: remove these hard-coded numbers
     if htLower == 275:
-        thresh = "0"
-    if htLower == 325:
-        thresh = "1"
+        fileName = "%s0.root" % box
+    elif htLower == 325:
+        fileName = "%s1.root" % box
+    else:
+        fileName = "%s.root" % box
 
-    out = {}
     tags = []
-    if model in cmssm:
-        oldBase = base
-        base = "ra1e/2011/"
-        print 'WARNING: modifying base ' + \
-              '"%s" to "%s" for model %s.' % (oldBase, base, model)
-        assert box in ["had", "muon"]
-        d = cmssm[model]
-        out["file"] = "/".join([base, "%s_scan" % d["cmssw"], model, box,
-                                d[box], box+"%s.root" % thresh])
-        out["beforeDir"] = "mSuGraScan_before_scale1"
-        tags.append("mSuGraScan")
-    elif model in sms:
-        assert box in ["had", "muon"]
-        out["file"] = "/".join([base, "sms", model, box, sms[model][box],
-                                box+"%s.root" % thresh])
-        out["beforeDir"] = "smsScan_before"
+
+    if model.isSms:
+        subDirs = [directories.eff(), "2012", "sms"]
+        beforeDir = "smsScan_before"
         tags.append("smsScan")
     else:
-        assert False, "model %s not in list" % model
+        subDirs = [directories.eff(), "cmssm_%d" % model.com]
+        beforeDir = "mSuGraScan_before_scale1"
+        tags.append("mSuGraScan")
 
     if bJets:
         tags.append(bJets)
@@ -173,14 +171,23 @@ def effHistoSpec(model="", box=None, htLower=None, htUpper=None,
         tags.append("%d" % htLower)
     if htUpper:
         tags.append("%d" % htUpper)
-    if model in cmssm:
+    if not model.isSms:
         tags.append("scale1")
 
-    out["afterDir"] = "_".join(tags)
-    return out
+    fileFields = [model.name, box, getattr(model, "_"+box), fileName]
+    return {"beforeDir": beforeDir,
+            "afterDir": "_".join(tags),
+            "file": "/".join(subDirs + fileFields),
+            }
 
 
-#SMS
+def nEventsIn(model=""):
+    assert model
+    return {"T5zz_7":      (5.0e3, None),
+            "tanBeta10_7": (9.0e3, 11.0e3),
+            }.get(model, (1, None))
+
+
 def ranges(model):
     x = {"T1":   (287.5, 1400),  # (min, max)
          "T2":   (287.5, 1000),
@@ -189,11 +196,11 @@ def ranges(model):
          "T2cc":   (87.5, 300.0),
          "T1bbbb": (287.5, 1400),
          "T1tttt": (387.5, 1400),
-         "T1tttt_2012": (375.0, 1200.0),
-         "tanBeta10": (0.0, 4000.0),
+         "T1tttt_ichep": (375.0, 1200.0),
+         "tanBeta10_7": (0.0, 4000.0),
          }
 
-    y = {"T5zz":   (50.0, 999.9),  # (min, max)
+    y = {"T5zz_7":   (50.0, 999.9),  # (min, max)
          "T1":      (0.0, 1225),
          "T2":      (0.0,  825),
          "T2tt":    (0.0,  600),
@@ -201,8 +208,8 @@ def ranges(model):
          "T2cc":    (0.0,  300),
          "T1bbbb":  (0.0, 1225),
          "T1tttt":  (0.0, 1050),
-         "T1tttt_2012":  (50.0, 800.0),
-         "tanBeta10": (0.0, 4000.0),
+         "T1tttt_ichep":  (50.0, 800.0),
+         "tanBeta10_7": (0.0, 4000.0),
          }
 
     z = {"T2cc": (1.0, 200.0, 20),
@@ -346,3 +353,12 @@ def scanParameters():
 
 def processes():
     return ["gg", "sb", "ss", "sg", "ll", "nn", "ng", "bb", "tb", "ns"]
+
+
+def checkModels():
+    # check for duplicates
+    names = [model.name for model in models()]
+    assert len(names) == len(set(names)), names
+
+
+checkModels()

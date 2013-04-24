@@ -59,7 +59,7 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
     return histoD
 
 
-def exclusionHistos(limitFile="", model="", shift = (True, False)):
+def exclusionHistos(limitFile="", model=None, shift = (True, False)):
     limitHistoDict = {
         'UpperLimit': {
             'label': 'Observed Limit (95% CL)',
@@ -180,7 +180,7 @@ def oneD(h=None, yValue=None):
     return h.ProjectionX(h.GetName()+"_", yBin, yBin)
 
 
-def compareXs(histoSpecs={}, model="", xLabel="", yLabel="", yValue=None,
+def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
               nSmooth=0, xMin=300, xMax=800, yMin=1e-3, yMax=1e+1,
               showRatio=False, dumpRatio=False, preliminary=None,
               lumiStamp="", processStamp=""):
@@ -264,7 +264,7 @@ def compareXs(histoSpecs={}, model="", xLabel="", yLabel="", yValue=None,
     if showRatio:
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=xMin, xMax=xMax)
 
-    epsFile = "_".join([model,
+    epsFile = "_".join([model.name,
                         "mlsp%d" % int(yValue),
                         "xmin%d" % int(xMin),
                         "smooth%d" % nSmooth,
@@ -300,9 +300,8 @@ def points():
     return out
 
 def onePoint(yValue=None, nSmooth=None, xMin=None):
-    model = 'T2tt'
-    hSpec = configuration.signal.xsHistoSpec(model=model,
-                                             xsVariation="default")
+    model = configuration.signal.scan(dataset='T2tt', com=8)  # FIXME: use interBin
+    hSpec = configuration.signal.xsHistoSpec(model)
 
     refHisto = referenceXsHisto(refHistoName=hSpec['histo'],
                                 refName='#tilde{t} #tilde{t}',
@@ -319,7 +318,7 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
         'showRatio': False,
         'lumiStamp': 'L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
-        'processStamp': configuration.signal.processStamp(model)['text'],
+        'processStamp': configuration.signal.processStamp(model.name)['text'],
         }
 
     compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,

@@ -61,11 +61,11 @@ def checkHistoBinning(histoList=[]):
             assert False
 
 
-def modifyHisto(h=None, model=""):
-    fillPoints(h, points=patches.overwriteOutput()[model])
+def modifyHisto(h=None, model=None):
+    fillPoints(h, points=patches.overwriteOutput()[model.name])
     killPoints(h,
-               cutFunc=patches.cutFunc().get(model, None),
-               interBin=conf.signal.interBin(model))
+               cutFunc=patches.cutFunc().get(model.name, None),
+               interBin=model.interBin)
 
 
 def fillPoints(h, points=[]):
@@ -121,30 +121,24 @@ def killPoints(h, cutFunc=None, interBin=""):
 
 
 ##signal-related histograms
-def xsHisto():
-    model = conf.signal.model()
+def xsHisto(model=None):
     if conf.limit.binaryExclusion():
-        cmssmProcess = "" if conf.signal.isSms(model) else "total"
-        return xsHistoPhysical(model=model,
-                               cmssmProcess=cmssmProcess,
-                               xsVariation=conf.signal.xsVariation())
+        cmssmProcess = "" if model.isSms else "total"
+        return xsHistoPhysical(model=model, cmssmProcess=cmssmProcess)
     else:
-        return xsHistoAllOne(model, cutFunc=patches.cutFunc()[model])
+        return xsHistoAllOne(model=model, cutFunc=patches.cutFunc()[model.name])
 
 
-def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
+def xsHistoPhysical(model=None, cmssmProcess=""):
     #get example histo and reset
-    isSms = not cmssmProcess
-    dummyHisto = "m0_m12_mChi_noweight" if isSms else "m0_m12_gg"
+    dummyHisto = "m0_m12_mChi_noweight" if model.isSms else "m0_m12_gg"
     s = conf.signal.effHistoSpec(model=model, box="had")
     out = ratio(s["file"],
                 s["beforeDir"], dummyHisto,
                 s["beforeDir"], dummyHisto)
     out.Reset()
 
-    spec = conf.signal.xsHistoSpec(model=model,
-                                   cmssmProcess=cmssmProcess,
-                                   xsVariation=xsVariation)
+    spec = conf.signal.xsHistoSpec(model=model, cmssmProcess=cmssmProcess)
     warning = "will need to accommodate factor of %g" % spec["factor"]
     assert spec["factor"] == 1.0, warning
 
@@ -153,15 +147,14 @@ def xsHistoPhysical(model="", cmssmProcess="", xsVariation=""):
     dim = int(h.ClassName()[2:3])
     assert dim in [1, 2], dim
 
-    interBin = conf.signal.interBin(model)
-    for iX, x, iY, y, iZ, z in utils.bins(out, interBin=interBin):
+    for iX, x, iY, y, iZ, z in utils.bins(out, interBin=model.interBin):
         iBin = h.FindBin(x) if dim == 1 else h.FindBin(x, y)
         out.SetBinContent(iX, iY, iZ, h.GetBinContent(iBin))
     return out
 
 
-def xsHistoAllOne(model, cutFunc=None):
-    ls = likelihoodSpec.likelihoodSpec(model)
+def xsHistoAllOne(model=None, cutFunc=None):
+    ls = likelihoodSpec.likelihoodSpec(model.name)
     if ls._dataset in ["2011", "2012ichep"]:
         kargs = {}
     else:
@@ -173,9 +166,8 @@ def xsHistoAllOne(model, cutFunc=None):
                                     htUpper=None,
                                     **kargs)
 
-    h = smsEffHisto(spec)
-    interBin = conf.signal.interBin(model)
-    for iX, x, iY, y, iZ, z in utils.bins(h, interBin=interBin):
+    h = smsEffHisto(spec=spec, model=model)
+    for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
         content = 1.0
         if cutFunc and not cutFunc(iX, x, iY, y, iZ, z):
             content = 0.0
@@ -183,15 +175,14 @@ def xsHistoAllOne(model, cutFunc=None):
     return h
 
 
-def nEventsInHisto():
-    s = conf.signal.effHistoSpec(model=conf.signal.model(), box="had")
+def nEventsInHisto(model=None):
+    s = conf.signal.effHistoSpec(model=model, box="had")
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 
-def effHisto(box="", htLower=None, htUpper=None, bJets="", jets=""):
-    model = conf.signal.model()
-    if box in conf.signal.ignoreEff(model):
-        print "WARNING: ignoring %s efficiency for %s" % (box, model)
+def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
+    if model.ignoreEff(box):
+        print "WARNING: ignoring %s efficiency for %s" % (box, model.name)
         return None
 
     spec = conf.signal.effHistoSpec(model=model,
@@ -200,16 +191,13 @@ def effHisto(box="", htLower=None, htUpper=None, bJets="", jets=""):
                                     htUpper=htUpper,
                                     bJets=bJets,
                                     jets=jets)
-    if conf.signal.isSms(model):
-        return smsEffHisto(spec)
+    if model.isSms:
+        return smsEffHisto(spec=spec, model=model)
     else:
-        return cmssmEffHisto(spec=spec,
-                             model=model,
-                             xsVariation=conf.signal.xsVariation(),
-                             )
+        return cmssmEffHisto(spec=spec, model=model)
 
 
-def cmssmEffHisto(spec={}, model="", xsVariation=""):
+def cmssmEffHisto(spec={}, model=None):
     out = None
 
     # FIXME: Implement some check of the agreement
@@ -221,8 +209,8 @@ def cmssmEffHisto(spec={}, model="", xsVariation=""):
                   spec["beforeDir"], "m0_m12_%s" % proc)
 
         # weight by xs of the process
-        h.Multiply(xsHistoPhysical(model=model, cmssmProcess=proc,
-                                   xsVariation=xsVariation))
+        h.Multiply(xsHistoPhysical(model=model, cmssmProcess=proc))
+
         if out is None:
             out = h.Clone("effHisto")
         else:
@@ -230,22 +218,18 @@ def cmssmEffHisto(spec={}, model="", xsVariation=""):
 
     out.SetDirectory(0)
     # divide by total xs
-    out.Divide(xsHistoPhysical(model=model,
-                               cmssmProcess="total",
-                               xsVariation=xsVariation))
+    out.Divide(xsHistoPhysical(model=model, cmssmProcess="total"))
     return out
 
 
-def smsEffHisto(spec={}):
+def smsEffHisto(spec={}, model=None):
     #out = ratio(s["file"],
     #            s["afterDir"], "m0_m12_mChi",
     #            s["beforeDir"], "m0_m12_mChi")
     out = ratio(spec["file"],
                 spec["afterDir"], "m0_m12_mChi_noweight",
                 spec["beforeDir"], "m0_m12_mChi_noweight")
-    fillPoints(out,
-               points=patches.overwriteInput()[conf.signal.model()],
-               )
+    fillPoints(out, points=patches.overwriteInput()[model.name])
     return out
 
 
@@ -253,20 +237,21 @@ def smsEffHisto(spec={}):
 def points():
     out = []
     multiples = conf.limit.multiplesInGeV()
-    model = conf.signal.model()
-    whiteList = conf.signal.whiteListOfPoints(model)
-    interBin = conf.signal.interBin(model)
-    h = xsHisto()
-    for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
-        if whiteList and (x, y) not in whiteList:
-            continue
-        content = h.GetBinContent(iBinX, iBinY, iBinZ)
-        if not content:
-            continue
-        if multiples and ((x/multiples) % 1 != 0.0):
-            continue
-        if patches.cutFunc()[model](iBinX, x, iBinY, y, iBinZ, z):
-            out.append((iBinX, iBinY, iBinZ))
+
+    for model in conf.signal.models():
+        name = model.name
+        whiteList = conf.signal.whiteListOfPoints(name)
+        h = xsHisto(model)
+    	for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=model.interBin):
+    	    if whiteList and (x, y) not in whiteList:
+    	        continue
+    	    content = h.GetBinContent(iBinX, iBinY, iBinZ)
+    	    if not content:
+    	        continue
+    	    if multiples and ((x/multiples) % 1 != 0.0):
+    	        continue
+    	    if patches.cutFunc()[name](iBinX, x, iBinY, y, iBinZ, z):
+    	        out.append((name, iBinX, iBinY, iBinZ))
     return out
 
 

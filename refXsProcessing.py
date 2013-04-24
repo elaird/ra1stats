@@ -3,8 +3,8 @@ import configuration.signal
 import ROOT as r
 
 
-def refXsHisto(model="", xsVariation="default"):
-    hs = configuration.signal.xsHistoSpec(model=model, xsVariation=xsVariation)
+def refXsHisto(model=None):
+    hs = configuration.signal.xsHistoSpec(model=model)
     f = r.TFile(hs["file"])
     h = f.Get(hs["histo"])
     if not h:
@@ -36,7 +36,7 @@ def mDeltaFuncs(mDeltaMin=None, mDeltaMax=None, nSteps=None, mGMax=None):
     return out
 
 
-def graph(h=None, model="", interBin="", printXs=False, spec={}):
+def graph(h=None, model=None, interBin="", printXs=False, spec={}):
     d = {"color": r.kBlack,
          "lineStyle": 1,
          "lineWidth": 3,
@@ -62,9 +62,9 @@ def graph(h=None, model="", interBin="", printXs=False, spec={}):
             )
 
     d["histo"] = excludedHistoSimple(h,
-                                     d["factor"],
-                                     model,
-                                     interBin,
+                                     factor=d["factor"],
+                                     model=model,
+                                     interBin=interBin,
                                      variation=d["variation"]
                                      )
     return d
@@ -254,9 +254,9 @@ def extrapolatedGraph(h, gr, yValueToPrune):
     return grOut
 
 
-def excludedGraphOld(h, factor=None, model=None, interBin="CenterOrLowEdge",
+def excludedGraphOld(h, factor=None, model=None, interBin="",
                      pruneAndExtrapolate=False, yValueToPrune=-80):
-
+    assert interBin in ["Center", "LowEdge"], interBin
     def fail(xs, xsLimit):
         return (xs <= xsLimit) or not xsLimit
 

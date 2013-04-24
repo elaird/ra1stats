@@ -11,6 +11,7 @@ one
 - gaussian counts
 - errors on translation factors
 - view call graph to speed up cmssm initialization
+- make common.signal not inherit from dict / check use of label
 
 two
 ---

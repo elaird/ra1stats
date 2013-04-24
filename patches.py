@@ -34,12 +34,12 @@ def cutFunc() :
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T1tttt_ichep":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
-            "tanBeta10":cmssmCut,
+            "tanBeta10_7":cmssmCut,
             }
 
 def curves() :
     out = collections.defaultdict(dict)
-    out["tanBeta10"] = {
+    out["tanBeta10_7"] = {
             ("ExpectedUpperLimit",          "default"): [( 120, 594), ( 160, 595), ( 240, 595), ( 320, 590), ( 400, 580), ( 480, 567),
                                                          ( 560, 550), ( 640, 530), ( 720, 500), ( 800, 465), ( 880, 423),
                                                          ( 960, 370), (1040, 342), (1120, 325), (1200, 310), (1280, 300),
