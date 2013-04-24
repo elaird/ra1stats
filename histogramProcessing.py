@@ -166,7 +166,7 @@ def xsHistoAllOne(model=None, cutFunc=None):
                                     htUpper=None,
                                     **kargs)
 
-    h = smsEffHisto(spec=spec, model=model.name)
+    h = smsEffHisto(spec=spec, model=model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
         content = 1.0
         if cutFunc and not cutFunc(iX, x, iY, y, iZ, z):
@@ -182,7 +182,7 @@ def nEventsInHisto(model=None):
 
 def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
     if model.ignoreEff(box):
-        print "WARNING: ignoring %s efficiency for %s" % (box, model)
+        print "WARNING: ignoring %s efficiency for %s" % (box, model.name)
         return None
 
     spec = conf.signal.effHistoSpec(model=model,
@@ -192,7 +192,7 @@ def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
                                     bJets=bJets,
                                     jets=jets)
     if model.isSms:
-        return smsEffHisto(spec=spec, model=model.name)
+        return smsEffHisto(spec=spec, model=model)
     else:
         return cmssmEffHisto(spec=spec, model=model)
 
@@ -222,14 +222,14 @@ def cmssmEffHisto(spec={}, model=None):
     return out
 
 
-def smsEffHisto(spec={}, model=""):
+def smsEffHisto(spec={}, model=None):
     #out = ratio(s["file"],
     #            s["afterDir"], "m0_m12_mChi",
     #            s["beforeDir"], "m0_m12_mChi")
     out = ratio(spec["file"],
                 spec["afterDir"], "m0_m12_mChi_noweight",
                 spec["beforeDir"], "m0_m12_mChi_noweight")
-    fillPoints(out, points=patches.overwriteInput()[model])
+    fillPoints(out, points=patches.overwriteInput()[model.name])
     return out
 
 
