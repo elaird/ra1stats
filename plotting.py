@@ -669,7 +669,25 @@ class validationPlotter(object) :
                               "stack": "total",
                               "dens": ["hadB"],
                               "denTypes": ["function"],
-                              "denSqrts": [True],
+                              "denFuncs": [lambda x:math.sqrt(x)],
+                              }],
+                  )
+
+        self.plot(note="",
+                  fileName=["s_over_func_of_b"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="s / #sqrt{b + (0.1b)^{2}}",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "had",
+                              "desc": self.signalExampleToStack.label+" / b",
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              "dens": ["hadB"],
+                              "denTypes": ["function"],
+                              "denFuncs": [lambda x:math.sqrt(x + (0.1*x)**2)],
                               }],
                   )
 
@@ -1070,7 +1088,7 @@ class validationPlotter(object) :
                 histo.SetLineStyle(lineStyle+0)
 
         if "example" in spec:
-            assert "sqrt" not in spec, "sqrt will not be applied here"
+            assert "func" not in spec, "func will not be applied here"
             self.fillSignalExampleYield(spec=spec, histo=d["value"])
             return d
 
@@ -1087,8 +1105,8 @@ class validationPlotter(object) :
                 if (not var) and (not func) : continue
 
                 value = (var if var else func).getVal()
-                if spec.get("sqrt"):
-                    value = math.sqrt(value)
+                if spec.get("func"):
+                    value = spec["func"](value)
                 d["value"].SetBinContent(i+1, value)
                 if var :
                     if varName[0]=="n" :
@@ -1179,14 +1197,14 @@ class validationPlotter(object) :
         return
 
     def divide(self, histo=None, spec={}):
-        for den, denType, denSqrt, denKey in zip(spec["dens"],
+        for den, denType, denFunc, denKey in zip(spec["dens"],
                                                  spec["denTypes"],
-                                                 spec.get("denSqrts", [False]*len(spec["dens"])),
+                                                 spec.get("denFuncs", [lambda x:x]*len(spec["dens"])),
                                                  spec.get("denKeys", ["value"]*len(spec["dens"])),
                                                  ):
             histo.Divide(self.varHisto(spec={"var": den,
                                              "type": denType,
-                                             "sqrt": denSqrt,
+                                             "func": denFunc,
                                              },
                                        )[denKey])
 
