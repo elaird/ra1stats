@@ -53,9 +53,9 @@ def models():
     return [
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1"),
-        scan(dataset="T2cc", com=8, had="v4_ISRReweighted"),
+        scan(dataset="T2cc", com=8, had="v6"),
         #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
-        #scan(dataset="T2bb", com=8, had="v3", muon="v3"),  # ignore muon?
+        #scan(dataset="T2bb", com=8, had="v3", muon="v3"),
         #scan(dataset="T1bbbb", com=8, had="v3", muon="v3"),
         #scan(dataset="T1tttt", com=8, had="v1", muon="v1"),
         #
