@@ -551,15 +551,15 @@ class validationPlotter(object) :
         if extraPage:
             for var in [obs]+vars:
                 var.update({"dens": ["hadB"], "denTypes": ["function"]})
-                self.plot(note="",
-                          fileName=["b_over_b"],
-                          legend0=(0.2, 0.75),
-                          legend1=(0.6, 0.88),
-                          yLabel="Events / b",
-                          yAxisMinMax=(0.0, 2.0),
-                          obs=obs,
-                          otherVars=vars,
-                          )
+            self.plot(note="",
+                      fileName=["b_over_b"],
+                      legend0=(0.2, 0.75),
+                      legend1=(0.6, 0.88),
+                      yLabel="Events / b",
+                      yAxisMinMax=(0.0, 2.0),
+                      obs=obs,
+                      otherVars=vars,
+                      )
 
     def hadDataMcPlots(self) :
         for logY in [False, True] :
