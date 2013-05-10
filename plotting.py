@@ -1348,33 +1348,35 @@ class validationPlotter(object) :
         r.gPad.Update()
 
 
-        if stampParams and not self.printPages : stuff += [self.stampMlParameters()]
+        if stampParams and not self.printPages:
+            stuff += [self.stampMlParameters()]
+
         #if selNoteCoords :
         #    latex = r.TLatex()
         #    latex.SetTextSize(0.7*latex.GetTextSize())
         #    latex.SetNDC()
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
-        denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
-        denomHisto["errorsHi"].SetFillColor(r.kAzure)
-        denomHisto["errorsHi"].SetFillStyle(1001)
-        denomHisto["errorsHi"].SetLineStyle(1)
-        denomHisto["errorsHi"].SetLineColor(r.kAzure)
+        if self.drawRatios:
+            print "WARNING: improve ratio drawing"
+            denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
+            denomHisto["errorsHi"].SetFillColor(self.smError)
+            denomHisto["errorsHi"].SetFillStyle(1001)
+            denomHisto["errorsHi"].SetLineStyle(1)
+            denomHisto["errorsHi"].SetLineColor(self.smError)
 
-        denomHisto["errorsLo"].SetFillColor(10)
-        denomHisto["errorsLo"].SetFillStyle(1001)
-        denomHisto["errorsLo"].SetLineStyle(1)
-        denomHisto["errorsLo"].SetLineColor(r.kAzure)
+            denomHisto["errorsLo"].SetFillColor(10)
+            denomHisto["errorsLo"].SetFillStyle(1001)
+            denomHisto["errorsLo"].SetLineStyle(1)
+            denomHisto["errorsLo"].SetLineColor(self.smError)
 
-        numHistos = [ denomHisto["errorsHi"], denomHisto["errorsLo"] ]
-        if "total" in stackDict :
-            numHistos.append(stackDict["total"].histos[-1][0]["value"])
-        numHistos.append( obsHisto )
+            numHistos = [ denomHisto["errorsHi"], denomHisto["errorsLo"] ]
+            if "total" in stackDict :
+                numHistos.append(stackDict["total"].histos[-1][0]["value"])
+            numHistos.append(obsHisto)
 
-        #ratios = self.makeRatios(numHistos, denomHisto["value"])
-
-        #foo = self.plotRatio([obsHisto, denomHisto], 1)
-        #foo = self.plotRatios( ratios )
+            ratios = self.makeRatios(numHistos, denomHisto["value"])
+            stuff += [self.plotRatios(ratios)]
 
         if self.printPages and fileName :
             #obsHisto.SetTitle("")
@@ -1384,7 +1386,7 @@ class validationPlotter(object) :
 
         return stuff
 
-    def makeRatios( self, numHistos, denomHisto ) :
+    def makeRatios(self, numHistos, denomHisto):
         ratioHistos = []
         for numHisto in numHistos :
             ratioHistos.append(numHisto.Clone("%sClone"%numHisto.GetName()))
@@ -1396,8 +1398,7 @@ class validationPlotter(object) :
             ratioHistos[-1].SetMarkerColor(color)
         return ratioHistos
 
-
-    def plotRatios( self, ratios ) :
+    def plotRatios(self, ratios):
         numLabel,denomLabel = "Data", "SM"
         numSampleName,denomSampleNames = "Data", "SM"
 
@@ -1422,7 +1423,7 @@ class validationPlotter(object) :
                 line = r.TLine(xr[0],1.0,xr[1],1.0)
                 line.SetLineWidth(1)
                 line.SetLineStyle(1)
-                line.SetLineColor(r.kAzure+6)
+                line.SetLineColor(self.sm)
                 line.Draw()
             same = "same"
 
