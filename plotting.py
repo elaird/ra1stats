@@ -1358,6 +1358,7 @@ class validationPlotter(object) :
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
         if self.drawRatios:
+            print "WARNING: improve ratio drawing"
             denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
             denomHisto["errorsHi"].SetFillColor(self.smError)
             denomHisto["errorsHi"].SetFillStyle(1001)
