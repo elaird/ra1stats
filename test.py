@@ -17,7 +17,6 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                              separateSystObs=not ensemble
                              )
 
-
     examples_paper = {("0b_le3j",): signals2.t2,
                       ("0b_ge4j",): signals2.t1,
                       ("1b_le3j",): signals2.t2bb,
@@ -40,7 +39,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                      ("ge4b_ge4j",): {},
                      }
 
-    examples = examples_t2cc
+    examples = examples_paper
     signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
 
     assert not (interval and bestFit)
@@ -79,7 +78,8 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
         out = f.interval(cl=cl,
                          method=["profileLikelihood", "feldmanCousins"][0],
                          makePlots=True,
-                         ); print out
+                         )
+        print out
         #f.profile()
 
     #out = f.cls(cl=cl,
@@ -108,8 +108,11 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
     #               categories=allCategories)
 
     if bestFit:
-        #f.bestFit(printPages=True, drawComponents=False, errorsFromToys=nToys)
-        out = f.bestFit(drawMc=False, drawComponents=False, errorsFromToys=nToys)
+        out = f.bestFit(drawMc=False,
+                        drawComponents=False,
+                        errorsFromToys=nToys,
+                        printPages=False,
+                        )
 
     #f.qcdPlot()
     #f.debug()
@@ -120,7 +123,7 @@ kargs = {"bestFit": True,
          "interval": False,
          "ensemble": False,
          "dataset": ["", "2010", "2011eps", "2011",
-                     "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-2],
+                     "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-3],
          }
 
 if kargs["dataset"] == "2011":
