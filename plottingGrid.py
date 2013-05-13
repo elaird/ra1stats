@@ -216,9 +216,19 @@ def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
                           "upper limit"),
                          ("ExpectedUpperLimit", "expected upper limit"),
                          ("ExpectedUpperLimit_-1_Sigma", "title"),
-                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
-        h3 = f.Get("%s_%s" % (model.name, name))
-        if not h3 : continue
+                         ("ExpectedUpperLimit_+1_Sigma", "title")]:
+
+        keyName = "%s_%s" % (model.name, name)
+        h3 = f.Get(keyName)
+        nameReplace = []
+        if not h3:
+            h3 = f.Get(name)
+            if h3:
+                print "WARNING: histo %s not found (using %s)" % (keyName, name)
+                nameReplace = [(name, keyName)]
+            else:
+                continue
+
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         hp.modifyHisto(h, model)
         title = conf.signal.histoTitle(model=model.name)
@@ -228,17 +238,21 @@ def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
         setRange("yRange", ranges, h, "Y")
         if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(*ranges["xDivisions"])
         if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(*ranges["yDivisions"])
-        rename(h)
+        rename(h, nameReplace=nameReplace)
         hp.printHoles(h)
         histos[h.GetName()] = h
     f.Close()
     return histos
 
-def rename(h) :
+def rename(h, nameReplace=[]):
     name = h.GetName()
-    for old,new in [("+","p"), ("-","m"), ("upper", "Upper"), ("95",""),
-                    ("_shifted",""), ("_2D","")] :
-        name = name.replace(old,new)
+    for old, new in nameReplace + [("+", "p"),
+                                   ("-", "m"),
+                                   ("upper", "Upper"),
+                                   ("95", ""),
+                                   ("_shifted", ""),
+                                   ("_2D", "")]:
+        name = name.replace(old, new)
     h.SetName(name)
 
 def writeList(fileName = "", objects = []) :
