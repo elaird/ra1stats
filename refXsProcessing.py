@@ -14,7 +14,6 @@ def refXsHisto(model=None):
     out = h.Clone("%s_clone" % hs["histo"])
     out.SetDirectory(0)
     f.Close()
-    out.Scale(hs["factor"])
     return out
 
 
@@ -34,40 +33,6 @@ def mDeltaFuncs(mDeltaMin=None, mDeltaMax=None, nSteps=None, mGMax=None):
         f.SetLineColor(r.kBlack)
 
     return out
-
-
-def graph(h=None, model=None, interBin="", printXs=False, spec={}):
-    d = {"color": r.kBlack,
-         "lineStyle": 1,
-         "lineWidth": 3,
-         "markerStyle": 20,
-         "factor": 1.0,
-         "variation": 0.0,
-         "label": "a curve",
-         }
-    d.update(spec)
-    d["graph"] = excludedGraph(h,
-                               factor=d["factor"],
-                               variation=d["variation"],
-                               model=model,
-                               interBin=interBin,
-                               printXs=printXs
-                               )
-
-    stylize(d["graph"],
-            d["color"],
-            d["lineStyle"],
-            d["lineWidth"],
-            d["markerStyle"]
-            )
-
-    d["histo"] = excludedHistoSimple(h,
-                                     factor=d["factor"],
-                                     model=model,
-                                     interBin=interBin,
-                                     variation=d["variation"]
-                                     )
-    return d
 
 
 def binWidth(h, axisString):
@@ -91,7 +56,7 @@ def content(h=None, coords=(0.0,), variation=0.0, factor=1.0):
     return factor*(h.GetBinContent(bin) + variation*h.GetBinError(bin))
 
 
-def excludedGraph(h, factor=None, variation=0.0, model=None,
+def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
                   interBin="", prune=False, printXs=False):
     assert interBin in ["Center", "LowEdge"], interBin
 
@@ -105,15 +70,17 @@ def excludedGraph(h, factor=None, variation=0.0, model=None,
         for iBinY in range(1, 1+h.GetNbinsY()):
             y = getattr(h.GetYaxis(), "GetBin%s" % interBin)(iBinY)
             xs = content(h=refHisto, coords=(x, y),
-                         variation=variation, factor=factor)
+                         variation=variation, factor=xsFactor)
             if not xs:
                 continue
             if printXs:
                 xsPlain = content(h=refHisto, coords=(x, y))
-                print "x=%g, y=%g, xs(plain) = %g, xs(varied) = %g" % (x,
-                                                                       y,
-                                                                       xsPlain,
-                                                                       xs)
+                print "x=%g, y=%g, xs(plain) = %g, xs(factor %g, variation %s) = %g" % (x,
+                                                                                        y,
+                                                                                        xsPlain,
+                                                                                        xsFactor,
+                                                                                        variation,
+                                                                                        xs)
             xsLimit = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
@@ -123,7 +90,7 @@ def excludedGraph(h, factor=None, variation=0.0, model=None,
             if transition:
                 d[x].append(y)
         if len(d[x]) == 1:
-            print "INFO: %s (factor %g) hit " % (h.GetName(), factor) + \
+            print "INFO: %s (factor %g) hit " % (h.GetName(), xsFactor) + \
                   "iBinX = %d (x = %g), y = %g repeated" % (iBinX, x, d[x][0])
             d[x].append(d[x][0])
 
@@ -147,7 +114,7 @@ def excludedGraph(h, factor=None, variation=0.0, model=None,
     return out
 
 
-def excludedHistoSimple(h, factor=None, model=None,
+def excludedHistoSimple(h, xsFactor=None, model=None,
                         interBin="", variation=0.0):
     assert interBin in ["Center", "LowEdge"], interBin
     cutFunc = None
@@ -165,12 +132,12 @@ def excludedHistoSimple(h, factor=None, model=None,
             if cutFunc and not cutFunc(iBinX, x, iBinY, y, 1, 0.0):
                 continue
             xs = content(h=refHisto, coords=(x, y),
-                         variation=variation, factor=factor)
+                         variation=variation, factor=xsFactor)
             out.SetBinContent(iBinX, iBinY, 2*(xsLimit < xs)-1)
     return out
 
 
-def reordered(inGraph, factor):
+def reordered(inGraph, xsFactor):
     def truncated(gr):
         N = gr.GetN()
         if N % 2:
@@ -181,7 +148,7 @@ def reordered(inGraph, factor):
             for i in range(N-1):
                 out.SetPoint(i, x[i], y[i])
             print "ERROR: discarded from graph %s " % (gr.GetName(),) + \
-                  " (factor %g) the point " % (factor,) + \
+                  " (factor %g) the point " % (xsFactor,) + \
                   "%d, %g, %g" % (N-1, x[N-1], y[N-1])
             return out
         else:
@@ -202,15 +169,6 @@ def reordered(inGraph, factor):
     for i, j in enumerate(l1+l2):
         gOut.SetPoint(i, g.GetX()[j], g.GetY()[j])
     return gOut
-
-
-def stylize(g, color=None, lineStyle=None, lineWidth=None, markerStyle=None):
-    g.SetLineColor(color)
-    g.SetLineStyle(lineStyle)
-    g.SetLineWidth(lineWidth)
-    g.SetMarkerColor(color)
-    g.SetMarkerStyle(markerStyle)
-    return
 
 
 def drawGraphs(graphs, legendTitle="", gopts=""):
