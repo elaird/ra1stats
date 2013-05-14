@@ -165,9 +165,6 @@ def exclusionGraphs(model=None, histos={}, interBin="",
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves()[model.name]
 
-    graphReplacePoints = patches.graphReplacePoints()
-    graphAdditionalPoints = patches.graphAdditionalPoints()
-
     graphs = {}
     simpleExclHistos = {}
     for histoName, xsVariation in [("ExpectedUpperLimit_m1_Sigma", 0.0),
@@ -177,32 +174,43 @@ def exclusionGraphs(model=None, histos={}, interBin="",
                                    ("UpperLimit",                 -1.0),
                                    ("UpperLimit",                  1.0),
                                    ]:
-        graphName = histoName
-        if xsVariation==1.0 :
-            graphName += "_p1_Sigma"
-        if xsVariation==-1.0 :
-            graphName += "_m1_Sigma"
-        graphName += "_graph"
 
-        if curves :
-            assert False, "FIXME"
-            key = (spec["name"], model.xsVariation)
-            if key in curves :
-                spec["curve"] = spline(points = curves[key])
+        for xsFactor in model.xsFactors:
+            graphName = histoName
+            if xsVariation == 1.0:
+                graphName += "_p1_Sigma"
+            if xsVariation == -1.0:
+                graphName += "_m1_Sigma"
 
-        graph = rxs.graph(h=histos["%s_%s" % (model.name, histoName)],
-                          model=model, interBin=interBin, printXs=printXs,
-                          spec={"variation": xsVariation})
-        graph["graph"].SetName(graphName)
-        graph["histo"].SetName(graphName.replace("_graph","_simpleExcl"))
-        key = graphName.replace("m1","-1").replace("p1","+1").replace("_graph","")
-        pruneGraph(graph['graph'], debug = False, breakLink = pruneYMin,
-                   lst = patches.graphBlackLists()[key][model.name]+(pointsAtYMin(graph['graph']) if pruneYMin else []))
-        modifyGraph(graph['graph'], dct = patches.graphReplacePoints()[key][model.name], debug = False)
-        insertPoints(graph['graph'], lst = patches.graphAdditionalPoints()[key][model.name])
-        graphs[graphName] = graph["graph"]
-        simpleExclHistos[graphName] = graph["histo"]
-    return graphs,simpleExclHistos
+            if curves:
+                assert False, "FIXME"
+                key = (spec["name"], model.xsVariation)
+                if key in curves :
+                    spec["curve"] = spline(points=curves[key])
+
+
+
+            h = histos["%s_%s" % (model.name, histoName)]
+            kargs = {"variation": xsVariation,
+                     "xsFactor": xsFactor,
+                     "model": model,
+                     "interBin": interBin}
+            graph = rxs.excludedGraph(h, printXs=printXs, **kargs)
+            histo = rxs.excludedHistoSimple(h, **kargs)
+
+            patchesKey = graphName.replace("m1", "-1").replace("p1", "+1")
+            graphName += conf.signal.factorString(xsFactor)
+            graph.SetName(graphName)
+            histo.SetName(graphName+"_simpleExcl")
+
+            pruneGraph(graph, debug=False, breakLink=pruneYMin,
+                       lst=patches.graphBlackLists()[patchesKey][model.name]+(pointsAtYMin(graph) if pruneYMin else []))
+            modifyGraph(graph, dct=patches.graphReplacePoints()[patchesKey][model.name], debug=False)
+            insertPoints(graph, lst=patches.graphAdditionalPoints()[patchesKey][model.name])
+            graphs[graphName] = graph
+            simpleExclHistos[graphName] = histo
+    return graphs, simpleExclHistos
+
 
 def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
     assert len(conf.limit.CL()) == 1
@@ -330,6 +338,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
                  mDeltaFuncs=mDeltaFuncs,
                  )
 
+    print "FIXME simpleExcl"
     makeSimpleExclPdf(model=model,
                       histoFileName=simpleFileName,
                       graphFileName=limitFileName,
@@ -369,18 +378,20 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
         epsFile = epsFile.replace(".eps", "_linZ.eps")
 
     graphs = []
-    for d in specs :
-        graph = f.Get(d["name"]+"_graph")
-        if not graph : continue
-        graph.SetLineColor(d["color"])
-        graph.SetLineWidth(d["lineWidth"])
-        graph.SetLineStyle(d["lineStyle"])
-        graphs.append({"graph":graph, "label":d["label"]})
+    for xsFactor in model.xsFactors:
+        for d in specs:
+            graph = f.Get(d["name"]+conf.signal.factorString(xsFactor))
+            if not graph:
+                continue
+            graph.SetLineColor(d["color"])
+            graph.SetLineWidth(d["lineWidth"])
+            graph.SetLineStyle(d["lineStyle"])
+            graphs.append({"graph":graph, "label":d["label"]})
 
-    if curveGopts :
-        stuff = rxs.drawGraphs(graphs, gopts = curveGopts)
-    else :
-        epsFile = epsFile.replace(".eps", "_noRef.eps")
+        if curveGopts:
+            stuff = rxs.drawGraphs(graphs, gopts=curveGopts)
+        else:
+            epsFile = epsFile.replace(".eps", "_noRef.eps")
 
     if diagonalLine :
         yx = r.TF1("yx", "x", ranges["xRange"][0], ranges["xMaxDiag"])
