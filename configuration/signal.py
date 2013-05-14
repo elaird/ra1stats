@@ -24,7 +24,7 @@ class scan(object):
 
         # related to histogramProcessing.xsHistoPhysical
         if len(self._xsFactors) == 1 and self._xsFactors[0] != 1.0:
-            out += "_%3.1f" % self._xsFactors[0]
+            out = nameFactor(out, self._xsFactors[0])
         return out
 
     @property
@@ -51,6 +51,9 @@ class scan(object):
         assert box in ["had", "muon", "phot", "mumu"], box
         return not getattr(self, "_"+box)
 
+
+def nameFactor(modelName="", xsFactor=None):
+    return modelName+"_xs%3.1f" % xsFactor
 
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
