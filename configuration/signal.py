@@ -4,11 +4,12 @@ import directories
 class scan(object):
     def __init__(self, dataset="", tag="",
                  com=None, xsVariation="default",
+                 xsFactors=[1.0],
                  had="", muon="", phot="", mumu="",
                  interBin="LowEdge"):
         assert xsVariation in ["default", "up", "down"], xsVariation
         for item in ["dataset", "tag",
-                     "com", "xsVariation",
+                     "com", "xsVariation", "xsFactors",
                      "had", "muon", "phot", "mumu",
                      "interBin"]:
             setattr(self, "_"+item, eval(item))
@@ -20,6 +21,10 @@ class scan(object):
             out += "_"+self._tag
         if self._com != 8:
             out += "_%d" % self._com
+
+        # related to histogramProcessing.xsHistoPhysical
+        if len(self._xsFactors) == 1 and self._xsFactors[0] != 1.0:
+            out += "_%3.1f" % self._xsFactors[0]
         return out
 
     @property
@@ -38,6 +43,10 @@ class scan(object):
     def xsVariation(self):
         return self._xsVariation
 
+    @property
+    def xsFactors(self):
+        return self._xsFactors
+
     def ignoreEff(self, box):
         assert box in ["had", "muon", "phot", "mumu"], box
         return not getattr(self, "_"+box)
@@ -52,8 +61,8 @@ def effUncRel(model=""):
 def models():
     return [
         #scan(dataset="T1", com=8, had="v5"),
-        #scan(dataset="T2", com=8, had="v1"),
-        scan(dataset="T2cc", com=8, had="v6"),
+        scan(dataset="T2", com=8, had="v1"),
+        #scan(dataset="T2cc", com=8, had="v6"),
         #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
         #scan(dataset="T2bb", com=8, had="v3", muon="v3"),
         #scan(dataset="T1bbbb", com=8, had="v3", muon="v3"),
@@ -100,6 +109,7 @@ def whiteListOfPoints(model="", respect=False):
             #"T2tt": [(420.0,  20.0)],
             "T2bb": [(500.0, 150.0)],
             "T2": [(600.0, 250.0)],
+            #"T2": [(750.0, 0.0)],
             "T2cc": [(175.0, 95.0)],
             #"T2cc": [(175.0, 165.0)],
             }[model]
@@ -115,19 +125,19 @@ def xsHistoSpec(model=None, cmssmProcess=""):
     assert model.com in [7, 8], model.com
     sms = "%s/v5/%dTeV.root" % (base, model.com)
 
-    d = {"T2":      {"histo": "squark", "factor": 1.0, "file": sms},
-         "T2tt":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
-         "T2bb":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
-         "T2cc":    {"histo": "stop_or_sbottom", "factor": 1.0, "file": sms},
+    d = {"T2":      {"histo": "squark", "file": sms},
+         "T2tt":    {"histo": "stop_or_sbottom", "file": sms},
+         "T2bb":    {"histo": "stop_or_sbottom", "file": sms},
+         "T2cc":    {"histo": "stop_or_sbottom", "file": sms},
          "tanBeta10_7": {"histo": "%s_%s" % (cmssmProcess, model.xsVariation),
-                         "factor": 1.0, "file": "%s/v5/7TeV_cmssm.root" % base},
+                         "file": "%s/v5/7TeV_cmssm.root" % base},
          }
 
     for item in ["T1", "T1bbbb", "T1tttt", "T5zz_7"]:
-        d[item] = {"histo": "gluino", "factor": 1.0, "file": sms}
+        d[item] = {"histo": "gluino", "file": sms}
 
     for item in ["TGQ_0p0_7", "TGQ_0p2_7", "TGQ_0p4_7", "TGQ_0p8_7"]:
-        d[item] = {"histo": "clone", "factor": 1.0, "file": "%s/v1/TGQ_xSec.root" % base}
+        d[item] = {"histo": "clone", "file": "%s/v1/TGQ_xSec.root" % base}
 
     assert model.name in d, "model=%s" % model.name
     return d[model.name]
