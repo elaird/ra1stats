@@ -21,10 +21,6 @@ class scan(object):
             out += "_"+self._tag
         if self._com != 8:
             out += "_%d" % self._com
-
-        # related to histogramProcessing.xsHistoPhysical
-        if len(self._xsFactors) == 1 and self._xsFactors[0] != 1.0:
-            out += factorString(self._xsFactors[0])
         return out
 
     @property
@@ -53,7 +49,7 @@ class scan(object):
 
 
 def factorString(xsFactor=None):
-    return "_xs%3.1f" % xsFactor
+    return "" if xsFactor == 1.0 else "_xs%3.1f" % xsFactor
 
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
@@ -64,7 +60,7 @@ def effUncRel(model=""):
 def models():
     return [
         #scan(dataset="T1", com=8, had="v5"),
-        scan(dataset="T2", com=8, had="v1"),
+        scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v6"),
         #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
         #scan(dataset="T2bb", com=8, had="v3", muon="v3"),
@@ -113,6 +109,7 @@ def whiteListOfPoints(model="", respect=False):
             "T2bb": [(500.0, 150.0)],
             "T2": [(600.0, 250.0)],
             #"T2": [(750.0, 0.0)],
+            #"T2": [(450.0, 0.0)],
             "T2cc": [(175.0, 95.0)],
             #"T2cc": [(175.0, 165.0)],
             }[model]
