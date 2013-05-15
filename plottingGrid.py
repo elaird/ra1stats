@@ -337,7 +337,6 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
                  mDeltaFuncs=mDeltaFuncs,
                  )
 
-    print "FIXME simpleExcl"
     makeSimpleExclPdf(model=model,
                       histoFileName=simpleFileName,
                       graphFileName=limitFileName,
@@ -415,36 +414,38 @@ def makeSimpleExclPdf(model=None, histoFileName="", graphFileName="",
     ranges = conf.signal.ranges(model.name)
 
     c = squareCanvas()
-    pdf = histoFileName.replace(".root",".pdf")
+    pdf = histoFileName.replace(".root", ".pdf")
 
     hFile = r.TFile(histoFileName)
     gFile = r.TFile(graphFileName)
 
     c.Print(pdf+"[")
-    for d in specs :
-        foo = {'color': 880, 'lineWidth': 2, 'lineStyle': 2, 'name': 'ExpectedUpperLimit_m1_Sigma', 'label': ''}
-        h = hFile.Get(d["name"]+"_simpleExcl")
-        if not h : continue
-        h.Draw("colz")
-        h.SetMinimum(-1.0)
-        h.SetMaximum(1.0)
-        h.SetTitle(d["name"])
-        r.gPad.SetGridx()
-        r.gPad.SetGridy()
+    for xsFactor in model.xsFactors:
+        for d in specs:
+            name = d["name"]+conf.signal.factorString(xsFactor)
+            foo = {'color': 880, 'lineWidth': 2, 'lineStyle': 2, 'name': 'ExpectedUpperLimit_m1_Sigma', 'label': ''}
+            h = hFile.Get(name+"_simpleExcl")
+            if not h : continue
+            h.Draw("colz")
+            h.SetMinimum(-1.0)
+            h.SetMaximum(1.0)
+            h.SetTitle(name)
+            r.gPad.SetGridx()
+            r.gPad.SetGridy()
 
-        g = gFile.Get(d["name"]+"_graph")
-        if g and curveGopts :
-            g.SetMarkerColor(r.kBlack)
-            g.SetMarkerStyle(20)
-            g.SetMarkerSize(0.3*g.GetMarkerSize())
-            g.SetLineColor(r.kYellow)
-            g.SetLineStyle(1)
-            g.Draw("%spsame"%curveGopts)
-        if d.get("curve") and d["curve"].GetNp() :
-            d["curve"].SetMarkerStyle(20)
-            d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
-            d["curve"].Draw("lpsame")
-        c.Print(pdf)
+            g = gFile.Get(name)
+            if g and curveGopts:
+                g.SetMarkerColor(r.kBlack)
+                g.SetMarkerStyle(20)
+                g.SetMarkerSize(0.3*g.GetMarkerSize())
+                g.SetLineColor(r.kYellow)
+                g.SetLineStyle(1)
+                g.Draw("%spsame"%curveGopts)
+            if d.get("curve") and d["curve"].GetNp():
+                d["curve"].SetMarkerStyle(20)
+                d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
+                d["curve"].Draw("lpsame")
+            c.Print(pdf)
 
     c.Print(pdf+"]")
     print "INFO: %s has been written."%pdf
