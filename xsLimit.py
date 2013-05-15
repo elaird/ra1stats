@@ -14,8 +14,7 @@ for model in conf.signal.models():
                              #             "nSteps": 4,
                              #             "mGMax": 1250.,
                              #             },
-                             #printXs=True,
-                             diagonalLine=True,
+                             #diagonalLine=True,
                              expectedOnly=False,
                              )
     #pg.makeEfficiencyPlotBinned(model=model, key=["effHad", "effMuon"][0])
