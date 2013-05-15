@@ -198,15 +198,16 @@ def exclusionGraphs(model=None, histos={}, interBin="",
             graph = rxs.excludedGraph(h, **kargs)
             histo = rxs.excludedHistoSimple(h, **kargs)
 
-            patchesKey = graphName.replace("m1", "-1").replace("p1", "+1")
+            patchesFunc = graphName
             graphName += conf.signal.factorString(xsFactor)
             graph.SetName(graphName)
             histo.SetName(graphName+"_simpleExcl")
 
+            dct = getattr(patches, patchesFunc)(model.name+conf.signal.factorString(xsFactor))
             pruneGraph(graph, debug=False, breakLink=pruneYMin,
-                       lst=patches.graphBlackLists()[patchesKey][model.name]+(pointsAtYMin(graph) if pruneYMin else []))
-            modifyGraph(graph, dct=patches.graphReplacePoints()[patchesKey][model.name], debug=False)
-            insertPoints(graph, lst=patches.graphAdditionalPoints()[patchesKey][model.name])
+                       lst=dct["blackList"]+(pointsAtYMin(graph) if pruneYMin else []))
+            modifyGraph(graph, dct=dct["replace"], debug=False)
+            #insertPoints(graph, lst=insertList)
             graphs[graphName] = graph
             simpleExclHistos[graphName] = histo
     return graphs, simpleExclHistos
