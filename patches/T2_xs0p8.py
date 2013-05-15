@@ -1,6 +1,6 @@
 def ExpectedUpperLimit_m1_Sigma():
-    return {"blackList": [],
-            "replace": {},
+    return {"blackList": [(850,225)],
+            "replace": {(825,250):(830,250),(875,175):(867.5,175),(875,100):(870.5,100)}, #(850,225):(852.5,225)
             }
 
 
