@@ -423,7 +423,6 @@ def makeSimpleExclPdf(model=None, histoFileName="", graphFileName="",
     for xsFactor in model.xsFactors:
         for d in specs:
             name = d["name"]+conf.signal.factorString(xsFactor)
-            foo = {'color': 880, 'lineWidth': 2, 'lineStyle': 2, 'name': 'ExpectedUpperLimit_m1_Sigma', 'label': ''}
             h = hFile.Get(name+"_simpleExcl")
             if not h : continue
             h.Draw("colz")
