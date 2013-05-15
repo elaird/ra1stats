@@ -139,8 +139,6 @@ def xsHistoPhysical(model=None, cmssmProcess=""):
     out.Reset()
 
     spec = conf.signal.xsHistoSpec(model=model, cmssmProcess=cmssmProcess)
-    warning = "will need to accommodate factor of %g" % spec["factor"]
-    assert spec["factor"] == 1.0, warning
 
     h = oneHisto(spec["file"], "/", spec["histo"])
     assert h.ClassName()[:2] == "TH", h.ClassName()
@@ -150,6 +148,10 @@ def xsHistoPhysical(model=None, cmssmProcess=""):
     for iX, x, iY, y, iZ, z in utils.bins(out, interBin=model.interBin):
         iBin = h.FindBin(x) if dim == 1 else h.FindBin(x, y)
         out.SetBinContent(iX, iY, iZ, h.GetBinContent(iBin))
+
+    assert len(model.xsFactors) == 1, model.xsFactors
+    out.Scale(model.xsFactors[0])
+
     return out
 
 

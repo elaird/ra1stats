@@ -51,6 +51,8 @@ def makeRootFile(fileName = "") :
     
     canvas = r.TCanvas()
     pdfFile = "sms_xs.pdf"
+    canvas.Print(pdfFile+"[")
+
     hs,coms = histos()
     leg = r.TLegend(0.5, 0.7, 0.88, 0.88)
     leg.SetFillStyle(0)
@@ -69,7 +71,24 @@ def makeRootFile(fileName = "") :
     canvas.SetTickx()
     canvas.SetTicky()
     canvas.Print(pdfFile)
+
+    for i in range(len(hs)-1):
+        ratio = hs[i].Clone("ratio_%d" % i)
+        den = hs[i].Clone("den_%d" % i)
+        den.Reset()
+        for iBin in range(1, 1+ratio.GetNbinsX()):
+            x = ratio.GetBinCenter(iBin)
+            den.SetBinContent(iBin, hs[i+1].GetBinContent(hs[i+1].FindBin(x)))
+        ratio.Divide(den)
+        ratio.Draw()
+        ratio.GetYaxis().SetTitle("%s / %s" % (hs[i].GetName(), hs[i+1].GetName()))
+        ratio.SetMinimum(0.0)
+        r.gPad.SetLogy(False)
+        canvas.Print(pdfFile)
+    canvas.Print(pdfFile+"]")
+
     outFile.Close()
+
 
 def setup() :
     r.gROOT.SetBatch(True)

@@ -161,12 +161,9 @@ def spline(points = [], title = "") :
     return r.TSpline3(title, graph)
 
 def exclusionGraphs(model=None, histos={}, interBin="",
-                    pruneYMin=False, debug=False, printXs=None):
+                    pruneYMin=False, debug=False):
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves()[model.name]
-
-    graphReplacePoints = patches.graphReplacePoints()
-    graphAdditionalPoints = patches.graphAdditionalPoints()
 
     graphs = {}
     simpleExclHistos = {}
@@ -177,32 +174,43 @@ def exclusionGraphs(model=None, histos={}, interBin="",
                                    ("UpperLimit",                 -1.0),
                                    ("UpperLimit",                  1.0),
                                    ]:
-        graphName = histoName
-        if xsVariation==1.0 :
-            graphName += "_p1_Sigma"
-        if xsVariation==-1.0 :
-            graphName += "_m1_Sigma"
-        graphName += "_graph"
 
-        if curves :
-            assert False, "FIXME"
-            key = (spec["name"], model.xsVariation)
-            if key in curves :
-                spec["curve"] = spline(points = curves[key])
+        for xsFactor in model.xsFactors:
+            graphName = histoName
+            if xsVariation == 1.0:
+                graphName += "_p1_Sigma"
+            if xsVariation == -1.0:
+                graphName += "_m1_Sigma"
 
-        graph = rxs.graph(h=histos["%s_%s" % (model.name, histoName)],
-                          model=model, interBin=interBin, printXs=printXs,
-                          spec={"variation": xsVariation})
-        graph["graph"].SetName(graphName)
-        graph["histo"].SetName(graphName.replace("_graph","_simpleExcl"))
-        key = graphName.replace("m1","-1").replace("p1","+1").replace("_graph","")
-        pruneGraph(graph['graph'], debug = False, breakLink = pruneYMin,
-                   lst = patches.graphBlackLists()[key][model.name]+(pointsAtYMin(graph['graph']) if pruneYMin else []))
-        modifyGraph(graph['graph'], dct = patches.graphReplacePoints()[key][model.name], debug = False)
-        insertPoints(graph['graph'], lst = patches.graphAdditionalPoints()[key][model.name])
-        graphs[graphName] = graph["graph"]
-        simpleExclHistos[graphName] = graph["histo"]
-    return graphs,simpleExclHistos
+            if curves:
+                assert False, "FIXME"
+                key = (spec["name"], model.xsVariation)
+                if key in curves :
+                    spec["curve"] = spline(points=curves[key])
+
+
+
+            h = histos["%s_%s" % (model.name, histoName)]
+            kargs = {"variation": xsVariation,
+                     "xsFactor": xsFactor,
+                     "model": model,
+                     "interBin": interBin}
+            graph = rxs.excludedGraph(h, **kargs)
+            histo = rxs.excludedHistoSimple(h, **kargs)
+
+            patchesKey = graphName.replace("m1", "-1").replace("p1", "+1")
+            graphName += conf.signal.factorString(xsFactor)
+            graph.SetName(graphName)
+            histo.SetName(graphName+"_simpleExcl")
+
+            pruneGraph(graph, debug=False, breakLink=pruneYMin,
+                       lst=patches.graphBlackLists()[patchesKey][model.name]+(pointsAtYMin(graph) if pruneYMin else []))
+            modifyGraph(graph, dct=patches.graphReplacePoints()[patchesKey][model.name], debug=False)
+            insertPoints(graph, lst=patches.graphAdditionalPoints()[patchesKey][model.name])
+            graphs[graphName] = graph
+            simpleExclHistos[graphName] = histo
+    return graphs, simpleExclHistos
+
 
 def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
     assert len(conf.limit.CL()) == 1
@@ -216,9 +224,19 @@ def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
                           "upper limit"),
                          ("ExpectedUpperLimit", "expected upper limit"),
                          ("ExpectedUpperLimit_-1_Sigma", "title"),
-                         ("ExpectedUpperLimit_+1_Sigma", "title")] :
-        h3 = f.Get("%s_%s" % (model.name, name))
-        if not h3 : continue
+                         ("ExpectedUpperLimit_+1_Sigma", "title")]:
+
+        keyName = "%s_%s" % (model.name, name)
+        h3 = f.Get(keyName)
+        nameReplace = []
+        if not h3:
+            h3 = f.Get(name)
+            if h3:
+                print "WARNING: histo %s not found (using %s)" % (keyName, name)
+                nameReplace = [(name, keyName)]
+            else:
+                continue
+
         h = utils.shifted(utils.threeToTwo(h3), shift = (shiftX, shiftY))
         hp.modifyHisto(h, model)
         title = conf.signal.histoTitle(model=model.name)
@@ -228,17 +246,21 @@ def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
         setRange("yRange", ranges, h, "Y")
         if ranges["xDivisions"] : h.GetXaxis().SetNdivisions(*ranges["xDivisions"])
         if ranges["yDivisions"] : h.GetYaxis().SetNdivisions(*ranges["yDivisions"])
-        rename(h)
+        rename(h, nameReplace=nameReplace)
         hp.printHoles(h)
         histos[h.GetName()] = h
     f.Close()
     return histos
 
-def rename(h) :
+def rename(h, nameReplace=[]):
     name = h.GetName()
-    for old,new in [("+","p"), ("-","m"), ("upper", "Upper"), ("95",""),
-                    ("_shifted",""), ("_2D","")] :
-        name = name.replace(old,new)
+    for old, new in nameReplace + [("+", "p"),
+                                   ("-", "m"),
+                                   ("upper", "Upper"),
+                                   ("95", ""),
+                                   ("_shifted", ""),
+                                   ("_2D", "")]:
+        name = name.replace(old, new)
     h.SetName(name)
 
 def writeList(fileName = "", objects = []) :
@@ -257,7 +279,7 @@ def outFileName(model=None, tag=""):
 
 def makeRootFiles(model=None, limitFileName="", simpleFileName="",
                   shiftX=None, shiftY=None, interBin="",
-                  pruneYMin=None, printXs=None):
+                  pruneYMin=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
     histos = upperLimitHistos(model=model,
@@ -267,13 +289,12 @@ def makeRootFiles(model=None, limitFileName="", simpleFileName="",
     graphs, simple = exclusionGraphs(model=model,
                                      histos=histos,
                                      interBin=interBin,
-                                     pruneYMin=pruneYMin,
-                                     printXs=printXs)
+                                     pruneYMin=pruneYMin)
     writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
     writeList(fileName=simpleFileName, objects=simple.values())
 
 def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
-                          diagonalLine=False, printXs=False, pruneYMin=False,
+                          diagonalLine=False, pruneYMin=False,
                           expectedOnly=False, debug=False):
 
     limitFileName = outFileName(model=model,
@@ -285,7 +306,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
     makeRootFiles(model=model, limitFileName=limitFileName,
                   simpleFileName=simpleFileName,
                   shiftX=shift, shiftY=shift, interBin="Center",
-                  pruneYMin=pruneYMin, printXs=printXs)
+                  pruneYMin=pruneYMin)
 
     specs = [
         {"name":"ExpectedUpperLimit", "label":"Expected Limit",
@@ -355,18 +376,20 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
         epsFile = epsFile.replace(".eps", "_linZ.eps")
 
     graphs = []
-    for d in specs :
-        graph = f.Get(d["name"]+"_graph")
-        if not graph : continue
-        graph.SetLineColor(d["color"])
-        graph.SetLineWidth(d["lineWidth"])
-        graph.SetLineStyle(d["lineStyle"])
-        graphs.append({"graph":graph, "label":d["label"]})
+    for xsFactor in model.xsFactors:
+        for d in specs:
+            graph = f.Get(d["name"]+conf.signal.factorString(xsFactor))
+            if not graph:
+                continue
+            graph.SetLineColor(d["color"])
+            graph.SetLineWidth(d["lineWidth"])
+            graph.SetLineStyle(d["lineStyle"])
+            graphs.append({"graph":graph, "label":d["label"]})
 
-    if curveGopts :
-        stuff = rxs.drawGraphs(graphs, gopts = curveGopts)
-    else :
-        epsFile = epsFile.replace(".eps", "_noRef.eps")
+        if curveGopts:
+            stuff = rxs.drawGraphs(graphs, gopts=curveGopts)
+        else:
+            epsFile = epsFile.replace(".eps", "_noRef.eps")
 
     if diagonalLine :
         yx = r.TF1("yx", "x", ranges["xRange"][0], ranges["xMaxDiag"])
@@ -391,36 +414,37 @@ def makeSimpleExclPdf(model=None, histoFileName="", graphFileName="",
     ranges = conf.signal.ranges(model.name)
 
     c = squareCanvas()
-    pdf = histoFileName.replace(".root",".pdf")
+    pdf = histoFileName.replace(".root", ".pdf")
 
     hFile = r.TFile(histoFileName)
     gFile = r.TFile(graphFileName)
 
     c.Print(pdf+"[")
-    for d in specs :
-        foo = {'color': 880, 'lineWidth': 2, 'lineStyle': 2, 'name': 'ExpectedUpperLimit_m1_Sigma', 'label': ''}
-        h = hFile.Get(d["name"]+"_simpleExcl")
-        if not h : continue
-        h.Draw("colz")
-        h.SetMinimum(-1.0)
-        h.SetMaximum(1.0)
-        h.SetTitle(d["name"])
-        r.gPad.SetGridx()
-        r.gPad.SetGridy()
+    for xsFactor in model.xsFactors:
+        for d in specs:
+            name = d["name"]+conf.signal.factorString(xsFactor)
+            h = hFile.Get(name+"_simpleExcl")
+            if not h : continue
+            h.Draw("colz")
+            h.SetMinimum(-1.0)
+            h.SetMaximum(1.0)
+            h.SetTitle(name)
+            r.gPad.SetGridx()
+            r.gPad.SetGridy()
 
-        g = gFile.Get(d["name"]+"_graph")
-        if g and curveGopts :
-            g.SetMarkerColor(r.kBlack)
-            g.SetMarkerStyle(20)
-            g.SetMarkerSize(0.3*g.GetMarkerSize())
-            g.SetLineColor(r.kYellow)
-            g.SetLineStyle(1)
-            g.Draw("%spsame"%curveGopts)
-        if d.get("curve") and d["curve"].GetNp() :
-            d["curve"].SetMarkerStyle(20)
-            d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
-            d["curve"].Draw("lpsame")
-        c.Print(pdf)
+            g = gFile.Get(name)
+            if g and curveGopts:
+                g.SetMarkerColor(r.kBlack)
+                g.SetMarkerStyle(20)
+                g.SetMarkerSize(0.3*g.GetMarkerSize())
+                g.SetLineColor(r.kYellow)
+                g.SetLineStyle(1)
+                g.Draw("%spsame"%curveGopts)
+            if d.get("curve") and d["curve"].GetNp():
+                d["curve"].SetMarkerStyle(20)
+                d["curve"].SetMarkerSize(0.3*d["curve"].GetMarkerSize())
+                d["curve"].Draw("lpsame")
+            c.Print(pdf)
 
     c.Print(pdf+"]")
     print "INFO: %s has been written."%pdf
