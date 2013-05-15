@@ -8,7 +8,7 @@ for model in conf.signal.models():
                              logZ=True,
                              debug=False,
                              pruneYMin=True,
-                             curveGopts="l",
+                             curveGopts="c",
                              #mDeltaFuncs={"mDeltaMin": 0.0,
                              #             "mDeltaMax": 400.0,
                              #             "nSteps": 4,
