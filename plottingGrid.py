@@ -161,7 +161,7 @@ def spline(points = [], title = "") :
     return r.TSpline3(title, graph)
 
 def exclusionGraphs(model=None, histos={}, interBin="",
-                    pruneYMin=False, debug=False, printXs=None):
+                    pruneYMin=False, debug=False):
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves()[model.name]
 
@@ -195,7 +195,7 @@ def exclusionGraphs(model=None, histos={}, interBin="",
                      "xsFactor": xsFactor,
                      "model": model,
                      "interBin": interBin}
-            graph = rxs.excludedGraph(h, printXs=printXs, **kargs)
+            graph = rxs.excludedGraph(h, **kargs)
             histo = rxs.excludedHistoSimple(h, **kargs)
 
             patchesKey = graphName.replace("m1", "-1").replace("p1", "+1")
@@ -279,7 +279,7 @@ def outFileName(model=None, tag=""):
 
 def makeRootFiles(model=None, limitFileName="", simpleFileName="",
                   shiftX=None, shiftY=None, interBin="",
-                  pruneYMin=None, printXs=None):
+                  pruneYMin=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
         assert eval(item)!=None,item
     histos = upperLimitHistos(model=model,
@@ -289,13 +289,12 @@ def makeRootFiles(model=None, limitFileName="", simpleFileName="",
     graphs, simple = exclusionGraphs(model=model,
                                      histos=histos,
                                      interBin=interBin,
-                                     pruneYMin=pruneYMin,
-                                     printXs=printXs)
+                                     pruneYMin=pruneYMin)
     writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
     writeList(fileName=simpleFileName, objects=simple.values())
 
 def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
-                          diagonalLine=False, printXs=False, pruneYMin=False,
+                          diagonalLine=False, pruneYMin=False,
                           expectedOnly=False, debug=False):
 
     limitFileName = outFileName(model=model,
@@ -307,7 +306,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
     makeRootFiles(model=model, limitFileName=limitFileName,
                   simpleFileName=simpleFileName,
                   shiftX=shift, shiftY=shift, interBin="Center",
-                  pruneYMin=pruneYMin, printXs=printXs)
+                  pruneYMin=pruneYMin)
 
     specs = [
         {"name":"ExpectedUpperLimit", "label":"Expected Limit",
