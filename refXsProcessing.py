@@ -138,6 +138,31 @@ def excludedHistoSimple(h, xsFactor=None, model=None,
     return out
 
 
+def relativeHisto(h, xsFactor=None, model=None,
+                  interBin="", variation=0.0):
+    assert interBin in ["Center", "LowEdge"], interBin
+    cutFunc = None
+    refHisto = refXsHisto(model)
+    out = h.Clone("%s_relative" % h.GetName())
+    out.Reset()
+    out.GetZaxis().SetTitle("xs upper limit / nominal xs")
+    for iBinX in range(1, 1+h.GetNbinsX()):
+        x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
+        for iBinY in range(1, 1+h.GetNbinsY()):
+            y = getattr(h.GetYaxis(), "GetBin%s" % interBin)(iBinY)
+            xsLimit = h.GetBinContent(iBinX, iBinY)
+            if not xsLimit:
+                continue
+            if cutFunc and not cutFunc(iBinX, x, iBinY, y, 1, 0.0):
+                continue
+            xs = content(h=refHisto, coords=(x, y),
+                         variation=variation, factor=xsFactor)
+            if not xs:
+                continue
+            out.SetBinContent(iBinX, iBinY, xsLimit/xs)
+    return out
+
+
 def reordered(inGraph, xsFactor):
     def truncated(gr):
         N = gr.GetN()
