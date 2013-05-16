@@ -51,6 +51,7 @@ class scan(object):
 def factorString(xsFactor=None):
     return "" if xsFactor == 1.0 else "_xs%3.1f" % xsFactor
 
+
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
@@ -107,10 +108,12 @@ def whiteListOfPoints(model="", respect=False):
             #"T2tt": [(410.0,  20.0)],
             #"T2tt": [(420.0,  20.0)],
             "T2bb": [(500.0, 150.0)],
-            "T2": [(600.0, 250.0)],
+            #"T2": [(600.0, 250.0)],
             #"T2": [(750.0, 0.0)],
             #"T2": [(450.0, 0.0)],
             #"T2": [(350.0, 100.0)],
+            "T2": [(400.0, 25.0)],
+            #"T2": [(400.0, 50.0)],
             "T2cc": [(175.0, 95.0)],
             #"T2cc": [(175.0, 165.0)],
             }[model]
@@ -276,6 +279,10 @@ def ranges(model):
 
 def chi():
     return "#tilde{#chi}^{0}_{1}"
+
+
+def pruned(s=""):
+    return s.split(";")[0]
 
 
 def sqProc(q="", daughter=""):
