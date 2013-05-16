@@ -76,12 +76,12 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
                 continue
             if (x, y) in whiteList:
                 xsPlain = content(h=refHisto, coords=(x, y))
-                print "x=%g, y=%g, xs(plain) = %g, xs(factor %g, variation %s) = %g" % (x,
-                                                                                        y,
-                                                                                        xsPlain,
-                                                                                        xsFactor,
-                                                                                        variation,
-                                                                                        xs)
+                print ("x=%g, y=%g, " % (x, y) +
+                       "xs(plain) = %g, " % xsPlain +
+                       "xs(factor %g, variation %s) = %g" % (xsFactor,
+                                                             variation,
+                                                             xs)
+                       )
             xsLimit = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
@@ -241,6 +241,7 @@ def extrapolatedGraph(h, gr, yValueToPrune):
 def excludedGraphOld(h, factor=None, model=None, interBin="",
                      pruneAndExtrapolate=False, yValueToPrune=-80):
     assert interBin in ["Center", "LowEdge"], interBin
+
     def fail(xs, xsLimit):
         return (xs <= xsLimit) or not xsLimit
 
