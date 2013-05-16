@@ -167,6 +167,7 @@ def exclusionGraphs(model=None, histos={}, interBin="",
 
     graphs = {}
     simpleExclHistos = {}
+    relativeHistos = {}
     for histoName, xsVariation in [("ExpectedUpperLimit_m1_Sigma", 0.0),
                                    ("ExpectedUpperLimit_p1_Sigma", 0.0),
                                    ("ExpectedUpperLimit",          0.0),
@@ -196,12 +197,14 @@ def exclusionGraphs(model=None, histos={}, interBin="",
                      "model": model,
                      "interBin": interBin}
             graph = rxs.excludedGraph(h, **kargs)
-            histo = rxs.excludedHistoSimple(h, **kargs)
+            simpleHisto = rxs.excludedHistoSimple(h, **kargs)
+            relativeHisto = rxs.relativeHisto(h, **kargs)
 
             patchesFunc = graphName
             graphName += conf.signal.factorString(xsFactor)
             graph.SetName(graphName)
-            histo.SetName(graphName+"_simpleExcl")
+            simpleHisto.SetName(graphName+"_simpleExcl")
+            relativeHisto.SetName(graphName+"_relative")
 
             dct = getattr(patches, patchesFunc)(model.name+conf.signal.factorString(xsFactor))
             pruneGraph(graph, debug=False, breakLink=pruneYMin,
@@ -209,8 +212,9 @@ def exclusionGraphs(model=None, histos={}, interBin="",
             modifyGraph(graph, dct=dct["replace"], debug=False)
             #insertPoints(graph, lst=insertList)
             graphs[graphName] = graph
-            simpleExclHistos[graphName] = histo
-    return graphs, simpleExclHistos
+            simpleExclHistos[graphName] = simpleHisto
+            relativeHistos[graphName] = relativeHisto
+    return graphs, simpleExclHistos, relativeHistos
 
 
 def upperLimitHistos(model=None, inFileName="", shiftX=False, shiftY=False):
@@ -279,6 +283,7 @@ def outFileName(model=None, tag=""):
             }
 
 def makeRootFiles(model=None, limitFileName="", simpleFileName="",
+                  relativeFileName="",
                   shiftX=None, shiftY=None, interBin="",
                   pruneYMin=None):
     for item in ["shiftX", "shiftY", "interBin", "pruneYMin"] :
@@ -287,12 +292,13 @@ def makeRootFiles(model=None, limitFileName="", simpleFileName="",
                               inFileName=pickling.mergedFile(model=model),
                               shiftX=shiftX,
                               shiftY=shiftY)
-    graphs, simple = exclusionGraphs(model=model,
-                                     histos=histos,
-                                     interBin=interBin,
-                                     pruneYMin=pruneYMin)
+    graphs, simple, relative = exclusionGraphs(model=model,
+                                               histos=histos,
+                                               interBin=interBin,
+                                               pruneYMin=pruneYMin)
     writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
     writeList(fileName=simpleFileName, objects=simple.values())
+    writeList(fileName=relativeFileName, objects=relative.values())
 
 def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
                           diagonalLine=False, pruneYMin=False,
@@ -302,10 +308,13 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
                                 tag="xsLimit")["root"]
     simpleFileName = outFileName(model=model,
                                  tag="xsLimit_simpleExcl")["root"]
+    relativeFileName = outFileName(model=model,
+                                   tag="xsLimit_relative")["root"]
 
     shift = model.interBin == "LowEdge"
     makeRootFiles(model=model, limitFileName=limitFileName,
                   simpleFileName=simpleFileName,
+                  relativeFileName=relativeFileName,
                   shiftX=shift, shiftY=shift, interBin="Center",
                   pruneYMin=pruneYMin)
 
@@ -338,12 +347,26 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", mDeltaFuncs={},
                  mDeltaFuncs=mDeltaFuncs,
                  )
 
-    makeSimpleExclPdf(model=model,
-                      histoFileName=simpleFileName,
-                      graphFileName=limitFileName,
-                      specs=specs,
-                      curveGopts=curveGopts,
-                      )
+    makeHistoPdf(model=model,
+                 histoFileName=simpleFileName,
+                 graphFileName=limitFileName,
+                 specs=specs,
+                 curveGopts=curveGopts,
+                 tag="_simpleExcl",
+                 min=-1.0,
+                 max=1.0,
+                 )
+
+    makeHistoPdf(model=model,
+                 histoFileName=relativeFileName,
+                 graphFileName=limitFileName,
+                 specs=specs,
+                 curveGopts=curveGopts,
+                 tag="_relative",
+                 min=0.8,
+                 max=1.2,
+                 nContour=100,
+                 )
 
 def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
                  curveGopts="", mDeltaFuncs=False, specs=[]):
@@ -410,8 +433,9 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
     printOnce(model=model, canvas=c, fileName=epsFile, alsoC=True)
     f.Close()
 
-def makeSimpleExclPdf(model=None, histoFileName="", graphFileName="",
-                      specs=[], curveGopts=""):
+def makeHistoPdf(model=None, histoFileName="", graphFileName="",
+                 specs=[], curveGopts="",
+                 min=None, max=None, tag="", nContour=None):
     ranges = conf.signal.ranges(model.name)
 
     c = squareCanvas()
@@ -424,11 +448,14 @@ def makeSimpleExclPdf(model=None, histoFileName="", graphFileName="",
     for xsFactor in model.xsFactors:
         for d in specs:
             name = d["name"]+conf.signal.factorString(xsFactor)
-            h = hFile.Get(name+"_simpleExcl")
-            if not h : continue
+            h = hFile.Get(name+tag)
+            if not h:
+                continue
+            if nContour:
+                h.SetContour(nContour)
             h.Draw("colz")
-            h.SetMinimum(-1.0)
-            h.SetMaximum(1.0)
+            h.SetMinimum(min)
+            h.SetMaximum(max)
             h.SetTitle(name)
             r.gPad.SetGridx()
             r.gPad.SetGridy()
