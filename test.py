@@ -17,7 +17,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                              separateSystObs=not ensemble
                              )
 
-    examples_paper = {("0b_le3j",): signals.t2.t2,
+    examples_paper = {("0b_le3j",): signals.t2.a,
                       ("0b_ge4j",): signals.two.t1,
                       ("1b_le3j",): signals.two.t2bb,
                       ("1b_ge4j",): signals.two.t2tt,
@@ -113,6 +113,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                         errorsFromToys=nToys,
                         printPages=False,
                         drawRatios=False,
+                        significance=False,
                         )
 
     #f.qcdPlot()
