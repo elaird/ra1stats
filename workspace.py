@@ -884,7 +884,7 @@ class foo(object) :
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
     def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
-                errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5,
+                errorsFromToys = 0, drawRatios = False, significance = False, pullPlotMax = 3.5,
                 pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
@@ -905,7 +905,7 @@ class foo(object) :
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
                          "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
-                         "drawRatios" : drawRatios,
+                         "drawRatios" : drawRatios, "significance": significance,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
