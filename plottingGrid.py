@@ -810,8 +810,6 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
     if whiteList :
         assert len(whiteList)==divide[0]*divide[1], "%d != %d"%(len(whiteList), divide[0]*divide[1])
 
-    # FIXME: remove hard-coded 2
-    specialKey = name("CLb_2")
     histos = allHistos(fileName=pickling.mergedFile(model=model))
     master = histos[name(masterKey)]
     graphs = {}
@@ -819,6 +817,8 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
         for iBinY in range(1, 1 + master.GetNbinsY()) :
             if whiteList and (iBinX, iBinY) not in whiteList : continue
             if not master.GetBinContent(iBinX, iBinY) : continue
+
+            specialKey = name("CLb")
             if specialKey not in histos or not histos[specialKey] : continue
             if not histos[specialKey].GetBinContent(iBinX, iBinY) : continue
 
