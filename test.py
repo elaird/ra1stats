@@ -112,8 +112,8 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                         drawComponents=False,
                         errorsFromToys=nToys,
                         printPages=False,
-                        drawRatios=False,
-                        significance=False,
+                        drawRatios=True,
+                        significance=ignoreHad,
                         )
 
     #f.qcdPlot()
