@@ -830,7 +830,7 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
             graph.SetName(graphName)
             graph.SetTitle("%s;#sigma (pb);CL_{s}" % (graphTitle if stampTitle else ""))
             graph.SetMarkerStyle(20)
-            graph.SetMarkerSize(0.3)
+            graph.SetMarkerSize(0.5)
             graph.SetMinimum(yMin)
             graph.SetMaximum(yMax)
             iPoint = 0
