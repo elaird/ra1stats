@@ -49,7 +49,9 @@ class scan(object):
 
 
 def factorString(xsFactor=None):
-    return "" if xsFactor == 1.0 else "_xs%3.1f" % xsFactor
+    if xsFactor == 1.0:
+        return ""
+    return ("_xs%3.1f" % xsFactor).replace(".", "p")
 
 
 def effUncRel(model=""):
