@@ -197,8 +197,17 @@ def exclusionGraphs(model=None, histos={}, interBin="",
                      "model": model,
                      "interBin": interBin}
             graph = rxs.excludedGraph(h, **kargs)
-            simpleHisto = rxs.excludedHistoSimple(h, **kargs)
-            relativeHisto = rxs.relativeHisto(h, **kargs)
+
+            simpleHisto = rxs.exclHisto(h,
+                                        tag="_excludedHistoSimple",
+                                        zTitle="bin excluded or not",
+                                        func=lambda xsLimit, xs: 2*(xsLimit < xs)-1,
+                                        **kargs)
+            relativeHisto = rxs.exclHisto(h,
+                                          tag="_relative",
+                                          zTitle="xs upper limit / nominal xs",
+                                          func=lambda xsLimit, xs: xsLimit/xs,
+                                          **kargs)
 
             patchesFunc = graphName
             graphName += conf.signal.factorString(xsFactor)
