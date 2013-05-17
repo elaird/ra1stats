@@ -408,19 +408,44 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
         setRange("xsZRangeLin", ranges, h, "Z")
         epsFile = epsFile.replace(".eps", "_linZ.eps")
 
-    graphs = []
-    for xsFactor in model.xsFactors:
+    stuff = []
+    for xsFactor in sorted(model.xsFactors):
+        legendPos = "left"
+        if len(model.xsFactors) >=2 and xsFactor == 0.1:
+            legendPos = "right"
+
+        graphs = []
         for d in specs:
             graph = f.Get(d["name"]+conf.signal.factorString(xsFactor))
             if not graph:
                 continue
             graph.SetLineColor(d["color"])
             graph.SetLineWidth(d["lineWidth"])
-            graph.SetLineStyle(d["lineStyle"])
-            graphs.append({"graph":graph, "label":d["label"]})
+            lineStyle = d["lineStyle"]
+            label = d["label"]
+            if xsFactor == 0.8:
+                label = d["label"].replace("theory", "th. (8 #tilde{q})")
+            elif xsFactor == 0.1:
+                if len(model.xsFactors) == 1:
+                    label = d["label"].replace("theory", "th. (1 #tilde{q})")
+                else:
+                    lineStyle = {"ExpectedUpperLimit": 3,
+                                 "ExpectedUpperLimit_m1_Sigma": 3,
+                                 "ExpectedUpperLimit_p1_Sigma": 3,
+                                 "UpperLimit": 4,
+                                 "UpperLimit_m1_Sigma": 4,
+                                 "UpperLimit_p1_Sigma": 4,
+                                 }[d["name"]]
+                    if d["name"] == "UpperLimit":
+                        label = "(1 #tilde{q})"
+                    else:
+                        label = ""
+
+            graph.SetLineStyle(lineStyle)
+            graphs.append({"graph": graph, "label": label})
 
         if curveGopts:
-            stuff = rxs.drawGraphs(graphs, gopts=curveGopts)
+            stuff += drawGraphs(graphs, gopts=curveGopts, legendPos=legendPos)
         else:
             epsFile = epsFile.replace(".eps", "_noRef.eps")
 
@@ -441,6 +466,26 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
                x=0.2075, y=0.64, factor=0.65)
     printOnce(model=model, canvas=c, fileName=epsFile, alsoC=True)
     f.Close()
+
+
+def drawGraphs(graphs, legendTitle="", gopts="", legendPos=None):
+    count = len(filter(lambda x: x["label"], graphs))
+    yMax = 0.755
+    if legendPos == "left":
+        legend = r.TLegend(0.19, yMax-0.04*count, 0.69, yMax, legendTitle)
+    elif legendPos == "right":
+        legend = r.TLegend(0.65, yMax-0.08, 0.98, yMax-0.04, legendTitle)
+    legend.SetBorderSize(0)
+    legend.SetFillStyle(0)
+    for d in graphs:
+        g = d["graph"]
+        if d['label']:
+            legend.AddEntry(g, d["label"], "l")
+        if g.GetN():
+            g.Draw("%ssame" % gopts)
+    legend.Draw("same")
+    return legend, graphs
+
 
 def makeHistoPdf(model=None, histoFileName="", graphFileName="",
                  specs=[], curveGopts="",
