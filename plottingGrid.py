@@ -262,7 +262,7 @@ def rename(h, nameReplace=[]):
     for old, new in nameReplace + [("+", "p"),
                                    ("-", "m"),
                                    ("upper", "Upper"),
-                                   ("95", ""),
+                                   ("95", ""),  # hard-coded
                                    ("_shifted", ""),
                                    ("_2D", "")]:
         name = name.replace(old, new)
@@ -388,7 +388,7 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
         else:
             hName = "UpperLimit"
     else:
-        hName = "upperLimit95"
+        hName = "UpperLimit"  # 95 was removed in rename()
     h = f.Get("%s_%s" % (model.name, hName))
     h.Draw("colz")
 
