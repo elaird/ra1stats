@@ -50,3 +50,9 @@ g = common.signal(xs = 0.1*5.26422, effUncRel = 0.134,
                                                                "0.1 (m_{#tilde{q}}= 375 GeV, m_{#tilde{#chi}^{0}_{1}} = 50 GeV)"))
 
 g.insert("0b_le3j", {"effHad":[0.029803, 0.038604, 0.050505, 0.016002, 0.003200, 0.001300, 0.000000, 0.000500]})
+
+h = common.signal(xs = 0.1*5.26422, effUncRel = 0.134,
+                      label = "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2")["text"]),
+                                                               "0.1h (m_{#tilde{q}}= 375 GeV, m_{#tilde{#chi}^{0}_{1}} = 50 GeV)"))
+
+h.insert("0b_le3j", {"effHad":[0.029803, 0.038604, 0.050505, 0.016002, 0.003200, 0.001300, 0.000000, 0.000000]})
