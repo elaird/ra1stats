@@ -115,37 +115,14 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
     return out
 
 
-def excludedHistoSimple(h, xsFactor=None, model=None,
-                        interBin="", variation=0.0):
+def exclHisto(h, xsFactor=None, model=None, interBin="", variation=0.0,
+              tag="", zTitle="", func=lambda xsLimit, xs: 0.0):
     assert interBin in ["Center", "LowEdge"], interBin
     cutFunc = None
     refHisto = refXsHisto(model)
-    out = h.Clone("%s_excludedHistoSimple" % h.GetName())
+    out = h.Clone(h.GetName()+tag)
     out.Reset()
-    out.GetZaxis().SetTitle("bin excluded or not")
-    for iBinX in range(1, 1+h.GetNbinsX()):
-        x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
-        for iBinY in range(1, 1+h.GetNbinsY()):
-            y = getattr(h.GetYaxis(), "GetBin%s" % interBin)(iBinY)
-            xsLimit = h.GetBinContent(iBinX, iBinY)
-            if not xsLimit:
-                continue
-            if cutFunc and not cutFunc(iBinX, x, iBinY, y, 1, 0.0):
-                continue
-            xs = content(h=refHisto, coords=(x, y),
-                         variation=variation, factor=xsFactor)
-            out.SetBinContent(iBinX, iBinY, 2*(xsLimit < xs)-1)
-    return out
-
-
-def relativeHisto(h, xsFactor=None, model=None,
-                  interBin="", variation=0.0):
-    assert interBin in ["Center", "LowEdge"], interBin
-    cutFunc = None
-    refHisto = refXsHisto(model)
-    out = h.Clone("%s_relative" % h.GetName())
-    out.Reset()
-    out.GetZaxis().SetTitle("xs upper limit / nominal xs")
+    out.GetZaxis().SetTitle(zTitle)
     for iBinX in range(1, 1+h.GetNbinsX()):
         x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()):
@@ -159,7 +136,7 @@ def relativeHisto(h, xsFactor=None, model=None,
                          variation=variation, factor=xsFactor)
             if not xs:
                 continue
-            out.SetBinContent(iBinX, iBinY, xsLimit/xs)
+            out.SetBinContent(iBinX, iBinY, func(xsLimit, xs))
     return out
 
 
