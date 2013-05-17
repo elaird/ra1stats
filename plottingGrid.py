@@ -1001,37 +1001,37 @@ def makePlots(square=False):
                    blackListMatch=["eff", "_nEvents"],
                    square=square)
 
-    	#multiPlots(model=model,
-    	#           tag="nEvents",
-    	#           whiteListMatch=["nEvents"],
-    	#           square=square)
-    	#
-    	#multiPlots(model=model,
-    	#           tag="effHad",
-    	#           whiteListMatch=["effHad"],
-    	#           blackListMatch=["UncRel"],
-    	#           outputRootFile=True,
-    	#           modify=True,
-    	#           square=square)
-    	#
-    	#multiPlots(model=model,
-    	#           tag="effMu",
-    	#           whiteListMatch=["effMu"],
-    	#           blackListMatch=["UncRel"],
-    	#           outputRootFile=True,
-    	#           modify=True,
-    	#           square=square)
-    	#
-    	#multiPlots(model=model,
-    	#           tag="xs",
-    	#           whiteListMatch=["xs"],
-    	#           outputRootFile=True,
-    	#           modify=True,
-    	#           square=square)
+        #multiPlots(model=model,
+        #           tag="nEvents",
+        #           whiteListMatch=["nEvents"],
+        #           square=square)
+        #
+        #multiPlots(model=model,
+        #           tag="effHad",
+        #           whiteListMatch=["effHad"],
+        #           blackListMatch=["UncRel"],
+        #           outputRootFile=True,
+        #           modify=True,
+        #           square=square)
+        #
+        #multiPlots(model=model,
+        #           tag="effMu",
+        #           whiteListMatch=["effMu"],
+        #           blackListMatch=["UncRel"],
+        #           outputRootFile=True,
+        #           modify=True,
+        #           square=square)
+        #
+        #multiPlots(model=model,
+        #           tag="xs",
+        #           whiteListMatch=["xs"],
+        #           outputRootFile=True,
+        #           modify=True,
+        #           square=square)
 
-    	if model.isSms and conf.limit.method() == "CLs":
-    	    for cl in conf.limit.CL():
-    	        clsValidation(model=model,
-    	                      tag="clsValidation",
-    	                      cl=cl,
-    	                      masterKey="xs")
+        if model.isSms and conf.limit.method() == "CLs":
+            for cl in conf.limit.CL():
+                clsValidation(model=model,
+                              tag="clsValidation",
+                              cl=cl,
+                              masterKey="xs")
