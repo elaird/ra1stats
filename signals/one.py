@@ -1,14 +1,6 @@
-import common
-from configuration.signal import processStamp
-
 import ROOT as r
-
-
-def scaled(t, factor) :
-    return tuple([factor*item for item in t])
-
-def pruned(s = "") :
-    return s.split(";")[0]
+import common
+from configuration.signal import pruned, processStamp
 
 simple = common.signal(xs = 1.0, effUncRel = 0.0, label = "signal")
 simple.insert("test", {

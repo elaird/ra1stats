@@ -8,6 +8,7 @@ import utils
 
 import ROOT as r
 
+
 def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
               preliminary=None):
     canvas.cd()
@@ -59,7 +60,7 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
     return histoD
 
 
-def exclusionHistos(limitFile="", model=None, shift = (True, False)):
+def exclusionHistos(limitFile="", model=None, shift=(True, False)):
     limitHistoDict = {
         'UpperLimit': {
             'label': 'Observed Limit (95% CL)',
@@ -94,7 +95,7 @@ def exclusionHistos(limitFile="", model=None, shift = (True, False)):
     rfile = r.TFile(limitFile, 'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
         h = utils.shifted(utils.threeToTwo(rfile.Get(limitHistoName)),
-                          shift = shift, shiftErrors = False)
+                          shift=shift, shiftErrors=False)
         histogramProcessing.modifyHisto(h, model)
         opts['hist'] = h
     rfile.Close()
@@ -298,6 +299,7 @@ def points():
                         "nSmooth": nSmooth,
                         "xMin": xMin})
     return out
+
 
 def onePoint(yValue=None, nSmooth=None, xMin=None):
     model = configuration.signal.scan(dataset='T2tt', com=8)  # FIXME: use interBin

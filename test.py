@@ -3,7 +3,7 @@
 import common
 import likelihoodSpec
 import plotting
-import signals2
+import signals
 import workspace
 import ROOT as r
 
@@ -17,23 +17,23 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                              separateSystObs=not ensemble
                              )
 
-    examples_paper = {("0b_le3j",): signals2.t2,
-                      ("0b_ge4j",): signals2.t1,
-                      ("1b_le3j",): signals2.t2bb,
-                      ("1b_ge4j",): signals2.t2tt,
-                      ("2b_le3j",): signals2.t2bb,
-                      ("2b_ge4j",): signals2.t2tt,
+    examples_paper = {("0b_le3j",): signals.t2.a,
+                      ("0b_ge4j",): signals.two.t1,
+                      ("1b_le3j",): signals.two.t2bb,
+                      ("1b_ge4j",): signals.two.t2tt,
+                      ("2b_le3j",): signals.two.t2bb,
+                      ("2b_ge4j",): signals.two.t2tt,
                       ("3b_le3j",): {},
-                      ("3b_ge4j",): signals2.t1bbbb,
-                      ("ge4b_ge4j",): signals2.t1tttt,
+                      ("3b_ge4j",): signals.two.t1bbbb,
+                      ("ge4b_ge4j",): signals.two.t1tttt,
                       }
 
-    examples_t2cc = {("0b_le3j",): signals2.t2cc,
-                     ("0b_ge4j",): signals2.t2cc,
-                     ("1b_le3j",): signals2.t2cc,
-                     ("1b_ge4j",): signals2.t2cc,
-                     ("2b_le3j",): signals2.t2cc,
-                     ("2b_ge4j",): signals2.t2cc,
+    examples_t2cc = {("0b_le3j",): signals.two.t2cc,
+                     ("0b_ge4j",): signals.two.t2cc,
+                     ("1b_le3j",): signals.two.t2cc,
+                     ("1b_ge4j",): signals.two.t2cc,
+                     ("2b_le3j",): signals.two.t2cc,
+                     ("2b_ge4j",): signals.two.t2cc,
                      ("3b_le3j",): {},
                      ("3b_ge4j",): {},
                      ("ge4b_ge4j",): {},
@@ -112,7 +112,8 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                         drawComponents=False,
                         errorsFromToys=nToys,
                         printPages=False,
-                        drawRatios=False,
+                        drawRatios=True,
+                        significance=ignoreHad,
                         )
 
     #f.qcdPlot()

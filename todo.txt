@@ -1,8 +1,8 @@
 hard-coded
 ----------
-- remove hard-coded HT thresholds in histoSpec(), xsHisto(), nEventsInHisto()
-- consider hard-coded CLb_2 in plottingGrid.clsValidation()
-- 0.95 in StandardHypoTestInvDemo.C
+- remove hard-coded HT thresholds in conf.signal.xsHistoSpec(), hp.xsHistoAllOne()
+- remove 0.95 in StandardHypoTestInvDemo.C
+- remove 95 in plottingGrid.rename()
 
 one
 ---
@@ -12,6 +12,7 @@ one
 - errors on translation factors
 - view call graph to speed up cmssm initialization
 - make common.signal not inherit from dict / check use of label
+- CLs3Error/CLs3
 
 two
 ---
@@ -55,7 +56,6 @@ speed-ups for toys
 
 (technical)
 - grid
-- qcd parameterization (also document)
 - profile
 - minuit config: strategy, nFCNCallsMax
 - initial values/ranges

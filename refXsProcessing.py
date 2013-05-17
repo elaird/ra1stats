@@ -76,12 +76,12 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
                 continue
             if (x, y) in whiteList:
                 xsPlain = content(h=refHisto, coords=(x, y))
-                print "x=%g, y=%g, xs(plain) = %g, xs(factor %g, variation %s) = %g" % (x,
-                                                                                        y,
-                                                                                        xsPlain,
-                                                                                        xsFactor,
-                                                                                        variation,
-                                                                                        xs)
+                print ("x=%g, y=%g, " % (x, y) +
+                       "xs(plain) = %g, " % xsPlain +
+                       "xs(factor %g, variation %s) = %g" % (xsFactor,
+                                                             variation,
+                                                             xs)
+                       )
             xsLimit = h.GetBinContent(iBinX, iBinY)
             xsLimitPrev = h.GetBinContent(iBinX, iBinY-1)
             xsLimitNext = h.GetBinContent(iBinX, iBinY+1)
@@ -115,14 +115,14 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
     return out
 
 
-def excludedHistoSimple(h, xsFactor=None, model=None,
-                        interBin="", variation=0.0):
+def exclHisto(h, xsFactor=None, model=None, interBin="", variation=0.0,
+              tag="", zTitle="", func=lambda xsLimit, xs: 0.0):
     assert interBin in ["Center", "LowEdge"], interBin
     cutFunc = None
     refHisto = refXsHisto(model)
-    out = h.Clone("%s_excludedHistoSimple" % h.GetName())
+    out = h.Clone(h.GetName()+tag)
     out.Reset()
-    out.GetZaxis().SetTitle("bin excluded or not")
+    out.GetZaxis().SetTitle(zTitle)
     for iBinX in range(1, 1+h.GetNbinsX()):
         x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()):
@@ -134,7 +134,9 @@ def excludedHistoSimple(h, xsFactor=None, model=None,
                 continue
             xs = content(h=refHisto, coords=(x, y),
                          variation=variation, factor=xsFactor)
-            out.SetBinContent(iBinX, iBinY, 2*(xsLimit < xs)-1)
+            if not xs:
+                continue
+            out.SetBinContent(iBinX, iBinY, func(xsLimit, xs))
     return out
 
 
@@ -216,6 +218,7 @@ def extrapolatedGraph(h, gr, yValueToPrune):
 def excludedGraphOld(h, factor=None, model=None, interBin="",
                      pruneAndExtrapolate=False, yValueToPrune=-80):
     assert interBin in ["Center", "LowEdge"], interBin
+
     def fail(xs, xsLimit):
         return (xs <= xsLimit) or not xsLimit
 

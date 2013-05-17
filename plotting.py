@@ -421,7 +421,8 @@ class validationPlotter(object) :
         self.ewkPlots()
         #self.mcFactorPlots()
         self.alphaTRatioPlots()
-        #self.significancePlots()
+        if self.significance:
+            self.significancePlots()
         self.rhoPlots()
         self.printPars()
         self.correlationHist()
