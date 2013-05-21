@@ -353,6 +353,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="",
                   shiftX=shift, shiftY=shift, interBin="Center",
                   pruneYMin=pruneYMin)
 
+    r.gStyle.SetLineStyleString(19, "50 20")
     specs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit",
               "lineStyle": 7, "lineWidth": 3, "color": r.kViolet},
              ]
@@ -455,12 +456,12 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
                 if len(model.xsFactors) == 1:
                     label = d["label"].replace("theory", "th. (1 #tilde{q})")
                 else:
-                    lineStyle = {"ExpectedUpperLimit": 3,
-                                 "ExpectedUpperLimit_m1_Sigma": 3,
-                                 "ExpectedUpperLimit_p1_Sigma": 3,
-                                 "UpperLimit": 4,
-                                 "UpperLimit_m1_Sigma": 4,
-                                 "UpperLimit_p1_Sigma": 4,
+                    lineStyle = {"ExpectedUpperLimit": 7,
+                                 "ExpectedUpperLimit_m1_Sigma": 2,
+                                 "ExpectedUpperLimit_p1_Sigma": 2,
+                                 "UpperLimit": 19, #9,#3,#1,#5,
+                                 "UpperLimit_m1_Sigma": 19,
+                                 "UpperLimit_p1_Sigma": 19
                                  }[d["name"]]
                     if d["name"] == "UpperLimit":
                         label = "(1 #tilde{q})"
