@@ -412,7 +412,7 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
     epsFile = rootFileName.replace(".root", ".eps")
     f = r.TFile(rootFileName)
 
-    c = squareCanvas()
+    canvas = squareCanvas()
 
     expectedOnly = len(specs) == 1
     if conf.limit.method() == "CLs":
@@ -429,19 +429,21 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
     h.Draw("colz")
 
     if logZ:
-        c.SetLogz()
+        canvas.SetLogz()
         setRange("xsZRangeLog", ranges, h, "Z")
     else:
         setRange("xsZRangeLin", ranges, h, "Z")
         epsFile = epsFile.replace(".eps", "_linZ.eps")
 
-    stuff = []
-    for xsFactor in sorted(model.xsFactors):
-        legendPos = "left"
-        if len(model.xsFactors) >= 2 and xsFactor == 0.1:
-            legendPos = "right"
+    p8 = "#tilde{q}_{L}%s+ #tilde{q}_{R}, 4 flavors" % ("^{#color[0]{L}}" if len(model.xsFactors) == 1 else "")
+    p1 = p8.replace("q", "u")[:p8.find("+")]+" only"
+    if len(model.xsFactors) >= 2:
+        p1 = "#lower[0.1]{%s}" % p1
+        p8 = "#lower[-0.05]{%s}" % p8
 
-        graphs = []
+    stuff = []
+    graphs = []
+    for xsFactor in sorted(model.xsFactors):
         for d in specs:
             graph = f.Get(d["name"]+conf.signal.factorString(xsFactor))
             if not graph:
@@ -450,11 +452,22 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
             graph.SetLineWidth(d["lineWidth"])
             lineStyle = d["lineStyle"]
             label = d["label"]
+            goption = "l"
+            legend = "top"
+
             if xsFactor == 0.8:
-                label = d["label"].replace("theory", "th. (8 #tilde{q})")
+                if d["name"] == "UpperLimit":
+                    if len(model.xsFactors) >= 2:
+                        label = p8
+                        legend = "bottom"
+                        # now in legend title
+                        # graphs.append({"graph": graph, "label": d["label"], "goption": "", "legend": legend})
+                    else:
+                        label = d["label"].replace("theory", "th. (%s)" % p8)
+
             elif xsFactor == 0.1:
                 if len(model.xsFactors) == 1:
-                    label = d["label"].replace("theory", "th. (1 #tilde{q})")
+                    label = d["label"].replace("theory", "th. (%s)" % p1)
                 else:
                     lineStyle = {"ExpectedUpperLimit": 7,
                                  "ExpectedUpperLimit_m1_Sigma": 2,
@@ -464,17 +477,26 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
                                  "UpperLimit_p1_Sigma": 19
                                  }[d["name"]]
                     if d["name"] == "UpperLimit":
-                        label = "(1 #tilde{q})"
+                        label = p1
+                        legend = "bottom"
                     else:
                         label = ""
 
             graph.SetLineStyle(lineStyle)
-            graphs.append({"graph": graph, "label": label})
+            graphs.append({"graph": graph, "label": label, "goption": goption, "legend": legend})
 
-        if curveGopts:
-            stuff += drawGraphs(graphs, gopts=curveGopts, legendPos=legendPos)
+    if curveGopts:
+        if len(model.xsFactors) >= 2:
+            xMax = 0.69
+        elif model.xsFactors[0] == 0.8:
+            xMax = 0.8
+        elif model.xsFactors[0] == 0.1:
+            xMax = 0.69
         else:
-            epsFile = epsFile.replace(".eps", "_noRef.eps")
+            xMax = 0.69
+        stuff += drawGraphs(graphs, gopts=curveGopts, xMax=xMax)
+    else:
+        epsFile = epsFile.replace(".eps", "_noRef.eps")
 
     if diagonalLine:
         yx = r.TF1("yx", "x", ranges["xRange"][0], ranges["xMaxDiag"])
@@ -489,29 +511,62 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
         for func in funcs:
             func.Draw("same")
 
-    s3 = stamp(text=likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
-               x=0.2075, y=0.64, factor=0.65)
-    printOnce(model=model, canvas=c, fileName=epsFile, alsoC=True)
+    if len(model.xsFactors) == 1:
+        s3 = stamp(text=likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
+                   x=0.2075, y=0.64, factor=0.65)
+    else:
+        yStamp = 0.50
+        c = ", "
+        text = likelihoodSpec.likelihoodSpec(model.name).legendTitle().split(c)
+        s3 = stamp(text=c.join(text[:-1]), x=0.2075, y=yStamp, factor=0.65)
+        s4 = stamp(text=text[-1], x=0.2075, y=yStamp-0.04, factor=0.65)
+
+    printOnce(model=model, canvas=canvas, fileName=epsFile, alsoC=True)
     f.Close()
 
 
-def drawGraphs(graphs, legendTitle="", gopts="", legendPos=None):
-    count = len(filter(lambda x: x["label"], graphs))
-    yMax = 0.755
-    if legendPos == "left":
-        legend = r.TLegend(0.19, yMax-0.04*count, 0.69, yMax, legendTitle)
-    elif legendPos == "right":
-        legend = r.TLegend(0.65, yMax-0.08, 0.98, yMax-0.04, legendTitle)
-    legend.SetBorderSize(0)
-    legend.SetFillStyle(0)
+def drawGraphs(graphs, legendTitle="", gopts="", xMin=0.19, xMax=0.69):
+    countTop = len(filter(lambda x: x["label"] and x["legend"] == "top", graphs))
+    countBot = len(filter(lambda x: x["label"] and x["legend"] == "bottom", graphs))
+    yMaxTop = 0.755
+    yMinTop = yMaxTop-0.04*countTop
+
+    yMaxBot = yMinTop - 0.04*0.75
+    yMinBot = yMaxBot - 0.04*(1+countBot) #include title
+
+    legendTop = r.TLegend(xMin, yMinTop, xMax, yMaxTop, legendTitle)
+    legendTop.SetBorderSize(0)
+    legendTop.SetFillStyle(0)
+
+    legendBot = r.TLegend(xMin, yMinBot, xMax, yMaxBot, " #sigma^{NLO+NLL} #pm1 #sigma theory")
+    legendBot.SetBorderSize(0)
+    legendBot.SetFillStyle(0)
+
+    entriesTop = []
+    entriesBot = []
     for d in graphs:
         g = d["graph"]
         if d['label']:
-            legend.AddEntry(g, d["label"], "l")
+            entry = (g, d["label"], d["goption"])
+            legend = None
+            if d["legend"] == "bottom":
+                entriesBot.append(entry)
+            if d["legend"] == "top":
+                entriesTop.append(entry)
         if g.GetN():
             g.Draw("%ssame" % gopts)
-    legend.Draw("same")
-    return legend, graphs
+
+    for entry in entriesTop:
+        legendTop.AddEntry(*entry)
+
+    for entry in reversed(entriesBot):
+        legendBot.AddEntry(*entry)
+
+    if countTop:
+        legendTop.Draw("same")
+    if countBot:
+        legendBot.Draw("same")
+    return legendTop, legendBot, graphs
 
 
 def makeHistoPdf(model=None, histoFileName="", graphFileName="",
