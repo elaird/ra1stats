@@ -435,7 +435,7 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
         setRange("xsZRangeLin", ranges, h, "Z")
         epsFile = epsFile.replace(".eps", "_linZ.eps")
 
-    p8 = "#tilde{q}_{L}%s+ #tilde{q}_{R}, 4 flavors" % ("^{#color[0]{L}}" if len(model.xsFactors) == 1 else "")
+    p8 = "#tilde{q}_{L}%s+ #tilde{q}_{R}, 4 flavours" % ("^{#color[0]{L}}" if len(model.xsFactors) == 1 else "")
     p1 = p8.replace("q", "u")[:p8.find("+")]+" only"
     if len(model.xsFactors) >= 2:
         p1 = "#lower[0.1]{%s}" % p1
@@ -494,7 +494,7 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
             xMax = 0.69
         else:
             xMax = 0.69
-        stuff += drawGraphs(graphs, gopts=curveGopts, xMax=xMax)
+        stuff += drawGraphs(graphs, gopts=curveGopts, xMaxTop=xMax)
     else:
         epsFile = epsFile.replace(".eps", "_noRef.eps")
 
@@ -522,23 +522,25 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
         s4 = stamp(text=text[-1], x=0.2075, y=yStamp-0.04, factor=0.65)
 
     printOnce(model=model, canvas=canvas, fileName=epsFile, alsoC=True)
+    if len(model.xsFactors) >= 2:
+        print 'WARNING: must add gStyle->SetLineStyleString(19, "50 20"); to .C file'
     f.Close()
 
 
-def drawGraphs(graphs, legendTitle="", gopts="", xMin=0.19, xMax=0.69):
+def drawGraphs(graphs, legendTitle="", gopts="", xMin=0.19, xMaxTop=0.69, xMaxBot=0.59):
     countTop = len(filter(lambda x: x["label"] and x["legend"] == "top", graphs))
     countBot = len(filter(lambda x: x["label"] and x["legend"] == "bottom", graphs))
     yMaxTop = 0.755
     yMinTop = yMaxTop-0.04*countTop
 
     yMaxBot = yMinTop - 0.04*0.75
-    yMinBot = yMaxBot - 0.04*(1+countBot) #include title
+    yMinBot = yMaxBot - 0.04*(1.2+countBot) #include title+space
 
-    legendTop = r.TLegend(xMin, yMinTop, xMax, yMaxTop, legendTitle)
+    legendTop = r.TLegend(xMin, yMinTop, xMaxTop, yMaxTop, legendTitle)
     legendTop.SetBorderSize(0)
     legendTop.SetFillStyle(0)
 
-    legendBot = r.TLegend(xMin, yMinBot, xMax, yMaxBot, " #sigma^{NLO+NLL} #pm1 #sigma theory")
+    legendBot = r.TLegend(xMin, yMinBot, xMaxBot, yMaxBot, " #sigma^{NLO+NLL} #pm1 #sigma theory")
     legendBot.SetBorderSize(0)
     legendBot.SetFillStyle(0)
 
