@@ -126,7 +126,8 @@ def xsHisto(model=None):
         cmssmProcess = "" if model.isSms else "total"
         return xsHistoPhysical(model=model, cmssmProcess=cmssmProcess)
     else:
-        return xsHistoAllOne(model=model, cutFunc=patches.cutFunc()[model.name])
+        return xsHistoAllOne(model=model,
+                             cutFunc=patches.cutFunc()[model.name])
 
 
 def xsHistoPhysical(model=None, cmssmProcess=""):
@@ -182,7 +183,9 @@ def nEventsInHisto(model=None):
     return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
 
 
-def effHisto(model=None, box="", htLower=None, htUpper=None, bJets="", jets=""):
+def effHisto(model=None, box="",
+             htLower=None, htUpper=None,
+             bJets="", jets=""):
     if model.ignoreEff(box):
         print "WARNING: ignoring %s efficiency for %s" % (box, model.name)
         return None
@@ -244,16 +247,17 @@ def points():
         name = model.name
         whiteList = conf.signal.whiteListOfPoints(name)
         h = xsHisto(model)
-    	for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=model.interBin):
-    	    if whiteList and (x, y) not in whiteList:
-    	        continue
-    	    content = h.GetBinContent(iBinX, iBinY, iBinZ)
-    	    if not content:
-    	        continue
-    	    if multiples and ((x/multiples) % 1 != 0.0):
-    	        continue
-    	    if patches.cutFunc()[name](iBinX, x, iBinY, y, iBinZ, z):
-    	        out.append((name, iBinX, iBinY, iBinZ))
+        bins = utils.bins(h, interBin=model.interBin)
+        for iBinX, x, iBinY, y, iBinZ, z in bins:
+            if whiteList and (x, y) not in whiteList:
+                continue
+            content = h.GetBinContent(iBinX, iBinY, iBinZ)
+            if not content:
+                continue
+            if multiples and ((x/multiples) % 1 != 0.0):
+                continue
+            if patches.cutFunc()[name](iBinX, x, iBinY, y, iBinZ, z):
+                out.append((name, iBinX, iBinY, iBinZ))
     return out
 
 

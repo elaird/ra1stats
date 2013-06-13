@@ -3,7 +3,7 @@ from configuration.signal import processStamp, pruned
 
 a = common.signal(xs = 0.8*0.244862, effUncRel = 0.134,
                    label = "#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2")["text"]),
-                                                               "0.8 (m_{#tilde{q}}= 600 GeV, m_{#tilde{#chi}^{0}_{1}} = 250 GeV)"))
+                                                               "(m_{#tilde{q}}= 600 GeV, m_{#tilde{#chi}^{0}_{1}} = 250 GeV)"))
 a.insert("0b_le3j", {"effHad":[0.012000, 0.017700, 0.054700, 0.048300, 0.022800, 0.010100, 0.002700, 0.002400],})
 
 

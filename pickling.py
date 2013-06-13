@@ -83,7 +83,8 @@ def eventsInRange(model="", nEventsIn=None):
 
 def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
                 nEventsIn=None):
-    out = common.signal(xs=xs.GetBinContent(*point3), label="%s_%d_%d_%d" % ((model,)+point3),
+    out = common.signal(xs=xs.GetBinContent(*point3),
+                        label="%s_%d_%d_%d" % ((model,)+point3),
                         effUncRel=conf.signal.effUncRel(model),
                         )
 
@@ -219,9 +220,12 @@ def mergePickledFiles(printExamples=False):
             print "Here are the example binnings for %s:" % name
             for c in ["X", "Y", "Z"]:
                 print " ".join(["%s:" % c,
-                                str(getattr(examples[name], "GetNbins%s" % c)()),
-                                str(getattr(examples[name], "Get%saxis" % c)().GetXmin()),
-                                str(getattr(examples[name], "Get%saxis" % c)().GetXmax()),
+                                str(getattr(examples[name],
+                                            "GetNbins%s" % c)()),
+                                str(getattr(examples[name],
+                                            "Get%saxis" % c)().GetXmin()),
+                                str(getattr(examples[name],
+                                            "Get%saxis" % c)().GetXmax()),
                                 ])
 
     for name, iX, iY, iZ in hp.points():
