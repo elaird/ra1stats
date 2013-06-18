@@ -3,7 +3,7 @@
 import os
 
 import configuration.signal
-import histogramProcessing
+import histogramProcessing as hp
 import utils
 
 import ROOT as r
@@ -94,10 +94,12 @@ def exclusionHistos(limitFile="", model=None, shift=(True, False)):
 
     rfile = r.TFile(limitFile, 'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
-        h = utils.shifted(utils.threeToTwo(rfile.Get(limitHistoName)),
-                          shift=shift, shiftErrors=False)
-        histogramProcessing.modifyHisto(h, model)
-        opts['hist'] = h
+        opts['hist'] = hp.modifiedHisto(h3=rfile.Get(limitHistoName),
+                                        model=model,
+                                        shiftX=True,
+                                        shiftY=True,
+                                        shiftErrors=False,
+                                        range=True)
     rfile.Close()
     return limitHistoDict
 
