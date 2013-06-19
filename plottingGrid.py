@@ -321,7 +321,7 @@ def makeLimitRootFiles(model=None, limitFileName="", simpleFileName="",
 
 def makeEfficiencyPlots(model=None, key="",
                         interBinOut=None,
-                        separateCategories=True,
+                        separateCategories=None,
                         includeNonUsedCategories=None,
                         ):
     assert interBinOut
