@@ -7,7 +7,6 @@ for model in conf.signal.models():
     interBinOut = "Center"
     pg.makeXsUpperLimitPlots(model=model,
                              logZ=True,
-                             debug=False,
                              pruneYMin=True,
                              curveGopts="c",
                              interBinOut=interBinOut,
@@ -18,10 +17,14 @@ for model in conf.signal.models():
                              #             },
                              #diagonalLine=True,
                              expectedOnly=False,
+                             debug=False,
+                             info=False,
                              )
     pg.makeEfficiencyPlots(model=model,
                            key="effHad",
                            interBinOut=interBinOut,
                            separateCategories=True,
                            includeNonUsedCategories=True,
+                           debug=False,
+                           info=False,
                            )
