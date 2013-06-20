@@ -229,7 +229,6 @@ def effHisto(model=None, box="",
              htLower=None, htUpper=None,
              bJets="", jets=""):
     if model.ignoreEff(box):
-        print "WARNING: ignoring %s efficiency for %s" % (box, model.name)
         return None
 
     spec = conf.signal.effHistoSpec(model=model,
