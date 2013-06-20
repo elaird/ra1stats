@@ -91,7 +91,7 @@ def pointsAtYMin(graph):
     return out
 
 
-def pruneGraph(graph, lst=[], debug=False, breakLink=False):
+def pruneGraph(graph, lst=[], debug=False, breakLink=False, info=None):
     if debug:
         graph.Print()
     nRemoved = 0
@@ -105,17 +105,17 @@ def pruneGraph(graph, lst=[], debug=False, breakLink=False):
         nRemoved += len(bad)
         for i in bad:
             if debug:
-                print "WARN: Removing point %d = (%g,%g) from %s" % (i, x[i], y[i], graph.GetName())
+                print "DEBUG: Removing point %d = (%g,%g) from %s" % (i, x[i], y[i], graph.GetName())
             graph.RemovePoint(i)
     if breakLink:
         graph.RemovePoint(graph.GetN()-1)
     if debug:
         graph.Print()
-    if nRemoved:
-        print "WARN: Removing %d points from graph %s" % (nRemoved, graph.GetName())
+    if nRemoved and info:
+        print "INFO: Removing %d points from graph %s" % (nRemoved, graph.GetName())
 
 
-def modifyGraph(graph, dct={}, debug=True):
+def modifyGraph(graph, dct={}, debug=False, info=False):
     if debug:
         graph.Print()
     for old, new in dct.iteritems():
@@ -124,7 +124,8 @@ def modifyGraph(graph, dct={}, debug=True):
         for i in range(graph.GetN()):
             if abs(old[0]-x[i]) < 1.0e-6 and abs(old[1]-y[i]) < 1.0e-6:
                 graph.SetPoint(i, new[0], new[1])
-                print "WARN: Replacing point %d: (%g,%g) --> (%g,%g) from graph %s" % (i, old[0], old[1], new[0], new[1], graph.GetName())
+                if info:
+                    print "INFO: Replacing point %d: (%g,%g) --> (%g,%g) from graph %s" % (i, old[0], old[1], new[0], new[1], graph.GetName())
     if debug:
         graph.Print()
 
@@ -168,7 +169,7 @@ def spline(points=[], title=""):
 
 
 def exclusionGraphs(model=None, histos={}, interBin="",
-                    pruneYMin=False, debug=False):
+                    pruneYMin=False, debug=None, info=None):
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves()[model.name]
 
@@ -201,7 +202,7 @@ def exclusionGraphs(model=None, histos={}, interBin="",
                      "xsFactor": xsFactor,
                      "model": model,
                      "interBin": interBin}
-            graph = rxs.excludedGraph(h, **kargs)
+            graph = rxs.excludedGraph(h, info=info, **kargs)
 
             simpleHisto = rxs.exclHisto(h,
                                         tag="_excludedHistoSimple",
@@ -221,9 +222,9 @@ def exclusionGraphs(model=None, histos={}, interBin="",
             relativeHisto.SetName(graphName+"_relative")
 
             dct = getattr(patches, patchesFunc)(model.name+conf.signal.factorString(xsFactor))
-            pruneGraph(graph, debug=False, breakLink=pruneYMin,
+            pruneGraph(graph, debug=debug, breakLink=pruneYMin,
                        lst=dct["blackList"]+(pointsAtYMin(graph) if pruneYMin else []))
-            modifyGraph(graph, dct=dct["replace"], debug=False)
+            modifyGraph(graph, dct=dct["replace"], debug=debug, info=info)
             #insertPoints(graph, lst=insertList)
             graphs[graphName] = graph
             simpleExclHistos[graphName] = simpleHisto
@@ -231,7 +232,7 @@ def exclusionGraphs(model=None, histos={}, interBin="",
     return graphs, simpleExclHistos, relativeHistos
 
 
-def upperLimitHistos(model=None, inFileName="", shiftX=None, shiftY=None):
+def upperLimitHistos(model=None, inFileName="", shiftX=None, shiftY=None, info=None):
     assert len(conf.limit.CL()) == 1
     cl = conf.limit.CL()[0]
 
@@ -258,12 +259,14 @@ def upperLimitHistos(model=None, inFileName="", shiftX=None, shiftY=None):
                              model=model,
                              shiftX=shiftX,
                              shiftY=shiftY,
-                             range=True)
+                             range=True,
+                             info=info)
 
         zTitle = "%g%% CL %s on  #sigma (pb)" % (100.0*cl, pretty)
         adjustHisto(h, title=";".join([conf.signal.histoTitle(model=model.name), zTitle]))
 
-        hp.printHoles(h)
+        if info:
+            hp.printHoles(h)
         rename(h, nameReplace=nameReplace)
         histos[h.GetName()] = h
     return histos
@@ -299,7 +302,8 @@ def outFileName(model=None, tag=""):
 
 
 def makeLimitRootFiles(model=None, limitFileName="", simpleFileName="",
-                       relativeFileName="", interBinOut=None, pruneYMin=None):
+                       relativeFileName="", interBinOut=None, pruneYMin=None,
+                       debug=None, info=None):
     assert pruneYMin is not None
     assert interBinOut
 
@@ -308,11 +312,14 @@ def makeLimitRootFiles(model=None, limitFileName="", simpleFileName="",
     histos = upperLimitHistos(model=model,
                               inFileName=pickling.mergedFile(model=model),
                               shiftX=shiftX,
-                              shiftY=shiftY)
+                              shiftY=shiftY,
+                              info=info)
     graphs, simple, relative = exclusionGraphs(model=model,
                                                histos=histos,
                                                interBin=interBinOut,
-                                               pruneYMin=pruneYMin)
+                                               pruneYMin=pruneYMin,
+                                               debug=debug,
+                                               info=info)
 
     writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
     writeList(fileName=simpleFileName, objects=simple.values())
@@ -323,6 +330,8 @@ def makeEfficiencyPlots(model=None, key="",
                         interBinOut=None,
                         separateCategories=None,
                         includeNonUsedCategories=None,
+                        debug=False,
+                        info=False,
                         ):
     assert interBinOut
     effHistos = efficiencyHistos(model=model,
@@ -330,6 +339,7 @@ def makeEfficiencyPlots(model=None, key="",
                                  shift=(model.interBin == "LowEdge" and interBinOut == "Center"),
                                  separateCategories=separateCategories,
                                  includeNonUsedCategories=includeNonUsedCategories,
+                                 info=info,
                                  )
 
     effFileName = outFileName(model=model, tag=key)["root"]
@@ -343,7 +353,7 @@ def makeEfficiencyPlots(model=None, key="",
 
 def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                           mDeltaFuncs={}, diagonalLine=False, pruneYMin=False,
-                          expectedOnly=False, debug=False):
+                          expectedOnly=False, debug=False, info=False):
 
     limitFileName = outFileName(model=model,
                                 tag="xsLimit")["root"]
@@ -356,7 +366,9 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                        simpleFileName=simpleFileName,
                        relativeFileName=relativeFileName,
                        interBinOut=interBinOut,
-                       pruneYMin=pruneYMin)
+                       pruneYMin=pruneYMin,
+                       debug=debug,
+                       info=info)
 
     r.gStyle.SetLineStyleString(19, "50 20")
     specs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit",
@@ -632,6 +644,7 @@ def efficiencyHistos(model=None,
                      shift=None,
                      separateCategories=None,
                      includeNonUsedCategories=None,
+                     info=True,
                      ):
     assert key
     for var in ["shift", "separateCategories", "includeNonUsedCategories"]:
@@ -668,7 +681,9 @@ def efficiencyHistos(model=None,
                              model=model,
                              shiftX=shift,
                              shiftY=shift,
-                             range=True)
+                             range=True,
+                             info=info,
+                             )
 
         zTitle = "A #times #epsilon"
         adjustHisto(h, title=";".join([conf.signal.histoTitle(model=model.name), zTitle]))
