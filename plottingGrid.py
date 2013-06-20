@@ -453,8 +453,8 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
     #extra = ", 4 flavours"
     #extra = " (u+d+s+c)"
     #extra = "; u+d+s+c"
-    extra = ", u+d+s+c"
-    #extra = ", #tilde{u}+#tilde{d}+#tilde{s}+#tilde{c}"
+    #extra = ", u+d+s+c"
+    extra = ", #tilde{u}+#tilde{d}+#tilde{s}+#tilde{c}"
     p8 = "#tilde{q}_{L}%s+ #tilde{q}_{R}%s" % ("^{#color[0]{L}}" if len(model.xsFactors) == 1 else "",
                                                extra)
     p1 = p8.replace("q", "u")[:p8.find("+")]+" only"
