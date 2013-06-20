@@ -90,9 +90,10 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
             transition = passed and otherFailed
             if transition:
                 d[x].append(y)
-        if info and len(d[x]) == 1:
-            print "INFO: %s (factor %g) hit " % (h.GetName(), xsFactor) + \
-                  "iBinX = %d (x = %g), y = %g repeated" % (iBinX, x, d[x][0])
+        if len(d[x]) == 1:
+            if info:
+                print "INFO: %s (factor %g) hit " % (h.GetName(), xsFactor) + \
+                      "iBinX = %d (x = %g), y = %g repeated" % (iBinX, x, d[x][0])
             d[x].append(d[x][0])
 
     l1 = []
