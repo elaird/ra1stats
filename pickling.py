@@ -31,9 +31,13 @@ def effHistos(model=None,
                         (0, 1, 2, 3, 4, 5, 6, 7, 7, 7),
                         (0, 1, 2, 2, 2, 2, 2, 2, 2, 2),
                         (0, 1, 2, 2, 2, 2, 2, 2),
-                        ]):
+                        ],
+              allCategories=False,
+              ):
     out = {}
-    for sel in likelihoodSpec.likelihoodSpec(model.name).selections():
+    for sel in likelihoodSpec.likelihoodSpec(model.name,
+                                             allCategories=allCategories,
+                                             ).selections():
         badMerge = " ".join(["bin merge",
                              str(sel.data._mergeBins),
                              "not yet supported:",

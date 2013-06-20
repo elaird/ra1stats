@@ -26,8 +26,9 @@ def oneHisto(file="", dir="", name=""):
     f = r.TFile(file)
     assert not f.IsZombie(), file
 
-    hOld = f.Get("%s/%s" % (dir, name))
-    assert hOld, "%s/%s" % (dir, name)
+    key = "%s/%s" % (dir, name) if dir else name
+    hOld = f.Get(key)
+    assert hOld, key
     h = hOld.Clone("%s_clone" % hOld.GetName())
     h.SetDirectory(0)
     f.Close()
@@ -61,11 +62,43 @@ def checkHistoBinning(histoList=[]):
             assert False
 
 
-def modifyHisto(h=None, model=None):
+def setRange(var, model, histo, axisString):
+
+    ranges = conf.signal.ranges(model.name)
+    if var not in ranges:
+        return
+    nums = ranges[var]
+    getattr(histo, "Get%saxis" % axisString)().SetRangeUser(*nums[:2])
+    if len(nums) == 3:
+        r.gStyle.SetNumberContours(nums[2])
+    if axisString == "Z":
+        maxContent = histo.GetBinContent(histo.GetMaximumBin())
+        if maxContent > nums[1]:
+            print "ERROR: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s" % (maxContent, nums[1], histo.GetName())
+
+    divKey = axisString.lower()+"Divisions"
+    if ranges.get(divKey):
+        histo.GetXaxis().SetNdivisions(*ranges[divKey])
+
+
+def modifiedHisto(h3=None, model=None, shiftX=None, shiftY=None, shiftErrors=True, range=None):
+    for arg in ["shiftX", "shiftY", "shiftErrors", "range"]:
+        value = eval(arg)
+        assert type(value) is bool, "(%s is %s)" % (arg, type(value))
+
+    h = utils.shifted(utils.threeToTwo(h3),
+                      shift=(shiftX, shiftY),
+                      shiftErrors=shiftErrors)
     fillPoints(h, points=patches.overwriteOutput()[model.name])
     killPoints(h,
                cutFunc=patches.cutFunc().get(model.name, None),
                interBin=model.interBin)
+
+    if range:
+        setRange("xRange", model, h, "X")
+        setRange("yRange", model, h, "Y")
+
+    return h
 
 
 def fillPoints(h, points=[]):
