@@ -68,7 +68,8 @@ def setRange(var, model, histo, axisString):
     if var not in ranges:
         return
     nums = ranges[var]
-    getattr(histo, "Get%saxis" % axisString)().SetRangeUser(*nums[:2])
+    axis = getattr(histo, "Get%saxis" % axisString)()
+    axis.SetRangeUser(*nums[:2])
     if len(nums) == 3:
         r.gStyle.SetNumberContours(nums[2])
     if axisString == "Z":
@@ -78,7 +79,7 @@ def setRange(var, model, histo, axisString):
 
     divKey = axisString.lower()+"Divisions"
     if ranges.get(divKey):
-        histo.GetXaxis().SetNdivisions(*ranges[divKey])
+        axis.SetNdivisions(*ranges[divKey])
 
 
 def modifiedHisto(h3=None,
