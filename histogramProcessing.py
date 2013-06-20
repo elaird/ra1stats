@@ -81,15 +81,23 @@ def setRange(var, model, histo, axisString):
         histo.GetXaxis().SetNdivisions(*ranges[divKey])
 
 
-def modifiedHisto(h3=None, model=None, shiftX=None, shiftY=None, shiftErrors=True, range=None):
+def modifiedHisto(h3=None,
+                  model=None,
+                  shiftX=None,
+                  shiftY=None,
+                  shiftErrors=True,
+                  range=None,
+                  info=True,
+                  ):
     for arg in ["shiftX", "shiftY", "shiftErrors", "range"]:
         value = eval(arg)
         assert type(value) is bool, "(%s is %s)" % (arg, type(value))
 
     h = utils.shifted(utils.threeToTwo(h3),
                       shift=(shiftX, shiftY),
-                      shiftErrors=shiftErrors)
-    fillPoints(h, points=patches.overwriteOutput()[model.name])
+                      shiftErrors=shiftErrors,
+                      info=info)
+    fillPoints(h, points=patches.overwriteOutput()[model.name], info=info)
     killPoints(h,
                cutFunc=patches.cutFunc().get(model.name, None),
                interBin=model.interBin)
@@ -101,7 +109,7 @@ def modifiedHisto(h3=None, model=None, shiftX=None, shiftY=None, shiftErrors=Tru
     return h
 
 
-def fillPoints(h, points=[]):
+def fillPoints(h, points=[], info=True):
     def avg(items):
         out = sum(items)
         n = len(items) - items.count(0.0)
@@ -136,14 +144,15 @@ def fillPoints(h, points=[]):
         value = avg(items)
         if value is not None:
             h.SetBinContent(iBinX, iBinY, iBinZ, value)
-            out = "WARNING: histo %s bin (%3d, %3d, %3d)" % (h.GetName(),
-                                                             iBinX,
-                                                             iBinY,
-                                                             iBinZ,
-                                                             )
+            out = "INFO: histo %s bin (%3d, %3d, %3d)" % (h.GetName(),
+                                                          iBinX,
+                                                          iBinY,
+                                                          iBinZ,
+                                                          )
             out += "[%d zero neighbors]: %g has been overwritten with %g" % \
                    (items.count(0.0), valueOld, value)
-            print out
+            if info:
+                print out
 
 
 def killPoints(h, cutFunc=None, interBin=""):
