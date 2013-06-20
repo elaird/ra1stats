@@ -292,8 +292,12 @@ def writeList(fileName="", objects=[]):
     f.Close()
 
 
-def outFileName(model=None, tag=""):
-    base = pickling.mergedFile(model=model).split("/")[-1]
+def outFileName(model=None, tag="", simple=False):
+    if simple:
+        base = model.name+".root"
+    else:
+        base = pickling.mergedFile(model=model).split("/")[-1]
+
     root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root" % tag)
     return {"root": root,
             "eps": root.replace(".root", ".eps"),
@@ -342,7 +346,7 @@ def makeEfficiencyPlots(model=None, key="",
                                  info=info,
                                  )
 
-    effFileName = outFileName(model=model, tag=key)["root"]
+    effFileName = outFileName(model=model, tag=key, simple=True)["root"]
     writeList(fileName=effFileName, objects=effHistos.values())
     del effHistos
 
@@ -661,12 +665,12 @@ def efficiencyHistos(model=None,
         sum1Cat = None
         for histo in dct[key]:
             if not sum1Cat:
-                sum1Cat = histo.Clone("%s_%s" % (cat, key))
+                sum1Cat = histo.Clone("_".join([model.name, key, cat]))
             else:
                 sum1Cat.Add(histo)
 
             if not globalSum:
-                globalSum = histo.Clone(key)
+                globalSum = histo.Clone("_".join([model.name, key]))
             else:
                 globalSum.Add(histo)
 
@@ -706,7 +710,7 @@ def effPad(cat=""):
             "ge4b_ge4j": 10,
             }
     for key, value in pads.iteritems():
-        if cat.startswith(key):
+        if cat.endswith(key):
             return value
     print "ERROR: %s will clobber pad 1" % cat
     return 1
@@ -728,27 +732,16 @@ def makeEfficiencyPdfBinned(model=None, rootFileName="", key=""):
     maximum = max([h.GetMaximum() for h in dct.values()])
 
     for i, (cat, h) in enumerate(sorted(dct.iteritems())):
-        if cat == key:
-            continue
-
         can.cd(effPad(cat))
         prep(r.gPad)
 
-        h.SetTitle("%s: %s" % (model.name, cat))
+        h.SetTitle(cat)
         h.SetStats(False)
         h.SetMinimum(0.0)
         h.SetMaximum(maximum)
         h.Draw("colz")
         #h.GetListOfFunctions().FindObject("palette").GetAxis().SetTitle("")
 
-    can.cd(effPad(key))
-    prep(r.gPad)
-
-    total = dct[key]
-    total.Draw("colz")
-    total.SetTitle("%s: %s#semicolon max = %4.2f" % (model.name,
-                                                     key,
-                                                     total.GetMaximum()))
     can.cd(0)
     printOnce(model=None,  # suppress stamp
               canvas=can,
@@ -759,7 +752,9 @@ def makeEfficiencyPdfBinned(model=None, rootFileName="", key=""):
 def makeEfficiencyPdfSum(model=None, rootFileName="", key=""):
     c = squareCanvas()
 
-    h = hp.oneHisto(file=rootFileName, name=key)
+    h = hp.oneHisto(file=rootFileName,
+                    name="%s_%s" % (model.name, key),
+                    )
     h.Draw("colz")
     hp.setRange("effZRange", model, h, "Z")
 
