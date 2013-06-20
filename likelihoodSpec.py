@@ -10,8 +10,12 @@ def likelihoodSpec(model="", allCategories=False):
              "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
              "tanBeta10_7":  {"dataset":"2011", "whiteList":[]},
              }[model]
+
+    kargs["blackList"] = ["ge4b_le3j"]
     if allCategories:
         kargs["whiteList"] = []
+    elif kargs["dataset"].startswith("2012hcp"):
+        kargs["blackList"] += ["3b_le3j"]
     return spec(**kargs)
 
 
@@ -60,10 +64,12 @@ class spec(object) :
         return self._ignoreHad
 
     def selections(self) :
-        if self._whiteList :
-            return filter(lambda x:x.name in self._whiteList, self._selections)
-        else :
-            return self._selections
+        out = self._selections
+        if self._whiteList:
+            out = filter(lambda x:x.name in self._whiteList, out)
+        if self._blackList:
+            out = filter(lambda x:x.name not in self._blackList, out)
+        return out
 
     def poiList(self) :
         return self.poi().keys()
@@ -77,8 +83,10 @@ class spec(object) :
                 del s.samplesAndSignalEff["had"]
         self._selections += sel
 
-    def __init__(self, dataset = "", separateSystObs = True, whiteList = [], ignoreHad = False) :
-        for item in ["dataset", "separateSystObs", "whiteList", "ignoreHad"] :
+    def __init__(self, dataset="", separateSystObs=True,
+                 whiteList=[], blackList=[], ignoreHad=False):
+        for item in ["dataset", "separateSystObs",
+                     "whiteList", "blackList", "ignoreHad"]:
             setattr(self, "_"+item, eval(item))
 
         self._REwk = None
@@ -151,9 +159,6 @@ class spec(object) :
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
             for j in ["ge2", "le3", "ge4"][1:] :
-                if b=="ge4" and j!="ge4" : continue
-                #if b=="3"   and j!="ge4" : continue
-
                 yAxisLogMinMax = {"0"  :(0.3, 5.0e4) if j=="le3" else (0.3, 5.0e4),
                                   "1"  :(0.3, 5.0e3) if j=="le3" else (0.3, 3.0e3),
                                   "2"  :(0.05,2.0e3) if j=="le3" else (0.3, 2.0e3),
@@ -216,9 +221,6 @@ class spec(object) :
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :
             for j in ["ge2", "le3", "ge4"][1:] :
-                if b=="ge4" and j!="ge4" : continue
-                if b=="3"   and j!="ge4" : continue
-
                 yAxisLogMinMax = {"0"  :(0.3, 5.0e4) if j=="le3" else (0.3, 5.0e4),
                                   "1"  :(0.3, 5.0e3) if j=="le3" else (0.3, 3.0e3),
                                   "2"  :(0.05,2.0e3) if j=="le3" else (0.3, 2.0e3),
