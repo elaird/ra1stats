@@ -57,7 +57,7 @@ def content(h=None, coords=(0.0,), variation=0.0, factor=1.0):
 
 
 def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
-                  interBin="", prune=False):
+                  interBin="", prune=False, info=None):
     assert interBin in ["Center", "LowEdge"], interBin
 
     def fail(xs, xsLimit):
@@ -90,7 +90,7 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
             transition = passed and otherFailed
             if transition:
                 d[x].append(y)
-        if len(d[x]) == 1:
+        if info and len(d[x]) == 1:
             print "INFO: %s (factor %g) hit " % (h.GetName(), xsFactor) + \
                   "iBinX = %d (x = %g), y = %g repeated" % (iBinX, x, d[x][0])
             d[x].append(d[x][0])
