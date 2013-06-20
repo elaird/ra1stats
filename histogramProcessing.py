@@ -68,7 +68,8 @@ def setRange(var, model, histo, axisString):
     if var not in ranges:
         return
     nums = ranges[var]
-    getattr(histo, "Get%saxis" % axisString)().SetRangeUser(*nums[:2])
+    axis = getattr(histo, "Get%saxis" % axisString)()
+    axis.SetRangeUser(*nums[:2])
     if len(nums) == 3:
         r.gStyle.SetNumberContours(nums[2])
     if axisString == "Z":
@@ -78,18 +79,26 @@ def setRange(var, model, histo, axisString):
 
     divKey = axisString.lower()+"Divisions"
     if ranges.get(divKey):
-        histo.GetXaxis().SetNdivisions(*ranges[divKey])
+        axis.SetNdivisions(*ranges[divKey])
 
 
-def modifiedHisto(h3=None, model=None, shiftX=None, shiftY=None, shiftErrors=True, range=None):
+def modifiedHisto(h3=None,
+                  model=None,
+                  shiftX=None,
+                  shiftY=None,
+                  shiftErrors=True,
+                  range=None,
+                  info=True,
+                  ):
     for arg in ["shiftX", "shiftY", "shiftErrors", "range"]:
         value = eval(arg)
         assert type(value) is bool, "(%s is %s)" % (arg, type(value))
 
     h = utils.shifted(utils.threeToTwo(h3),
                       shift=(shiftX, shiftY),
-                      shiftErrors=shiftErrors)
-    fillPoints(h, points=patches.overwriteOutput()[model.name])
+                      shiftErrors=shiftErrors,
+                      info=info)
+    fillPoints(h, points=patches.overwriteOutput()[model.name], info=info)
     killPoints(h,
                cutFunc=patches.cutFunc().get(model.name, None),
                interBin=model.interBin)
@@ -101,7 +110,7 @@ def modifiedHisto(h3=None, model=None, shiftX=None, shiftY=None, shiftErrors=Tru
     return h
 
 
-def fillPoints(h, points=[]):
+def fillPoints(h, points=[], info=True):
     def avg(items):
         out = sum(items)
         n = len(items) - items.count(0.0)
@@ -136,14 +145,15 @@ def fillPoints(h, points=[]):
         value = avg(items)
         if value is not None:
             h.SetBinContent(iBinX, iBinY, iBinZ, value)
-            out = "WARNING: histo %s bin (%3d, %3d, %3d)" % (h.GetName(),
-                                                             iBinX,
-                                                             iBinY,
-                                                             iBinZ,
-                                                             )
+            out = "INFO: histo %s bin (%3d, %3d, %3d)" % (h.GetName(),
+                                                          iBinX,
+                                                          iBinY,
+                                                          iBinZ,
+                                                          )
             out += "[%d zero neighbors]: %g has been overwritten with %g" % \
                    (items.count(0.0), valueOld, value)
-            print out
+            if info:
+                print out
 
 
 def killPoints(h, cutFunc=None, interBin=""):
@@ -220,7 +230,6 @@ def effHisto(model=None, box="",
              htLower=None, htUpper=None,
              bJets="", jets=""):
     if model.ignoreEff(box):
-        print "WARNING: ignoring %s efficiency for %s" % (box, model.name)
         return None
 
     spec = conf.signal.effHistoSpec(model=model,

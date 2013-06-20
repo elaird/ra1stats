@@ -91,7 +91,7 @@ def pointsAtYMin(graph):
     return out
 
 
-def pruneGraph(graph, lst=[], debug=False, breakLink=False):
+def pruneGraph(graph, lst=[], debug=False, breakLink=False, info=None):
     if debug:
         graph.Print()
     nRemoved = 0
@@ -105,17 +105,17 @@ def pruneGraph(graph, lst=[], debug=False, breakLink=False):
         nRemoved += len(bad)
         for i in bad:
             if debug:
-                print "WARN: Removing point %d = (%g,%g) from %s" % (i, x[i], y[i], graph.GetName())
+                print "DEBUG: Removing point %d = (%g,%g) from %s" % (i, x[i], y[i], graph.GetName())
             graph.RemovePoint(i)
     if breakLink:
         graph.RemovePoint(graph.GetN()-1)
     if debug:
         graph.Print()
-    if nRemoved:
-        print "WARN: Removing %d points from graph %s" % (nRemoved, graph.GetName())
+    if nRemoved and info:
+        print "INFO: Removing %d points from graph %s" % (nRemoved, graph.GetName())
 
 
-def modifyGraph(graph, dct={}, debug=True):
+def modifyGraph(graph, dct={}, debug=False, info=False):
     if debug:
         graph.Print()
     for old, new in dct.iteritems():
@@ -124,7 +124,8 @@ def modifyGraph(graph, dct={}, debug=True):
         for i in range(graph.GetN()):
             if abs(old[0]-x[i]) < 1.0e-6 and abs(old[1]-y[i]) < 1.0e-6:
                 graph.SetPoint(i, new[0], new[1])
-                print "WARN: Replacing point %d: (%g,%g) --> (%g,%g) from graph %s" % (i, old[0], old[1], new[0], new[1], graph.GetName())
+                if info:
+                    print "INFO: Replacing point %d: (%g,%g) --> (%g,%g) from graph %s" % (i, old[0], old[1], new[0], new[1], graph.GetName())
     if debug:
         graph.Print()
 
@@ -168,7 +169,7 @@ def spline(points=[], title=""):
 
 
 def exclusionGraphs(model=None, histos={}, interBin="",
-                    pruneYMin=False, debug=False):
+                    pruneYMin=False, debug=None, info=None):
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves()[model.name]
 
@@ -201,7 +202,7 @@ def exclusionGraphs(model=None, histos={}, interBin="",
                      "xsFactor": xsFactor,
                      "model": model,
                      "interBin": interBin}
-            graph = rxs.excludedGraph(h, **kargs)
+            graph = rxs.excludedGraph(h, info=info, **kargs)
 
             simpleHisto = rxs.exclHisto(h,
                                         tag="_excludedHistoSimple",
@@ -221,9 +222,9 @@ def exclusionGraphs(model=None, histos={}, interBin="",
             relativeHisto.SetName(graphName+"_relative")
 
             dct = getattr(patches, patchesFunc)(model.name+conf.signal.factorString(xsFactor))
-            pruneGraph(graph, debug=False, breakLink=pruneYMin,
+            pruneGraph(graph, debug=debug, breakLink=pruneYMin,
                        lst=dct["blackList"]+(pointsAtYMin(graph) if pruneYMin else []))
-            modifyGraph(graph, dct=dct["replace"], debug=False)
+            modifyGraph(graph, dct=dct["replace"], debug=debug, info=info)
             #insertPoints(graph, lst=insertList)
             graphs[graphName] = graph
             simpleExclHistos[graphName] = simpleHisto
@@ -231,7 +232,7 @@ def exclusionGraphs(model=None, histos={}, interBin="",
     return graphs, simpleExclHistos, relativeHistos
 
 
-def upperLimitHistos(model=None, inFileName="", shiftX=None, shiftY=None):
+def upperLimitHistos(model=None, inFileName="", shiftX=None, shiftY=None, info=None):
     assert len(conf.limit.CL()) == 1
     cl = conf.limit.CL()[0]
 
@@ -258,12 +259,14 @@ def upperLimitHistos(model=None, inFileName="", shiftX=None, shiftY=None):
                              model=model,
                              shiftX=shiftX,
                              shiftY=shiftY,
-                             range=True)
+                             range=True,
+                             info=info)
 
         zTitle = "%g%% CL %s on  #sigma (pb)" % (100.0*cl, pretty)
         adjustHisto(h, title=";".join([conf.signal.histoTitle(model=model.name), zTitle]))
 
-        hp.printHoles(h)
+        if info:
+            hp.printHoles(h)
         rename(h, nameReplace=nameReplace)
         histos[h.GetName()] = h
     return histos
@@ -289,8 +292,12 @@ def writeList(fileName="", objects=[]):
     f.Close()
 
 
-def outFileName(model=None, tag=""):
-    base = pickling.mergedFile(model=model).split("/")[-1]
+def outFileName(model=None, tag="", simple=False):
+    if simple:
+        base = model.name+".root"
+    else:
+        base = pickling.mergedFile(model=model).split("/")[-1]
+
     root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root" % tag)
     return {"root": root,
             "eps": root.replace(".root", ".eps"),
@@ -299,7 +306,8 @@ def outFileName(model=None, tag=""):
 
 
 def makeLimitRootFiles(model=None, limitFileName="", simpleFileName="",
-                       relativeFileName="", interBinOut=None, pruneYMin=None):
+                       relativeFileName="", interBinOut=None, pruneYMin=None,
+                       debug=None, info=None):
     assert pruneYMin is not None
     assert interBinOut
 
@@ -308,11 +316,14 @@ def makeLimitRootFiles(model=None, limitFileName="", simpleFileName="",
     histos = upperLimitHistos(model=model,
                               inFileName=pickling.mergedFile(model=model),
                               shiftX=shiftX,
-                              shiftY=shiftY)
+                              shiftY=shiftY,
+                              info=info)
     graphs, simple, relative = exclusionGraphs(model=model,
                                                histos=histos,
                                                interBin=interBinOut,
-                                               pruneYMin=pruneYMin)
+                                               pruneYMin=pruneYMin,
+                                               debug=debug,
+                                               info=info)
 
     writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
     writeList(fileName=simpleFileName, objects=simple.values())
@@ -323,6 +334,8 @@ def makeEfficiencyPlots(model=None, key="",
                         interBinOut=None,
                         separateCategories=None,
                         includeNonUsedCategories=None,
+                        debug=False,
+                        info=False,
                         ):
     assert interBinOut
     effHistos = efficiencyHistos(model=model,
@@ -330,9 +343,10 @@ def makeEfficiencyPlots(model=None, key="",
                                  shift=(model.interBin == "LowEdge" and interBinOut == "Center"),
                                  separateCategories=separateCategories,
                                  includeNonUsedCategories=includeNonUsedCategories,
+                                 info=info,
                                  )
 
-    effFileName = outFileName(model=model, tag=key)["root"]
+    effFileName = outFileName(model=model, tag=key, simple=True)["root"]
     writeList(fileName=effFileName, objects=effHistos.values())
     del effHistos
 
@@ -343,7 +357,7 @@ def makeEfficiencyPlots(model=None, key="",
 
 def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                           mDeltaFuncs={}, diagonalLine=False, pruneYMin=False,
-                          expectedOnly=False, debug=False):
+                          expectedOnly=False, debug=False, info=False):
 
     limitFileName = outFileName(model=model,
                                 tag="xsLimit")["root"]
@@ -356,7 +370,9 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                        simpleFileName=simpleFileName,
                        relativeFileName=relativeFileName,
                        interBinOut=interBinOut,
-                       pruneYMin=pruneYMin)
+                       pruneYMin=pruneYMin,
+                       debug=debug,
+                       info=info)
 
     r.gStyle.SetLineStyleString(19, "50 20")
     specs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit",
@@ -441,8 +457,8 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
     #extra = ", 4 flavours"
     #extra = " (u+d+s+c)"
     #extra = "; u+d+s+c"
-    extra = ", u+d+s+c"
-    #extra = ", #tilde{u}+#tilde{d}+#tilde{s}+#tilde{c}"
+    #extra = ", u+d+s+c"
+    extra = ", #tilde{u}+#tilde{d}+#tilde{s}+#tilde{c}"
     p8 = "#tilde{q}_{L}%s+ #tilde{q}_{R}%s" % ("^{#color[0]{L}}" if len(model.xsFactors) == 1 else "",
                                                extra)
     p1 = p8.replace("q", "u")[:p8.find("+")]+" only"
@@ -632,6 +648,7 @@ def efficiencyHistos(model=None,
                      shift=None,
                      separateCategories=None,
                      includeNonUsedCategories=None,
+                     info=True,
                      ):
     assert key
     for var in ["shift", "separateCategories", "includeNonUsedCategories"]:
@@ -648,12 +665,12 @@ def efficiencyHistos(model=None,
         sum1Cat = None
         for histo in dct[key]:
             if not sum1Cat:
-                sum1Cat = histo.Clone("%s_%s" % (cat, key))
+                sum1Cat = histo.Clone("_".join([model.name, key, cat]))
             else:
                 sum1Cat.Add(histo)
 
             if not globalSum:
-                globalSum = histo.Clone(key)
+                globalSum = histo.Clone("_".join([model.name, key]))
             else:
                 globalSum.Add(histo)
 
@@ -668,7 +685,9 @@ def efficiencyHistos(model=None,
                              model=model,
                              shiftX=shift,
                              shiftY=shift,
-                             range=True)
+                             range=True,
+                             info=info,
+                             )
 
         zTitle = "A #times #epsilon"
         adjustHisto(h, title=";".join([conf.signal.histoTitle(model=model.name), zTitle]))
@@ -678,46 +697,53 @@ def efficiencyHistos(model=None,
     return out
 
 
+def effPad(cat=""):
+    pads = {"0b_le3j": 1,
+            "0b_ge4j": 2,
+            "1b_le3j": 3,
+            "1b_ge4j": 4,
+            "2b_le3j": 5,
+            "2b_ge4j": 6,
+            "3b_le3j": 7,
+            "3b_ge4j": 8,
+            "effHad": 9,
+            "ge4b_ge4j": 10,
+            }
+    for key, value in pads.iteritems():
+        if cat.endswith(key):
+            return value
+    print "ERROR: %s will clobber pad 1" % cat
+    return 1
+
+
 def makeEfficiencyPdfBinned(model=None, rootFileName="", key=""):
     def prep(p):
         p.SetTopMargin(0.15)
         p.SetBottomMargin(0.15)
         p.SetLeftMargin(0.15)
         p.SetRightMargin(0.15)
+        p.SetTickx()
+        p.SetTicky()
 
     can = r.TCanvas("canvas", "canvas", 400, 1000)
     can.Divide(2, 5)
 
     dct = allHistos(rootFileName)
     maximum = max([h.GetMaximum() for h in dct.values()])
-    keep = []
-    pad = {0: 2, 1: 1, 2: 4, 3: 3, 4: 6, 5: 5, 6: 8, 7: 7, 8: 10}
 
     for i, (cat, h) in enumerate(sorted(dct.iteritems())):
-        if cat == key:
-            continue
-
-        can.cd(pad[i])
+        can.cd(effPad(cat))
         prep(r.gPad)
 
-        h2 = utils.threeToTwo(h)
-        keep.append(h2)
-        h2.SetTitle(cat)
-        h2.SetStats(False)
-        h2.SetMinimum(0.0)
-        h2.SetMaximum(maximum)
-        h2.Draw("colz")
-        #h2.GetListOfFunctions().FindObject("palette").GetAxis().SetTitle("")
-
-    can.cd(9)
-    prep(r.gPad)
-
-    total = dct[key]
-    total.Draw("colz")
-    total.SetTitle("%s#semicolon max = %4.2f" % (key, total.GetMaximum()))
+        h.SetTitle(cat)
+        h.SetStats(False)
+        h.SetMinimum(0.0)
+        h.SetMaximum(maximum)
+        h.Draw("colz")
+        #h.GetListOfFunctions().FindObject("palette").GetAxis().SetTitle("")
 
     can.cd(0)
-    printOnce(model=model,
+    printOnce(model=None,  # suppress stamp
               canvas=can,
               fileName=rootFileName.replace(".root", "Binned.eps"),
               )
@@ -726,7 +752,9 @@ def makeEfficiencyPdfBinned(model=None, rootFileName="", key=""):
 def makeEfficiencyPdfSum(model=None, rootFileName="", key=""):
     c = squareCanvas()
 
-    h = hp.oneHisto(file=rootFileName, name=key)
+    h = hp.oneHisto(file=rootFileName,
+                    name="%s_%s" % (model.name, key),
+                    )
     h.Draw("colz")
     hp.setRange("effZRange", model, h, "Z")
 

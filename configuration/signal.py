@@ -8,11 +8,13 @@ class scan(object):
                  had="", muon="", phot="", mumu="",
                  interBin="LowEdge"):
         assert xsVariation in ["default", "up", "down"], xsVariation
-        for item in ["dataset", "tag",
-                     "com", "xsVariation", "xsFactors",
-                     "had", "muon", "phot", "mumu",
-                     "interBin"]:
+
+        self.boxNames = ["had", "muon", "phot", "mumu"]
+        for item in ["dataset", "tag", "interBin",
+                     "com", "xsVariation", "xsFactors"]+self.boxNames:
             setattr(self, "_"+item, eval(item))
+
+        self.warned = {}
 
     @property
     def name(self):
@@ -44,8 +46,12 @@ class scan(object):
         return self._xsFactors
 
     def ignoreEff(self, box):
-        assert box in ["had", "muon", "phot", "mumu"], box
-        return not getattr(self, "_"+box)
+        assert box in self.boxNames, box
+        out = not getattr(self, "_"+box)
+        if out and not self.warned.get(box):
+            print "WARNING: ignoring %s efficiency for %s" % (box, self.name)
+            self.warned[box] = True
+        return out
 
 
 def factorString(xsFactor=None):

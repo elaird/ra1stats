@@ -47,7 +47,7 @@ def histoMax(h) :
     i = h.GetMaximumBin()
     return (h.GetBinContent(i)+h.GetBinError(i))
 #####################################
-def shifted(h = None, shift = (False, False), shiftErrors = True) :
+def shifted(h=None, shift=(False, False), shiftErrors=True, info=True):
     assert len(shift) in range(1,4),shift
 
     axes = [ 'X', 'Y', 'Z' ]
@@ -71,7 +71,7 @@ def shifted(h = None, shift = (False, False), shiftErrors = True) :
         args += [nBins, min - shiftWidths[-1], max - shiftWidths[-1]]
 
     hname = h.GetName()
-    if any(shiftWidths):
+    if any(shiftWidths) and info:
         print "INFO: shifting {0} by {1}".format(hname,shiftWidths)
 
     histoConstructor= getattr(r,'TH%d%s'%(dim,htype))

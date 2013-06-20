@@ -99,7 +99,8 @@ def exclusionHistos(limitFile="", model=None, shift=(True, False)):
                                         shiftX=True,
                                         shiftY=True,
                                         shiftErrors=False,
-                                        range=True)
+                                        range=False,
+                                        info=False)
     rfile.Close()
     return limitHistoDict
 
