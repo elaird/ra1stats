@@ -693,46 +693,64 @@ def efficiencyHistos(model=None,
     return out
 
 
+def effPad(cat=""):
+    pads = {"0b_le3j": 1,
+            "0b_ge4j": 2,
+            "1b_le3j": 3,
+            "1b_ge4j": 4,
+            "2b_le3j": 5,
+            "2b_ge4j": 6,
+            "3b_le3j": 7,
+            "3b_ge4j": 8,
+            "effHad": 9,
+            "ge4b_ge4j": 10,
+            }
+    for key, value in pads.iteritems():
+        if cat.startswith(key):
+            return value
+    print "ERROR: %s will clobber pad 1" % cat
+    return 1
+
+
 def makeEfficiencyPdfBinned(model=None, rootFileName="", key=""):
     def prep(p):
         p.SetTopMargin(0.15)
         p.SetBottomMargin(0.15)
         p.SetLeftMargin(0.15)
         p.SetRightMargin(0.15)
+        p.SetTickx()
+        p.SetTicky()
 
     can = r.TCanvas("canvas", "canvas", 400, 1000)
     can.Divide(2, 5)
 
     dct = allHistos(rootFileName)
     maximum = max([h.GetMaximum() for h in dct.values()])
-    keep = []
-    pad = {0: 2, 1: 1, 2: 4, 3: 3, 4: 6, 5: 5, 6: 8, 7: 7, 8: 10}
 
     for i, (cat, h) in enumerate(sorted(dct.iteritems())):
         if cat == key:
             continue
 
-        can.cd(pad[i])
+        can.cd(effPad(cat))
         prep(r.gPad)
 
-        h2 = utils.threeToTwo(h)
-        keep.append(h2)
-        h2.SetTitle(cat)
-        h2.SetStats(False)
-        h2.SetMinimum(0.0)
-        h2.SetMaximum(maximum)
-        h2.Draw("colz")
-        #h2.GetListOfFunctions().FindObject("palette").GetAxis().SetTitle("")
+        h.SetTitle("%s: %s" % (model.name, cat))
+        h.SetStats(False)
+        h.SetMinimum(0.0)
+        h.SetMaximum(maximum)
+        h.Draw("colz")
+        #h.GetListOfFunctions().FindObject("palette").GetAxis().SetTitle("")
 
-    can.cd(9)
+    can.cd(effPad(key))
     prep(r.gPad)
 
     total = dct[key]
     total.Draw("colz")
-    total.SetTitle("%s#semicolon max = %4.2f" % (key, total.GetMaximum()))
-
+    total.SetTitle("%s: %s#semicolon max = %4.2f" % (model.name,
+                                                     key,
+                                                     total.GetMaximum()))
     can.cd(0)
-    printOnce(model=model,
+    printOnce(model=None,  # suppress stamp
               canvas=can,
               fileName=rootFileName.replace(".root", "Binned.eps"),
               )
