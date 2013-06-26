@@ -40,21 +40,19 @@ def adjustHisto(h, title=""):
     h.GetZaxis().SetTitleOffset(1.5)
 
 
-def printOnce(model=None, canvas=None, fileName="", alsoC=False):
+def printOnce(model=None, canvas=None, fileName="", alsoC=False, factor=0.6, align=22):
     text = r.TText()
     text.SetNDC()
-    text.SetTextAlign(22)
-    #text.DrawText(0.5, 0.85, "CMS")
+    text.SetTextAlign(align)
 
     if model:
         latex = r.TLatex()
         latex.SetNDC()
-        latex.SetTextAlign(22)
-        current_stamp = conf.signal.processStamp(model.name)
-
-        latex.SetTextSize(0.6*latex.GetTextSize())
-        if current_stamp:
-            latex.DrawLatex(current_stamp['xpos'], 0.78, current_stamp['text'])
+        latex.SetTextAlign(align)
+        stamp = conf.signal.processStamp(model.name)
+        latex.SetTextSize(factor*latex.GetTextSize())
+        if stamp:
+            latex.DrawLatex(stamp['xpos'], stamp['ypos'], stamp['text'])
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
@@ -750,7 +748,7 @@ def makeEfficiencyPdfBinned(model=None, rootFileName="", key=""):
 
 
 def makeEfficiencyPdfSum(model=None, rootFileName="", key=""):
-    c = squareCanvas()
+    canvas = squareCanvas()
 
     h = hp.oneHisto(file=rootFileName,
                     name="%s_%s" % (model.name, key),
@@ -758,9 +756,19 @@ def makeEfficiencyPdfSum(model=None, rootFileName="", key=""):
     h.Draw("colz")
     hp.setRange("effZRange", model, h, "Z")
 
+    coords = conf.signal.processStamp(model.name)
+
+    factor = 0.6
+    s3 = stamp(text=likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
+               x=0.23,
+               y=0.70,
+               factor=factor,
+               )
+
     printOnce(model=model,
-              canvas=c,
+              canvas=canvas,
               fileName=rootFileName.replace(".root", ".eps"),
+              factor=factor,
               )
     hp.printHoles(h)
 
