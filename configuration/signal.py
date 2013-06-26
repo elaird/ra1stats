@@ -311,14 +311,16 @@ def glProc(q=""):
 
 
 def processStamp(model=""):
-    return {'T2': {'text': sqProc("q"), 'xpos': 0.4250},
-            'T2bb': {'text': sqProc("b"), 'xpos': 0.425},
-            'T2tt': {'text': sqProc("t"), 'xpos': 0.41},
-            'T2cc': {'text': sqProc("t", "c"), 'xpos': 0.425},
-            'T1': {'text': glProc("q"), 'xpos': 0.4325},
-            'T1bbbb': {'text': glProc("b"), 'xpos': 0.43},
-            'T1tttt': {'text': glProc("t"), 'xpos': 0.425},
-            }[model]
+    out = {'T2': {'text': sqProc("q"), 'xpos': 0.4250},
+           'T2bb': {'text': sqProc("b"), 'xpos': 0.425},
+           'T2tt': {'text': sqProc("t"), 'xpos': 0.41},
+           'T2cc': {'text': sqProc("t", "c"), 'xpos': 0.425},
+           'T1': {'text': glProc("q"), 'xpos': 0.4325},
+           'T1bbbb': {'text': glProc("b"), 'xpos': 0.43},
+           'T1tttt': {'text': glProc("t"), 'xpos': 0.425},
+           }[model]
+    out.update({'ypos': 0.78})
+    return out
 
 
 def histoTitle(model=""):
