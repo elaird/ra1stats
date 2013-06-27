@@ -69,6 +69,7 @@ def effUncRel(model=""):
 def models():
     return [
         scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
+        scan(dataset="T2cc", com=8, had="v7_new_bin"),
 
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
