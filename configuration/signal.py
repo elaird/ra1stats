@@ -164,7 +164,6 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     assert box in ["had", "muon"], box
 
     # FIXME: remove these hard-coded numbers
-    print "htLower", htLower
     if htLower <= 275:
         fileName = "%s0.root" % box
     elif htLower == 325:
