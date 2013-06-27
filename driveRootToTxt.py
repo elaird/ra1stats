@@ -2,7 +2,7 @@
 
 from rootToTxt import printAll as go
 
-# NOTE: [Zinv, ..., Phot]
+# NOTE: [Zinv, ..., Photon]
 ewk = ["Zinv", "WJets", "SingleTop", "DiBoson", "DY", "TTbar", "Photon"]
 obs = ["Data"]
 
@@ -14,7 +14,7 @@ go(dir="/home/hep/elaird1/122_numbers_from_darren/v7_new_bin",
           "2b_le3j":   "RA1_Stats_btag_eq2_category_eq2_and_3.root",
           "2b_ge4j":   "RA1_Stats_btag_eq2_category_greq4.root",
           "3b_le3j":   "RA1_Stats_btag_eq3_category_eq2_and_3.root",
-          "3b_ge3j":   "RA1_Stats_btag_eq3_category_greq4.root",
+          "3b_ge4j":   "RA1_Stats_btag_eq3_category_greq4.root",
           #"ge4b_le3j": "RA1_Stats_btag_eq4_category_eq2_and_3.root",
           "ge4b_ge4j": "RA1_Stats_btag_eq4_category_greq4.root",
           },
@@ -41,6 +41,7 @@ go(dir="/home/hep/elaird1/122_numbers_from_darren/v7_new_bin",
 
 
 #### old
+## NOTE: [Zinv, ..., Phot]
 #ewkOld = ["Zinv", "WJets", "t", "ZZ", "DY", "tt", "Phot"]
 #obsOld = ["obs"]
 #
