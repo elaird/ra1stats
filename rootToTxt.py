@@ -153,7 +153,7 @@ def printAll(dir="",
              yMin=None,
              yMax=None,
              ):
-    for category, fileName in files.iteritems():
+    for category, fileName in sorted(files.iteritems()):
         histosPerBox = sliced(dir=dir,
                               fileName=fileName,
                               yMin=yMin,
