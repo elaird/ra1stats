@@ -678,7 +678,8 @@ class foo(object) :
             for dct in [self.signalToTest, self.signalExampleToStack, self.signalToInject] :
                 if sel.name not in dct : continue
                 for key,value in dct[sel.name].iteritems() :
-                    if type(value) is list : assert len(value)==len(bins)
+                    if type(value) is list:
+                        assert len(value) == len(bins), "key %s: %d != %d" % (key, len(value), len(bins))
 
     def smOnly(self) :
         return not self.signalToTest
