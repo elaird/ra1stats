@@ -28,9 +28,8 @@ def readNumbers(fileName):
 ##number collection
 def effHistos(model=None,
               okMerges=[None,
-                        (0, 1, 2, 3, 4, 5, 6, 7, 7, 7),
-                        (0, 1, 2, 2, 2, 2, 2, 2, 2, 2),
-                        (0, 1, 2, 2, 2, 2, 2, 2),
+                        (0, 1, 2, 2, 2, 2, 2, 2),  # 8 --> 3
+                        (0, 1, 2, 3, 3, 3, 3, 3, 3, 3),  # 10 --> 4
                         ],
               allCategories=False,
               ):
