@@ -234,8 +234,8 @@ def xsHistoAllOne(model=None, cutFunc=None):
 
     spec = conf.signal.effHistoSpec(model=model,
                                     box="had",
-                                    htLower=875,
-                                    htUpper=None,
+                                    htLower=375,
+                                    htUpper=475,
                                     **kargs)
 
     h = smsEffHisto(spec=spec, model=model)
