@@ -478,13 +478,14 @@ def poisPull(n = None, mu = None) :
     else :
         out["simple"] = 1000.0
 
-    assert float(int(n))==n,n
-    out["quantile"] = r.Math.poisson_cdf(int(n), mu)
-    out["quantileOfMode"] = r.Math.poisson_cdf(out["mode"], mu)
-
-    out["nSigma"] = nSigma(out["quantile"])
-    out["nSigmaOfMode"] = nSigma(out["quantileOfMode"])
-    out["nSigmaPrime"] = out["nSigma"] - out["nSigmaOfMode"]
+    if float(int(n)) == n:
+        out["quantile"] = r.Math.poisson_cdf(int(n), mu)
+        out["quantileOfMode"] = r.Math.poisson_cdf(out["mode"], mu)
+        out["nSigma"] = nSigma(out["quantile"])
+        out["nSigmaOfMode"] = nSigma(out["quantileOfMode"])
+        out["nSigmaPrime"] = out["nSigma"] - out["nSigmaOfMode"]
+    else:
+        pass  # FIXME
     return out
 
 def printPoisPull(dct = {}) :
