@@ -8,6 +8,24 @@ import workspace
 import ROOT as r
 
 
+def printReport(report={}):
+    header = None
+    for cat, dct in sorted(report.iteritems()):
+        if not header:
+            keys = sorted(dct.keys())
+            l = max([len(key) for key in keys])
+            fmt = "%"+str(l)+"s"
+            header = " ".join([fmt % "cat"] + [fmt % key for key in keys])
+            print header
+            print "-"*len(header)
+        out = [fmt % cat]
+        for key in keys:
+            value = dct[key]
+            sValue =  str(value) if type(value) is int else "%6.4f" % value
+            out.append(fmt % sValue)
+        print " ".join(out)
+
+
 def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
        bestFit=False, interval=False, ensemble=False):
 
@@ -132,6 +150,7 @@ if kargs["dataset"] == "2011":
     go(**kargs)
 else:
     selections = likelihoodSpec.spec(dataset=kargs["dataset"]).selections()
+    report = {}
     hMap = {}
     bins = (len(selections), 0.0, len(selections))
     for key in ["chi2ProbSimple", "chi2Prob", "lMax"]:
@@ -145,6 +164,8 @@ else:
         dct = go(**args)
         if not dct:
             continue
+
+        report[sel.name] = dct
         for key, pValue in dct.iteritems():
             if key not in hMap:
                 continue
@@ -152,3 +173,4 @@ else:
             hMap[key].SetBinContent(1+iSel, pValue)
 
     plotting.pValueCategoryPlots(hMap, )  # logYMinMax=(1.0e-4, 1.0e2))
+    printReport(report)
