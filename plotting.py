@@ -359,6 +359,8 @@ class validationPlotter(object) :
             print "INFO: using quantiles from previously generated toys"
             self.quantiles = ensemble.functionQuantiles(self.note, nToys=self.errorsFromToys)
 
+        self._warnedRatios = False
+
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
 
@@ -1285,6 +1287,12 @@ class validationPlotter(object) :
         return stacks, legEntries
 
 
+    def warnRatios(self):
+        if not self._warnedRatios:
+            print "WARNING: improve ratio drawing"
+        self._warnedRatios = True
+
+
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
              selNoteCoords = (0.13, 0.85), yAxisMinMax = (0.0, None), customMaxFactor = (1.1, 2.0),
              logY = False, stampParams = False, obs = {"var":"", "desc":""}, otherVars = [],
@@ -1359,7 +1367,7 @@ class validationPlotter(object) :
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
         if self.drawRatios:
-            print "WARNING: improve ratio drawing"
+            self.warnRatios()
             denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
             denomHisto["errorsHi"].SetFillColor(self.smError)
             denomHisto["errorsHi"].SetFillStyle(1001)
