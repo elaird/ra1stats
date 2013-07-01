@@ -11,11 +11,12 @@ def likelihoodSpec(model="", allCategories=False):
              "tanBeta10_7":  {"dataset":"2011", "whiteList":[]},
              }[model]
 
-    kargs["blackList"] = ["ge4b_le3j"]
     if allCategories:
         kargs["whiteList"] = []
-    elif kargs["dataset"].startswith("2012hcp"):
-        kargs["blackList"] += ["3b_le3j"]
+
+    kargs["blackList"] = ["ge4b_le3j"]
+    if dataset == "2012dev":
+        kargs["blackList"] += ["ge4b_ge4j"]  # awaits eff maps
     return spec(**kargs)
 
 
@@ -202,6 +203,7 @@ class spec(object) :
         self.add(lst)
 
     def __init2012hcp(self, moduleName="", cms=False):
+        self._blackList += ["3b_le3j"]
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
