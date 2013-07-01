@@ -889,7 +889,7 @@ class foo(object) :
                 pullThreshold = 2.0) :
         #calc.pullPlots(pdf(self.wspace))
         results = utils.rooFitResults(pdf(self.wspace), self.data)
-        utils.checkResults(results)
+        numInvalid = utils.checkResults(results)
 
         poisKey = "simple"
         lognKey = "kMinusOne"
@@ -923,7 +923,7 @@ class foo(object) :
             for dct in pvalues :
                 out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
 
-        return out
+        return {"stats": out, "numInvalid": numInvalid}
 
     def qcdPlot(self) :
         plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
