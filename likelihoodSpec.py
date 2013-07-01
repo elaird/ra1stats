@@ -14,9 +14,7 @@ def likelihoodSpec(model="", allCategories=False):
     if allCategories:
         kargs["whiteList"] = []
 
-    kargs["blackList"] = ["ge4b_le3j"]
-    if dataset == "2012dev":
-        kargs["blackList"] += ["ge4b_ge4j"]  # awaits eff maps
+    kargs["blackList"] = ["ge4b_ge4j"] if dataset == "2012dev" else []  # awaits eff maps
     return spec(**kargs)
 
 
@@ -140,6 +138,7 @@ class spec(object) :
                 ])
 
     def __init2012dev(self) :
+        self._blackList += ["ge4b_le3j"]
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = True
@@ -203,7 +202,7 @@ class spec(object) :
         self.add(lst)
 
     def __init2012hcp(self, moduleName="", cms=False):
-        self._blackList += ["3b_le3j"]
+        self._blackList += ["3b_le3j", "ge4b_le3j"]
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
