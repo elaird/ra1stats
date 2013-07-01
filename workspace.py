@@ -894,8 +894,11 @@ class foo(object) :
                 drawRatios=False,
                 significance=False,
                 pullPlotMax=3.5,
-                pullThreshold=2.0):
+                pullThreshold=2.0,
+                msgThreshold=r.RooFit.DEBUG):
         #calc.pullPlots(pdf(self.wspace))
+
+        r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
         results = utils.rooFitResults(pdf(self.wspace), self.data)
         out = {}
         out["numInvalidNll"] = utils.checkResults(results)
