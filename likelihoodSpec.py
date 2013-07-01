@@ -1,12 +1,12 @@
 def likelihoodSpec(model="", allCategories=False):
-    dataset = "2012hcp"
+    dataset = "2012dev"
     kargs = {"T1"          : {"dataset":dataset, "whiteList":["0b_ge4j"]},
              "T2"          : {"dataset":dataset, "whiteList":["0b_le3j"]},
              "T2bb"        : {"dataset":dataset, "whiteList":["1b_le3j", "2b_le3j"]},
              "T2tt"        : {"dataset":dataset, "whiteList":["1b_ge4j", "2b_ge4j"]},
              "T1bbbb"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
              "T1tttt"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-             "T2cc"        : {"dataset":"2012hcp2", "whiteList":["0b_le3j"]},
+             "T2cc"        : {"dataset":dataset, "whiteList":["0b_le3j"]},
              "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
              "tanBeta10_7":  {"dataset":"2011", "whiteList":[]},
              }[model]
@@ -139,14 +139,14 @@ class spec(object) :
                 ])
 
     def __init2012dev(self) :
-        self._constrainQcdSlope = True
+        self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
-        self._initialValuesFromMuonSample = False
+        self._initialValuesFromMuonSample = True
         self._REwk = ""
-        self._RQcd = "FallingExp"
-        self._nFZinv = "Two"
+        self._RQcd = "Zero"
+        self._nFZinv = "All"
         self._legendTitle = "CMS Preliminary, 18.7 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012dev import take0 as module
+        from inputData.data2012dev import take2 as module
 
         #QCD test
         if False :
@@ -166,7 +166,7 @@ class spec(object) :
                                   "ge4":(0.1, 1.0e2),
                                   }[b]
 
-                fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.57, "ge4j":0.40},
+                fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.5,  "ge4j":0.40},
                             "1b"  : {"ge2j":0.40, "le3j":0.40, "ge4j":0.20},
                             "2b"  : {"ge2j":0.10, "le3j":0.10, "ge4j":0.10},
                             "3b"  : {"ge2j":0.05, "le3j":0.05, "ge4j":0.05},
@@ -174,6 +174,9 @@ class spec(object) :
                             }[b+"b"][j+"j"]
 
                 name  = "%sb_%sj"%(b,j)
+                if name == "ge4b_le3j":
+                    continue
+
                 #name  = "%sb_%sj_alphaTmuon"%(b,j)
                 note  = "%s%s%s"%(nb, "= " if "ge" not in b else "#", b)
                 note += "; %s#%s"%(nj, j)
