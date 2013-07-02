@@ -2,26 +2,16 @@ import math
 import common
 from configuration.signal import pruned, processStamp
 
-t2cc0 = common.signal(xs=36.8, effUncRel=0.20,
-                     label="#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2cc")["text"]),
-                                                               "(m_{#tilde{t}}= 175 GeV, m_{#tilde{#chi}^{0}_{1}} = 95 GeV)"))
-t2cc0.insert("0b_ge4j", {"effHad":[0.000130, 0.000104, 0.000111, 0.000058, 0.000027, 0.000013, 0.000005, 0.000004]})
-t2cc0.insert("0b_le3j", {"effHad":[0.000915, 0.000429, 0.000272, 0.000065, 0.000011, 0.000004, 0.000001, 0.000000]})
-t2cc0.insert("1b_ge4j", {"effHad":[0.000065, 0.000049, 0.000060, 0.000042, 0.000022, 0.000006, 0.000005, 0.000000]})
-t2cc0.insert("1b_le3j", {"effHad":[0.000326, 0.000126, 0.000084, 0.000014, 0.000003, 0.000000, 0.000000, 0.000000]})
-t2cc0.insert("2b_ge4j", {"effHad":[0.000015, 0.000013, 0.000014, 0.000008, 0.000004, 0.000001, 0.000000, 0.000001]})
-t2cc0.insert("2b_le3j", {"effHad":[0.000032, 0.000011, 0.000003, 0.000001, 0.000001, 0.000000, 0.000000, 0.000000]})
+def effQcdLike(k=None, eff0=None, iBin=None):
+    # take14a
+    htMeans = (298.0, 348.0, 416.0, 517.0, 617.0, 719.0, 819.0, 1044.)
+    bulk = (559500000, 252400000, 180600000, 51650000,  # le3j
+            17060000, 6499000, 2674000, 2501000)
+    f = math.exp(-k*(htMeans[iBin]-htMeans[0]))*bulk[i]/(0.0+bulk[0])
+    return eff0*f
 
-
-t2cc02 = common.signal(xs=36.8, effUncRel=0.20,
-                      label="#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2cc")["text"]),
-                                                                "(m_{#tilde{t}}= 175 GeV, m_{#tilde{#chi}^{0}_{1}} = 165 GeV)"))
-t2cc02.insert("0b_ge4j", {"effHad":[0.000054, 0.000054, 0.000100, 0.000060, 0.000044, 0.000016, 0.000006, 0.000006]})
-t2cc02.insert("0b_le3j", {"effHad":[0.001245, 0.000592, 0.000452, 0.000159, 0.000035, 0.000015, 0.000006, 0.000001]})
-t2cc02.insert("1b_ge4j", {"effHad":[0.000004, 0.000003, 0.000008, 0.000012, 0.000010, 0.000001, 0.000000, 0.000002]})
-t2cc02.insert("1b_le3j", {"effHad":[0.000076, 0.000028, 0.000031, 0.000011, 0.000004, 0.000002, 0.000001, 0.000000]})
-t2cc02.insert("2b_ge4j", {"effHad":[0.000003, 0.000001, 0.000002, 0.000001, 0.000000, 0.000000, 0.000000, 0.000000]})
-t2cc02.insert("2b_le3j", {"effHad":[0.000013, 0.000001, 0.000004, 0.000000, 0.000001, 0.000000, 0.000000, 0.000000]})
+t2ccQcdLike = common.signal(xs=36.8, effUncRel=0.20, label="SM + QCD-like (k=0.03)")
+t2ccQcdLike.insert("0b_le3j", {"effHad":[effQcdLike(k=0.03, eff0=0.005, iBin=i) for i in range(8)]})
 
 t2cc = common.signal(xs=36.8, effUncRel=0.20,
                      label="#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2cc")["text"]),
@@ -39,15 +29,4 @@ t2cc2.insert("0b_le3j", {"effHad":[0.001495, 0.000799, 0.000729, 0.000298, 0.000
 t2cc2.insert("1b_ge4j", {"effHad":[0.000007, 0.000005, 0.000031, 0.000029, 0.000022, 0.000007, 0.000001, 0.000007]})
 t2cc2.insert("1b_le3j", {"effHad":[0.000203, 0.000082, 0.000113, 0.000048, 0.000020, 0.000006, 0.000007, 0.000004]})
 
-
-def effQcdLike(k=None, eff0=None, iBin=None):
-    # take14a
-    htMeans = (298.0, 348.0, 416.0, 517.0, 617.0, 719.0, 819.0, 1044.)
-    bulk = (559500000, 252400000, 180600000, 51650000,  # le3j
-            17060000, 6499000, 2674000, 2501000)
-    f = math.exp(-k*(htMeans[iBin]-htMeans[0]))*bulk[i]/(0.0+bulk[0])
-    return eff0*f
-
-t2ccQcdLike = common.signal(xs=36.8, effUncRel=0.20, label="SM + QCD-like (k=0.03)")
-t2ccQcdLike.insert("0b_le3j", {"effHad":[effQcdLike(k=0.03, eff0=0.005, iBin=i) for i in range(8)]})
 
