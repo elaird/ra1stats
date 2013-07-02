@@ -1,17 +1,19 @@
+from configuration.units import fb
 from data import data
 import utils
 
+
 def common1(x) :
-    x._lumi = {"mumu"               :   19.25 ,
-               "muon"               :   19.25 ,
-               "mcPhot"             :   20.34 ,
-               "mcHad"              :   18.58 ,
-               "mcTtw"              :   18.58 ,
-               "had"                :   18.58 ,
-               "mcMuon"             :   19.25 ,
-               "mcZinv"             :   18.58 ,
-               "mcMumu"             :   19.25 ,
-               "phot"               :   20.34 ,
+    x._lumi = {"mumu"               :   19.25/fb,
+               "muon"               :   19.25/fb,
+               "mcPhot"             :   20.34/fb,
+               "mcHad"              :   18.58/fb,
+               "mcTtw"              :   18.58/fb,
+               "had"                :   18.58/fb,
+               "mcMuon"             :   19.25/fb,
+               "mcZinv"             :   18.58/fb,
+               "mcMumu"             :   19.25/fb,
+               "phot"               :   20.34/fb,
                }
 
     x._triggerEfficiencies = {
