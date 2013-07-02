@@ -1,4 +1,3 @@
-import math
 import common
 from configuration.signal import pruned, processStamp
 
