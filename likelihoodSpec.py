@@ -40,11 +40,13 @@ class spec(object) :
 
     def separateSystObs(self) :
         return self._separateSystObs
-    def poi(self) :
-        return [{"f": (1.0, 0.0, 1.0)}, #{"var": initialValue, min, max)
-                {"fZinv_55_0b_7": (0.5, 0.0, 1.0)},
-                {"qcd_0b_le3j_0": (0.0, 0.0, 1.0e3)},
-                {"k_qcd_0b_le3j": (3.0e-2, 0.01, 0.04)}][0]
+    def poi(self):
+        #{"var": (initialValue, min, max)}
+        return {"f": (1.0, 0.0, 1.0)}
+        #return {"fZinv_55_0b_7": (0.5, 0.0, 1.0)}
+        #return {"qcd_0b_le3j_0": (0.0, 0.0, 1.0e3)}
+        #return {"k_qcd_0b_le3j": (3.0e-2, 0.01, 0.04)}
+        #return {"ewk_0b_le3j_0": (2.22e4, 2.0e4, 2.5e4)}
     def REwk(self) :
         return "" if self._ignoreHad else self._REwk
     def RQcd(self) :
@@ -164,7 +166,7 @@ class spec(object) :
                                   "2"  :(0.05,2.0e3) if j=="le3" else (0.3, 2.0e3),
                                   "3"  :(0.05,5.0e2),
                                   "ge4":(0.1, 1.0e2),
-                                  }[b]
+                                  }[b]  # out of date (commented below)
 
                 fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.5,  "ge4j":0.40},
                             "1b"  : {"ge2j":0.40, "le3j":0.40, "ge4j":0.20},
@@ -196,7 +198,7 @@ class spec(object) :
                                     jets = "%sj"%j,
                                     fZinvIni = fZinvIni,
                                     AQcdIni = 0.0,
-                                    yAxisLogMinMax = yAxisLogMinMax,
+                                    #yAxisLogMinMax = yAxisLogMinMax,
                                     )
                     lst.append(sel)
         self.add(lst)
