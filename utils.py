@@ -213,7 +213,12 @@ def epsToPdf(fileName, tight = True, alsoPng = False) :
         os.system("convert %s %s"%(pdfFileName, pdfFileName.replace(".pdf",".png")))
     print "INFO: %s has been written."%pdfFileName
 #####################################
-def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True))) :
+def rooFitResults(pdf, data, options=(r.RooFit.Verbose(False),
+                                      r.RooFit.PrintLevel(-1),
+                                      r.RooFit.Save(True),
+                                      #r.RooFit.Strategy(r.RooMinuit.Robustness),
+                                      ),
+                  ):
     return pdf.fitTo(data, *options)
 #####################################
 def checkResults(results) :
