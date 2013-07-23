@@ -364,7 +364,10 @@ def makeEfficiencyPlots(model=None, key="",
 
 def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                           mDeltaFuncs={}, diagonalLine=False, pruneYMin=False,
-                          expectedMapsOnly=False, debug=False, info=False):
+                          expectedMapsOnly=False, observedCurves=True, debug=False, info=False):
+
+    if expectedMapsOnly:
+        assert not observedCuves
 
     limitFileName = outFileName(model=model,
                                 tag="xsLimit")["root"]
@@ -384,27 +387,27 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                        info=info)
 
     r.gStyle.SetLineStyleString(19, "50 20")
-    specs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit #pm1 #sigma exp.",
-              "lineStyle": 7, "lineWidth": 3, "color": r.kViolet},
-             {"name": "ExpectedUpperLimit_m1_Sigma", "label": "",
-              "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
-             {"name": "ExpectedUpperLimit_p1_Sigma", "label": "",
-              "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
-             ]
-    if not expectedMapsOnly:
-        specs += [{"name": "UpperLimit",
-                   "label": "#sigma^{NLO+NLL} #pm1 #sigma theory",
-                   "lineStyle": 1, "lineWidth": 3, "color": r.kBlack},
-                  {"name": "UpperLimit_m1_Sigma",         "label": "",
-                   "lineStyle": 1, "lineWidth": 1, "color": r.kBlack},
-                  {"name": "UpperLimit_p1_Sigma",         "label": "",
-                   "lineStyle": 1, "lineWidth": 1, "color": r.kBlack},
+    curveSpecs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit #pm1 #sigma exp.",
+                   "lineStyle": 7, "lineWidth": 3, "color": r.kViolet},
+                  {"name": "ExpectedUpperLimit_m1_Sigma", "label": "",
+                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
+                  {"name": "ExpectedUpperLimit_p1_Sigma", "label": "",
+                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
                   ]
+    if observedCurves:
+        curveSpecs += [{"name": "UpperLimit",
+                        "label": "#sigma^{NLO+NLL} #pm1 #sigma theory",
+                        "lineStyle": 1, "lineWidth": 3, "color": r.kBlack},
+                       {"name": "UpperLimit_m1_Sigma",         "label": "",
+                        "lineStyle": 1, "lineWidth": 1, "color": r.kBlack},
+                       {"name": "UpperLimit_p1_Sigma",         "label": "",
+                        "lineStyle": 1, "lineWidth": 1, "color": r.kBlack},
+                       ]
 
     makeLimitPdf(model=model,
                  expectedMapsOnly=expectedMapsOnly,
                  rootFileName=limitFileName,
-                 specs=specs,
+                 curveSpecs=curveSpecs,
                  diagonalLine=diagonalLine,
                  logZ=logZ,
                  curveGopts=curveGopts,
@@ -414,7 +417,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
     makeHistoPdf(model=model,
                  histoFileName=simpleFileName,
                  graphFileName=limitFileName,
-                 specs=specs,
+                 curveSpecs=curveSpecs,
                  curveGopts=curveGopts,
                  tag="_simpleExcl",
                  min=-1.0,
@@ -424,7 +427,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
     makeHistoPdf(model=model,
                  histoFileName=relativeFileName,
                  graphFileName=limitFileName,
-                 specs=specs,
+                 curveSpecs=curveSpecs,
                  curveGopts=curveGopts,
                  tag="_relative",
                  min=0.8,
@@ -435,7 +438,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
 
 def makeLimitPdf(model=None, expectedMapsOnly=None,
                  rootFileName="", diagonalLine=False, logZ=False,
-                 curveGopts="", mDeltaFuncs=False, specs=[]):
+                 curveGopts="", mDeltaFuncs=False, curveSpecs=[]):
 
     epsFile = rootFileName.replace(".root", ".eps")
     f = r.TFile(rootFileName)
@@ -480,7 +483,7 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
     stuff = []
     graphs = []
     for xsFactor in sorted(model.xsFactors):
-        for d in specs:
+        for d in curveSpecs:
             graph = f.Get(d["name"]+conf.signal.factorString(xsFactor))
             if not graph:
                 continue
@@ -609,7 +612,7 @@ def drawGraphs(graphs, legendTitle="", gopts="", xMin=0.19, xMaxTop=0.69, xMaxBo
 
 
 def makeHistoPdf(model=None, histoFileName="", graphFileName="",
-                 specs=[], curveGopts="",
+                 curveSpecs=[], curveGopts="",
                  min=None, max=None, tag="", nContour=None):
 
     c = squareCanvas()
@@ -620,7 +623,7 @@ def makeHistoPdf(model=None, histoFileName="", graphFileName="",
 
     c.Print(pdf+"[")
     for xsFactor in model.xsFactors:
-        for d in specs:
+        for d in curveSpecs:
             name = d["name"]+conf.signal.factorString(xsFactor)
             h = hFile.Get(name+tag)
             if not h:
