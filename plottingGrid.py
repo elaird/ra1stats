@@ -166,7 +166,7 @@ def spline(points=[], title=""):
     return r.TSpline3(title, graph)
 
 
-def exclusionGraphs(model=None, histos={}, interBin="",
+def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                     pruneYMin=False, debug=None, info=None):
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves()[model.name]
@@ -174,14 +174,18 @@ def exclusionGraphs(model=None, histos={}, interBin="",
     graphs = {}
     simpleExclHistos = {}
     relativeHistos = {}
-    for histoName, xsVariation in [("ExpectedUpperLimit_m1_Sigma", 0.0),
-                                   ("ExpectedUpperLimit_p1_Sigma", 0.0),
-                                   ("ExpectedUpperLimit",          0.0),
-                                   ("UpperLimit",                  0.0),
-                                   ("UpperLimit",                 -1.0),
-                                   ("UpperLimit",                  1.0),
-                                   ]:
 
+    items =  [("ExpectedUpperLimit_m1_Sigma", 0.0),
+              ("ExpectedUpperLimit_p1_Sigma", 0.0),
+              ("ExpectedUpperLimit",          0.0),
+              ]
+    if not expectedMapsOnly:
+        items += [("UpperLimit",  0.0),
+                  ("UpperLimit", -1.0),
+                  ("UpperLimit",  1.0),
+                  ]
+
+    for histoName, xsVariation in items:
         for xsFactor in model.xsFactors:
             graphName = histoName
             if xsVariation == 1.0:
@@ -230,16 +234,19 @@ def exclusionGraphs(model=None, histos={}, interBin="",
     return graphs, simpleExclHistos, relativeHistos
 
 
-def upperLimitHistos(model=None, inFileName="", shiftX=None, shiftY=None, info=None):
+def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=None, shiftY=None, info=None):
     assert len(conf.limit.CL()) == 1
     cl = conf.limit.CL()[0]
 
+    items = [("ExpectedUpperLimit", "expected upper limit"),
+             ("ExpectedUpperLimit_-1_Sigma", "title"),
+             ("ExpectedUpperLimit_+1_Sigma", "title")]
+
+    if not expectedMapsOnly:
+        items = [("UpperLimit" if conf.limit.method() == "CLs" else "upperLimit95", "upper limit")] + items
+
     histos = {}
-    for name, pretty in [("UpperLimit" if conf.limit.method() == "CLs" else "upperLimit95",
-                          "upper limit"),
-                         ("ExpectedUpperLimit", "expected upper limit"),
-                         ("ExpectedUpperLimit_-1_Sigma", "title"),
-                         ("ExpectedUpperLimit_+1_Sigma", "title")]:
+    for name, pretty in items:
         nameReplace = []
         try:
             keyName = "%s_%s" % (model.name, name)
@@ -303,7 +310,7 @@ def outFileName(model=None, tag="", simple=False):
             }
 
 
-def makeLimitRootFiles(model=None, limitFileName="", simpleFileName="",
+def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simpleFileName="",
                        relativeFileName="", interBinOut=None, pruneYMin=None,
                        debug=None, info=None):
     assert pruneYMin is not None
@@ -312,11 +319,13 @@ def makeLimitRootFiles(model=None, limitFileName="", simpleFileName="",
     shiftX = shiftY = (model.interBin == "LowEdge" and interBinOut == "Center")
 
     histos = upperLimitHistos(model=model,
+                              expectedMapsOnly=expectedMapsOnly,
                               inFileName=pickling.mergedFile(model=model),
                               shiftX=shiftX,
                               shiftY=shiftY,
                               info=info)
     graphs, simple, relative = exclusionGraphs(model=model,
+                                               expectedMapsOnly=expectedMapsOnly,
                                                histos=histos,
                                                interBin=interBinOut,
                                                pruneYMin=pruneYMin,
@@ -355,7 +364,7 @@ def makeEfficiencyPlots(model=None, key="",
 
 def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                           mDeltaFuncs={}, diagonalLine=False, pruneYMin=False,
-                          expectedOnly=False, debug=False, info=False):
+                          expectedMapsOnly=False, debug=False, info=False):
 
     limitFileName = outFileName(model=model,
                                 tag="xsLimit")["root"]
@@ -364,7 +373,9 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
     relativeFileName = outFileName(model=model,
                                    tag="xsLimit_relative")["root"]
 
-    makeLimitRootFiles(model=model, limitFileName=limitFileName,
+    makeLimitRootFiles(model=model,
+                       expectedMapsOnly=expectedMapsOnly,
+                       limitFileName=limitFileName,
                        simpleFileName=simpleFileName,
                        relativeFileName=relativeFileName,
                        interBinOut=interBinOut,
@@ -373,26 +384,25 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                        info=info)
 
     r.gStyle.SetLineStyleString(19, "50 20")
-    specs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit",
+    specs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit #pm1 #sigma exp.",
               "lineStyle": 7, "lineWidth": 3, "color": r.kViolet},
+             {"name": "ExpectedUpperLimit_m1_Sigma", "label": "",
+              "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
+             {"name": "ExpectedUpperLimit_p1_Sigma", "label": "",
+              "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
              ]
-    if not expectedOnly:
-        specs[0]["label"] += " #pm1 #sigma exp."
-        specs = ([{"name": "ExpectedUpperLimit_m1_Sigma", "label": "",
-                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
-                  {"name": "ExpectedUpperLimit_p1_Sigma", "label": "",
-                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
-                  ] + specs +
-                 [{"name": "UpperLimit",
+    if not expectedMapsOnly:
+        specs += [{"name": "UpperLimit",
                    "label": "#sigma^{NLO+NLL} #pm1 #sigma theory",
                    "lineStyle": 1, "lineWidth": 3, "color": r.kBlack},
                   {"name": "UpperLimit_m1_Sigma",         "label": "",
                    "lineStyle": 1, "lineWidth": 1, "color": r.kBlack},
                   {"name": "UpperLimit_p1_Sigma",         "label": "",
                    "lineStyle": 1, "lineWidth": 1, "color": r.kBlack},
-                  ])
+                  ]
 
     makeLimitPdf(model=model,
+                 expectedMapsOnly=expectedMapsOnly,
                  rootFileName=limitFileName,
                  specs=specs,
                  diagonalLine=diagonalLine,
@@ -423,7 +433,8 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                  )
 
 
-def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
+def makeLimitPdf(model=None, expectedMapsOnly=None,
+                 rootFileName="", diagonalLine=False, logZ=False,
                  curveGopts="", mDeltaFuncs=False, specs=[]):
 
     epsFile = rootFileName.replace(".root", ".eps")
@@ -431,16 +442,18 @@ def makeLimitPdf(model=None, rootFileName="", diagonalLine=False, logZ=False,
 
     canvas = squareCanvas()
 
-    expectedOnly = len(specs) == 1
     if conf.limit.method() == "CLs":
         if conf.limit.binaryExclusion():
             # FIXME: handle expected
+            print "ERROR: handle expected"
             hName = "excluded_CLs_95"
-        elif expectedOnly:
+        elif expectedMapsOnly:
             hName = "ExpectedUpperLimit"
         else:
             hName = "UpperLimit"
     else:
+        # FIXME: handle expected
+        print "ERROR: handle expected"
         hName = "UpperLimit"  # 95 was removed in rename()
     h = f.Get("%s_%s" % (model.name, hName))
     h.Draw("colz")
