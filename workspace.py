@@ -678,7 +678,8 @@ class foo(object) :
             for dct in [self.signalToTest, self.signalExampleToStack, self.signalToInject] :
                 if sel.name not in dct : continue
                 for key,value in dct[sel.name].iteritems() :
-                    if type(value) is list : assert len(value)==len(bins)
+                    if type(value) is list:
+                        assert len(value) == len(bins), "key %s: %d != %d" % (key, len(value), len(bins))
 
     def smOnly(self) :
         return not self.signalToTest
@@ -883,46 +884,77 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
-                errorsFromToys = 0, drawRatios = False, significance = False, pullPlotMax = 3.5,
-                pullThreshold = 2.0) :
+    def bestFit(self,
+                printPages=False,
+                drawMc=True,
+                printValues=False,
+                printNom=False,
+                drawComponents=True,
+                errorsFromToys=0,
+                drawRatios=False,
+                significance=False,
+                pullPlotMax=3.5,
+                pullThreshold=2.0,
+                msgThreshold=r.RooFit.DEBUG):
         #calc.pullPlots(pdf(self.wspace))
+
+        r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
         results = utils.rooFitResults(pdf(self.wspace), self.data)
-        utils.checkResults(results)
+        out = {}
+        out["numInvalidNll"] = utils.checkResults(results)
 
         poisKey = "simple"
         lognKey = "kMinusOne"
-        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
+        pulls = calc.pulls(pdf=pdf(self.wspace),
+                           poisKey=poisKey,
+                           lognKey=lognKey)
 
         title = "_".join([x.name for x in self.likelihoodSpec.selections()])
-        calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
-                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold, title = title)
+        calc.pullPlots(pulls=pulls,
+                       poisKey=poisKey,
+                       lognKey=lognKey,
+                       note=self.note(),
+                       plotsDir="plots",
+                       yMax=pullPlotMax,
+                       threshold=pullThreshold,
+                       title=title)
 
-        for selection in self.likelihoodSpec.selections() :
+        for selection in self.likelihoodSpec.selections():
             args = self.plotterArgs(selection)
             args.update({"results": results,
                          "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
-                         "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
-                         "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
-                         "drawRatios" : drawRatios, "significance": significance,
+                         "printPages": printPages,
+                         "drawMc": drawMc,
+                         "printNom": printNom,
+                         "drawComponents": drawComponents,
+                         "printValues": printValues,
+                         "errorsFromToys": errorsFromToys,
+                         "drawRatios": drawRatios,
+                         "significance": significance,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
 
-        #gather stats
-        out = {}
-        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
-        for key in sorted(stats.keys()) :
-            print "%s = %g"%(key.ljust(7), stats[key])
-        out["chi2ProbSimple"] = stats["prob"]
+        # gather stats
+        out.update(calc.pullStats(pulls=pulls,
+                                  nParams=len(floatingVars(self.wspace)),
+                                  ),
+                   )
 
-        if errorsFromToys :
-            pvalues = plotting.ensembleResults(note = self.note(), nToys = errorsFromToys)
-            for dct in pvalues :
+        # key change
+        out["chi2ProbSimple"] = out["prob"]
+        del out["prob"]
+
+        if errorsFromToys:
+            pvalues = plotting.ensembleResults(note=self.note(),
+                                               nToys=errorsFromToys)
+            for dct in pvalues:
                 out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
 
         return out
 
-    def qcdPlot(self) :
-        plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
+    def qcdPlot(self):
+        plotting.errorsPlot(self.wspace,
+                            utils.rooFitResults(pdf(self.wspace), self.data),
+                            )

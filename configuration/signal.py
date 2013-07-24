@@ -68,8 +68,11 @@ def effUncRel(model=""):
 
 def models():
     return [
+        scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
+        scan(dataset="T2cc", com=8, had="v7_new_bin"),
+
         #scan(dataset="T1", com=8, had="v5"),
-        scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
+        #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v6"),
         #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
         #scan(dataset="T2bb", com=8, had="v3", muon="v3"),
@@ -162,7 +165,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     assert box in ["had", "muon"], box
 
     # FIXME: remove these hard-coded numbers
-    if htLower == 275:
+    if htLower <= 275:
         fileName = "%s0.root" % box
     elif htLower == 325:
         fileName = "%s1.root" % box
@@ -172,7 +175,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     tags = []
 
     if model.isSms:
-        subDirs = [directories.eff(), "2012", "sms"]
+        subDirs = [directories.eff(), "sms_%d" % model.com]
         beforeDir = "smsScan_before"
         tags.append("smsScan")
     else:

@@ -223,6 +223,7 @@ def checkResults(results) :
     if status : print "WARNING: status = %d"%status
     if numIN : print "WARNING: num invalid NLL = %d"%numIN
     #if covQual : print "WARNING: covQual = %d"%covQual
+    return numIN
 #####################################
 def compile(sourceFile) :
     r.gSystem.SetAclicMode(r.TSystem.kDebug)

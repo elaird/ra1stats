@@ -35,6 +35,32 @@ def oneHisto(file="", dir="", name=""):
     return h
 
 
+def subDirHistos(fileName="", check1D=False, check2D=False):
+    oneD = []
+    twoD = []
+    out = {}
+
+    f = r.TFile(fileName)
+    for subDirKey in f.GetListOfKeys():
+        subDir = subDirKey.GetName()
+        out[subDir] = {}
+        for hKey in f.Get(subDir).GetListOfKeys():
+            name = hKey.GetName()
+            h = f.Get("%s/%s" % (subDir, name)).Clone("%s_%s" % (subDir, name))
+            h.SetDirectory(0)
+            out[subDir][name] = h
+            if h.ClassName()[:3] == "TH2":
+                twoD.append(h)
+            if h.ClassName()[:3] == "TH1":
+                oneD.append(h)
+    f.Close()
+    if check2D:
+        checkHistoBinning(twoD)
+    if check1D:
+        checkHistoBinning(oneD)
+    return out
+
+
 def checkHistoBinning(histoList=[]):
     def axisStuff(axis):
         return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
@@ -208,8 +234,8 @@ def xsHistoAllOne(model=None, cutFunc=None):
 
     spec = conf.signal.effHistoSpec(model=model,
                                     box="had",
-                                    htLower=875,
-                                    htUpper=None,
+                                    htLower=375,
+                                    htUpper=475,
                                     **kargs)
 
     h = smsEffHisto(spec=spec, model=model)

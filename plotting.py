@@ -359,6 +359,8 @@ class validationPlotter(object) :
             print "INFO: using quantiles from previously generated toys"
             self.quantiles = ensemble.functionQuantiles(self.note, nToys=self.errorsFromToys)
 
+        self._warnedRatios = False
+
         self.toPrint = []
         self.ewkType = "function" if self.REwk else "var"
 
@@ -817,24 +819,33 @@ class validationPlotter(object) :
                      "desc":"ML EWK (ttw+zInv) / nHadBulk", "color":self.ewk},
                     ])
 
-    def rhoPlots(self) :
-        if "simple" in self.lumi : return
-        if self.label!=self.systematicsLabel : return
+    def rhoPlots(self):
+        if "simple" in self.lumi:
+            return
+        if self.label != self.systematicsLabel:
+            return
 
-        if "phot" in self.lumi :
-            self.plot(otherVars = [{"var":"rhoPhotZ", "type":"var", "desc":"#rho_{#gammaZ}", "suppress":["min","max"], "color":self.ewk,
-                                    "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                      yAxisMinMax = (0.0,2.0), yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
+        otherVars = {"type": "var",
+                     "suppress": ["min","max"],
+                     "color": self.ewk,
+                     "width": self.width1,
+                     "markerStyle": 1,
+                     "legSpec": "lpf",
+                     "errorBand": self.ewk-6,
+                     "systMap":True}
 
-        if "muon" in self.lumi :
-            self.plot(otherVars = [{"var":"rhoMuonW", "type":"var", "desc":"#rho_{#muW}", "suppress":["min","max"], "color":self.ewk,
-                                    "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                      yAxisMinMax = (0.0,2.0), yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
+        kargs = {"yAxisMinMax": (0.0, 2.0), "yLabel": "", "legend0": (0.18, 0.7), "legend1": (0.45, 0.9)}
+        if "phot" in self.lumi:
+            otherVars.update({"var":"rhoPhotZ", "desc":"#rho_{#gammaZ}"})
+            self.plot(otherVars = [otherVars], **kargs)
 
-        if "mumu" in self.lumi :
-            self.plot(otherVars = [{"var":"rhoMumuZ", "type":"var", "desc":"#rho_{#mu#muZ}", "suppress":["min","max"], "color":self.ewk,
-                                    "width":self.width1, "markerStyle":1, "legSpec":"lpf", "errorBand":self.ewk-6, "systMap":True}],
-                      yAxisMinMax = (0.0,2.0), yLabel = "", legend0 = (0.18, 0.7), legend1 = (0.45, 0.9))
+        if "muon" in self.lumi:
+            otherVars.update({"var":"rhoMuonW", "desc":"#rho_{#muW}"})
+            self.plot(otherVars = [otherVars], **kargs)
+
+        if "mumu" in self.lumi:
+            otherVars.update({"var":"rhoMumuZ", "desc":"#rho_{#mu#muZ}"})
+            self.plot(otherVars = [otherVars], **kargs)
 
     def printPars(self) :
         def ini(x, y) :
@@ -1285,6 +1296,12 @@ class validationPlotter(object) :
         return stacks, legEntries
 
 
+    def warnRatios(self):
+        if not self._warnedRatios:
+            print "WARNING: improve ratio drawing"
+        self._warnedRatios = True
+
+
     def plot(self, note = "", fileName = "", legend0 = (0.3, 0.6), legend1 = (0.85, 0.85), reverseLegend = False,
              selNoteCoords = (0.13, 0.85), yAxisMinMax = (0.0, None), customMaxFactor = (1.1, 2.0),
              logY = False, stampParams = False, obs = {"var":"", "desc":""}, otherVars = [],
@@ -1359,7 +1376,7 @@ class validationPlotter(object) :
         #    latex.DrawLatex(selNoteCoords[0], selNoteCoords[1], self.selNote)
 
         if self.drawRatios:
-            print "WARNING: improve ratio drawing"
+            self.warnRatios()
             denomHisto = self.varHisto(spec = {"var":ratioDenom, "type": "function"})
             denomHisto["errorsHi"].SetFillColor(self.smError)
             denomHisto["errorsHi"].SetFillStyle(1001)

@@ -111,7 +111,7 @@ NOTES
         l = len(self._htBinLowerEdges)
         assert len(self._htMeans)==l
         
-        for item in ["observations", "mcExpectationsBeforeTrigger", "mcStatError", "systBins"] :
+        for item in ["observations", "mcExpectationsBeforeTrigger", "mcStatError", "systBins", "triggerEfficiencies"] :
             length = self._mergeChecks() if (item=="systBins" and self._mergeBins) else l
             for key,value in getattr(self,"_%s"%item).iteritems() :
                 assert len(value)==length,"%s['%s']: %d!=%d"%(item, key, len(value), length)
