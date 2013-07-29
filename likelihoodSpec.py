@@ -166,7 +166,7 @@ class spec(object) :
                                   "2"  :(0.05,2.0e3) if j=="le3" else (0.3, 2.0e3),
                                   "3"  :(0.05,5.0e2),
                                   "ge4":(0.1, 1.0e2),
-                                  }[b]
+                                  }[b]  # out of date (commented below)
 
                 fZinvIni = {"0b"  : {"ge2j":0.57, "le3j":0.5,  "ge4j":0.40},
                             "1b"  : {"ge2j":0.40, "le3j":0.40, "ge4j":0.20},
@@ -198,7 +198,7 @@ class spec(object) :
                                     jets = "%sj"%j,
                                     fZinvIni = fZinvIni,
                                     AQcdIni = 0.0,
-                                    yAxisLogMinMax = yAxisLogMinMax,
+                                    #yAxisLogMinMax = yAxisLogMinMax,
                                     )
                     lst.append(sel)
         self.add(lst)

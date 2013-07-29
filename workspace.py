@@ -588,14 +588,22 @@ def argSet( w = None, vars = [] ) :
         out.add( w.var(item) )
     return out
 
-def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], systObs = []) :
-    w.factory("PROD::model(%s)"%",".join(terms))
+def finishLikelihood(w=None, smOnly=None, standard=None, poiDict={}, terms=[], obs=[], systObs=[]):
+    w.factory("PROD::model(%s)" % ",".join(terms))
 
-    if (not standard) or (not smOnly) :
-        w.defineSet("poi", ",".join(poiList))
+    if (not standard) or (not smOnly):
+        w.defineSet("poi", ",".join(poiDict.keys()))
 
     w.defineSet("obs", argSet(w, obs))
     w.defineSet("systObs", argSet(w, systObs))
+
+    # override values set elsewhere, e.g. in hadTerms()
+    if not standard:
+        for name, (ini, min, max) in poiDict.iteritems():
+            var = w.var(name)
+            var.setMin(min)
+            var.setMax(max)
+            var.setVal(ini)
 
 class foo(object) :
     def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
@@ -639,8 +647,11 @@ class foo(object) :
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
-        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), standard = self.likelihoodSpec.standardPoi(),
-                         poiList = self.likelihoodSpec.poiList(), **total)
+        finishLikelihood(w=self.wspace,
+                         smOnly=self.smOnly(),
+                         standard=self.likelihoodSpec.standardPoi(),
+                         poiDict=self.likelihoodSpec.poi(),
+                         **total)
 
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace)
@@ -656,9 +667,10 @@ class foo(object) :
         assert l.RQcd() in ["FallingExp", "Zero"]
         assert l.nFZinv() in ["One", "Two", "All"]
         assert len(l.poi())==1, len(l.poi())
-        if not l.standardPoi() :
+        if not l.standardPoi():
             assert self.smOnly()
-            assert "FallingExp" in l.RQcd()
+            if "qcd" in l.poi().keys()[0]:
+                assert "FallingExp" in l.RQcd()
             #assert len(l.selections())==1,"%d!=1"%len(l.selections())
 
         if l.initialValuesFromMuonSample() :
