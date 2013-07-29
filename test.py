@@ -46,18 +46,18 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                       ("ge4b_ge4j",): signals.two.t1tttt,
                       }
 
-    examples_t2cc = {("0b_le3j",): signals.two.t2cc,
-                     ("0b_ge4j",): signals.two.t2cc,
-                     ("1b_le3j",): signals.two.t2cc,
-                     ("1b_ge4j",): signals.two.t2cc,
-                     ("2b_le3j",): signals.two.t2cc,
-                     ("2b_ge4j",): signals.two.t2cc,
+    examples_t2cc = {("0b_le3j",): signals.t2cc.far10,
+                     ("0b_ge4j",): signals.t2cc.far10,
+                     ("1b_le3j",): signals.t2cc.far10,
+                     ("1b_ge4j",): signals.t2cc.far10,
+                     ("2b_le3j",): {},
+                     ("2b_ge4j",): {},
                      ("3b_le3j",): {},
                      ("3b_ge4j",): {},
                      ("ge4b_ge4j",): {},
                      }
 
-    examples = examples_paper
+    examples = examples_t2cc
     signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
 
     assert not (interval and bestFit)
@@ -132,6 +132,8 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                         printPages=False,
                         drawRatios=True,
                         significance=ignoreHad,
+                        #msgThreshold=r.RooFit.DEBUG,
+                        msgThreshold=r.RooFit.WARNING,
                         )
 
     #f.qcdPlot()
@@ -143,7 +145,7 @@ kargs = {"bestFit": True,
          "interval": False,
          "ensemble": False,
          "dataset": ["", "2010", "2011eps", "2011",
-                     "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-3],
+                     "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-1],
          }
 
 if kargs["dataset"] == "2011":
