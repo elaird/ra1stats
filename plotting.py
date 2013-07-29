@@ -728,23 +728,23 @@ class validationPlotter(object) :
                               }],
                   )
 
-        self.plot(note="",
-                  fileName=["s_over_unc_b"],
-                  legend0=(0.2, 0.8),
-                  legend1=(0.55, 0.85),
-                  yLabel="s / #sigma_{b}",
-                  otherVars=[{"example": self.signalExampleToStack,
-                              "box": "had",
-                              "desc": self.signalExampleToStack.label+" / b",
-                              "color": self.signalExampleToStack.lineColor,
-                              "style": self.signalExampleToStack.lineStyle,
-                              "width": self.width1,
-                              "stack": "total",
-                              "dens": ["hadB"],
-                              "denTypes": ["function"],
-                              "denKeys": ["uncFromToys"],
-                              }],
-                  )
+        #self.plot(note="",
+        #          fileName=["s_over_unc_b"],
+        #          legend0=(0.2, 0.8),
+        #          legend1=(0.55, 0.85),
+        #          yLabel="s / #sigma_{b}",
+        #          otherVars=[{"example": self.signalExampleToStack,
+        #                      "box": "had",
+        #                      "desc": self.signalExampleToStack.label+" / b",
+        #                      "color": self.signalExampleToStack.lineColor,
+        #                      "style": self.signalExampleToStack.lineStyle,
+        #                      "width": self.width1,
+        #                      "stack": "total",
+        #                      "dens": ["hadB"],
+        #                      "denTypes": ["function"],
+        #                      "denKeys": ["uncFromToys"],
+        #                      }],
+        #          )
         return
 
 
