@@ -211,8 +211,20 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
                 someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
                 w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
 
-        if not muonForFullEwk :
-            fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni, minMax = fZinvRange)
+        if not muonForFullEwk:
+            if inputData.mcExpectations()["mcHad"][0]:
+                fZinvIniFromMc = inputData.mcExpectations()["mcZinv"][0] / inputData.mcExpectations()["mcHad"][0]
+            else:
+                fZinvIniFromMc = 0.5
+            fZinv = importFZinv(w=w,
+                                nFZinv=nFZinv,
+                                name="fZinv",
+                                label=label,
+                                i=i,
+                                iFirst=iFirst,
+                                iLast=iLast,
+                                iniVal=fZinvIni if not initialFZinvFromMc else fZinvIniFromMc,
+                                minMax=fZinvRange)
             wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
             wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
