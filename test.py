@@ -26,8 +26,8 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
-       bestFit=False, interval=False, ensemble=False):
+def go(whiteList=[], dataset="", allCategories=[], ignoreHad=True,
+       bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
     ls = likelihoodSpec.spec(whiteList=whiteList,
                              dataset=dataset,
@@ -57,7 +57,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                      ("ge4b_ge4j",): {},
                      }
 
-    examples = examples_t2cc
+    examples = examples_paper
     signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
 
     assert not (interval and bestFit)
@@ -70,7 +70,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
     if bestFit:
         signalToTest = {}
         signalToInject = {}
-        signalExampleToStack = signal
+        signalExampleToStack = {}#signal
 
     f = workspace.foo(likelihoodSpec=ls,
                       signalToTest=signalToTest,
@@ -88,7 +88,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
              "2012hcp2": 300, "2012dev": 300}[dataset]
 
     if ensemble:
-        f.ensemble(nToys=nToys, stdout=True)
+        f.ensemble(nToys=nToys, stdout=True, reuseResults=ensembleReuse)
         return out
 
     if interval:
@@ -130,7 +130,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                         drawComponents=False,
                         errorsFromToys=nToys,
                         printPages=False,
-                        drawRatios=True,
+                        drawRatios=False,
                         significance=ignoreHad,
                         #msgThreshold=r.RooFit.DEBUG,
                         msgThreshold=r.RooFit.WARNING,
@@ -144,6 +144,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
 kargs = {"bestFit": True,
          "interval": False,
          "ensemble": False,
+         "ensembleReuse": False,
          "dataset": ["", "2010", "2011eps", "2011",
                      "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-1],
          }
