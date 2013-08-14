@@ -152,7 +152,8 @@ def systTerm(w = None, name = "", obsName = "", obsValue = None, muVar = None,
         assert False,pdf
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None, initialValuesFromMuonSample = None,
+             REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
+             initialValuesFromMuonSample = None, initialFZinvFromMc = None,
              zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -520,7 +521,8 @@ def dataset(obsSet) :
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
                     extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
                     REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
-                    constrainQcdSlope = None, qcdParameterIsYield = None, initialValuesFromMuonSample = None) :
+                    constrainQcdSlope = None, qcdParameterIsYield = None,
+                    initialValuesFromMuonSample = None, initialFZinvFromMc = None) :
 
     variables = {"terms": [],
                  "systObs": [],
@@ -545,7 +547,8 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax"] :
         moreArgs["had"][item] = getattr(selection, item)
-    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield", "initialValuesFromMuonSample"] :
+    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield",
+                 "initialValuesFromMuonSample", "initialFZinvFromMc"] :
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
@@ -627,7 +630,8 @@ class foo(object) :
         args["injectSignal"] = self.injectSignal()
 
         for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
-                     "constrainQcdSlope", "qcdParameterIsYield", "initialValuesFromMuonSample"] :
+                     "constrainQcdSlope", "qcdParameterIsYield",
+                     "initialValuesFromMuonSample", "initialFZinvFromMc"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["extraSigEffUncSources", "rhoSignalMin"] :
