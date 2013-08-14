@@ -59,6 +59,8 @@ class spec(object) :
         return self._qcdParameterIsYield
     def initialValuesFromMuonSample(self) :
         return self._initialValuesFromMuonSample
+    def initialFZinvFromMc(self) :
+        return self._initialFZinvFromMc
     def legendTitle(self) :
         return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
     def ignoreHad(self) :
@@ -96,6 +98,7 @@ class spec(object) :
         self._qcdParameterIsYield = None
         self._constrainQcdSlope = None
         self._initialValuesFromMuonSample = None
+        self._initialFZinvFromMc = None
         self._selections = []
 
         if self._dataset=="simple" :
@@ -120,13 +123,14 @@ class spec(object) :
         assert self._RQcd in ["Zero", "FallingExp"]
         assert self._nFZinv in ["All", "One", "Two"]
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
-        for item in ["qcdParameterIsYield", "constrainQcdSlope", "initialValuesFromMuonSample"]:
+        for item in ["qcdParameterIsYield", "constrainQcdSlope", "initialValuesFromMuonSample", "initialFZinvFromMc"]:
             assert getattr(self,"_"+item) in [False, True],item
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
+        self._initialFZinvFromMc = False
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
@@ -144,6 +148,7 @@ class spec(object) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = True
+        self._initialFZinvFromMc = True
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
@@ -154,7 +159,6 @@ class spec(object) :
         if False :
             print "WARNING: QCD test"
             self._constrainQcdSlope = False
-            self._initialValuesFromMuonSample = True
             self._legendTitle += "[NO MHT/MET CUT]"
             from inputData.data2012 import take15a as module
 
@@ -208,6 +212,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
+        self._initialFZinvFromMc = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -279,6 +284,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
+        self._initialFZinvFromMc = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -333,6 +339,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
+        self._initialFZinvFromMc = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -407,6 +414,7 @@ class spec(object) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
+        self._initialFZinvFromMc = False
         self._REwk = "Constant"
         self._RQcd = "FallingExp"
         self._nFZinv = "All"
@@ -424,6 +432,7 @@ class spec(object) :
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
+        self._initialFZinvFromMc = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
