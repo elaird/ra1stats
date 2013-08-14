@@ -85,7 +85,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=True,
     out = None
     nToys = {"": 0, "2010": 300, "2011eps": 300, "2011": 3000,
              "2012ichep": 1000, "2012hcp": 300,
-             "2012hcp2": 300, "2012dev": 300}[dataset]
+             "2012hcp2": 300, "2012dev": 0}[dataset]
 
     if ensemble:
         f.ensemble(nToys=nToys, stdout=True, reuseResults=ensembleReuse)
