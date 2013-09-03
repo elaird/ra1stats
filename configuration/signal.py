@@ -6,12 +6,14 @@ class scan(object):
                  com=None, xsVariation="default",
                  xsFactors=[1.0],
                  had="", muon="", phot="", mumu="",
-                 interBin="LowEdge"):
+                 interBin="LowEdge",
+                 aT = [],
+                 extraVars = []):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
         for item in ["dataset", "tag", "interBin",
-                     "com", "xsVariation", "xsFactors"]+self.boxNames:
+                     "com", "xsVariation", "xsFactors", "aT", "extraVars"]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
         self.warned = {}
@@ -45,6 +47,14 @@ class scan(object):
     def xsFactors(self):
         return self._xsFactors
 
+    @property
+    def aT(self):
+        return self._aT
+
+    @property
+    def extraVars(self):
+        return self._extraVars
+
     def ignoreEff(self, box):
         assert box in self.boxNames, box
         out = not getattr(self, "_"+box)
@@ -68,9 +78,11 @@ def effUncRel(model=""):
 
 def models():
     return [
-        scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
-        scan(dataset="T2cc", com=8, had="v7_new_bin"),
-
+        #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
+        #scan(dataset="T2cc", com=8, had="v7_new_bin"),
+        scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"], extraVars = ["SITV"]),
+        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
+        
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v6"),
@@ -187,9 +199,14 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(bJets)
     if jets:
         tags.append(jets)
-
+    if model.extraVars:
+        tags.append(model.extraVars[0])
     if box == "had":
-        tags.append("AlphaT55")
+        if model.aT :
+            if htLower < 275. :
+                tags.append("AlphaT"+model.aT[1])
+            else : tags.append("AlphaT"+model.aT[0])
+        else : tags.append("AlphaT55")
     else:
         tags.append("NoAlphaT")
 
