@@ -80,8 +80,8 @@ def models():
     return [
         #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v7_new_bin"),
-        scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"], extraVars = ["SITV"]),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
+        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"], extraVars = ["SITV"]),
+        scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
         
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
@@ -125,7 +125,7 @@ def whiteListOfPoints(model="", respect=False):
     return {"T1": [(700.0, 300.0)],
             "T1bbbb": [(900.0, 500.0)],
             "T1tttt": [(850.0, 250.0)],
-            "T2tt": [(450.0,  20.0)],
+            "T2tt": [(400.0,25.0)],
             #"T2tt": [(550.0,  20.0)],
             #"T2tt": [(400.0,   0.0)],
             #"T2tt": [(410.0,  20.0)],
