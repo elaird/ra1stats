@@ -26,7 +26,7 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], dataset="", allCategories=[], ignoreHad=True,
+def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
     ls = likelihoodSpec.spec(whiteList=whiteList,
