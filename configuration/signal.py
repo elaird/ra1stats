@@ -7,13 +7,14 @@ class scan(object):
                  xsFactors=[1.0],
                  had="", muon="", phot="", mumu="",
                  interBin="LowEdge",
-                 aT = [],
-                 extraVars = []):
+                 aT=[],
+                 extraVars=[]):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
         for item in ["dataset", "tag", "interBin",
-                     "com", "xsVariation", "xsFactors", "aT", "extraVars"]+self.boxNames:
+                     "com", "xsVariation", "xsFactors", "aT",
+                     "extraVars"]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
         self.warned = {}
@@ -80,11 +81,12 @@ def models():
     return [
         #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v7_new_bin"),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"], extraVars = ["SITV"]),
+        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"],
+        #     extraVars=["SITV"]),
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
         #scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"]),
-        scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"], extraVars = ["SITV"]),
-        
+        scan(dataset="T2cc", com=8, had="v8", aT=["0.55", "0.6"],
+             extraVars=["SITV"]),
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v6"),
@@ -93,19 +95,30 @@ def models():
         #scan(dataset="T1bbbb", com=8, had="v3", muon="v3"),
         #scan(dataset="T1tttt", com=8, had="v1", muon="v1"),
         #
-        #scan(dataset="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
-        #scan(dataset="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
-        #scan(dataset="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
-        #scan(dataset="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized"),
-        #scan(dataset="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #scan(dataset="T2bb", com=8, tag="ct6l1",
+        #     had="v6_yossof_cteq61"),
+        #scan(dataset="T2bb", com=8, tag="ct10",
+        #     had="v6_yossof_ct10_normalized"),
+        #scan(dataset="T2bb", com=8, tag="ct66",
+        #     had="v6_yossof_cteq66_normalized"),
+        #scan(dataset="T2bb", com=8, tag="mstw08",
+        #     had="v6_yossof_mst08_normalized"),
+        #scan(dataset="T2bb", com=8, tag="nnpdf21",
+        #     had="v6_yossof_nnpdf21_normalized"),
         #
-        #scan(dataset="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61"),
-        #scan(dataset="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="ct6l1",
+        #     had="v6_yossof_cteq61"),
+        #scan(dataset="T1bbbb", com=8, tag="ct10",
+        #     had="v6_yossof_ct10_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="ct66",
+        #     had="v6_yossof_cteq66_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="mstw08",
+        #     had="v6_yossof_mstw08_normalized"),
+        #scan(dataset="T1bbbb", com=8, tag="nnpdf21",
+        #     had="v6_yossof_nnpdf21_normalized"),
         #
-        #scan(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full"),
+        #scan(dataset="T1tttt", com=8, tag="ichep",
+        #     had="2012full", muon="2012full"),
         #
         #scan(dataset="T5zz", com=7, had="v1", muon="v1"),
         #scan(dataset="TGQ_0p0", com=7, had="v1"),
@@ -114,8 +127,10 @@ def models():
         #scan(dataset="TGQ_0p8", com=7, had="v1"),
         #
         #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up"),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down"),
+        #scan(dataset="tanBeta10", com=7, had="v2",
+        #     muon="v2", xsVariation="up"),
+        #scan(dataset="tanBeta10", com=7, had="v2",
+        #     muon="v2", xsVariation="down"),
         ]
 
 
@@ -127,7 +142,7 @@ def whiteListOfPoints(model="", respect=False):
     return {"T1": [(700.0, 300.0)],
             "T1bbbb": [(900.0, 500.0)],
             "T1tttt": [(850.0, 250.0)],
-            "T2tt": [(400.0,25.0)],
+            "T2tt": [(400.0, 25.0)],
             #"T2tt": [(550.0,  20.0)],
             #"T2tt": [(400.0,   0.0)],
             #"T2tt": [(410.0,  20.0)],
@@ -202,13 +217,15 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     if jets:
         tags.append(jets)
     if model.extraVars:
-        tags.append(model.extraVars[0])
+        tags.append(" ".join(model.extraVars))
     if box == "had":
-        if model.aT :
-            if htLower < 275. :
+        if model.aT:
+            if htLower < 275.:
                 tags.append("AlphaT"+model.aT[1])
-            else : tags.append("AlphaT"+model.aT[0])
-        else : tags.append("AlphaT55")
+            else:
+                tags.append("AlphaT"+model.aT[0])
+        else:
+            tags.append("AlphaT55")
     else:
         tags.append("NoAlphaT")
 
