@@ -212,7 +212,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
                 w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
 
         if not muonForFullEwk:
-            if inputData.mcExpectations()["mcHad"][0]:
+            if inputData.mcExpectations()["mcHad"][i]:
                 fZinvIniFromMc = inputData.mcExpectations()["mcZinv"][i] / inputData.mcExpectations()["mcHad"][i]
             else:
                 fZinvIniFromMc = 0.5
