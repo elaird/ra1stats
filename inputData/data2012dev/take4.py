@@ -23,7 +23,8 @@ def common1(x) :
 
     x._htBinLowerEdges = ( 200.0, 275.0, 325.0, 375.0, 475.0, 575.0, 675.0, 775.0, 875.0, 975.0, 1075.0)
     x._htMaxForPlot    = 1175.0
-    x._htMeans         = (240.0, 298.0, 348.0, 416.0, 517.0, 617.0, 719.0, 819.0, 920.0, 1020., 1120., )  # tmp
+    x._htMeans         = ( 235.2, 297.5, 347.5, 416.4, 517.3, 618.4, 716.9, 819.9, 919.0, 1019.0, 1289.0)
+    
 
     iPhot = 3
     x._observations["nPhot"] = tuple([None]*iPhot + list(x._observations["nPhot"][iPhot:]))
@@ -158,7 +159,7 @@ class data_1b_ge4j(data) :
 
 class data_1b_le3j(data) :
     def _fill(self) :
-                self._mcExpectationsBeforeTrigger =  	{
+        self._mcExpectationsBeforeTrigger =  	{
 		"mcPhot"             :   ( 0.0, 0.0, 0.0, 426.8, 129.1, 38.41, 15.94, 4.825, 1.71, 0.896, 0.3226, ) ,
 		"mcTtw"              :   ( 3730.0, 2015.0, 823.3, 498.8, 93.89, 19.65, 6.035, 1.876, 0.7425, 0.2574, 0.1899, ) ,
 		"mcHad"              :   ( 4806.0, 2549.0, 1047.0, 652.2, 137.1, 32.08, 10.73, 3.587, 1.337, 0.4698, 0.2571, ) ,
@@ -218,7 +219,7 @@ class data_2b_ge4j(data) :
 
 class data_2b_le3j(data) :
     def _fill(self) :
-                self._mcExpectationsBeforeTrigger =  	{
+        self._mcExpectationsBeforeTrigger =  	{
 		"mcPhot"             :   ( 0.0, 0.0, 0.0, 29.75, 10.03, 2.564, 1.044, 0.2219, 0.1077, 0.1041, 0.008011, ) ,
 		"mcTtw"              :   ( 589.2, 496.7, 210.6, 128.5, 23.8, 4.478, 1.523, 0.322, 0.06688, 0.006977, 0.009035, ) ,
 		"mcHad"              :   ( 686.4, 545.5, 231.0, 142.2, 27.34, 5.481, 1.844, 0.4538, 0.1093, 0.017, 0.01187, ) ,
