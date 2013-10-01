@@ -154,7 +154,7 @@ from inputData.data2011reorg import take3
 from inputData.data2012hcp import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012hcp import take6,take6_capped,take6_unweighted
 from inputData.data2012hcp import take12_weighted,take12_unweighted,take14
-from inputData.data2012dev import take0,take1,take3,take4,take3_sitv
+from inputData.data2012dev import take0,take1,take3,take5,take5_noMHTMET
 
 setup()
 
@@ -215,8 +215,8 @@ elif d=="2012dev" :
     for i,j in enumerate(["ge4j", "le3j"]) :
         bs = ["0b", "1b", "2b", "3b"]+(["ge4b"] if j!="le3j" else [])
         slices = ["%s_%s"%(b,j) for b in bs]
-        datasets = [ {"module": take3, "slices": slices, "color":color1[j], "label": "2012 dev (%s, weighted)"%j},
-                     {"module": take4, "slices": slices, "color":color2[j], "label": "2012 dev w/o MHT/MET sideband weights (%s, weighted)"%j},
+        datasets = [ {"module": take5, "slices": slices, "color":color1[j], "label": "2012 dev (%s, weighted)"%j},
+                     {"module": take5_noMHTMET, "slices": slices, "color":color2[j], "label": "2012 dev w/o MHT/MET sideband weights (%s, weighted)"%j},
                      ]
         #print datasets
         plot(datasets, tag = j)
