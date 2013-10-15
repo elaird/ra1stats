@@ -1,8 +1,8 @@
 import ROOT as r
 
 class signal(dict) :
-    def __init__(self, xs = None, label = "", effUncRel = None, lineColor = r.kPink+7, lineStyle = 2) :
-        for item in ["xs", "label", "effUncRel", "lineColor", "lineStyle"] :
+    def __init__(self, xs = None, nEventsIn = "", label = "", effUncRel = None, lineColor = r.kPink+7, lineStyle = 2) :
+        for item in ["xs", "nEventsIn", "label", "effUncRel", "lineColor", "lineStyle"] :
             assert eval(item)!=None,item
             setattr(self, item, eval(item))
     
