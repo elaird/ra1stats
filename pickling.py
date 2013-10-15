@@ -111,7 +111,8 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
                 continue
 
             d[box] = map(lambda x: x.GetBinContent(*point3), effHistos)
-
+            d[box+"RelUnc"] = map(lambda x: 1/math.sqrt(x.GetBinContent(*point3)*out["nEventsIn"]) if x.GetBinContent(*point3) else 1/math.sqrt(2), effHistos) 
+            d[box+"RelErr"] = map(lambda x: x.GetBinError(*point3)/x.GetBinContent(*point3) if x.GetBinContent(*point3) else 1/math.sqrt(2), effHistos) 
             d[box+"Sum"] = sum(d[box])
             key = box.replace("eff", "nEvents")
             d[key] = d[box+"Sum"]*out["nEventsIn"]
