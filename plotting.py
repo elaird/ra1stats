@@ -676,12 +676,12 @@ class validationPlotter(object) :
             return
 
         self.plot(note="",
-                  fileName=["s"],
+                  fileName=["w"],
                   legend0=(0.2, 0.8),
                   legend1=(0.55, 0.85),
-                  yLabel="s",
+                  yLabel="w",
                   otherVars=[{"example": self.signalExampleToStack,
-                              "box": "had",
+                              "box": "sumWhad",
                               "desc": self.signalExampleToStack.label,
                               "color": self.signalExampleToStack.lineColor,
                               "style": self.signalExampleToStack.lineStyle,
@@ -689,6 +689,37 @@ class validationPlotter(object) :
                               "stack": "total",
                               }],
                   )
+
+        self.plot(note="",
+                  fileName=["wRelErr"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="w_{error}/w",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "sumWhadRelErr",
+                              "desc": self.signalExampleToStack.label,
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              }],
+                  )
+
+        self.plot(note="",
+                  fileName=["wRelUnc"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="1/#sqrt{w}",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "sumWhadRelUnc",
+                              "desc": self.signalExampleToStack.label,
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              }],
+                  )
+
 
         self.plot(note="",
                   fileName=["s_over_b"],
@@ -1107,6 +1138,40 @@ class validationPlotter(object) :
                 continue
             histo.SetBinContent(i+1, l*xs*eff[i])
 
+    def fillSignalRelUnc(self, spec={}, histo=None):
+        nEventsIn = spec["example"].nEventsIn
+        effRelUnc = inDict(spec["example"][self.label],
+                     spec["box"],
+                     [0.0]*len(self.htBinLowerEdges))
+        activeBins = self.activeBins["n%s" % ("had" if "had" in spec["box"] else spec["box"]).capitalize()]
+        for i in range(len(self.htBinLowerEdges)):
+            if not activeBins[i]:
+                continue
+            histo.SetBinContent(i+1, effRelUnc[i])
+
+    def fillSignalExampleWeight(self, spec={}, histo=None):
+        box = "had"
+        nEventsIn = spec["example"].nEventsIn
+        eff = inDict(spec["example"][self.label],
+                     "eff%s" % box.capitalize(),
+                     [0.0]*len(self.htBinLowerEdges))
+        activeBins = self.activeBins["n%s" % box.capitalize()]
+        for i in range(len(self.htBinLowerEdges)):
+            if not activeBins[i]:
+                continue
+            histo.SetBinContent(i+1, eff[i]*nEventsIn)
+
+    def fillSignalExampleWeightErr(self, spec={}, histo=None):
+        nEventsIn = spec["example"].nEventsIn
+        effErr = inDict(spec["example"][self.label],
+                     spec["box"],
+                     [0.0]*len(self.htBinLowerEdges))
+        activeBins = self.activeBins["n%s" % ("had" if "had" in spec["box"] else spec["box"]).capitalize()]
+        for i in range(len(self.htBinLowerEdges)):
+            if not activeBins[i]:
+                continue
+            histo.SetBinContent(i+1, effErr[i])
+
 
     def varHisto(self, spec={}, extraName="", yLabel="", note="", lumiString=""):
         color       = spec.get("color", r.kBlack)
@@ -1150,7 +1215,18 @@ class validationPlotter(object) :
 
         if "example" in spec:
             assert "func" not in spec, "func will not be applied here"
-            self.fillSignalExampleYield(spec=spec, histo=d["value"])
+            if spec["example"].nEventsIn:
+                if "Rel" in spec["box"]:
+                    if "Unc" in spec["box"]:
+                        self.fillSignalRelUnc(spec=spec, histo=d["value"])
+                    if "Err" in spec["box"]:
+                        self.fillSignalExampleWeightErr(spec=spec, histo=d["value"])
+                elif "sumWhad" in spec["box"]:
+                    self.fillSignalExampleWeight(spec=spec, histo=d["value"])
+                else: 
+                    self.fillSignalExampleYield(spec=spec, histo=d["value"])
+        
+            else: self.fillSignalExampleYield(spec=spec, histo=d["value"])
             return d
 
         toPrint = []
