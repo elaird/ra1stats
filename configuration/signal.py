@@ -82,8 +82,8 @@ def models():
         #scan(dataset="T2cc", com=8, had="v7_new_bin"),
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"], extraVars = ["SITV"]),
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
-        #scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"]),
-        scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"], extraVars = ["SITV"]),
+        scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"]),
+        #scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"], extraVars = ["SITV"]),
         
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
