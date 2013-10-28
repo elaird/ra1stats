@@ -54,6 +54,7 @@ def parametrizedExpViaYield(w = None, name = "", label = "", kLabel = "", i = No
     mean0 = ni("htMean", label, 0)
     meanI = ni("htMean", label, i)
     varName = ni(name, label, i)
+    print w.var(yield0).getVal(), w.var(k).getVal()
     return r.RooFormulaVar(varName, "(@0)*(@1)/(@2)*exp(-(@3)*((@4)-(@5)))",
                            r.RooArgList(w.var(yield0), w.var(bulkI), w.var(bulk0), w.var(k), w.var(meanI), w.var(mean0)),
                            )
@@ -193,6 +194,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
                 qcd = w.function(ni("qcd", label, i))
             else :
                 qcd = w.var(ni("qcd", label, i))
+
         else :
             wimport(w, parametrizedExp(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
             qcd = w.function(ni("qcd", label, i))
@@ -203,14 +205,18 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
 
             if RQcd!="Zero" and i==0 :
                 qcd.setRange(0.0, max(1, 2.0*obs["nHad"][i]))
-                qcd.setVal(inputData.observations()["nHad"][i]-ewk.getVal())
-
+                qcd.setVal(abs(inputData.observations()["nHad"][i]-ewk.getVal()))
+                print "Warning: Introduced abs"
+                print qcd, qcd.getVal()
             if RQcd!="Zero" and i==1 :
                 qcd0 = w.var(ni("qcd", label, 0)).getVal()
                 qcd1 = max(1.0, inputData.observations()["nHad"][i]-ewk.getVal())
                 someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
+                print qcd0, qcd1, (obs["nHadBulk"][0]), (obs["nHadBulk"][1])
+                print (qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1])
+                print someVal
                 w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
-
+                print w.var(ni("k_qcd", kQcdLabel)).getVal()
         if not muonForFullEwk:
             if inputData.mcExpectations()["mcHad"][i]:
                 fZinvIniFromMc = inputData.mcExpectations()["mcZinv"][i] / inputData.mcExpectations()["mcHad"][i]
