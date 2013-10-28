@@ -33,6 +33,7 @@ def plotRatio(canvas=None, factors=None, graphs=None, data=None, name=None, data
         rgr.SetTitle("%s: %s;<H_{T}> in bin (GeV); translation factor ratio"%(name, tr))
 
         hPoint = 0
+        hrPoint = 0
         for hPoint, ht in enumerate(htMeans):
             t=[]
             dPoint = 0
@@ -45,9 +46,10 @@ def plotRatio(canvas=None, factors=None, graphs=None, data=None, name=None, data
                 if not itf: continue
                 if t[0] == 0.0: continue
                 ratio = t[itf]/t[0]
-#                print "itf",itf,"hPoint",hPoint,"Ht", Ht, "t[itf]",t[itf],"t[0]",t[0], "ratio", ratio
-                rgr.SetPoint(hPoint, Ht, ratio)
+                #print "itf",itf,"hrPoint",hrPoint,"Ht", Ht, "t[itf]",t[itf],"t[0]",t[0], "ratio", ratio
+                rgr.SetPoint(hrPoint, Ht, ratio)
             hPoint += 1
+            hrPoint += 1
         rgr.Draw("ap")
         hist = rgr.GetHistogram()
         for axis in [hist.GetXaxis(), hist.GetYaxis()] :
@@ -146,6 +148,7 @@ def plot(datasets = [], tag = "", factors = ["gZ", "mumuZ", "muW"]) :
         canvas.cd(0)
         canvas.Print(ratioFileName)    
     canvas.Print(ratioFileName+"]")
+    canvas.Delete()
 
 
 ##########
