@@ -37,18 +37,21 @@ def common1(x) :
 def common(x) :
     common1(x)
 
-    systBins = tuple([0]*2 + [1]*3 + [2]*1 + [3]*2 + [4]*3)
+#    systBins = tuple([0]*2 + [1]*3 + [2]*1 + [3]*2 + [4]*3)
+    systBins = tuple([0,1,2,3,3,4,4,5,5,6,6])
     name = x.__class__.__name__
 
 
     if "le3j" in name :
-        systMagnitudes = (0.05, 0.05, 0.10, 0.20, 0.30)  # tmp
+#        systMagnitudes = (0.05, 0.05, 0.10, 0.20, 0.30)  # tmp
+        systMagnitudes = (0.05, 0.05, 0.05, 0.10, 0.10, 0.20, 0.30)  # tmp
         x._triggerEfficiencies["had"] = (0.816, 0.901, 0.988, 0.994, 1.000, .994, 1.000, 1.000, 1.000, 1.000, 1.000)
         x._observations["nHadBulk"] = (3.4067318E09, 8.317453E08, 3.29919975E08, 2.74138825E08, 8.507427E07,   
                                        2.8887025E07, 1.09110E07, 4.6215E06, 2.07715E06, 1.031125E06, 1.20755E06)
 
     elif "ge4j" in name :
-        systMagnitudes = (0.05, 0.10, 0.10, 0.20, 0.30)  # dtmp
+        #systMagnitudes = (0.05, 0.10, 0.10, 0.20, 0.30)  # dtmp
+        systMagnitudes = (0.05, 0.05, 0.05, 0.10, 0.10, 0.20, 0.30)  # tmp
         x._triggerEfficiencies["had"] = (0.665, 0.666, 0.971, 0.988, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000)
         x._observations["nHadBulk"] = (6.60088E07, 1.400533E08, 5.2689525E07, 4.8204025E07, 3.35079E07,
                                        1.582655E07, 7.279475E06, 3.46345E06, 1.732725E06, 8.9562E05, 1.142775E06)
