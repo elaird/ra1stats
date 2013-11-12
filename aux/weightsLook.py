@@ -6,6 +6,7 @@ def rootSetup() :
     #r.gROOT.SetStyle("Plain")
     r.gROOT.SetBatch(True)
     r.gErrorIgnoreLevel = 3000
+    r.gStyle.SetOptStat("oue")
 
 def oneHisto(file, directory=None, histName=None):
     f = r.TFile(file)
@@ -61,8 +62,21 @@ def setup(file,directory=None,histName=[]):
     mP = massPoints(dummyHist)                    
     return mP
 
-def plotWeightVsHT(canvas=None, points=None, point=None, hists=None, cat=[]):
-    canvas.cd(3)
+def fillAllWeights(h=None, points=None, point=None, hists=None, cat=[]):
+    title = ""
+    for hT,key in enumerate(hists):
+        h.Fill(hists[key].GetBinContent(*points[point]))
+    h.SetTitle("Average Weight: " + "%s_%s" % tuple(cat))
+#    h.SetStats(False)
+    h.SetXTitle("<w>_{after selection}")
+    h.GetYaxis().SetLabelSize(0.05)
+    h.GetYaxis().SetTitleSize(0.08)
+    h.GetYaxis().SetTitleOffset(0.35)
+    h.GetXaxis().SetTitleSize(0.05)
+    return h
+
+def plotWeightVsHT(canvas=None, points=None, point=None, hists=None, cat=[], multiIndex=None):
+    if multiIndex is None: canvas.cd(3)
     binEdges = [200,275,325,375]+[375 + 100*i for i in range(1,9)]
     binArray = array.array("d",binEdges)
     nBins = len(binArray)-1
@@ -85,7 +99,10 @@ def plotWeightVsHT(canvas=None, points=None, point=None, hists=None, cat=[]):
     h.GetXaxis().SetTitleSize(0.05)
 
     h.Draw("e")
+    canvas.Modified()
+    canvas.Update()
     return h
+
 
 def plotWeightVsHTBefore(canvas=None, points=None, point=None, hists=None, cat=[]):
     canvas.cd(4)
@@ -195,9 +212,10 @@ def openIndivPdf(points=None, point=None, cat=[]):
     canvas.Print(fileName+"[")
     return canvas,fileName
 
-def openInclPdf(cat=[]):
+def openInclPdf(cat=[], suffix=None):
     canvas = r.TCanvas("canvas", "canvas", 600, 800)
-    fileName = "weightPlots/weights_%s_%s.pdf" % tuple(cat)
+    fileName = "weightPlots/weights_%s_%s" % tuple(cat)
+    fileName += "_%s.pdf" % suffix if suffix else ".pdf"
     r.gPad.SetTickx()
     r.gPad.SetTicky()
     canvas.Divide(1, 5)
@@ -264,6 +282,55 @@ def go(category=[]):
         canvas.cd(0)
         canvas.Print(fileName)
     closeInclPdf(canvas=canvas, fileName=fileName)
+
+def goSummary(category=[]):
+    rootSetup()
+    base = "../ra1e/sms_8/T2cc/had/v9/" 
+    fileName = "had1.root"
+    file = base+fileName
+    massPoints = setup(file, directory = "smsScan_before", 
+                                histName = "m0_m12_mChi_weight")
+
+    histNames = ["m0_m12_mChi_weight","m0_m12_mChi_noweight"]
+    directories = ["smsScan_%s_%s_AlphaT0.6_200_275",
+                   "smsScan_%s_%s_AlphaT0.55_275_325",
+                   "smsScan_%s_%s_AlphaT0.55_325_375",
+                   "smsScan_%s_%s_AlphaT0.55_375_475",
+                   "smsScan_%s_%s_AlphaT0.55_475_575",
+                   "smsScan_%s_%s_AlphaT0.55_575_675",
+                   "smsScan_%s_%s_AlphaT0.55_675_775",
+                   "smsScan_%s_%s_AlphaT0.55_775_875",
+                   "smsScan_%s_%s_AlphaT0.55_875_975",
+                   "smsScan_%s_%s_AlphaT0.55_975_1075",
+                   "smsScan_%s_%s_AlphaT0.55_1075",]
+    directories = [x % tuple(cat) for x in directories]
+    avgWeight = {}
+    canvas,fileName = openInclPdf(cat, suffix="summary")
+    allWeights = r.TH1D("allWeights","allWeights", 50,0,2)
+    for directory in directories :
+        histosPerHT = multiHistoPerHT(file=file,directory=directory,
+                                      histNames=histNames, cat=cat)
+        avgWeight[directory] = averageWeight(directory=directory, 
+                                             hists=histosPerHT, cat=cat)
+
+    for iMassPoint, massPoint in enumerate(sorted(massPoints)):
+        canvas.cd((iMassPoint % 5) + 1)
+        r.gPad.SetTickx()
+        r.gPad.SetTicky()
+        wVsHT = plotWeightVsHT(canvas=canvas, points=massPoints, point=massPoint, hists=avgWeight, cat=cat, multiIndex=iMassPoint)
+        allWeights = fillAllWeights(h=allWeights, points=massPoints, point=massPoint, hists=avgWeight, cat=cat)
+        wVsHT.DrawCopy("e")
+        if iMassPoint % 5 == 4. or iMassPoint == len(massPoints)-1:
+            canvas.cd(0)
+            canvas.Print(fileName)
+            canvas.Update()
+            canvas.Clear()
+            canvas.Divide(1,5)
+    allWeights.Draw()
+    canvas.Print(fileName)
+    closeInclPdf(canvas=canvas, fileName=fileName)
         
-for cat in [["eq0b","le3j"],["eq1b","le3j"]]:
+for cat in [["eq0b","le3j"],["eq1b","le3j"],["eq0b","ge4j"]]:
     go(category=cat)
+    goSummary(category=cat)
+    
