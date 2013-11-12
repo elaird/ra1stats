@@ -720,6 +720,23 @@ class validationPlotter(object) :
                               }],
                   )
 
+        self.plot(note="",
+                  fileName=["wRelErr_over_func_of_b"],
+                  legend0=(0.2, 0.8),
+                  legend1=(0.55, 0.85),
+                  yLabel="wRelErr / #sqrt{b + (0.1b)^{2}}",
+                  otherVars=[{"example": self.signalExampleToStack,
+                              "box": "sumWhadRelErr",
+                              "desc": self.signalExampleToStack.label+" / b",
+                              "color": self.signalExampleToStack.lineColor,
+                              "style": self.signalExampleToStack.lineStyle,
+                              "width": self.width1,
+                              "stack": "total",
+                              "dens": ["hadB"],
+                              "denTypes": ["function"],
+                              "denFuncs": [lambda x:math.sqrt(x + (0.1*x)**2)],
+                              }],
+                  )
 
         self.plot(note="",
                   fileName=["s_over_b"],
