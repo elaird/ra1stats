@@ -62,13 +62,17 @@ def effHistos(model=None,
                                    bJets=sel.bJets,
                                    jets=sel.jets) for l, u in htThresholds]
 
-            item = "%s" % box + "Weights"
-            d[item] = [hp.histoWeights(model=model,
-                                          box=box,
-                                          htLower=l,
-                                          htUpper=u,
-                                          bJets=sel.bJets,
-                                          jets=sel.jets) for l, u in htThresholds]
+            if likelihoodSpec.likelihoodSpec(model.name,
+                                             allCategories=allCategories,
+                                             ).calculateAvgWeights():
+
+                item = "%s" % box + "Weights"
+                d[item] = [hp.histoWeights(model=model,
+                                           box=box,
+                                           htLower=l,
+                                           htUpper=u,
+                                           bJets=sel.bJets,
+                                           jets=sel.jets) for l, u in htThresholds]
 
 
         out[sel.name] = d
@@ -109,7 +113,7 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
     out["x"] = xs.GetXaxis().GetBinLowEdge(point3[0])
     out["y"] = xs.GetYaxis().GetBinLowEdge(point3[1])
     out["nEventsIn"] = nEventsIn.GetBinContent(*point3)
-    out["weightsIn"] = weightsIn.GetBinContent(*point3)
+    if weightsIn is not None: out["weightsIn"] = weightsIn.GetBinContent(*point3)
     out["eventsInRange"] = eventsInRange(model=model,
                                          nEventsIn=out["nEventsIn"])
     if not out["eventsInRange"]:
@@ -167,13 +171,20 @@ def stuffVars(binsMerged=None, signal=None):
 
 def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
+    
     for model in conf.signal.models():
+        
         name = model.name
+       
         args[name] = {"eff": effHistos(model),
                       "xs": hp.xsHisto(model),
                       "nEventsIn": hp.nEventsInHisto(model),
-                      "weightsIn": hp.weightsInHisto(model),
                       }
+        if likelihoodSpec.likelihoodSpec(name,
+                                         ).calculateAvgWeights():
+            args[name]["weightsIn"] = hp.weightsInHisto(model) 
+    
+
         hp.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
 
     for point in points:
