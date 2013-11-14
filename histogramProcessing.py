@@ -249,15 +249,16 @@ def xsHistoAllOne(model=None, cutFunc=None):
 
 def nEventsInHisto(model=None):
     s = conf.signal.effHistoSpec(model=model, box="had")
-    return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
+    return oneHisto(s["file"], s["beforeDir"],
+                    s["unweightedHistName"] if s["unweightedHistName"] else s["weightedHistName"])  # backward compatible
 
 
-def weightsInHisto(model=None):
+def meanWeightInHisto(model=None):
     spec = conf.signal.effHistoSpec(model=model, box="had")
-    h = ratio(spec["file"],
-              spec["beforeDir"], spec["weightedHistName"],
-              spec["beforeDir"], spec["unweightedHistName"])
-    return h
+    return ratio(spec["file"],
+                 spec["beforeDir"], spec["weightedHistName"],
+                 spec["beforeDir"], spec["unweightedHistName"])
+
 
 
 def effHisto(model=None, box="",
