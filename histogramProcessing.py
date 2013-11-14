@@ -201,11 +201,11 @@ def xsHisto(model=None):
 
 def xsHistoPhysical(model=None, cmssmProcess=""):
     #get example histo and reset
-    dummyHisto = "weightedHistName" if model.isSms else "m0_m12_gg"
+    dummyHisto = "histName" if model.isSms else "m0_m12_gg"
     s = conf.signal.effHistoSpec(model=model, box="had")
     out = ratio(s["file"],
-                s["beforeDir"], s["weightedHistName"],
-                s["beforeDir"], s["weightedHistName"])
+                s["beforeDir"], s["histName"],
+                s["beforeDir"], s["histName"])
     out.Reset()
 
     spec = conf.signal.xsHistoSpec(model=model, cmssmProcess=cmssmProcess)
@@ -249,14 +249,14 @@ def xsHistoAllOne(model=None, cutFunc=None):
 
 def nEventsInHisto(model=None):
     s = conf.signal.effHistoSpec(model=model, box="had")
-    return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
+    return oneHisto(s["file"], s["beforeDir"], s["histName"])
 
 
 def weightsInHisto(model=None):
     spec = conf.signal.effHistoSpec(model=model, box="had")
     h = ratio(spec["file"],
-              spec["beforeDir"], spec["weightedHistName"],
-              spec["beforeDir"], spec["histName"])
+              spec["beforeDir"], spec["histName"],
+              spec["beforeDir"], spec["unweightedHistName"])
     return h
 
 
@@ -320,27 +320,18 @@ def cmssmEffHisto(spec={}, model=None):
 
 
 def smsEffHisto(spec={}, model=None):
-    #out = ratio(s["file"],
-    #            s["afterDir"], "m0_m12_mChi",
-    #            s["beforeDir"], "m0_m12_mChi")
     out = ratio(spec["file"],
-                spec["afterDir"], spec["weightedHistName"],
-                spec["beforeDir"], spec["weightedHistName"])
+                spec["afterDir"], spec["histName"],
+                spec["beforeDir"], spec["histName"])
     fillPoints(out, points=patches.overwriteInput()[model.name])
     return out
+
 
 def smsWeightsAfter(spec={}, model=None):
     out = ratio(spec["file"],
-                spec["afterDir"], spec["weightedHistName"],
-                spec["afterDir"], spec["histName"])
+                spec["afterDir"], spec["histName"],
+                spec["afterDir"], spec["unweightedHistName"])
     fillPoints(out, points=patches.overwriteInput()[model.name])
-    return out
-
-#def smsWeightsBefore(spec={}, model=None):
-#    out = ratio(spec["file"],
-#                spec["beforeDir"], spec["weightedHistName"],
-#                spec["beforeDir"], spec["histName"])
-#    fillPoints(out, points=patches.overwriteInput()[model.name])
     return out
 
 ##signal point selection
