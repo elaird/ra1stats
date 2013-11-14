@@ -283,7 +283,6 @@ def meanWeight(model=None, box="",
                                     jets=jets)
     assert model.isSms
     # fixme: 0 / 0
-    #fillPoints(out, points=patches.overwriteInput()[model.name])
     return ratio(spec["file"],
                  spec["afterDir"], spec["weightedHistName"],
                  spec["afterDir"], spec["unweightedHistName"])
@@ -318,7 +317,6 @@ def smsEffHisto(spec={}, model=None):
     out = ratio(spec["file"],
                 spec["afterDir"], spec["weightedHistName"],
                 spec["beforeDir"], spec["weightedHistName"])
-    fillPoints(out, points=patches.overwriteInput()[model.name])
     return out
 
 
