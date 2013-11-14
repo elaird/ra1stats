@@ -483,12 +483,20 @@ def signalEffVariables(w = None, inputData = None, label = "", signalDict = {}) 
             name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
             wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
 
+def signalWeightVariables(w = None, inputData = None, label = "", signalDict = {}) :
+    for key,value in signalDict.iteritems() :
+        if "Weights" not in key : continue
+        if type(value) not in [list,tuple] : continue
+        for iBin,signalWeight in zip(range(len(value)), value) :
+            name = ni(name = "signal%s"%(key.capitalize().replace("weights","Weights")), label = label, i = iBin)
+            wimport(w, r.RooRealVar(name, name, signalWeight))
+
 def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
                 signalToTest = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
 
     assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
     signalEffVariables(w, inputData, label, signalToTest)
-
+    
     out = collections.defaultdict(list)
     if label==systematicsLabel :
         for iPar in [None] :
