@@ -1,14 +1,14 @@
 def likelihoodSpec(model="", allCategories=False):
     dataset = "2012dev"
-    kargs = {"T1"          : {"dataset":dataset, "whiteList":["0b_ge4j"]},
-             "T2"          : {"dataset":dataset, "whiteList":["0b_le3j"]},
-             "T2bb"        : {"dataset":dataset, "whiteList":["1b_le3j", "2b_le3j"]},
-             "T2tt"        : {"dataset":dataset, "whiteList":["1b_ge4j", "2b_ge4j"]},
-             "T1bbbb"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-             "T1tttt"      : {"dataset":dataset, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-             "T2cc"        : {"dataset":dataset, "whiteList":["0b_le3j"]},
-             "T1tttt_ichep": {"dataset":"2012ichep", "whiteList":["2b", "ge3b"]},
-             "tanBeta10_7":  {"dataset":"2011", "whiteList":[]},
+    kargs = {"T1"          : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_ge4j"]},
+             "T2"          : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_le3j"]},
+             "T2bb"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["1b_le3j", "2b_le3j"]},
+             "T2tt"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["1b_ge4j", "2b_ge4j"]},
+             "T1bbbb"      : {"dataset":dataset, "sigMcUnc":False, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+             "T1tttt"      : {"dataset":dataset, "sigMcUnc":False, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
+             "T2cc"        : {"dataset":dataset, "sigMcUnc":True, "whiteList":["0b_le3j"]},
+             "T1tttt_ichep": {"dataset":"2012ichep", "sigMcUnc":False, "whiteList":["2b", "ge3b"]},
+             "tanBeta10_7":  {"dataset":"2011", "sigMcUnc":False, "whiteList":[]},
              }[model]
 
     if allCategories:
@@ -65,8 +65,8 @@ class spec(object) :
         return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
     def ignoreHad(self) :
         return self._ignoreHad
-    def calculateAvgWeights(self) :
-        return self._calculateAvgWeights
+    def sigMcUnc(self) :
+        return self._sigMcUnc
 
     def selections(self) :
         out = self._selections
@@ -90,7 +90,7 @@ class spec(object) :
 
     def __init__(self, dataset="", separateSystObs=True,
                  whiteList=[], blackList=[], ignoreHad=False):
-        for item in ["dataset", "separateSystObs",
+        for item in ["dataset", "separateSystObs", "sigMcUnc",
                      "whiteList", "blackList", "ignoreHad"]:
             setattr(self, "_"+item, eval(item))
 
@@ -102,7 +102,6 @@ class spec(object) :
         self._initialValuesFromMuonSample = None
         self._initialFZinvFromMc = None
         self._selections = []
-        self._calculateAvgWeights = None
 
         if self._dataset=="simple" :
             self.__initSimple__()
@@ -126,15 +125,15 @@ class spec(object) :
         assert self._RQcd in ["Zero", "FallingExp"]
         assert self._nFZinv in ["All", "One", "Two"]
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
-        for item in ["qcdParameterIsYield", "constrainQcdSlope", "initialValuesFromMuonSample", "initialFZinvFromMc"]:
-            assert getattr(self,"_"+item) in [False, True],item
+        for item in ["qcdParameterIsYield", "constrainQcdSlope",
+                     "initialValuesFromMuonSample", "initialFZinvFromMc", "sigMcUnc"]:
+            assert getattr(self,"_"+item) in [False, True], item
 
     def __initSimple__(self) :
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
-        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
@@ -153,7 +152,6 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = True
         self._initialFZinvFromMc = True
-        self._calculateAvgWeights = True
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
@@ -218,7 +216,6 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
-        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -291,7 +288,6 @@ class spec(object) :
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
-        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -347,7 +343,6 @@ class spec(object) :
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
-        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -423,7 +418,6 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
-        self._calculateAvgWeights = False
         self._REwk = "Constant"
         self._RQcd = "FallingExp"
         self._nFZinv = "All"
@@ -442,7 +436,6 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
-        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
