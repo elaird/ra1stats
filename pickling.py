@@ -65,7 +65,7 @@ def effHistos(model=None,
             if likelihoodSpec.likelihoodSpec(model.name,
                                              allCategories=allCategories,
                                              ).calculateAvgWeights():
-
+                
                 item = "%s" % box + "Weights"
                 d[item] = [hp.histoWeights(model=model,
                                            box=box,
@@ -73,8 +73,7 @@ def effHistos(model=None,
                                            htUpper=u,
                                            bJets=sel.bJets,
                                            jets=sel.jets) for l, u in htThresholds]
-
-
+            
         out[sel.name] = d
     return out
 
@@ -182,7 +181,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
                       }
         if likelihoodSpec.likelihoodSpec(name,
                                          ).calculateAvgWeights():
-            args[name]["weightsIn"] = hp.weightsInHisto(model) 
+            args[name]["weightsIn"] = hp.meanWeightInHisto(model) 
     
 
         hp.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
