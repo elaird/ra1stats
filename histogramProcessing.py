@@ -249,16 +249,7 @@ def xsHistoAllOne(model=None, cutFunc=None):
 
 def sumWeightInHisto(model=None):
     s = conf.signal.effHistoSpec(model=model, box="had")
-    return oneHisto(s["file"], s["beforeDir"],
-                    s["unweightedHistName"] if s["unweightedHistName"] else s["weightedHistName"])  # backward compatible
-
-
-def meanWeightInHisto(model=None):
-    spec = conf.signal.effHistoSpec(model=model, box="had")
-    return ratio(spec["file"],
-                 spec["beforeDir"], spec["weightedHistName"],
-                 spec["beforeDir"], spec["unweightedHistName"])
-
+    return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
 
 
 def effHisto(model=None, box="",
@@ -278,9 +269,9 @@ def effHisto(model=None, box="",
     else:
         return cmssmEffHisto(spec=spec, model=model)
 
-def histoWeights(model=None, box="",
-             htLower=None, htUpper=None,
-             bJets="", jets=""):
+def meanWeight(model=None, box="",
+               htLower=None, htUpper=None,
+               bJets="", jets=""):
     if model.ignoreEff(box):
         return None
 
@@ -291,8 +282,11 @@ def histoWeights(model=None, box="",
                                     bJets=bJets,
                                     jets=jets)
     assert model.isSms
-    return smsWeightsAfter(spec=spec, model=model)
-
+    # fixme: 0 / 0
+    #fillPoints(out, points=patches.overwriteInput()[model.name])
+    return ratio(spec["file"],
+                 spec["afterDir"], spec["weightedHistName"],
+                 spec["afterDir"], spec["unweightedHistName"])
 
 
 def cmssmEffHisto(spec={}, model=None):
@@ -327,13 +321,6 @@ def smsEffHisto(spec={}, model=None):
     fillPoints(out, points=patches.overwriteInput()[model.name])
     return out
 
-
-def smsWeightsAfter(spec={}, model=None):
-    out = ratio(spec["file"],
-                spec["afterDir"], spec["weightedHistName"],
-                spec["afterDir"], spec["unweightedHistName"])
-    fillPoints(out, points=patches.overwriteInput()[model.name])
-    return out
 
 ##signal point selection
 def points():

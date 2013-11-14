@@ -67,12 +67,12 @@ def effHistos(model=None,
                                              ).calculateAvgWeights():
                 
                 item = "%s" % box + "Weights"
-                d[item] = [hp.histoWeights(model=model,
-                                           box=box,
-                                           htLower=l,
-                                           htUpper=u,
-                                           bJets=sel.bJets,
-                                           jets=sel.jets) for l, u in htThresholds]
+                d[item] = [hp.meanWeight(model=model,
+                                         box=box,
+                                         htLower=l,
+                                         htUpper=u,
+                                         bJets=sel.bJets,
+                                         jets=sel.jets) for l, u in htThresholds]
             
         out[sel.name] = d
     return out
