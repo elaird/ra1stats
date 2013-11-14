@@ -492,9 +492,8 @@ def signalWeightVariables(w = None, inputData = None, label = "", signalDict = {
             wimport(w, r.RooRealVar(name, name, signalWeight))
 
 def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-                signalToTest = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
+                signalToTest = {}, rhoSignalMin = None) :
 
-    assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
     signalEffVariables(w, inputData, label, signalToTest)
     
     out = collections.defaultdict(list)
@@ -539,7 +538,7 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
-                    extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
+                    rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
                     REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
                     constrainQcdSlope = None, qcdParameterIsYield = None,
                     initialValuesFromMuonSample = None, initialFZinvFromMc = None) :
@@ -572,7 +571,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
-    for item in ["signalToTest", "extraSigEffUncSources", "rhoSignalMin"] :
+    for item in ["signalToTest", "rhoSignalMin"] :
         moreArgs["signal"][item] = eval(item)
 
     args = tuple([commonArgs[item] for item in ["w", "inputData", "label"]])
@@ -629,10 +628,10 @@ def finishLikelihood(w=None, smOnly=None, standard=None, poiDict={}, terms=[], o
             var.setVal(ini)
 
 class foo(object) :
-    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
+    def __init__(self, likelihoodSpec = {}, rhoSignalMin = 0.0, fIniFactor = 1.0,
                  signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
 
-        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin",
+        for item in ["likelihoodSpec", "rhoSignalMin",
                      "signalToTest", "signalExampleToStack", "signalToInject"] :
             setattr(self, item, eval(item))
 
@@ -654,7 +653,7 @@ class foo(object) :
                      "initialValuesFromMuonSample", "initialFZinvFromMc"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["extraSigEffUncSources", "rhoSignalMin"] :
+        for item in ["rhoSignalMin"] :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
