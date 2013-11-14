@@ -9,14 +9,14 @@ class scan(object):
                  interBin="LowEdge",
                  aT=[],
                  extraVars=[],
-                 histName=None,
-                 weightedHistName=""):
+                 histName="",
+                 unweightedHistName=None):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
         for item in ["dataset", "tag", "interBin",
                      "com", "xsVariation", "xsFactors", "aT",
-                     "extraVars","histName","weightedHistName"]+self.boxNames:
+                     "extraVars","histName","unweightedHistName"]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
         self.warned = {}
@@ -60,15 +60,15 @@ class scan(object):
 
     @property
     def histName(self):
-        return self._histName
+        if self._unweightedHistName is None:
+            self._histName = "m0_m12_mChi_noweight"
+            return self._histName
+        else:
+            return self._histName
 
     @property
-    def weightedHistName(self):
-        if self._histName is None:
-            self._weightedHistName = "m0_m12_mChi_noweight"
-            return self._weightedHistName
-        else:
-            return self._weightedHistName
+    def unweightedHistName(self):
+        return self._unweightedHistName
 
     def ignoreEff(self, box):
         assert box in self.boxNames, box
@@ -98,10 +98,10 @@ def models():
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"],
         #     extraVars=["SITV"]),
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
-        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55","0.6"],
-        #     histName="m0_m12_mChi_noweight", weightedHistName="m0_m12_mChi_weight"),
-        scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
-        extraVars=["SITV"]),
+        scan(dataset="T2cc", com=8, had="v9", aT=["0.55","0.6"],
+             histName="m0_m12_mChi_weight", unweightedHistName="m0_m12_mChi_noweight"),
+        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
+        #extraVars=["SITV"]),
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v6"),
@@ -256,8 +256,8 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "afterDir": "_".join(tags),
             "file": "/".join(subDirs + fileFields)}
 
-    if model.weightedHistName:
-        spec["weightedHistName"] = model.weightedHistName
+    if model.unweightedHistName:
+        spec["unweightedHistName"] = model.unweightedHistName
     if model.histName: spec["histName"] = model.histName
 
     return spec
