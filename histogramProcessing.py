@@ -288,6 +288,22 @@ def meanWeight(model=None, box="",
                  spec["afterDir"], spec["unweightedHistName"])
 
 
+def nEvents(model=None, box="",
+            htLower=None, htUpper=None,
+            bJets="", jets=""):
+    if model.ignoreEff(box):
+        return None
+
+    spec = conf.signal.effHistoSpec(model=model,
+                                    box=box,
+                                    htLower=htLower,
+                                    htUpper=htUpper,
+                                    bJets=bJets,
+                                    jets=jets)
+    assert model.isSms
+    return oneHisto(spec["file"], spec["afterDir"], spec["unweightedHistName"])
+
+
 def cmssmEffHisto(spec={}, model=None):
     out = None
 
