@@ -53,7 +53,3 @@ def rhoSignalMin():
 
 def fIniFactor():
     return 1.0 if binaryExclusion() else 0.05
-
-
-def extraSigEffUncSources():
-    return []

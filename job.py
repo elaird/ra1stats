@@ -100,7 +100,6 @@ def resultsOneCL(likelihoodSpec=None, signal=None, cl=None):
     cl2 = 100*cl
     f = workspace.foo(signalToTest=signal,
                       likelihoodSpec=likelihoodSpec,
-                      extraSigEffUncSources=conf.limit.extraSigEffUncSources(),
                       rhoSignalMin=conf.limit.rhoSignalMin(),
                       fIniFactor=conf.limit.fIniFactor(),
                       )
