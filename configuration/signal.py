@@ -8,13 +8,15 @@ class scan(object):
                  had="", muon="", phot="", mumu="",
                  interBin="LowEdge",
                  aT=[],
-                 extraVars=[]):
+                 extraVars=[],
+                 histName="",
+                 weightedHistName=""):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
         for item in ["dataset", "tag", "interBin",
                      "com", "xsVariation", "xsFactors", "aT",
-                     "extraVars"]+self.boxNames:
+                     "extraVars","histName","weightedHistName"]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
         self.warned = {}
@@ -56,6 +58,14 @@ class scan(object):
     def extraVars(self):
         return self._extraVars
 
+    @property
+    def histName(self):
+        return self._histName
+
+    @property
+    def weightedHistName(self):
+        return self._weightedHistName
+
     def ignoreEff(self, box):
         assert box in self.boxNames, box
         out = not getattr(self, "_"+box)
@@ -84,9 +94,10 @@ def models():
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"],
         #     extraVars=["SITV"]),
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
-        #scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"]),
-        scan(dataset="T2cc", com=8, had="v8", aT=["0.55", "0.6"],
-             extraVars=["SITV"]),
+        scan(dataset="T2cc", com=8, had="v9", aT=["0.55","0.6"],
+             histName="m0_m12_mChi_noweight", weightedHistName="m0_m12_mChi_weight"),
+        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
+        #extraVars=["SITV"]),
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v6"),
@@ -134,7 +145,7 @@ def models():
         ]
 
 
-def whiteListOfPoints(model="", respect=False):
+def whiteListOfPoints(model="", respect=True):
     if not respect:
         return []
 
@@ -237,11 +248,15 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append("scale1")
 
     fileFields = [model.name, box, getattr(model, "_"+box), fileName]
-    return {"beforeDir": beforeDir,
+    spec = {"beforeDir": beforeDir,
             "afterDir": "_".join(tags),
-            "file": "/".join(subDirs + fileFields),
-            }
+            "file": "/".join(subDirs + fileFields)}
 
+    if model.weightedHistName:
+        spec["weightedHistName"] = model.weightedHistName
+    if model.histName: spec["histName"] = model.histName
+
+    return spec
 
 def nEventsIn(model=""):
     assert model
