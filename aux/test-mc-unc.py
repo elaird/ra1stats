@@ -81,24 +81,19 @@ def writeGraphVizTree(wspace, pdfName="model"):
     os.system(cmd)
 
 
-def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, mcStatNuis=True):
+def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, b=(1.0e3, 30.0, 3.0),
+             nMcIn=1.0e4, mcOutMean=5.0, mcOut=(4, 6, 3),
+             mcNuis=True):
     terms = []
-
-    b = (1.0e3, 30.0, 3.0)
-    nMcIn = 1.0e4
     wimport(w, r.RooRealVar("nMcInInv", "nMcInInv", 1.0/nMcIn))
-    effTrue = tuple([5/nMcIn]*3)
-    effMc = effTrue
-    #effMc = (4/nMcIn, 6/nMcIn, 3/nMcIn)
-
     wimport(w, r.RooRealVar("lumi", "lumi", lumi))
     wimport(w, r.RooRealVar("mu", "mu", 1.0, 0.0, 30.0))
 
     for i in range(len(b)):
-        wimport(w, r.RooRealVar("obs%d" % i, "obs%d" % i, b[i] + lumi*injectXs*effTrue[i]))
+        wimport(w, r.RooRealVar("obs%d" % i, "obs%d" % i, b[i] + lumi*injectXs*mcOutMean/nMcIn))
         wimport(w, r.RooRealVar("b%d" % i, "b%d" % i, b[i]))
-        if mcStatNuis:
-            n = effMc[i]*nMcIn
+        if mcNuis:
+            n = mcOut[i]
             wimport(w, r.RooRealVar("nMcSel%d" % i, "nMcSel%d" % i, n))
             wimport(w, r.RooRealVar("nMcExp%d" % i, "nMcExp%d" % i, n, 0.0, max(10.0, 10.0*n)))
             wimport(w, r.RooPoisson("nMc%d" % i, "nMc%d" % i, w.var("nMcSel%d" % i), w.var("nMcExp%d" % i)))
@@ -106,7 +101,7 @@ def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, mcStatNuis=True):
             wimport(w, r.RooProduct("s%d" % i, "s%d" % i, r.RooArgSet(w.var("mu"), w.var("lumi"), w.function("eff%d" % i))))
             terms.append("nMc%d" % i)
         else:
-            wimport(w, r.RooRealVar("eff%d" % i, "eff%d" % i, effMc[i]))
+            wimport(w, r.RooRealVar("eff%d" % i, "eff%d" % i, mcOut[i]/nMcIn))
             wimport(w, r.RooProduct("s%d" % i, "s%d" % i, r.RooArgSet(w.var("mu"), w.var("lumi"), w.var("eff%d" % i))))
         wimport(w, r.RooAddition("exp%d" % i, "exp%d" % i, r.RooArgSet(w.function("b%d" % i), w.function("s%d" % i))))
         wimport(w, r.RooPoisson("pois%d" % i, "pois%d" % i, w.var("obs%d" % i), w.function("exp%d" % i)))
@@ -139,9 +134,9 @@ def setup():
     r.RooRandom.randomGenerator().SetSeed(1)
 
 
-def workspace(injectXs=0.0):
+def workspace(injectXs=0.0, effcard={}):
     w = r.RooWorkspace("Workspace")
-    obsTerms(w, injectXs=injectXs)
+    obsTerms(w, injectXs=injectXs, **effcard)
     w.factory("PROD::model(obsTerms)")
     #w.factory("PROD::model(obsTerms,)")
     return w
@@ -155,8 +150,8 @@ def modelConfiguration(w):
     return out
 
 
-def go(trace=False, debug=True, profile=False, cl=None, bestFit=False, injectXs=0.0):
-    w = workspace(injectXs=injectXs)
+def go(trace=False, debug=True, profile=False, cl=None, bestFit=False, injectXs=0.0, effcard=None):
+    w = workspace(injectXs=injectXs, effcard=effcard)
     modelConfig = modelConfiguration(w)
     data = dataset(modelConfig.GetObservables())
 
@@ -182,20 +177,20 @@ def go(trace=False, debug=True, profile=False, cl=None, bestFit=False, injectXs=
         return plInterval(w=w, dataset=data, modelconfig=modelConfig, cl=cl)
 
 
-def scan(xss=[i/2.0 for i in range(21)]):
+def scan(effcard=None, xss=[i/2.0 for i in range(21)], fileName=""):
     lower = r.TGraph()
     upper = r.TGraph()
     for i, xs in enumerate(xss):
-        d = go(cl=0.68, injectXs=xs)
+        d = go(cl=0.68, effcard=effcard, injectXs=xs)
         lower.SetPoint(i, xs, d["lowerLimit"])
         upper.SetPoint(i, xs, d["upperLimit"])
 
 
-    c = r.TCanvas("canvas", "canvas", 2)
-    c.SetTickx()
-    c.SetTicky()
+    text = r.TText()
+    text.SetNDC()
+    text.SetTextAlign(21)
+    text.SetTextSize(0.3*text.GetTextSize())
 
-    
     null = r.TH2D("null", ";injected xs; fit xs (68%)", 1, 0.0, 10.0, 1, 0.0, 10.0)
     null.SetStats(False)
     null.Draw()
@@ -208,8 +203,25 @@ def scan(xss=[i/2.0 for i in range(21)]):
     lower.Draw("lps")
     upper.Draw("lps")
     
-    r.gPad.Print("foo.pdf")
+    foo = text.DrawText(0.5, 0.95, str(effcard))
+    r.gPad.Print(fileName)
 
 
 setup()
-scan()
+
+fileName = "foo.pdf"
+c = r.TCanvas("canvas", "canvas", 2)
+c.SetTickx()
+c.SetTicky()
+c.Print(fileName+"[")
+
+for effcard in [#{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": False},
+                #{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": True},
+                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": False},
+                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": True},
+                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": False},
+                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": True},
+                ]:
+    scan(effcard=effcard, fileName=fileName)
+
+c.Print(fileName+"]")
