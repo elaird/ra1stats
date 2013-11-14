@@ -46,7 +46,7 @@ def onePoint(likelihoodSpec=None, point=None):
     signal = pickling.readNumbers(fileName=fileName)
     printDict(signal)
     out = {}
-    if signal["eventsInRange"]:
+    if signal["sumWeightInRange"]:
         #out.update(pickling.stuffVars(binsMerged=data.htBinLowerEdges(),
         #                              signal=signal))
         out.update(signal)
@@ -63,10 +63,10 @@ def onePoint(likelihoodSpec=None, point=None):
                                       )
                        )
     else:
-        minEventsIn, maxEventsIn = conf.signal.nEventsIn(model=point[0])
-        warning = "WARNING: nEventsIn = %d not in" % signal["nEventsIn"]
-        warning += " allowed range[ %s, %s ] " % (str(minEventsIn),
-                                                  str(maxEventsIn))
+        minSumWeightIn, maxSumWeightIn = conf.signal.sumWeightIn(model=point[0])
+        warning = "WARNING: sumWeightIn = %g not in" % signal["sumWeightIn"]
+        warning += " allowed range[ %s, %s ] " % (str(minSumWeightIn),
+                                                  str(maxSumWeightIn))
         print warning
     return out
 

@@ -88,18 +88,18 @@ def histoList(histos={}):
     return out
 
 
-def eventsInRange(model="", nEventsIn=None):
-    minEventsIn, maxEventsIn = conf.signal.nEventsIn(model)
+def sumWeightInRange(model="", sumWeightIn=None):
+    min, max = conf.signal.sumWeightIn(model)
     out = True
-    if minEventsIn is not None:
-        out &= (minEventsIn <= nEventsIn)
-    if maxEventsIn is not None:
-        out &= (nEventsIn <= maxEventsIn)
+    if min is not None:
+        out &= (min <= sumWeightIn)
+    if max is not None:
+        out &= (sumWeightIn <= max)
     return out
 
 
 def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
-                nEventsIn=None, weightsIn=None):
+                sumWeightIn=None):
     out = common.signal(xs=xs.GetBinContent(*point3),
                         label="%s_%d_%d_%d" % ((model,)+point3),
                         effUncRel=conf.signal.effUncRel(model),
@@ -111,11 +111,10 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
     out["xs"] = out.xs
     out["x"] = xs.GetXaxis().GetBinLowEdge(point3[0])
     out["y"] = xs.GetYaxis().GetBinLowEdge(point3[1])
-    out["nEventsIn"] = nEventsIn.GetBinContent(*point3)
-    if weightsIn is not None: out["weightsIn"] = weightsIn.GetBinContent(*point3)
-    out["eventsInRange"] = eventsInRange(model=model,
-                                         nEventsIn=out["nEventsIn"])
-    if not out["eventsInRange"]:
+    out["sumWeightIn"] = sumWeightIn.GetBinContent(*point3)
+    out["sumWeightInRange"] = sumWeightInRange(model=model,
+                                               sumWeightIn=out["sumWeightIn"])
+    if not out["sumWeightInRange"]:
         return out
 
     for selName, dct in eff.iteritems():
@@ -125,11 +124,11 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
                 continue
             d[box] = map(lambda x: x.GetBinContent(*point3), effHistos)
             if "Weights" not in box:
-                d["relUnc"] = map(lambda x: 1/math.sqrt(x.GetBinContent(*point3)*out["nEventsIn"]) if x.GetBinContent(*point3) else 2, effHistos) 
+                d["relUnc"] = map(lambda x: 1/math.sqrt(x.GetBinContent(*point3)*out["sumWeightIn"]) if x.GetBinContent(*point3) else 2, effHistos) 
                 d["relErr"] = map(lambda x: x.GetBinError(*point3)/x.GetBinContent(*point3) if x.GetBinContent(*point3) else 2, effHistos) 
                 d[box+"Sum"] = sum(d[box])
-                key = box.replace("eff", "nEvents")
-                d[key] = d[box+"Sum"]*out["nEventsIn"]
+                key = box.replace("eff", "nEvents")  # fixme
+                d[key] = d[box+"Sum"]*out["sumWeightIn"]
                 if d[key] > 0.0:
                     d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
                 elif d[key] < 0.0:
@@ -140,7 +139,7 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
 
 def stuffVars(binsMerged=None, signal=None):
     titles = {"xs": "#sigma (pb)",
-              "nEventsIn": "N events in",
+              "sumWeightIn": "sum of weight in",
               "effHadSum": "eff. of hadronic selection (all bins summed)",
               "nEventsHad": "N events after selection (all bins summed)",
               "effHadSumUncRelMcStats": "rel.unc.on tot.had.eff. from MC stat",
@@ -177,7 +176,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
        
         args[name] = {"eff": effHistos(model),
                       "xs": hp.xsHisto(model),
-                      "nEventsIn": hp.nEventsInHisto(model),
+                      "sumWeightIn": hp.sumWeightInHisto(model),
                       }
         if likelihoodSpec.likelihoodSpec(name,
                                          ).calculateAvgWeights():

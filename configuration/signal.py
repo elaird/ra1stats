@@ -241,7 +241,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "unweightedHistName": model.unweightedHistName}
 
 
-def nEventsIn(model=""):
+def sumWeightIn(model=""):
     assert model
     return {"T5zz_7":      (5.0e3, None),
             "tanBeta10_7": (9.0e3, 11.0e3),

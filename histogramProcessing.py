@@ -247,7 +247,7 @@ def xsHistoAllOne(model=None, cutFunc=None):
     return h
 
 
-def nEventsInHisto(model=None):
+def sumWeightInHisto(model=None):
     s = conf.signal.effHistoSpec(model=model, box="had")
     return oneHisto(s["file"], s["beforeDir"],
                     s["unweightedHistName"] if s["unweightedHistName"] else s["weightedHistName"])  # backward compatible
