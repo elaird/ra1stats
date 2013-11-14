@@ -896,8 +896,8 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-    minEventsIn, maxEventsIn = conf.signal.nEventsIn(model.name)
-    if "nEventsIn" in name and (minEventsIn or maxEventsIn):
+    minEventsIn, maxEventsIn = conf.signal.sumWeightIn(model.name)
+    if "sumWeightIn" in name and (minEventsIn or maxEventsIn):
         if minEventsIn:
             h2.SetMinimum(minEventsIn)
         if maxEventsIn:
