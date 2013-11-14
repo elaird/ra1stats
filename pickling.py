@@ -90,17 +90,12 @@ def sumWeightInRange(model="", sumWeightIn=None):
     return out
 
 
-def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
-                sumWeightIn=None):
+def signalModel(model="", point3=None, eff=None, xs=None, sumWeightIn=None):
     out = common.signal(xs=xs.GetBinContent(*point3),
                         label="%s_%d_%d_%d" % ((model,)+point3),
                         effUncRel=conf.signal.effUncRel(model),
                         )
-
-    if xsLo:
-        out["xs_LO"] = xsLo.GetBinContent(*point3)
-
-    out["xs"] = out.xs
+    out["xs"] = out.xs  # fixme
     out["x"] = xs.GetXaxis().GetBinLowEdge(point3[0])
     out["y"] = xs.GetYaxis().GetBinLowEdge(point3[1])
     out["sumWeightIn"] = sumWeightIn.GetBinContent(*point3)
@@ -111,20 +106,13 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
 
     for selName, dct in eff.iteritems():
         d = {}
-        for box, effHistos in dct.iteritems():
-            if not all([hasattr(item, "GetBinContent") for item in effHistos]):
+        for box, histos in dct.iteritems():
+            if not all([hasattr(item, "GetBinContent") for item in histos]):
                 continue
-            d[box] = map(lambda x: x.GetBinContent(*point3), effHistos)
-            if "Weights" not in box:
-                d["relUnc"] = map(lambda x: 1/math.sqrt(x.GetBinContent(*point3)*out["sumWeightIn"]) if x.GetBinContent(*point3) else 2, effHistos) 
-                d["relErr"] = map(lambda x: x.GetBinError(*point3)/x.GetBinContent(*point3) if x.GetBinContent(*point3) else 2, effHistos) 
+            d[box] = map(lambda x: x.GetBinContent(*point3), histos)
+            if "eff" in box:
+                d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
                 d[box+"Sum"] = sum(d[box])
-                key = box.replace("eff", "nEvents")  # fixme
-                d[key] = d[box+"Sum"]*out["sumWeightIn"]
-                if d[key] > 0.0:
-                    d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
-                elif d[key] < 0.0:
-                    print "ERROR: negative value: ", point3, d[key], box
         out[selName] = d
     return out
 
@@ -134,7 +122,6 @@ def stuffVars(binsMerged=None, signal=None):
               "sumWeightIn": "sum of weight in",
               "effHadSum": "eff. of hadronic selection (all bins summed)",
               "nEventsHad": "N events after selection (all bins summed)",
-              "effHadSumUncRelMcStats": "rel.unc.on tot.had.eff. from MC stat",
               }
 
     out = {}
