@@ -79,7 +79,6 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                       #trace=True
                       #rhoSignalMin=0.1,
                       #fIniFactor=0.1,
-                      #extraSigEffUncSources=["effHadSumUncRelMcStats"],
                       )
 
     out = None
@@ -162,6 +161,7 @@ else:
     for iSel, sel in enumerate(selections):
         args = {"whiteList": [sel.name],
                 "allCategories": sorted([x.name for x in selections]),
+                "sigMcUnc": fixme,
                 }
         args.update(kargs)
         dct = go(**args)

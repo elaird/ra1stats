@@ -56,4 +56,4 @@ def fIniFactor():
 
 
 def extraSigEffUncSources():
-    return []  # ["effHadSumUncRelMcStats"]
+    return []
