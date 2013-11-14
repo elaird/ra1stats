@@ -65,6 +65,8 @@ class spec(object) :
         return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
     def ignoreHad(self) :
         return self._ignoreHad
+    def calculateAvgWeights(self) :
+        return self._ignoreHad
 
     def selections(self) :
         out = self._selections
@@ -100,6 +102,7 @@ class spec(object) :
         self._initialValuesFromMuonSample = None
         self._initialFZinvFromMc = None
         self._selections = []
+        self._calculateAvgWeights = False
 
         if self._dataset=="simple" :
             self.__initSimple__()
@@ -131,6 +134,7 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
@@ -149,6 +153,7 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = True
         self._initialFZinvFromMc = True
+        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
@@ -213,6 +218,7 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -285,6 +291,7 @@ class spec(object) :
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -340,6 +347,7 @@ class spec(object) :
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
@@ -415,6 +423,7 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._calculateAvgWeights = False
         self._REwk = "Constant"
         self._RQcd = "FallingExp"
         self._nFZinv = "All"
@@ -433,6 +442,7 @@ class spec(object) :
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._calculateAvgWeights = False
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
