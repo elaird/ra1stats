@@ -50,26 +50,22 @@ def effHistos(model=None,
         d = {}
         for box, considerSignal in sel.samplesAndSignalEff.iteritems():
             Box = box.capitalize()
-            item = "eff%s" % Box
-            if not considerSignal:
-                d[item] = [0.0]*len(bins)
-                continue
-
-            d[item] = [hp.effHisto(model=model,
-                                   box=box,
-                                   htLower=l,
-                                   htUpper=u,
-                                   bJets=sel.bJets,
-                                   jets=sel.jets) for l, u in htThresholds]
-
+            itemFunc = {"eff%s" % Box: hp.effHisto}
             if ls.sigMcUnc():
-                d["meanWeight%s" % Box] = [hp.meanWeight(model=model,
-                                                         box=box,
-                                                         htLower=l,
-                                                         htUpper=u,
-                                                         bJets=sel.bJets,
-                                                         jets=sel.jets)
-                                           for l, u in htThresholds]
+                itemFunc["meanWeight%s" % Box] = hp.meanWeight
+                itemFunc["nEvents%s" % Box] = hp.nEvents
+            for item, func in itemFunc.iteritems():
+                if considerSignal:
+                        d[item] = [func(model=model,
+                                        box=box,
+                                        htLower=l,
+                                        htUpper=u,
+                                        bJets=sel.bJets,
+                                        jets=sel.jets,
+                                        ) for l, u in htThresholds]
+                else:
+                    d[item] = [0.0]*len(bins)  # fixme: None?
+
         out[sel.name] = d
     return out
 
@@ -167,18 +163,11 @@ def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
     
     for model in conf.signal.models():
-        
         name = model.name
-       
         args[name] = {"eff": effHistos(model),
                       "xs": hp.xsHisto(model),
                       "sumWeightIn": hp.sumWeightInHisto(model),
                       }
-        if likelihoodSpec.likelihoodSpec(name,
-                                         ).calculateAvgWeights():
-            args[name]["weightsIn"] = hp.meanWeightInHisto(model) 
-    
-
         hp.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
 
     for point in points:
