@@ -88,7 +88,7 @@ class spec(object) :
                 del s.samplesAndSignalEff["had"]
         self._selections += sel
 
-    def __init__(self, dataset="", separateSystObs=True,
+    def __init__(self, dataset="", separateSystObs=True, sigMcUnc=None,
                  whiteList=[], blackList=[], ignoreHad=False):
         for item in ["dataset", "separateSystObs", "sigMcUnc",
                      "whiteList", "blackList", "ignoreHad"]:
