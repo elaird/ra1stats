@@ -9,14 +9,15 @@ class scan(object):
                  interBin="LowEdge",
                  aT=[],
                  extraVars=[],
-                 histName="",
-                 unweightedHistName=None):
+                 weightedHistName="",
+                 unweightedHistName=""):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
         for item in ["dataset", "tag", "interBin",
                      "com", "xsVariation", "xsFactors", "aT",
-                     "extraVars","histName","unweightedHistName"]+self.boxNames:
+                     "extraVars", "weightedHistName",
+                     "unweightedHistName"]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
         self.warned = {}
@@ -59,12 +60,8 @@ class scan(object):
         return self._extraVars
 
     @property
-    def histName(self):
-        if self._unweightedHistName is None:
-            self._histName = "m0_m12_mChi_noweight"
-            return self._histName
-        else:
-            return self._histName
+    def weightedHistName(self):
+        return self._weightedHistName
 
     @property
     def unweightedHistName(self):
@@ -93,59 +90,84 @@ def effUncRel(model=""):
 
 def models():
     return [
-        #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
-        #scan(dataset="T2cc", com=8, had="v7_new_bin"),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"],
-        #     extraVars=["SITV"]),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
-        scan(dataset="T2cc", com=8, had="v9", aT=["0.55","0.6"],
-             histName="m0_m12_mChi_weight", unweightedHistName="m0_m12_mChi_noweight"),
-        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
-        #extraVars=["SITV"]),
-        #scan(dataset="T1", com=8, had="v5"),
-        #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
-        #scan(dataset="T2cc", com=8, had="v6"),
-        #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
-        #scan(dataset="T2bb", com=8, had="v3", muon="v3"),
-        #scan(dataset="T1bbbb", com=8, had="v3", muon="v3"),
-        #scan(dataset="T1tttt", com=8, had="v1", muon="v1"),
-        #
-        #scan(dataset="T2bb", com=8, tag="ct6l1",
-        #     had="v6_yossof_cteq61"),
-        #scan(dataset="T2bb", com=8, tag="ct10",
-        #     had="v6_yossof_ct10_normalized"),
-        #scan(dataset="T2bb", com=8, tag="ct66",
-        #     had="v6_yossof_cteq66_normalized"),
-        #scan(dataset="T2bb", com=8, tag="mstw08",
-        #     had="v6_yossof_mst08_normalized"),
-        #scan(dataset="T2bb", com=8, tag="nnpdf21",
-        #     had="v6_yossof_nnpdf21_normalized"),
-        #
-        #scan(dataset="T1bbbb", com=8, tag="ct6l1",
-        #     had="v6_yossof_cteq61"),
-        #scan(dataset="T1bbbb", com=8, tag="ct10",
-        #     had="v6_yossof_ct10_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="ct66",
-        #     had="v6_yossof_cteq66_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="mstw08",
-        #     had="v6_yossof_mstw08_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="nnpdf21",
-        #     had="v6_yossof_nnpdf21_normalized"),
-        #
-        #scan(dataset="T1tttt", com=8, tag="ichep",
-        #     had="2012full", muon="2012full"),
-        #
-        #scan(dataset="T5zz", com=7, had="v1", muon="v1"),
-        #scan(dataset="TGQ_0p0", com=7, had="v1"),
-        #scan(dataset="TGQ_0p2", com=7, had="v1"),
-        #scan(dataset="TGQ_0p4", com=7, had="v1"),
-        #scan(dataset="TGQ_0p8", com=7, had="v1"),
-        #
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
-        #scan(dataset="tanBeta10", com=7, had="v2",
-        #     muon="v2", xsVariation="up"),
-        #scan(dataset="tanBeta10", com=7, had="v2",
-        #     muon="v2", xsVariation="down"),
+        scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8],
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2cc", com=8, had="v7_new_bin",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2tt", com=8, had="v2", aT=["0.55", "0.6"],
+             extraVars=["SITV"],
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2tt", com=8, had="v2", aT=["0.55", "0.6"],
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
+             weightedHistName="m0_m12_mChi_weight",
+             unweightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
+             extraVars=["SITV"]),
+        scan(dataset="T1", com=8, had="v5",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8],
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2cc", com=8, had="v6",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2tt", com=8, had="v1", muon="v1",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2bb", com=8, had="v3", muon="v3",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T1bbbb", com=8, had="v3", muon="v3",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T1tttt", com=8, had="v1", muon="v1",
+             weightedHistName="m0_m12_mChi_noweight"),
+
+        scan(dataset="T2bb", com=8, tag="ct6l1",
+             had="v6_yossof_cteq61",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2bb", com=8, tag="ct10",
+             had="v6_yossof_ct10_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2bb", com=8, tag="ct66",
+             had="v6_yossof_cteq66_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2bb", com=8, tag="mstw08",
+             had="v6_yossof_mst08_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T2bb", com=8, tag="nnpdf21",
+             had="v6_yossof_nnpdf21_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T1bbbb", com=8, tag="ct6l1",
+             had="v6_yossof_cteq61",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T1bbbb", com=8, tag="ct10",
+             had="v6_yossof_ct10_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T1bbbb", com=8, tag="ct66",
+             had="v6_yossof_cteq66_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T1bbbb", com=8, tag="mstw08",
+             had="v6_yossof_mstw08_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+        scan(dataset="T1bbbb", com=8, tag="nnpdf21",
+             had="v6_yossof_nnpdf21_normalized",
+             weightedHistName="m0_m12_mChi_noweight"),
+
+        scan(dataset="T1tttt", com=8, tag="ichep",
+             had="2012full", muon="2012full",
+             weightedHistName="m0_m12_mChi_noweight"),
+
+        scan(dataset="T5zz", com=7, had="v1", muon="v1"),
+        scan(dataset="TGQ_0p0", com=7, had="v1"),
+        scan(dataset="TGQ_0p2", com=7, had="v1"),
+        scan(dataset="TGQ_0p4", com=7, had="v1"),
+        scan(dataset="TGQ_0p8", com=7, had="v1"),
+
+        scan(dataset="tanBeta10", com=7, had="v2", muon="v2",
+             weightedHistName="m0_m12_gg"),
+        scan(dataset="tanBeta10", com=7, had="v2", muon="v2",
+             xsVariation="up",
+             weightedHistName="m0_m12_gg"),
+        scan(dataset="tanBeta10", com=7, had="v2", muon="v2",
+             xsVariation="down",
+             weightedHistName="m0_m12_gg"),
         ]
 
 
@@ -252,15 +274,12 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append("scale1")
 
     fileFields = [model.name, box, getattr(model, "_"+box), fileName]
-    spec = {"beforeDir": beforeDir,
+    return {"beforeDir": beforeDir,
             "afterDir": "_".join(tags),
-            "file": "/".join(subDirs + fileFields)}
+            "file": "/".join(subDirs + fileFields),
+            "weightedHistName": model.weightedHistName,
+            "unweightedHistName": model.unweightedHistName}
 
-    if model.unweightedHistName:
-        spec["unweightedHistName"] = model.unweightedHistName
-    if model.histName: spec["histName"] = model.histName
-
-    return spec
 
 def nEventsIn(model=""):
     assert model
