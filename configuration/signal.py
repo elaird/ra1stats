@@ -9,7 +9,7 @@ class scan(object):
                  interBin="LowEdge",
                  aT=[],
                  extraVars=[],
-                 histName="",
+                 histName=None,
                  weightedHistName=""):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
@@ -64,7 +64,11 @@ class scan(object):
 
     @property
     def weightedHistName(self):
-        return self._weightedHistName
+        if self._histName is None:
+            self._weightedHistName = "m0_m12_mChi_noweight"
+            return self._weightedHistName
+        else:
+            return self._weightedHistName
 
     def ignoreEff(self, box):
         assert box in self.boxNames, box
@@ -94,10 +98,10 @@ def models():
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"],
         #     extraVars=["SITV"]),
         #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
-        scan(dataset="T2cc", com=8, had="v9", aT=["0.55","0.6"],
-             histName="m0_m12_mChi_noweight", weightedHistName="m0_m12_mChi_weight"),
-        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
-        #extraVars=["SITV"]),
+        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55","0.6"],
+        #     histName="m0_m12_mChi_noweight", weightedHistName="m0_m12_mChi_weight"),
+        scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"],
+        extraVars=["SITV"]),
         #scan(dataset="T1", com=8, had="v5"),
         #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
         #scan(dataset="T2cc", com=8, had="v6"),
