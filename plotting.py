@@ -1156,7 +1156,6 @@ class validationPlotter(object) :
             histo.SetBinContent(i+1, l*xs*eff[i])
 
     def fillSignalRelUnc(self, spec={}, histo=None):
-        nEventsIn = spec["example"].nEventsIn
         effRelUnc = inDict(spec["example"][self.label],
                      spec["box"],
                      [0.0]*len(self.htBinLowerEdges))
@@ -1168,7 +1167,6 @@ class validationPlotter(object) :
 
     def fillSignalExampleWeight(self, spec={}, histo=None):
         box = "had"
-        nEventsIn = spec["example"].nEventsIn
         eff = inDict(spec["example"][self.label],
                      "eff%s" % box.capitalize(),
                      [0.0]*len(self.htBinLowerEdges))
@@ -1176,10 +1174,9 @@ class validationPlotter(object) :
         for i in range(len(self.htBinLowerEdges)):
             if not activeBins[i]:
                 continue
-            histo.SetBinContent(i+1, eff[i]*nEventsIn)
+            histo.SetBinContent(i+1, eff[i]*spec["example"].sumWeightIn)
 
     def fillSignalExampleWeightErr(self, spec={}, histo=None):
-        nEventsIn = spec["example"].nEventsIn
         effErr = inDict(spec["example"][self.label],
                      spec["box"],
                      [0.0]*len(self.htBinLowerEdges))
@@ -1232,7 +1229,7 @@ class validationPlotter(object) :
 
         if "example" in spec:
             assert "func" not in spec, "func will not be applied here"
-            if spec["example"].nEventsIn:
+            if spec["example"].sumWeightIn:
                 if "Rel" in spec["box"]:
                     if "Unc" in spec["box"]:
                         self.fillSignalRelUnc(spec=spec, histo=d["value"])
