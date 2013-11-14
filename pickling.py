@@ -61,6 +61,16 @@ def effHistos(model=None,
                                    htUpper=u,
                                    bJets=sel.bJets,
                                    jets=sel.jets) for l, u in htThresholds]
+
+            item = "%s" % box + "Weights"
+            d[item] = [hp.histoWeights(model=model,
+                                          box=box,
+                                          htLower=l,
+                                          htUpper=u,
+                                          bJets=sel.bJets,
+                                          jets=sel.jets) for l, u in htThresholds]
+
+
         out[sel.name] = d
     return out
 
@@ -86,7 +96,7 @@ def eventsInRange(model="", nEventsIn=None):
 
 
 def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
-                nEventsIn=None):
+                nEventsIn=None, weightsIn=None):
     out = common.signal(xs=xs.GetBinContent(*point3),
                         label="%s_%d_%d_%d" % ((model,)+point3),
                         effUncRel=conf.signal.effUncRel(model),
@@ -99,6 +109,7 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
     out["x"] = xs.GetXaxis().GetBinLowEdge(point3[0])
     out["y"] = xs.GetYaxis().GetBinLowEdge(point3[1])
     out["nEventsIn"] = nEventsIn.GetBinContent(*point3)
+    out["weightsIn"] = weightsIn.GetBinContent(*point3)
     out["eventsInRange"] = eventsInRange(model=model,
                                          nEventsIn=out["nEventsIn"])
     if not out["eventsInRange"]:
@@ -109,17 +120,17 @@ def signalModel(model="", point3=None, eff=None, xs=None, xsLo=None,
         for box, effHistos in dct.iteritems():
             if not all([hasattr(item, "GetBinContent") for item in effHistos]):
                 continue
-
             d[box] = map(lambda x: x.GetBinContent(*point3), effHistos)
-            d[box+"RelUnc"] = map(lambda x: 1/math.sqrt(x.GetBinContent(*point3)*out["nEventsIn"]) if x.GetBinContent(*point3) else 2, effHistos) 
-            d[box+"RelErr"] = map(lambda x: x.GetBinError(*point3)/x.GetBinContent(*point3) if x.GetBinContent(*point3) else 2, effHistos) 
-            d[box+"Sum"] = sum(d[box])
-            key = box.replace("eff", "nEvents")
-            d[key] = d[box+"Sum"]*out["nEventsIn"]
-            if d[key] > 0.0:
-                d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
-            elif d[key] < 0.0:
-                print "ERROR: negative value: ", point3, d[key], box
+            if "Weights" not in box:
+                d["relUnc"] = map(lambda x: 1/math.sqrt(x.GetBinContent(*point3)*out["nEventsIn"]) if x.GetBinContent(*point3) else 2, effHistos) 
+                d["relErr"] = map(lambda x: x.GetBinError(*point3)/x.GetBinContent(*point3) if x.GetBinContent(*point3) else 2, effHistos) 
+                d[box+"Sum"] = sum(d[box])
+                key = box.replace("eff", "nEvents")
+                d[key] = d[box+"Sum"]*out["nEventsIn"]
+                if d[key] > 0.0:
+                    d[box+"SumUncRelMcStats"] = 1.0/math.sqrt(d[key])
+                elif d[key] < 0.0:
+                    print "ERROR: negative value: ", point3, d[key], box
         out[selName] = d
     return out
 
@@ -161,6 +172,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
         args[name] = {"eff": effHistos(model),
                       "xs": hp.xsHisto(model),
                       "nEventsIn": hp.nEventsInHisto(model),
+                      "weightsIn": hp.weightsInHisto(model),
                       }
         hp.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
 
