@@ -35,9 +35,8 @@ def effHistos(model=None,
               allCategories=False,
               ):
     out = {}
-    for sel in likelihoodSpec.likelihoodSpec(model.name,
-                                             allCategories=allCategories,
-                                             ).selections():
+    ls = likelihoodSpec.likelihoodSpec(model.name, allCategories=allCategories)
+    for sel in ls.selections():
         badMerge = " ".join(["bin merge",
                              str(sel.data._mergeBins),
                              "not yet supported:",
@@ -50,7 +49,8 @@ def effHistos(model=None,
 
         d = {}
         for box, considerSignal in sel.samplesAndSignalEff.iteritems():
-            item = "eff%s" % box.capitalize()
+            Box = box.capitalize()
+            item = "eff%s" % Box
             if not considerSignal:
                 d[item] = [0.0]*len(bins)
                 continue
@@ -62,18 +62,14 @@ def effHistos(model=None,
                                    bJets=sel.bJets,
                                    jets=sel.jets) for l, u in htThresholds]
 
-            if likelihoodSpec.likelihoodSpec(model.name,
-                                             allCategories=allCategories,
-                                             ).calculateAvgWeights():
-                
-                item = "%s" % box + "Weights"
-                d[item] = [hp.meanWeight(model=model,
-                                         box=box,
-                                         htLower=l,
-                                         htUpper=u,
-                                         bJets=sel.bJets,
-                                         jets=sel.jets) for l, u in htThresholds]
-            
+            if ls.sigMcUnc():
+                d["meanWeight%s" % Box] = [hp.meanWeight(model=model,
+                                                         box=box,
+                                                         htLower=l,
+                                                         htUpper=u,
+                                                         bJets=sel.bJets,
+                                                         jets=sel.jets)
+                                           for l, u in htThresholds]
         out[sel.name] = d
     return out
 
