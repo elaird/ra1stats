@@ -3,7 +3,7 @@ import ROOT as r
 class signal(object):
     def __init__(self, xs=None, sumWeightIn=None, label="",
                  effUncRel=None, lineColor=r.kPink+7, lineStyle=2,
-                 sumWeightInRange=None, x=None, y=None,
+                 sumWeightInRange=True, x=None, y=None,
                  ):
         for item in ["xs", "sumWeightIn", "label",
                      "effUncRel", "lineColor", "lineStyle",
@@ -21,6 +21,12 @@ class signal(object):
     def keyPresent(self, key=""):
         for dct in self.__selEffs():
             if key in dct.keys():
+                return True
+        return False
+
+    def anyEffHad(self, key="effHadSum"):
+        for dct in self.__selEffs.values():
+            if dct.get(key):
                 return True
         return False
 
