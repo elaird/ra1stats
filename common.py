@@ -1,20 +1,44 @@
 import ROOT as r
 
-class signal(dict) :
-    def __init__(self, xs=None, sumWeightIn="", label="", effUncRel=None, lineColor=r.kPink+7, lineStyle=2):
-        for item in ["xs", "sumWeightIn", "label", "effUncRel", "lineColor", "lineStyle"]:
+class signal(object):
+    def __init__(self, xs=None, sumWeightIn=None, label="",
+                 effUncRel=None, lineColor=r.kPink+7, lineStyle=2,
+                 sumWeightInRange=None, x=None, y=None,
+                 ):
+        for item in ["xs", "sumWeightIn", "label",
+                     "effUncRel", "lineColor", "lineStyle",
+                     "sumWeightInRange", "x", "y"]:
             assert eval(item) != None, item
             setattr(self, item, eval(item))
+        self.__selEffs = {}
 
-    def insert(self, key="", dct={}):
-        self[key] = dct
+    def effs(self, sel=""):
+        return self.__selEffs[sel]
+
+    def insert(self, key, value):
+        self.__selEffs[key] = value
 
     def keyPresent(self, key=""):
-        for dct in self.values():
-            for k in dct.keys():
-                if k == key:
-                    return True
+        for dct in self.__selEffs():
+            if key in dct.keys():
+                return True
         return False
+
+    def __str__(self):
+        out = []
+        out.append("s = common.signal(xs=%g, sumWeightIn=%g, x=%s, y=%s)" %
+                   (self.xs, self.sumWeightIn, self.x, self.y))
+        for sel, dct in sorted(self.__selEffs.iteritems()):
+            out.append('s.insert("%s", {' % sel)
+            for key, value in sorted(dct.iteritems()):
+                o = ('"%s":' % key).ljust(17)
+                if type(value) is list:
+                    s = ", ".join(["%8.2e" % x for x in value])
+                    out.append('%s [%s]' % (o, s))
+                else:
+                    out.append('%s %g' % (o, value))
+            out.append("})")
+        return "\n".join(out)
 
 
 def wimport(w, item) :
