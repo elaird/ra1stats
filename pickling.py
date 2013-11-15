@@ -116,35 +116,6 @@ def signalModel(model="", point3=None, eff=None, xs=None, sumWeightIn=None):
     return out
 
 
-def stuffVars(binsMerged=None, signal=None):
-    titles = {"xs": "#sigma (pb)",
-              "sumWeightIn": "sum of weight in",
-              "effHadSum": "eff. of hadronic selection (all bins summed)",
-              "nEventsHad": "N events after selection (all bins summed)",
-              }
-
-    out = {}
-    for key, value in signal.iteritems():
-        if type(value) is list:
-            continue
-        out[key] = (value, titles[key] if key in titles else "")
-
-    for i, bin in enumerate(binsMerged):
-        sels = []
-        for item in conf.likelihood()["alphaT"].keys():
-            sels += ["effHad%s" % item, "effMuon%s" % item]
-
-        for sel in sels:
-            if sel not in signal:
-                continue
-            l = [signal[sel][i],
-                 "#epsilon of %s %d selection" % (sel.replace("eff", ""), bin),
-                 ]
-            out["%s%d" % (sel, bin)] = tuple(l)
-
-    return out
-
-
 def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
     
@@ -186,21 +157,12 @@ def mergedFile(model=None):
                     ])
 
 
-# FIXME: improve this data format
-def flatten(target={}, key=None, obj=None):
-    if type(obj) == dict:
-        for k, v in obj.iteritems():
-            flatten(target, "%s_%s" % (key, k), v)
-    elif type(obj) == list:
-        for i, x in enumerate(obj):
-            flatten(target, "%s_%d" % (key, i), x)
-    elif type(obj) in [float, int, bool]:
-        flatten(target, key, (obj, ''))
-    elif type(obj) == tuple and len(obj) == 2 and type(obj[1]) == str:
-        assert key not in target, key
-        target[key] = obj
-    else:
-        assert False, type(obj)
+def contents(fileName):
+    out = {}
+    signal, results = readNumbers(fileName)
+    out.update(results)
+    out.update(signal.flattened())
+    return out
 
 
 def mergePickledFiles(printExamples=False):
@@ -231,12 +193,7 @@ def mergePickledFiles(printExamples=False):
             print "skipping file", fileName
             continue
 
-        d = readNumbers(fileName)
-        contents = {}
-        for key, value in d.iteritems():
-            flatten(contents, key, value)
-
-        for key, value in contents.iteritems():
+        for key, value in contents(fileName).iteritems():
             if key not in histos[name]:
                 histos[name][key] = examples[name].Clone(name+"_"+key)
                 histos[name][key].Reset()
