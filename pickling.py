@@ -91,17 +91,16 @@ def sumWeightInRange(model="", sumWeightIn=None):
 
 
 def signalModel(model="", point3=None, eff=None, xs=None, sumWeightIn=None):
+    sumWeightIn = sumWeightIn.GetBinContent(*point3)
     out = common.signal(xs=xs.GetBinContent(*point3),
                         label="%s_%d_%d_%d" % ((model,)+point3),
                         effUncRel=conf.signal.effUncRel(model),
+                        sumWeightIn=sumWeightIn,
+                        sumWeightInRange=sumWeightInRange(model=model, sumWeightIn=sumWeightIn),
+                        x=xs.GetXaxis().GetBinLowEdge(point3[0]),
+                        y=xs.GetYaxis().GetBinLowEdge(point3[1]),
                         )
-    out["xs"] = out.xs  # fixme
-    out["x"] = xs.GetXaxis().GetBinLowEdge(point3[0])
-    out["y"] = xs.GetYaxis().GetBinLowEdge(point3[1])
-    out["sumWeightIn"] = sumWeightIn.GetBinContent(*point3)
-    out["sumWeightInRange"] = sumWeightInRange(model=model,
-                                               sumWeightIn=out["sumWeightIn"])
-    if not out["sumWeightInRange"]:
+    if not out.sumWeightInRange:
         return out
 
     for selName, dct in eff.iteritems():
@@ -113,7 +112,7 @@ def signalModel(model="", point3=None, eff=None, xs=None, sumWeightIn=None):
             if "eff" in box:
                 d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
                 d[box+"Sum"] = sum(d[box])
-        out[selName] = d
+        out.insert(selName, d)
     return out
 
 
