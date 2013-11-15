@@ -49,6 +49,23 @@ class signal(object):
             out.append("})")
         return "\n".join(out)
 
+    def flattened(self):
+        out = {}
+        for item in ["xs", "x", "y", "sumWeightIn"]:
+            out[item] = (getattr(self, item), '')
+
+        for sel, dct in self.__selEffs.iteritems():
+            for key, value in dct.iteritems():
+                outKey = "%s_%s" % (sel, key)
+                if type(value) in [float, int, bool]:
+                    out[outKey] = (value, '')
+                elif type(value) in [tuple, list]:
+                    for i, x in enumerate(value):
+                        out["%s_%d" % (outKey, i)] = (x, '')
+                else:
+                    assert False, type(value)
+        return out
+
 
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
