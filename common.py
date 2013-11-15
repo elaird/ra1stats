@@ -5,15 +5,18 @@ class signal(object):
                  effUncRel=None, lineColor=r.kPink+7, lineStyle=2,
                  sumWeightInRange=True, x=None, y=None,
                  ):
-        for item in ["xs", "sumWeightIn", "label",
-                     "effUncRel", "lineColor", "lineStyle",
-                     "sumWeightInRange", "x", "y"]:
+
+        # not checked
+        for item in ["sumWeightIn", "sumWeightInRange", "x", "y"]:
+            setattr(self, item, eval(item))
+
+        for item in ["xs", "label", "effUncRel", "lineColor", "lineStyle"]:
             assert eval(item) != None, item
             setattr(self, item, eval(item))
         self.__selEffs = {}
 
     def effs(self, sel=""):
-        return self.__selEffs[sel]
+        return self.__selEffs.get(sel)
 
     def insert(self, key, value):
         self.__selEffs[key] = value
