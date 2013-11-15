@@ -27,30 +27,19 @@ def onePoint(likelihoodSpec=None, point=None):
     fileName = conf.directories.pickledFileName(*point)+".in"
     signal = pickling.readNumbers(fileName=fileName)
     print signal
-    out = {}
-    if signal["sumWeightInRange"]:
-        #out.update(pickling.stuffVars(binsMerged=data.htBinLowerEdges(),
-        #                              signal=signal))
-        out.update(signal)
-        eff = False
-        for key, dct in signal.iteritems():
-            if type(dct) != dict:
-                continue
-            if "effHadSum" in dct and dct["effHadSum"]:
-                eff = True
-                break
-        if conf.limit.method() and eff:
-            out.update(resultsMultiCL(likelihoodSpec=likelihoodSpec,
-                                      signal=signal,
-                                      )
-                       )
-    else:
+
+    if not signal.sumWeightInRange:
         minSumWeightIn, maxSumWeightIn = conf.signal.sumWeightIn(model=point[0])
         warning = "WARNING: sumWeightIn = %g not in" % signal["sumWeightIn"]
         warning += " allowed range[ %s, %s ] " % (str(minSumWeightIn),
                                                   str(maxSumWeightIn))
         print warning
-    return out
+        return None
+
+    if conf.limit.method() and signal.anyEffHad:
+        return signal, resultsMultiCL(likelihoodSpec=likelihoodSpec,
+                                      signal=signal,
+                                      )
 
 
 def resultsMultiCL(likelihoodSpec=None, signal=None):
@@ -124,9 +113,9 @@ def go():
     for point in points():
         name = point[0]
         fileName = conf.directories.pickledFileName(*point)+".out"
-        pickling.writeNumbers(fileName=fileName,
-                              d=onePoint(likelihoodSpec=specs[name],
-                                         point=point),
+        pickling.writeNumbers(fileName,
+                              onePoint(likelihoodSpec=specs[name],
+                                       point=point),
                               )
 
 if False:
