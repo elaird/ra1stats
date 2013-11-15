@@ -474,13 +474,15 @@ def lumiVariables(w = None, inputData = None, label = "") :
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
 
-def signalEffVariables(w = None, inputData = None, label = "", signalDict = {}) :
-    for key,value in signalDict.iteritems() :
-        if "eff"!=key[:3] : continue
+def signalEffVariables(w=None, inputData=None, label="", signalDict={}):
+    for key, value in signalDict.iteritems():
+        if key.endswith("Err") or not key.startswith("eff"):
+            continue
+        if type(value) not in [list, tuple]:
+            continue
         box = key.replace("eff", "").lower()
-        if type(value) not in [list,tuple] : continue
-        for iBin,signalEff,trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]) :
-            name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
+        for iBin, signalEff, trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]):
+            name = ni(name="signal%s" % (key.replace("eff", "Eff")), label=label, i=iBin)
             wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
 
 def signalWeightVariables(w = None, inputData = None, label = "", signalDict = {}) :
@@ -663,8 +665,8 @@ class foo(object) :
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
-            args["signalToTest"] = self.signalToTest[sel.name] if sel.name in self.signalToTest else {}
-            args["signalToInject"] = self.signalToInject[sel.name] if sel.name in self.signalToInject else {}
+            args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
+            args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
             d = setupLikelihood(**args)
@@ -710,9 +712,13 @@ class foo(object) :
                 for box in ["phot", "mumu"] :
                     assert box not in sel.samplesAndSignalEff,box
             bins = sel.data.htBinLowerEdges()
-            for dct in [self.signalToTest, self.signalExampleToStack, self.signalToInject] :
-                if sel.name not in dct : continue
-                for key,value in dct[sel.name].iteritems() :
+            for obj in [self.signalToTest, self.signalExampleToStack, self.signalToInject]:
+                if not obj:
+                    continue
+                effs = obj.effs(sel.name)
+                if not effs:
+                    continue
+                for key, value in effs.iteritems():
                     if type(value) is list:
                         assert len(value) == len(bins), "key %s: %d != %d" % (key, len(value), len(bins))
 
