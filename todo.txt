@@ -11,7 +11,6 @@ one
 - gaussian counts
 - errors on translation factors
 - view call graph to speed up cmssm initialization
-- make common.signal not inherit from dict / check use of label
 - CLs3Error/CLs3
 
 two
@@ -40,7 +39,6 @@ four
 - store workspace / profile wrapper
 - fix leaks in ensemble() and expectedLimit()
 - query fit status for toys (improve 0 cut)
-- (2D) pickling.stuffVars
 - (2D) more histos in check
 - (2D) all sms function in histogramSpecs and histogramProcessing
 - (2D) trigger efficiency uncertainty

@@ -23,52 +23,23 @@ def description(key, cl=None):
         return ""
 
 
-def printDict(d, space=""):
-    print "%s{" % space
-    for key in sorted(d.keys()):
-        value = d[key]
-        out = '%s"%s":' % (space, key)
-        if type(value) == dict:
-            print out
-            printDict(value, space="  ")
-            continue
-        elif (type(value) != tuple) and (type(value) != list):
-            out += str(value)
-        else:
-            form = "%8.6f" if (key[:3] == "eff") else "%f"
-            out += "[%s]" % (", ".join([form % item for item in value]))
-        print out+","
-    print "%s}" % space
-
-
 def onePoint(likelihoodSpec=None, point=None):
     fileName = conf.directories.pickledFileName(*point)+".in"
     signal = pickling.readNumbers(fileName=fileName)
-    printDict(signal)
-    out = {}
-    if signal["sumWeightInRange"]:
-        #out.update(pickling.stuffVars(binsMerged=data.htBinLowerEdges(),
-        #                              signal=signal))
-        out.update(signal)
-        eff = False
-        for key, dct in signal.iteritems():
-            if type(dct) != dict:
-                continue
-            if "effHadSum" in dct and dct["effHadSum"]:
-                eff = True
-                break
-        if conf.limit.method() and eff:
-            out.update(resultsMultiCL(likelihoodSpec=likelihoodSpec,
-                                      signal=signal,
-                                      )
-                       )
-    else:
+    print signal
+
+    if not signal.sumWeightInRange:
         minSumWeightIn, maxSumWeightIn = conf.signal.sumWeightIn(model=point[0])
         warning = "WARNING: sumWeightIn = %g not in" % signal["sumWeightIn"]
         warning += " allowed range[ %s, %s ] " % (str(minSumWeightIn),
                                                   str(maxSumWeightIn))
         print warning
-    return out
+        return None
+
+    if conf.limit.method() and signal.anyEffHad:
+        return signal, resultsMultiCL(likelihoodSpec=likelihoodSpec,
+                                      signal=signal,
+                                      )
 
 
 def resultsMultiCL(likelihoodSpec=None, signal=None):
@@ -142,9 +113,9 @@ def go():
     for point in points():
         name = point[0]
         fileName = conf.directories.pickledFileName(*point)+".out"
-        pickling.writeNumbers(fileName=fileName,
-                              d=onePoint(likelihoodSpec=specs[name],
-                                         point=point),
+        pickling.writeNumbers(fileName,
+                              onePoint(likelihoodSpec=specs[name],
+                                       point=point),
                               )
 
 if False:
