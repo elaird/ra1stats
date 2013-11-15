@@ -23,28 +23,10 @@ def description(key, cl=None):
         return ""
 
 
-def printDict(d, space=""):
-    print "%s{" % space
-    for key in sorted(d.keys()):
-        value = d[key]
-        out = '%s"%s":' % (space, key)
-        if type(value) == dict:
-            print out
-            printDict(value, space="  ")
-            continue
-        elif (type(value) != tuple) and (type(value) != list):
-            out += str(value)
-        else:
-            form = "%8.6f" if (key[:3] == "eff") else "%f"
-            out += "[%s]" % (", ".join([form % item for item in value]))
-        print out+","
-    print "%s}" % space
-
-
 def onePoint(likelihoodSpec=None, point=None):
     fileName = conf.directories.pickledFileName(*point)+".in"
     signal = pickling.readNumbers(fileName=fileName)
-    printDict(signal)
+    print signal
     out = {}
     if signal["sumWeightInRange"]:
         #out.update(pickling.stuffVars(binsMerged=data.htBinLowerEdges(),
