@@ -288,9 +288,9 @@ def meanWeight(model=None, box="",
                  spec["afterDir"], spec["unweightedHistName"])
 
 
-def nEvents(model=None, box="",
-            htLower=None, htUpper=None,
-            bJets="", jets=""):
+def nEventsSigMc(model=None, box="",
+                 htLower=None, htUpper=None,
+                 bJets="", jets=""):
     if model.ignoreEff(box):
         return None
 

@@ -870,7 +870,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
     canvas.SetLogz(name in logZ)
     if name == "xs" and name in logZ:
         h2.SetMinimum(1.0e-2)
-    if name == "nEventsHad" and name in logZ:
+    if name == "nEventsSigMcHad" and name in logZ:
         h2.SetMinimum(0.9)
     if "NLO_over_LO" in name:
         h2.SetMinimum(0.5)

@@ -53,7 +53,7 @@ def effHistos(model=None,
             itemFunc = {"eff%s" % Box: hp.effHisto}
             if ls.sigMcUnc():
                 itemFunc["meanWeight%s" % Box] = hp.meanWeight
-                itemFunc["nEvents%s" % Box] = hp.nEvents
+                itemFunc["nEventsSigMc%s" % Box] = hp.nEventsSigMc
             for item, func in itemFunc.iteritems():
                 if considerSignal:
                         d[item] = [func(model=model,
