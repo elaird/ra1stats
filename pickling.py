@@ -80,28 +80,14 @@ def histoList(histos={}):
     return out
 
 
-def sumWeightInRange(model="", sumWeightIn=None):
-    min, max = conf.signal.sumWeightIn(model)
-    out = True
-    if min is not None:
-        out &= (min <= sumWeightIn)
-    if max is not None:
-        out &= (sumWeightIn <= max)
-    return out
-
-
 def signalModel(model="", point3=None, eff=None, xs=None, sumWeightIn=None):
-    sumWeightIn = sumWeightIn.GetBinContent(*point3)
     out = common.signal(xs=xs.GetBinContent(*point3),
                         label="%s_%d_%d_%d" % ((model,)+point3),
                         effUncRel=conf.signal.effUncRel(model),
-                        sumWeightIn=sumWeightIn,
-                        sumWeightInRange=sumWeightInRange(model=model, sumWeightIn=sumWeightIn),
+                        sumWeightIn=sumWeightIn.GetBinContent(*point3),
                         x=xs.GetXaxis().GetBinLowEdge(point3[0]),
                         y=xs.GetYaxis().GetBinLowEdge(point3[1]),
                         )
-    if not out.sumWeightInRange:
-        return out
 
     for selName, dct in eff.iteritems():
         d = {}

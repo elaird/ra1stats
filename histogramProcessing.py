@@ -344,13 +344,13 @@ def points():
     for model in conf.signal.models():
         name = model.name
         whiteList = conf.signal.whiteListOfPoints(name)
-        h = xsHisto(model)
+        h = sumWeightInHisto(model)
         bins = utils.bins(h, interBin=model.interBin)
         for iBinX, x, iBinY, y, iBinZ, z in bins:
             if whiteList and (x, y) not in whiteList:
                 continue
             content = h.GetBinContent(iBinX, iBinY, iBinZ)
-            if not content:
+            if not model.sumWeightInRange(content):
                 continue
             if multiples and ((x/multiples) % 1 != 0.0):
                 continue
