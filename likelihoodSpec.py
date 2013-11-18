@@ -6,7 +6,7 @@ def likelihoodSpec(model="", allCategories=False):
              "T2tt"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["1b_ge4j", "2b_ge4j"]},
              "T1bbbb"      : {"dataset":dataset, "sigMcUnc":False, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
              "T1tttt"      : {"dataset":dataset, "sigMcUnc":False, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-             "T2cc"        : {"dataset":dataset, "sigMcUnc":True, "whiteList":["0b_le3j"]},
+             "T2cc"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_le3j"]},
              "T1tttt_ichep": {"dataset":"2012ichep", "sigMcUnc":False, "whiteList":["2b", "ge3b"]},
              "tanBeta10_7":  {"dataset":"2011", "sigMcUnc":False, "whiteList":[]},
              }[model]
@@ -65,7 +65,9 @@ class spec(object) :
         return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
     def ignoreHad(self) :
         return self._ignoreHad
-    def sigMcUnc(self) :
+
+    @property
+    def sigMcUnc(self):
         return self._sigMcUnc
 
     def selections(self) :
