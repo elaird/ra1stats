@@ -43,9 +43,9 @@ class signal(object):
                 o = ('"%s":' % key).ljust(17)
                 if type(value) is list:
                     s = ", ".join(["%8.2e" % x for x in value])
-                    out.append('%s [%s]' % (o, s))
+                    out.append('%s [%s],' % (o, s))
                 else:
-                    out.append('%s %g' % (o, value))
+                    out.append('%s %g,' % (o, value))
             out.append("})")
         return "\n".join(out)
 
