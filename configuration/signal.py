@@ -70,7 +70,6 @@ class scan(object):
     def unweightedHistName(self):
         return self._unweightedHistName
 
-    @property
     def sumWeightInRange(self, sumWeightIn):
         out = True
         if self._minSumWeightIn is not None:
