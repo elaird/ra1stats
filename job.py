@@ -27,15 +27,6 @@ def onePoint(likelihoodSpec=None, point=None):
     fileName = conf.directories.pickledFileName(*point)+".in"
     signal = pickling.readNumbers(fileName=fileName)
     print signal
-
-    if not signal.sumWeightInRange:
-        minSumWeightIn, maxSumWeightIn = conf.signal.sumWeightIn(model=point[0])
-        warning = "WARNING: sumWeightIn = %g not in" % signal["sumWeightIn"]
-        warning += " allowed range[ %s, %s ] " % (str(minSumWeightIn),
-                                                  str(maxSumWeightIn))
-        print warning
-        return None
-
     if conf.limit.method() and signal.anyEffHad:
         return signal, resultsMultiCL(likelihoodSpec=likelihoodSpec,
                                       signal=signal,
