@@ -10,14 +10,17 @@ class scan(object):
                  aT=[],
                  extraVars=[],
                  weightedHistName="",
-                 unweightedHistName=""):
+                 unweightedHistName="",
+                 minSumWeightIn=1,
+                 maxSumWeightIn=None):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
-        for item in ["dataset", "tag", "interBin",
-                     "com", "xsVariation", "xsFactors", "aT",
-                     "extraVars", "weightedHistName",
-                     "unweightedHistName"]+self.boxNames:
+        for item in ["dataset", "tag", "interBin", "com",
+                     "xsVariation", "xsFactors", "aT", "extraVars",
+                     "weightedHistName", "unweightedHistName",
+                     "minSumWeightIn", "maxSumWeightIn",
+                     ]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
         self.warned = {}
@@ -67,6 +70,15 @@ class scan(object):
     def unweightedHistName(self):
         return self._unweightedHistName
 
+    @property
+    def sumWeightInRange(self, sumWeightIn):
+        out = True
+        if self._minSumWeightIn is not None:
+            out &= (self._minSumWeightIn <= sumWeightIn)
+        if self._maxSumWeightIn is not None:
+            out &= (sumWeightIn <= self._maxSumWeightIn)
+        return out
+
     def ignoreEff(self, box):
         assert box in self.boxNames, box
         out = not getattr(self, "_"+box)
@@ -91,6 +103,8 @@ def effUncRel(model=""):
 def models():
     old = {"weightedHistName": "m0_m12_mChi_noweight"}
     new = {"weightedHistName": "m0_m12_mChi_weight", "unweightedHistName": "m0_m12_mChi_noweight"}
+    tb = {"minSumWeightIn": 9.0e3, "maxSumWeightIn": 11.0e3}
+
     return [
         #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8], **old),
         #scan(dataset="T2cc", com=8, had="v7_new_bin", **old),
@@ -119,19 +133,19 @@ def models():
         #
         #scan(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full", **old),
         #
-        #scan(dataset="T5zz", com=7, had="v1", muon="v1", **old),
+        #scan(dataset="T5zz", com=7, had="v1", muon="v1", minSumWeightIn=5.0e3, **old),
         #scan(dataset="TGQ_0p0", com=7, had="v1", **old),
         #scan(dataset="TGQ_0p2", com=7, had="v1", **old),
         #scan(dataset="TGQ_0p4", com=7, had="v1", **old),
         #scan(dataset="TGQ_0p8", com=7, had="v1", **old),
         #
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", weightedHistName="m0_m12_gg"),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up", weightedHistName="m0_m12_gg"),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down", weightedHistName="m0_m12_gg"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", weightedHistName="m0_m12_gg", **tb),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up", weightedHistName="m0_m12_gg", **tb),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down", weightedHistName="m0_m12_gg", **tb),
         ]
 
 
-def whiteListOfPoints(model="", respect=True):
+def whiteListOfPoints(model="", respect=False):
     if not respect:
         return []
 
@@ -239,13 +253,6 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "file": "/".join(subDirs + fileFields),
             "weightedHistName": model.weightedHistName,
             "unweightedHistName": model.unweightedHistName}
-
-
-def sumWeightIn(model=""):
-    assert model
-    return {"T5zz_7":      (5.0e3, None),
-            "tanBeta10_7": (9.0e3, 11.0e3),
-            }.get(model, (1, None))
 
 
 def ranges(model):
