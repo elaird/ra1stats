@@ -3,11 +3,11 @@ import ROOT as r
 class signal(object):
     def __init__(self, xs=None, sumWeightIn=None, label="",
                  effUncRel=None, lineColor=r.kPink+7, lineStyle=2,
-                 sumWeightInRange=True, x=None, y=None,
+                 x=None, y=None,
                  ):
 
         # not checked
-        for item in ["sumWeightIn", "sumWeightInRange", "x", "y"]:
+        for item in ["sumWeightIn", "x", "y"]:
             setattr(self, item, eval(item))
 
         for item in ["xs", "label", "effUncRel", "lineColor", "lineStyle"]:
