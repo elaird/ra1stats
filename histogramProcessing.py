@@ -269,9 +269,9 @@ def effHisto(model=None, box="",
     else:
         return cmssmEffHisto(spec=spec, model=model)
 
-def meanWeight(model=None, box="",
-               htLower=None, htUpper=None,
-               bJets="", jets=""):
+def meanWeightSigMc(model=None, box="",
+                    htLower=None, htUpper=None,
+                    bJets="", jets=""):
     if model.ignoreEff(box):
         return None
 
