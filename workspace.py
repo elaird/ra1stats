@@ -239,7 +239,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadB)))
         else :
             lumi = ni("hadLumi", label)
-            eff = ni("signalEffHad", label, i)
+            eff = ni("effHad", label, i)
             assert w.var(eff),eff
             rho = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
@@ -505,7 +505,6 @@ def storeSig(w=None, inputData=None, label="", box="", key="", value=[], applyTr
     assert applyTrig in [False, True], applyTrig
     for iBin, signalEff, trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]):
         name = ni(name=key, label=label, i=iBin)
-        print name
         wimport(w, r.RooRealVar(name, name, signalEff*(trigEff if applyTrig else 1.0)))
 
 
