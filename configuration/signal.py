@@ -144,7 +144,7 @@ def models():
         ]
 
 
-def whiteListOfPoints(model="", respect=False):
+def whiteListOfPoints(model="", respect=True):
     if not respect:
         return []
 
