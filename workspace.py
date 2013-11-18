@@ -474,29 +474,45 @@ def lumiVariables(w = None, inputData = None, label = "") :
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
 
-def signalEffVariables(w=None, inputData=None, label="", signalDict={}):
+def signalEffVariables(w=None, inputData=None, label="", signalDict={}, sigMcUnc=None):
     for key, value in signalDict.iteritems():
-        if key.endswith("Err") or not key.startswith("eff"):
-            continue
         if type(value) not in [list, tuple]:
             continue
-        box = key.replace("eff", "").lower()
-        for iBin, signalEff, trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]):
-            name = ni(name="signal%s" % (key.replace("eff", "Eff")), label=label, i=iBin)
-            wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
+        kargs = {"w": w,
+                 "key": key,
+                 "value": value,
+                 "label": label,
+                 "inputData": inputData,
+                 }
 
-def signalWeightVariables(w = None, inputData = None, label = "", signalDict = {}) :
-    for key,value in signalDict.iteritems() :
-        if "Weights" not in key : continue
-        if type(value) not in [list,tuple] : continue
-        for iBin,signalWeight in zip(range(len(value)), value) :
-            name = ni(name = "signal%s"%(key.capitalize().replace("weights","Weights")), label = label, i = iBin)
-            wimport(w, r.RooRealVar(name, name, signalWeight))
+        if sigMcUnc:
+            if key.startswith("nEventsSigMc"):
+                storeSig(box=key.replace("nEventsSigMc", "").lower(),
+                         applyTrig=False,
+                         **kargs)
+            if key.startswith("meanWeightSigMc"):
+                storeSig(box=key.replace("meanWeightSigMc", "").lower(),
+                         applyTrig=True,
+                         **kargs)
+        else:
+            if key.startswith("eff") and not key.endswith("Err"):
+                storeSig(box=key.replace("eff", "").lower(),
+                         applyTrig=True,
+                         **kargs)
+
+
+def storeSig(w=None, inputData=None, label="", box="", key="", value=[], applyTrig=None):
+    assert applyTrig in [False, True], applyTrig
+    for iBin, signalEff, trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]):
+        name = ni(name=key, label=label, i=iBin)
+        print name
+        wimport(w, r.RooRealVar(name, name, signalEff*(trigEff if applyTrig else 1.0)))
+
 
 def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-                signalToTest = {}, rhoSignalMin = None) :
+                signalToTest = {}, rhoSignalMin = None, sigMcUnc=None) :
 
-    signalEffVariables(w, inputData, label, signalToTest)
+    signalEffVariables(w, inputData, label, signalToTest, sigMcUnc=sigMcUnc)
     
     out = collections.defaultdict(list)
     if label==systematicsLabel :
@@ -543,7 +559,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
                     rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
                     REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
                     constrainQcdSlope = None, qcdParameterIsYield = None,
-                    initialValuesFromMuonSample = None, initialFZinvFromMc = None) :
+                    initialValuesFromMuonSample = None, initialFZinvFromMc = None, sigMcUnc=None):
 
     variables = {"terms": [],
                  "systObs": [],
@@ -573,7 +589,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
-    for item in ["signalToTest", "rhoSignalMin"] :
+    for item in ["signalToTest", "rhoSignalMin", "sigMcUnc"] :
         moreArgs["signal"][item] = eval(item)
 
     args = tuple([commonArgs[item] for item in ["w", "inputData", "label"]])
@@ -669,6 +685,7 @@ class foo(object) :
             args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
+            args["sigMcUnc"] = self.likelihoodSpec.sigMcUnc
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
