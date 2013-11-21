@@ -475,37 +475,45 @@ def lumiVariables(w = None, inputData = None, label = "") :
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
 
 def signalEffVariables(w=None, inputData=None, label="", signalDict={}, sigMcUnc=None):
+    trigEffs = inputData.triggerEfficiencies()
     for key, value in signalDict.iteritems():
         if type(value) not in [list, tuple]:
             continue
         kargs = {"w": w,
+                 "label": label,
                  "key": key,
                  "value": value,
-                 "label": label,
-                 "inputData": inputData,
                  }
-
         if sigMcUnc:
             if key.startswith("nEventsSigMc"):
-                storeSig(box=key.replace("nEventsSigMc", "").lower(),
-                         applyTrig=False,
-                         **kargs)
+                storeSig(trigEffs=[1.0]*len(value), **kargs)
             if key.startswith("meanWeightSigMc"):
-                storeSig(box=key.replace("meanWeightSigMc", "").lower(),
-                         applyTrig=True,
-                         **kargs)
+                box = key.replace("meanWeightSigMc", "").lower()
+                storeSig(trigEffs=trigEffs[box], patch=True, **kargs)
         else:
             if key.startswith("eff") and not key.endswith("Err"):
-                storeSig(box=key.replace("eff", "").lower(),
-                         applyTrig=True,
-                         **kargs)
+                box = key.replace("eff", "").lower()
+                storeSig(trigEffs=trigEffs[box], **kargs)
 
 
-def storeSig(w=None, inputData=None, label="", box="", key="", value=[], applyTrig=None):
-    assert applyTrig in [False, True], applyTrig
-    for iBin, signalEff, trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]):
+def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
+    for iBin, y in enumerate(value):
+        if patch:
+            if y == 0.0:
+                for jBin in range(iBin - 1, -1, -1):
+                    if value[jBin]:
+                        y = value[jBin]
+                        break
+            if y == 0.0:
+                for jBin in range(iBin + 1, len(value)):
+                    if value[jBin]:
+                        y = value[jBin]
+                        break
+            if y == 0.0:
+                assert False, "No suitable neighboring bin found (%s, %s, %d)." % (label, key, iBin)
+
         name = ni(name=key, label=label, i=iBin)
-        wimport(w, r.RooRealVar(name, name, signalEff*(trigEff if applyTrig else 1.0)))
+        wimport(w, r.RooRealVar(name, name, y*trigEffs[iBin]))
 
 
 def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
