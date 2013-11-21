@@ -207,23 +207,52 @@ def scan(effcard=None, xss=[], fileName=""):
     r.gPad.Print(fileName)
 
 
+def examples(fileName=""):
+    c = r.TCanvas("canvas", "canvas", 2)
+    c.SetTickx()
+    c.SetTicky()
+    c.Print(fileName+"[")
+
+    xss = [i/2.0 for i in range(21)]
+
+    for effcard in [{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": False},
+                    {"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": True},
+                    {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": False},
+                    {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": True},
+                    #{"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": False},
+                    #{"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": True},
+                    ]:
+        scan(effcard=effcard, fileName=fileName, xss=xss)
+
+    c.Print(fileName+"]")
+
+
+def ensemble(fileName="", mcNuis=None, nToys=10, mcOutMean=5.0):
+    fileName = fileName.replace(".pdf", "%s.pdf" % str(mcNuis))
+
+    rand = r.TRandom3()
+    rand.SetSeed(1)
+
+    c = r.TCanvas("canvas", "canvas", 2)
+    c.SetTickx()
+    c.SetTicky()
+    c.Print(fileName+"[")
+
+    xss = [i/2.0 for i in range(21)]
+
+    effcard = {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":mcOutMean, "mcNuis": mcNuis}
+    for iToy in range(nToys):
+        effcard.update({"mcOut": (rand.Poisson(mcOutMean),
+                                  rand.Poisson(mcOutMean),
+                                  rand.Poisson(mcOutMean),
+                                  )})
+        scan(effcard=effcard, fileName=fileName, xss=xss)
+
+    c.Print(fileName+"]")
+
+
 setup()
+#examples(fileName="examples.pdf")
+ensemble(fileName="ensemble.pdf", mcNuis=False)
+ensemble(fileName="ensemble.pdf", mcNuis=True)
 
-fileName = "foo.pdf"
-c = r.TCanvas("canvas", "canvas", 2)
-c.SetTickx()
-c.SetTicky()
-c.Print(fileName+"[")
-
-xss = [i/2.0 for i in range(21)]
-
-for effcard in [#{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": False},
-                #{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": True},
-                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": False},
-                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": True},
-                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": False},
-                {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": True},
-                ]:
-    scan(effcard=effcard, fileName=fileName, xss=xss)
-
-c.Print(fileName+"]")
