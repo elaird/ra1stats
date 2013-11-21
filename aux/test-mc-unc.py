@@ -177,18 +177,34 @@ def go(trace=False, debug=True, profile=False, cl=None, bestFit=False, injectXs=
         return plInterval(w=w, dataset=data, modelconfig=modelConfig, cl=cl)
 
 
+def oneXs(effcard=None, i=None, xs=None,
+          gLo=None, gUp=None,
+          lowerHistos=None, upperHistos=None,
+          lowerEff=None, upperEff=None):
+
+    d = go(cl=0.68, effcard=effcard, injectXs=xs)
+    if gLo:
+        gLo.SetPoint(i, xs, d["lowerLimit"])
+    if gUp:
+        gUp.SetPoint(i, xs, d["upperLimit"])
+    lowerHistos[xs].Fill(d["lowerLimit"])
+    upperHistos[xs].Fill(d["upperLimit"])
+    lowerEff.Fill(d["lowerLimit"] < xs, xs)
+    upperEff.Fill(xs < d["upperLimit"], xs)
+
+
 def scan(effcard=None, xss=[], fileName="", upperHistos={}, lowerHistos={}, upperEff=None, lowerEff=None):
     gLo = r.TGraph()
     gUp = r.TGraph()
     for i, xs in enumerate(xss):
-        d = go(cl=0.68, effcard=effcard, injectXs=xs)
-        gLo.SetPoint(i, xs, d["lowerLimit"])
-        gUp.SetPoint(i, xs, d["upperLimit"])
-        lowerHistos[xs].Fill(d["lowerLimit"])
-        upperHistos[xs].Fill(d["upperLimit"])
-        lowerEff.Fill(d["lowerLimit"] < xs, xs)
-        upperEff.Fill(xs < d["upperLimit"], xs)
-
+        oneXs(effcard=effcard,
+              i=i, xs=xs,
+              gLo=gLo, gUp=gUp,
+              lowerHistos=lowerHistos,
+              upperHistos=upperHistos,
+              lowerEff=lowerEff,
+              upperEff=upperEff,
+              )
 
     text = r.TText()
     text.SetNDC()
@@ -229,7 +245,7 @@ def examples(fileName="", xss=[]):
     c.Print(fileName+"]")
 
 
-def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=5.0, xss=[]):
+def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=5.0, xss=[], shareToys=True):
     fileName = fileName.replace(".pdf", "%s.pdf" % str(mcNuis))
 
     upperHistos = {}
@@ -250,14 +266,29 @@ def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=5.0, xss=[]):
     c.Print(fileName+"[")
 
     effcard = {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":mcOutMean, "mcNuis": mcNuis}
-    for iToy in range(nToys):
-        effcard.update({"mcOut": (rand.Poisson(mcOutMean),
-                                  rand.Poisson(mcOutMean),
-                                  rand.Poisson(mcOutMean),
-                                  )})
-        scan(effcard=effcard, fileName=fileName, xss=xss,
-             upperHistos=upperHistos, lowerHistos=lowerHistos,
-             upperEff=upperEff, lowerEff=lowerEff)
+    if shareToys:
+        for iToy in range(nToys):
+            effcard.update({"mcOut": (rand.Poisson(mcOutMean),
+                                      rand.Poisson(mcOutMean),
+                                      rand.Poisson(mcOutMean),
+                                      )})
+            scan(effcard=effcard, fileName=fileName, xss=xss,
+                 upperHistos=upperHistos, lowerHistos=lowerHistos,
+                 upperEff=upperEff, lowerEff=lowerEff)
+    else:
+        for iToy in range(nToys):
+            for xs in xss:
+                effcard.update({"mcOut": (rand.Poisson(mcOutMean),
+                                          rand.Poisson(mcOutMean),
+                                          rand.Poisson(mcOutMean),
+                                          )})
+                oneXs(effcard=effcard, xs=xs,
+                      lowerHistos=lowerHistos,
+                      upperHistos=upperHistos,
+                      lowerEff=lowerEff,
+                      upperEff=upperEff,
+                      )
+
 
     text = r.TLatex()
     text.SetNDC()
@@ -308,7 +339,6 @@ xss = [0.0, 0.5, 1.0, 1.5] + range(2, 7) + [8, 10]
 
 #examples(fileName="examples.pdf")
 
-nToys = 20
-ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, mcNuis=False)
-ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, mcNuis=True)
-
+nToys = 100
+ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, shareToys=False, mcNuis=False)
+ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, shareToys=False, mcNuis=True)
