@@ -474,8 +474,8 @@ def lumiVariables(w = None, inputData = None, label = "") :
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
 
-def signalEffVariables(w=None, inputData=None, label="", signalDict={}, sigMcUnc=None):
-    trigEffs = inputData.triggerEfficiencies()
+
+def signalEffVariables(w=None, trigEffs=None, label="", signalDict={}, sigMcUnc=None):
     for key, value in signalDict.iteritems():
         if type(value) not in [list, tuple]:
             continue
@@ -516,14 +516,21 @@ def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
         wimport(w, r.RooRealVar(name, name, y*trigEffs[iBin]))
 
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-                signalToTest = {}, rhoSignalMin = None, sigMcUnc=None) :
+def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None,
+                signalToTest={}, rhoSignalMin=None, sigMcUnc=None):
 
-    signalEffVariables(w, inputData, label, signalToTest, sigMcUnc=sigMcUnc)
     
+    signalEffVariables(w=w,
+                       trigEffs=inputData.triggerEfficiencies(),
+                       label=label,
+                       signalDict=signalToTest,
+                       sigMcUnc=sigMcUnc)
+
     out = collections.defaultdict(list)
-    if label==systematicsLabel :
-        for iPar in [None] :
+
+    terms = []
+    if label == systematicsLabel:
+        for iPar in [None]:
             one = ni("oneRhoSignal", label, iPar)
             rho = ni("rhoSignal", label, iPar)
             delta = ni("deltaSignal", label, iPar)
@@ -533,11 +540,18 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = delta, sigmaValue = w.var("effUncRel").getVal())
 
-            signalTermsName = ni("signalTerms", label, iPar)
-            w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
-            out["terms"].append(signalTermsName)
+            terms.append(gaus)
             out["systObs"].append(one)
+
+    if sigMcUnc:
+        print "add me!"
+        #out["multiBinObs"].append(ni("nMuon", label))  # fixme
+
+    signalTermsName = ni("signalTerms", label)
+    w.factory("PROD::%s(%s)"%(signalTermsName, ",".join(terms)))
+    out["terms"].append(signalTermsName)
     return out
+
 
 def multi(w, variables, inputData) :
     out = []
@@ -600,7 +614,7 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         moreArgs["signal"][item] = eval(item)
 
     args = tuple([commonArgs[item] for item in ["w", "inputData", "label"]])
-    signalEffVariables(*args, signalDict = signalToInject)
+    # signalEffVariables(*args, signalDict = signalToInject)  # fixme (signal injection)
     if (not smOnly) or injectSignal :
         lumiVariables(*args)
 
