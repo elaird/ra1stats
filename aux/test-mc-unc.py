@@ -24,7 +24,7 @@ def rooFitResults(pdf, data, options=(r.RooFit.Verbose(False),
     return pdf.fitTo(data, *options)
 
 
-def plInterval(w=None, dataset=None, modelconfig=None, cl=None, plot=True):
+def plInterval(w=None, dataset=None, modelconfig=None, cl=None, plot=False):
     """from calc"""
     assert cl
     out = {}
@@ -87,7 +87,7 @@ def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, b=(1.0e3, 30.0, 3.0),
     terms = []
     wimport(w, r.RooRealVar("nMcInInv", "nMcInInv", 1.0/nMcIn))
     wimport(w, r.RooRealVar("lumi", "lumi", lumi))
-    wimport(w, r.RooRealVar("mu", "mu", 1.0, 0.0, 30.0))
+    wimport(w, r.RooRealVar("mu", "mu", 1.0, 0.0, 5.0*max(1.0, injectXs)))
 
     for i in range(len(b)):
         wimport(w, r.RooRealVar("obs%d" % i, "obs%d" % i, b[i] + lumi*injectXs*mcOutMean/nMcIn))
@@ -177,7 +177,7 @@ def go(trace=False, debug=True, profile=False, cl=None, bestFit=False, injectXs=
         return plInterval(w=w, dataset=data, modelconfig=modelConfig, cl=cl)
 
 
-def scan(effcard=None, xss=[i/2.0 for i in range(21)], fileName=""):
+def scan(effcard=None, xss=[], fileName=""):
     lower = r.TGraph()
     upper = r.TGraph()
     for i, xs in enumerate(xss):
@@ -215,6 +215,8 @@ c.SetTickx()
 c.SetTicky()
 c.Print(fileName+"[")
 
+xss = [i/2.0 for i in range(21)]
+
 for effcard in [#{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": False},
                 #{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": True},
                 {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": False},
@@ -222,6 +224,6 @@ for effcard in [#{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500
                 {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": False},
                 {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": True},
                 ]:
-    scan(effcard=effcard, fileName=fileName)
+    scan(effcard=effcard, fileName=fileName, xss=xss)
 
 c.Print(fileName+"]")
