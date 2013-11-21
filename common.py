@@ -39,8 +39,9 @@ class signal(object):
                    (self.xs, self.sumWeightIn, self.x, self.y))
         for sel, dct in sorted(self.__selEffs.iteritems()):
             out.append('s.insert("%s", {' % sel)
+            nChar = max([len(k) for k in dct.keys()])
             for key, value in sorted(dct.iteritems()):
-                o = ('"%s":' % key).ljust(17)
+                o = ('"%s":' % key).ljust(nChar+3)
                 if type(value) is list:
                     s = ", ".join(["%8.2e" % x for x in value])
                     out.append('%s [%s],' % (o, s))
