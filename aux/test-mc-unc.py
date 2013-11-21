@@ -177,13 +177,17 @@ def go(trace=False, debug=True, profile=False, cl=None, bestFit=False, injectXs=
         return plInterval(w=w, dataset=data, modelconfig=modelConfig, cl=cl)
 
 
-def scan(effcard=None, xss=[], fileName=""):
-    lower = r.TGraph()
-    upper = r.TGraph()
+def scan(effcard=None, xss=[], fileName="", upperHistos={}, lowerHistos={}, upperEff=None, lowerEff=None):
+    gLo = r.TGraph()
+    gUp = r.TGraph()
     for i, xs in enumerate(xss):
         d = go(cl=0.68, effcard=effcard, injectXs=xs)
-        lower.SetPoint(i, xs, d["lowerLimit"])
-        upper.SetPoint(i, xs, d["upperLimit"])
+        gLo.SetPoint(i, xs, d["lowerLimit"])
+        gUp.SetPoint(i, xs, d["upperLimit"])
+        lowerHistos[xs].Fill(d["lowerLimit"])
+        upperHistos[xs].Fill(d["upperLimit"])
+        lowerEff.Fill(d["lowerLimit"] < xs, xs)
+        upperEff.Fill(xs < d["upperLimit"], xs)
 
 
     text = r.TText()
@@ -200,20 +204,18 @@ def scan(effcard=None, xss=[], fileName=""):
     yx.SetLineColor(r.kBlue)
     yx.Draw("same")
 
-    lower.Draw("lps")
-    upper.Draw("lps")
+    gLo.Draw("lps")
+    gUp.Draw("lps")
     
     foo = text.DrawText(0.5, 0.95, str(effcard))
     r.gPad.Print(fileName)
 
 
-def examples(fileName=""):
+def examples(fileName="", xss=[]):
     c = r.TCanvas("canvas", "canvas", 2)
     c.SetTickx()
     c.SetTicky()
     c.Print(fileName+"[")
-
-    xss = [i/2.0 for i in range(21)]
 
     for effcard in [{"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": False},
                     {"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": True},
@@ -227,8 +229,17 @@ def examples(fileName=""):
     c.Print(fileName+"]")
 
 
-def ensemble(fileName="", mcNuis=None, nToys=10, mcOutMean=5.0):
+def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=5.0, xss=[]):
     fileName = fileName.replace(".pdf", "%s.pdf" % str(mcNuis))
+
+    upperHistos = {}
+    lowerHistos = {}
+    for xs in xss:
+        upperHistos[xs] = r.TH1D("upper%g" % xs, ";upper limit on xs;toys / bin", 100, 0.0, 2.0*max(1.0, xs))
+        lowerHistos[xs] = r.TH1D("lower%g" % xs, ";lower limit on xs;toys / bin", 100, 0.0, 2.0*max(1.0, xs))
+
+    lowerEff = r.TEfficiency("lowerEff%s" % str(mcNuis), ";xs;fraction of toys with (lower limit < xs)", 21, -0.25, 10.25)
+    upperEff = r.TEfficiency("upperEff%s" % str(mcNuis), ";xs;fraction of toys with (xs < upper limit)", 21, -0.25, 10.25)
 
     rand = r.TRandom3()
     rand.SetSeed(1)
@@ -238,21 +249,66 @@ def ensemble(fileName="", mcNuis=None, nToys=10, mcOutMean=5.0):
     c.SetTicky()
     c.Print(fileName+"[")
 
-    xss = [i/2.0 for i in range(21)]
-
     effcard = {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":mcOutMean, "mcNuis": mcNuis}
     for iToy in range(nToys):
         effcard.update({"mcOut": (rand.Poisson(mcOutMean),
                                   rand.Poisson(mcOutMean),
                                   rand.Poisson(mcOutMean),
                                   )})
-        scan(effcard=effcard, fileName=fileName, xss=xss)
+        scan(effcard=effcard, fileName=fileName, xss=xss,
+             upperHistos=upperHistos, lowerHistos=lowerHistos,
+             upperEff=upperEff, lowerEff=lowerEff)
+
+    text = r.TLatex()
+    text.SetNDC()
+    text.SetTextSize(1.5*text.GetTextSize())
+
+    for dct in [lowerHistos, upperHistos]:
+        c.cd(0)
+        c.Clear()
+        c.Divide(4, 3)
+        for iKey, key in enumerate(sorted(dct.keys())):
+            c.cd(1 + iKey)
+            r.gPad.SetTickx()
+            r.gPad.SetTicky()
+            h = dct[key]
+            h.Draw()
+            h.SetStats(False)
+            text.DrawLatex(0.1, 0.95, "xs=%4.1f    (#mu=%4.2f,  #sigma=%3.1f)" % (key, h.GetMean(), h.GetRMS()))
+        c.cd(0)
+        c.Print(fileName)
+
+    c.Clear()
+    c.Divide(1, 2)
+
+    nullL = r.TH2D("nullL", ";xs;fraction of toys with (lowerlimit < xs)", 1, -0.25, 10.25, 1, 0.0, 1.1)
+    nullL.SetStats(False)
+    nullU = r.TH2D("nullU", ";xs;fraction of toys with (xs < upperlimit)", 1, -0.25, 10.25, 1, 0.0, 1.1)
+    nullU.SetStats(False)
+
+    line = r.TLine()
+    line.SetLineColor(r.kBlue)
+    keep = []
+    for iEff, (eff, null) in enumerate([(lowerEff, nullL), (upperEff, nullU)]):
+        c.cd(1 + iEff)
+        r.gPad.SetTickx()
+        r.gPad.SetTicky()
+        null.Draw()
+        keep.append(line.DrawLine(-0.25, 0.84, 10.25, 0.84))
+        eff.Draw("same")
+    c.Print(fileName)
 
     c.Print(fileName+"]")
 
 
 setup()
+
+#xss = [i/2.0 for i in range(21)]
+xss = [0.0, 0.5, 1.0, 1.5] + range(2, 7) + [8, 10]
+
 #examples(fileName="examples.pdf")
-ensemble(fileName="ensemble.pdf", mcNuis=False)
-ensemble(fileName="ensemble.pdf", mcNuis=True)
+
+nToys = 20
+ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, mcNuis=False)
+ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, mcNuis=True)
 
