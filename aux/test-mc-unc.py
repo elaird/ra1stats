@@ -245,7 +245,7 @@ def examples(fileName="", xss=[]):
     c.Print(fileName+"]")
 
 
-def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=5.0, xss=[], shareToys=True):
+def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=None, nMcIn=None, xss=[], shareToys=True):
     fileName = fileName.replace(".pdf", "%s.pdf" % str(mcNuis))
 
     upperHistos = {}
@@ -265,7 +265,7 @@ def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=5.0, xss=[], shareT
     c.SetTicky()
     c.Print(fileName+"[")
 
-    effcard = {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":mcOutMean, "mcNuis": mcNuis}
+    effcard = {"lumi": 1.0e4, "nMcIn": nMcIn, "mcOutMean": mcOutMean, "mcNuis": mcNuis}
     if shareToys:
         for iToy in range(nToys):
             effcard.update({"mcOut": (rand.Poisson(mcOutMean),
@@ -334,11 +334,15 @@ def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=5.0, xss=[], shareT
 
 setup()
 
-#xss = [i/2.0 for i in range(21)]
-xss = [0.0, 0.5, 1.0, 1.5] + range(2, 7) + [8, 10]
-
 #examples(fileName="examples.pdf")
 
-nToys = 100
-ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, shareToys=False, mcNuis=False)
-ensemble(fileName="ensemble.pdf", xss=xss, nToys=nToys, shareToys=False, mcNuis=True)
+kargs = {#"xss": [i/2.0 for i in range(21)],
+         "xss": [0.0, 0.5, 1.0, 1.5] + range(2, 7) + [8, 10],
+         "nToys": 20,
+         "shareToys": False,
+         "mcOutMean": 5.0,
+         "nMcIn": 1.0e4,
+         "fileName": "ensemble.pdf",
+         }
+ensemble(mcNuis=False, **kargs)
+ensemble(mcNuis=True, **kargs)
