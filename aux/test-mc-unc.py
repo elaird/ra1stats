@@ -81,7 +81,7 @@ def writeGraphVizTree(wspace, pdfName="model"):
     os.system(cmd)
 
 
-def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, b=(1.0e3, 30.0, 3.0),
+def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, bMean=(1.0e3, 30.0, 3.0), bObs=(1.0e3, 30.0, 3.0),
              nMcIn=1.0e4, mcOutMean=5.0, mcOut=(4, 6, 3),
              mcNuis=True):
     terms = []
@@ -89,9 +89,9 @@ def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, b=(1.0e3, 30.0, 3.0),
     wimport(w, r.RooRealVar("lumi", "lumi", lumi))
     wimport(w, r.RooRealVar("mu", "mu", 1.0, 0.0, 5.0*max(1.0, injectXs)))
 
-    for i in range(len(b)):
-        wimport(w, r.RooRealVar("obs%d" % i, "obs%d" % i, b[i] + lumi*injectXs*mcOutMean/nMcIn))
-        wimport(w, r.RooRealVar("b%d" % i, "b%d" % i, b[i]))
+    for i in range(len(bMean)):
+        wimport(w, r.RooRealVar("obs%d" % i, "obs%d" % i, bObs[i] + lumi*injectXs*mcOutMean/nMcIn))
+        wimport(w, r.RooRealVar("b%d" % i, "b%d" % i, bMean[i]))
         if mcNuis:
             n = mcOut[i]
             wimport(w, r.RooRealVar("nMcSel%d" % i, "nMcSel%d" % i, n))
@@ -107,7 +107,7 @@ def obsTerms(w=None, injectXs=0.0, lumi=1.0e4, b=(1.0e3, 30.0, 3.0),
         wimport(w, r.RooPoisson("pois%d" % i, "pois%d" % i, w.var("obs%d" % i), w.function("exp%d" % i)))
         terms.append("pois%d" % i)
 
-    w.defineSet("obs", argSet(w, ["obs%d" % i for i in range(len(b))]))
+    w.defineSet("obs", argSet(w, ["obs%d" % i for i in range(len(bMean))]))
     w.defineSet("poi", argSet(w, ["mu"]))
     w.factory("PROD::obsTerms(%s)" % (",".join(terms)))
 
@@ -187,10 +187,15 @@ def oneXs(effcard=None, i=None, xs=None,
         gLo.SetPoint(i, xs, d["lowerLimit"])
     if gUp:
         gUp.SetPoint(i, xs, d["upperLimit"])
-    lowerHistos[xs].Fill(d["lowerLimit"])
-    upperHistos[xs].Fill(d["upperLimit"])
-    lowerEff.Fill(d["lowerLimit"] < xs, xs)
-    upperEff.Fill(xs < d["upperLimit"], xs)
+
+    if lowerHistos.get(xs):
+        lowerHistos[xs].Fill(d["lowerLimit"])
+    if upperHistos.get(xs):
+        upperHistos[xs].Fill(d["upperLimit"])
+    if lowerEff:
+        lowerEff.Fill(d["lowerLimit"] < xs, xs)
+    if upperEff:
+        upperEff.Fill(xs < d["upperLimit"], xs)
 
 
 def scan(effcard=None, xss=[], fileName="", upperHistos={}, lowerHistos={}, upperEff=None, lowerEff=None):
@@ -239,14 +244,28 @@ def examples(fileName="", xss=[]):
                     {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": True},
                     #{"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": False},
                     #{"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": True},
+                    {"lumi": 1.0e4, "nMcIn": 2.0e3, "mcOutMean":1.0, "mcOut":(1, 1, 1), "mcNuis": False},
+                    {"lumi": 1.0e4, "nMcIn": 2.0e3, "mcOutMean":1.0, "mcOut":(1, 1, 1), "mcNuis": True},
                     ]:
         scan(effcard=effcard, fileName=fileName, xss=xss)
 
     c.Print(fileName+"]")
 
 
-def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=None, nMcIn=None, xss=[], shareToys=True):
-    fileName = fileName.replace(".pdf", "%s.pdf" % str(mcNuis))
+def randomized(rand=None, mcOutMean=None, bMean=None, fluctuateB=False):
+    d = {"mcOut": (rand.Poisson(mcOutMean),
+                   rand.Poisson(mcOutMean),
+                   rand.Poisson(mcOutMean),
+                   )}
+    if fluctuateB:
+        d["bObs"] = tuple([rand.Poisson(b) for b in bMean])
+    else:
+        d["bObs"] = bMean
+    return d
+
+
+def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=None, nMcIn=None, xss=[], shareToys=True, fluctuateB=False):
+    fileName = fileName.replace(".pdf", "_%s_%d.pdf" % (str(mcNuis), mcOutMean))
 
     upperHistos = {}
     lowerHistos = {}
@@ -265,23 +284,25 @@ def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=None, nMcIn=None, x
     c.SetTicky()
     c.Print(fileName+"[")
 
-    effcard = {"lumi": 1.0e4, "nMcIn": nMcIn, "mcOutMean": mcOutMean, "mcNuis": mcNuis}
+    effcard = {"lumi": 1.0e4, "nMcIn": nMcIn, "mcOutMean": mcOutMean, "mcNuis": mcNuis, "bMean": (1.0e3, 30.0, 3.0),}
     if shareToys:
         for iToy in range(nToys):
-            effcard.update({"mcOut": (rand.Poisson(mcOutMean),
-                                      rand.Poisson(mcOutMean),
-                                      rand.Poisson(mcOutMean),
-                                      )})
+            effcard.update(randomized(rand=rand,
+                                      mcOutMean=mcOutMean,
+                                      bMean=effcard["bMean"],
+                                      fluctuateB=fluctuateB,
+                                      ))
             scan(effcard=effcard, fileName=fileName, xss=xss,
                  upperHistos=upperHistos, lowerHistos=lowerHistos,
                  upperEff=upperEff, lowerEff=lowerEff)
     else:
         for iToy in range(nToys):
             for xs in xss:
-                effcard.update({"mcOut": (rand.Poisson(mcOutMean),
-                                          rand.Poisson(mcOutMean),
-                                          rand.Poisson(mcOutMean),
-                                          )})
+                effcard.update(randomized(rand=rand,
+                                          mcOutMean=mcOutMean,
+                                          bMean=effcard["bMean"],
+                                          fluctuateB=fluctuateB,
+                                          ))
                 oneXs(effcard=effcard, xs=xs,
                       lowerHistos=lowerHistos,
                       upperHistos=upperHistos,
@@ -334,15 +355,16 @@ def ensemble(fileName="", mcNuis=None, nToys=None, mcOutMean=None, nMcIn=None, x
 
 setup()
 
-#examples(fileName="examples.pdf")
-
-kargs = {#"xss": [i/2.0 for i in range(21)],
-         "xss": [0.0, 0.5, 1.0, 1.5] + range(2, 7) + [8, 10],
+kargs = {"xss": [0.0, 0.5, 1.0, 1.5] + range(2, 7) + [8, 10],
          "nToys": 20,
          "shareToys": False,
-         "mcOutMean": 5.0,
-         "nMcIn": 1.0e4,
+         "mcOutMean": 500.0,
+         "nMcIn": 1.0e6,
          "fileName": "ensemble.pdf",
+         "fluctuateB": False,
          }
-ensemble(mcNuis=False, **kargs)
-ensemble(mcNuis=True, **kargs)
+
+examples(xss=[i/2.0 for i in range(21)], fileName="examples.pdf")
+
+#ensemble(mcNuis=False, **kargs)
+#ensemble(mcNuis=True, **kargs)
