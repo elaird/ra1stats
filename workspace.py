@@ -239,7 +239,7 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadB)))
         else :
             lumi = ni("hadLumi", label)
-            eff = ni("signalEffHad", label, i)
+            eff = ni("effHad", label, i)
             assert w.var(eff),eff
             rho = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
@@ -474,24 +474,63 @@ def lumiVariables(w = None, inputData = None, label = "") :
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
 
-def signalEffVariables(w = None, inputData = None, label = "", signalDict = {}) :
-    for key,value in signalDict.iteritems() :
-        if "eff"!=key[:3] : continue
-        box = key.replace("eff", "").lower()
-        if type(value) not in [list,tuple] : continue
-        for iBin,signalEff,trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]) :
-            name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
-            wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-                signalToTest = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
+def signalEffVariables(w=None, trigEffs=None, label="", signalDict={}, sigMcUnc=None):
+    for key, value in signalDict.iteritems():
+        if type(value) not in [list, tuple]:
+            continue
+        kargs = {"w": w,
+                 "label": label,
+                 "key": key,
+                 "value": value,
+                 }
+        if sigMcUnc:
+            if key.startswith("nEventsSigMc"):
+                storeSig(trigEffs=[1.0]*len(value), **kargs)
+            if key.startswith("meanWeightSigMc"):
+                box = key.replace("meanWeightSigMc", "").lower()
+                storeSig(trigEffs=trigEffs[box], patch=True, **kargs)
+        else:
+            if key.startswith("eff") and not key.endswith("Err"):
+                box = key.replace("eff", "").lower()
+                storeSig(trigEffs=trigEffs[box], **kargs)
 
-    assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
-    signalEffVariables(w, inputData, label, signalToTest)
+
+def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
+    for iBin, y in enumerate(value):
+        if patch:
+            if y == 0.0:
+                for jBin in range(iBin - 1, -1, -1):
+                    if value[jBin]:
+                        y = value[jBin]
+                        break
+            if y == 0.0:
+                for jBin in range(iBin + 1, len(value)):
+                    if value[jBin]:
+                        y = value[jBin]
+                        break
+            if y == 0.0:
+                assert False, "No suitable neighboring bin found (%s, %s, %d)." % (label, key, iBin)
+
+        name = ni(name=key, label=label, i=iBin)
+        wimport(w, r.RooRealVar(name, name, y*trigEffs[iBin]))
+
+
+def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None,
+                signalToTest={}, rhoSignalMin=None, sigMcUnc=None):
+
+    
+    signalEffVariables(w=w,
+                       trigEffs=inputData.triggerEfficiencies(),
+                       label=label,
+                       signalDict=signalToTest,
+                       sigMcUnc=sigMcUnc)
 
     out = collections.defaultdict(list)
-    if label==systematicsLabel :
-        for iPar in [None] :
+
+    terms = []
+    if label == systematicsLabel:
+        for iPar in [None]:
             one = ni("oneRhoSignal", label, iPar)
             rho = ni("rhoSignal", label, iPar)
             delta = ni("deltaSignal", label, iPar)
@@ -501,11 +540,18 @@ def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = delta, sigmaValue = w.var("effUncRel").getVal())
 
-            signalTermsName = ni("signalTerms", label, iPar)
-            w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
-            out["terms"].append(signalTermsName)
+            terms.append(gaus)
             out["systObs"].append(one)
+
+    if sigMcUnc:
+        print "add me!"
+        #out["multiBinObs"].append(ni("nMuon", label))  # fixme
+
+    signalTermsName = ni("signalTerms", label)
+    w.factory("PROD::%s(%s)"%(signalTermsName, ",".join(terms)))
+    out["terms"].append(signalTermsName)
     return out
+
 
 def multi(w, variables, inputData) :
     out = []
@@ -531,10 +577,10 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
-                    extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
+                    rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
                     REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
                     constrainQcdSlope = None, qcdParameterIsYield = None,
-                    initialValuesFromMuonSample = None, initialFZinvFromMc = None) :
+                    initialValuesFromMuonSample = None, initialFZinvFromMc = None, sigMcUnc=None):
 
     variables = {"terms": [],
                  "systObs": [],
@@ -564,11 +610,11 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
-    for item in ["signalToTest", "extraSigEffUncSources", "rhoSignalMin"] :
+    for item in ["signalToTest", "rhoSignalMin", "sigMcUnc"] :
         moreArgs["signal"][item] = eval(item)
 
     args = tuple([commonArgs[item] for item in ["w", "inputData", "label"]])
-    signalEffVariables(*args, signalDict = signalToInject)
+    # signalEffVariables(*args, signalDict = signalToInject)  # fixme (signal injection)
     if (not smOnly) or injectSignal :
         lumiVariables(*args)
 
@@ -621,10 +667,10 @@ def finishLikelihood(w=None, smOnly=None, standard=None, poiDict={}, terms=[], o
             var.setVal(ini)
 
 class foo(object) :
-    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
+    def __init__(self, likelihoodSpec = {}, rhoSignalMin = 0.0, fIniFactor = 1.0,
                  signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
 
-        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin",
+        for item in ["likelihoodSpec", "rhoSignalMin",
                      "signalToTest", "signalExampleToStack", "signalToInject"] :
             setattr(self, item, eval(item))
 
@@ -646,7 +692,7 @@ class foo(object) :
                      "initialValuesFromMuonSample", "initialFZinvFromMc"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["extraSigEffUncSources", "rhoSignalMin"] :
+        for item in ["rhoSignalMin"] :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
@@ -656,10 +702,11 @@ class foo(object) :
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
-            args["signalToTest"] = self.signalToTest[sel.name] if sel.name in self.signalToTest else {}
-            args["signalToInject"] = self.signalToInject[sel.name] if sel.name in self.signalToInject else {}
+            args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
+            args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
+            args["sigMcUnc"] = self.likelihoodSpec.sigMcUnc
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
@@ -703,9 +750,13 @@ class foo(object) :
                 for box in ["phot", "mumu"] :
                     assert box not in sel.samplesAndSignalEff,box
             bins = sel.data.htBinLowerEdges()
-            for dct in [self.signalToTest, self.signalExampleToStack, self.signalToInject] :
-                if sel.name not in dct : continue
-                for key,value in dct[sel.name].iteritems() :
+            for obj in [self.signalToTest, self.signalExampleToStack, self.signalToInject]:
+                if not obj:
+                    continue
+                effs = obj.effs(sel.name)
+                if not effs:
+                    continue
+                for key, value in effs.iteritems():
                     if type(value) is list:
                         assert len(value) == len(bins), "key %s: %d != %d" % (key, len(value), len(bins))
 

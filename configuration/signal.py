@@ -8,13 +8,19 @@ class scan(object):
                  had="", muon="", phot="", mumu="",
                  interBin="LowEdge",
                  aT=[],
-                 extraVars=[]):
+                 extraVars=[],
+                 weightedHistName="",
+                 unweightedHistName="",
+                 minSumWeightIn=1,
+                 maxSumWeightIn=None):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
-        for item in ["dataset", "tag", "interBin",
-                     "com", "xsVariation", "xsFactors", "aT",
-                     "extraVars"]+self.boxNames:
+        for item in ["dataset", "tag", "interBin", "com",
+                     "xsVariation", "xsFactors", "aT", "extraVars",
+                     "weightedHistName", "unweightedHistName",
+                     "minSumWeightIn", "maxSumWeightIn",
+                     ]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
         self.warned = {}
@@ -56,6 +62,22 @@ class scan(object):
     def extraVars(self):
         return self._extraVars
 
+    @property
+    def weightedHistName(self):
+        return self._weightedHistName
+
+    @property
+    def unweightedHistName(self):
+        return self._unweightedHistName
+
+    def sumWeightInRange(self, sumWeightIn):
+        out = True
+        if self._minSumWeightIn is not None:
+            out &= (self._minSumWeightIn <= sumWeightIn)
+        if self._maxSumWeightIn is not None:
+            out &= (sumWeightIn <= self._maxSumWeightIn)
+        return out
+
     def ignoreEff(self, box):
         assert box in self.boxNames, box
         out = not getattr(self, "_"+box)
@@ -78,63 +100,51 @@ def effUncRel(model=""):
 
 
 def models():
+    old = {"weightedHistName": "m0_m12_mChi_noweight"}
+    new = {"weightedHistName": "m0_m12_mChi_weight", "unweightedHistName": "m0_m12_mChi_noweight"}
+    tb = {"minSumWeightIn": 9.0e3, "maxSumWeightIn": 11.0e3}
+
     return [
-        #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8]),
-        #scan(dataset="T2cc", com=8, had="v7_new_bin"),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"],
-        #     extraVars=["SITV"]),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55","0.6"]),
-        #scan(dataset="T2cc", com=8, had="v8", aT=["0.55","0.6"]),
-        scan(dataset="T2cc", com=8, had="v8", aT=["0.55", "0.6"],
-             extraVars=["SITV"]),
-        #scan(dataset="T1", com=8, had="v5"),
-        #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8]),
-        #scan(dataset="T2cc", com=8, had="v6"),
-        #scan(dataset="T2tt", com=8, had="v1", muon="v1"),
-        #scan(dataset="T2bb", com=8, had="v3", muon="v3"),
-        #scan(dataset="T1bbbb", com=8, had="v3", muon="v3"),
-        #scan(dataset="T1tttt", com=8, had="v1", muon="v1"),
+        #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8], **old),
+        #scan(dataset="T2cc", com=8, had="v7_new_bin", **old),
+        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55", "0.6"], extraVars=["SITV"], **old),
+        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55", "0.6"], **old),
+        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"], extraVars=["SITV"], **new),
+        scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"], **new),
+        #scan(dataset="T1", com=8, had="v5", **old),
+        #scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8], **old),
+        #scan(dataset="T2cc", com=8, had="v6", **old),
+        #scan(dataset="T2tt", com=8, had="v1", muon="v1", **old),
+        #scan(dataset="T2bb", com=8, had="v3", muon="v3", **old),
+        #scan(dataset="T1bbbb", com=8, had="v3", muon="v3", **old),
+        #scan(dataset="T1tttt", com=8, had="v1", muon="v1", **old),
         #
-        #scan(dataset="T2bb", com=8, tag="ct6l1",
-        #     had="v6_yossof_cteq61"),
-        #scan(dataset="T2bb", com=8, tag="ct10",
-        #     had="v6_yossof_ct10_normalized"),
-        #scan(dataset="T2bb", com=8, tag="ct66",
-        #     had="v6_yossof_cteq66_normalized"),
-        #scan(dataset="T2bb", com=8, tag="mstw08",
-        #     had="v6_yossof_mst08_normalized"),
-        #scan(dataset="T2bb", com=8, tag="nnpdf21",
-        #     had="v6_yossof_nnpdf21_normalized"),
+        #scan(dataset="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61", **old),
+        #scan(dataset="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized", **old),
+        #scan(dataset="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized", **old),
+        #scan(dataset="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized", **old),
+        #scan(dataset="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized", **old),
+        #scan(dataset="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61", **old),
+        #scan(dataset="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized", **old),
+        #scan(dataset="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized", **old),
+        #scan(dataset="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized", **old),
+        #scan(dataset="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized", **old),
         #
-        #scan(dataset="T1bbbb", com=8, tag="ct6l1",
-        #     had="v6_yossof_cteq61"),
-        #scan(dataset="T1bbbb", com=8, tag="ct10",
-        #     had="v6_yossof_ct10_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="ct66",
-        #     had="v6_yossof_cteq66_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="mstw08",
-        #     had="v6_yossof_mstw08_normalized"),
-        #scan(dataset="T1bbbb", com=8, tag="nnpdf21",
-        #     had="v6_yossof_nnpdf21_normalized"),
+        #scan(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full", **old),
         #
-        #scan(dataset="T1tttt", com=8, tag="ichep",
-        #     had="2012full", muon="2012full"),
+        #scan(dataset="T5zz", com=7, had="v1", muon="v1", minSumWeightIn=5.0e3, **old),
+        #scan(dataset="TGQ_0p0", com=7, had="v1", **old),
+        #scan(dataset="TGQ_0p2", com=7, had="v1", **old),
+        #scan(dataset="TGQ_0p4", com=7, had="v1", **old),
+        #scan(dataset="TGQ_0p8", com=7, had="v1", **old),
         #
-        #scan(dataset="T5zz", com=7, had="v1", muon="v1"),
-        #scan(dataset="TGQ_0p0", com=7, had="v1"),
-        #scan(dataset="TGQ_0p2", com=7, had="v1"),
-        #scan(dataset="TGQ_0p4", com=7, had="v1"),
-        #scan(dataset="TGQ_0p8", com=7, had="v1"),
-        #
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2"),
-        #scan(dataset="tanBeta10", com=7, had="v2",
-        #     muon="v2", xsVariation="up"),
-        #scan(dataset="tanBeta10", com=7, had="v2",
-        #     muon="v2", xsVariation="down"),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", weightedHistName="m0_m12_gg", **tb),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up", weightedHistName="m0_m12_gg", **tb),
+        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down", weightedHistName="m0_m12_gg", **tb),
         ]
 
 
-def whiteListOfPoints(model="", respect=False):
+def whiteListOfPoints(model="", respect=True):
     if not respect:
         return []
 
@@ -194,7 +204,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     assert box in ["had", "muon"], box
 
     # FIXME: remove these hard-coded numbers
-    if htLower <= 275:
+    if htLower and (htLower <= 275):
         fileName = "%s0.root" % box
     elif htLower == 325:
         fileName = "%s1.root" % box
@@ -240,14 +250,8 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     return {"beforeDir": beforeDir,
             "afterDir": "_".join(tags),
             "file": "/".join(subDirs + fileFields),
-            }
-
-
-def nEventsIn(model=""):
-    assert model
-    return {"T5zz_7":      (5.0e3, None),
-            "tanBeta10_7": (9.0e3, 11.0e3),
-            }.get(model, (1, None))
+            "weightedHistName": model.weightedHistName,
+            "unweightedHistName": model.unweightedHistName}
 
 
 def ranges(model):
