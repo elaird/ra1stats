@@ -1092,38 +1092,6 @@ class validationPlotter(object) :
                 continue
             histo.SetBinContent(i+1, l*xs*eff[i])
 
-    def fillSignalRelUnc(self, spec={}, histo=None):
-        effRelUnc = inDict(spec["example"][self.label],
-                     spec["box"],
-                     [0.0]*len(self.htBinLowerEdges))
-        activeBins = self.activeBins["n%s" % ("had" if "had" in spec["box"] else spec["box"]).capitalize()]
-        for i in range(len(self.htBinLowerEdges)):
-            if not activeBins[i]:
-                continue
-            histo.SetBinContent(i+1, effRelUnc[i])
-
-    def fillSignalExampleWeight(self, spec={}, histo=None):
-        box = "had"
-        eff = inDict(spec["example"][self.label],
-                     "eff%s" % box.capitalize(),
-                     [0.0]*len(self.htBinLowerEdges))
-        activeBins = self.activeBins["n%s" % box.capitalize()]
-        for i in range(len(self.htBinLowerEdges)):
-            if not activeBins[i]:
-                continue
-            histo.SetBinContent(i+1, eff[i]*spec["example"].sumWeightIn)
-
-    def fillSignalExampleWeightErr(self, spec={}, histo=None):
-        effErr = inDict(spec["example"][self.label],
-                     spec["box"],
-                     [0.0]*len(self.htBinLowerEdges))
-        activeBins = self.activeBins["n%s" % ("had" if "had" in spec["box"] else spec["box"]).capitalize()]
-        for i in range(len(self.htBinLowerEdges)):
-            if not activeBins[i]:
-                continue
-            histo.SetBinContent(i+1, effErr[i])
-
-
     def varHisto(self, spec={}, extraName="", yLabel="", note="", lumiString=""):
         color       = spec.get("color", r.kBlack)
         lineStyle   = spec.get("style", 1)
@@ -1166,18 +1134,7 @@ class validationPlotter(object) :
 
         if "example" in spec:
             assert "func" not in spec, "func will not be applied here"
-            if spec["example"].sumWeightIn:
-                if "Rel" in spec["box"]:
-                    if "Unc" in spec["box"]:
-                        self.fillSignalRelUnc(spec=spec, histo=d["value"])
-                    if "Err" in spec["box"]:
-                        self.fillSignalExampleWeightErr(spec=spec, histo=d["value"])
-                elif "sumWhad" in spec["box"]:
-                    self.fillSignalExampleWeight(spec=spec, histo=d["value"])
-                else: 
-                    self.fillSignalExampleYield(spec=spec, histo=d["value"])
-        
-            else: self.fillSignalExampleYield(spec=spec, histo=d["value"])
+            self.fillSignalExampleYield(spec=spec, histo=d["value"])
             return d
 
         toPrint = []
