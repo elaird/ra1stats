@@ -242,10 +242,10 @@ def examples(fileName="", xss=[]):
                     {"lumi": 1.0e4, "nMcIn": 1.0e6, "mcOutMean":500.0, "mcOut":(500, 500, 500), "mcNuis": True},
                     {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": False},
                     {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(5, 5, 5), "mcNuis": True},
-                    #{"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": False},
-                    #{"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": True},
-                    {"lumi": 1.0e4, "nMcIn": 2.0e3, "mcOutMean":1.0, "mcOut":(1, 1, 1), "mcNuis": False},
-                    {"lumi": 1.0e4, "nMcIn": 2.0e3, "mcOutMean":1.0, "mcOut":(1, 1, 1), "mcNuis": True},
+                    {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": False},
+                    {"lumi": 1.0e4, "nMcIn": 1.0e4, "mcOutMean":5.0, "mcOut":(4, 6, 3), "mcNuis": True},
+                    #{"lumi": 1.0e4, "nMcIn": 2.0e3, "mcOutMean":1.0, "mcOut":(1, 1, 1), "mcNuis": False},
+                    #{"lumi": 1.0e4, "nMcIn": 2.0e3, "mcOutMean":1.0, "mcOut":(1, 1, 1), "mcNuis": True},
                     ]:
         scan(effcard=effcard, fileName=fileName, xss=xss)
 
