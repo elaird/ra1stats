@@ -282,7 +282,6 @@ def meanWeightSigMc(model=None, box="",
                                     bJets=bJets,
                                     jets=jets)
     assert model.isSms
-    # fixme: 0 / 0
     return ratio(spec["file"],
                  spec["afterDir"], spec["weightedHistName"],
                  spec["afterDir"], spec["unweightedHistName"])
