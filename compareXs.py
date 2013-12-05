@@ -335,8 +335,8 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
                                 xsFileName=hSpec['file'],
                                 )
 
-#    exclFileName = 'CLs_asymptotic_TS3_T2cc_2012dev_RQcdFallingExpExt_fZinvAll_0b_le3j-1hx2p.root'
-    exclFileName = 'CLs_asymptotic_TS3_T2cc_2012dev_RQcdFallingExpExt_fZinvAll_0b_le3j-1hx2p_0b_ge4j-1hx2p_1b_le3j-1hx2p.root'
+    exclFileName = 'CLs_asymptotic_TS3_T2cc_2012dev_RQcdZero_fZinvAll_0b_le3j-1hx2p_0b_ge4j-1hx2p_1b_le3j-1hx2p.root'
+
     exclHistos = exclusionHistos(limitFile='ra1r/scan/%s' % exclFileName, model=model)
 
     options = {
