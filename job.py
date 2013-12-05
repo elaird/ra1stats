@@ -27,7 +27,7 @@ def onePoint(likelihoodSpec=None, point=None):
     fileName = conf.directories.pickledFileName(*point)+".in"
     signal = pickling.readNumbers(fileName=fileName)
     print signal
-    if conf.limit.method() and signal.anyEffHad:
+    if conf.limit.method() and signal.anyEffHad():
         return signal, resultsMultiCL(likelihoodSpec=likelihoodSpec,
                                       signal=signal,
                                       )
