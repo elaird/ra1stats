@@ -115,6 +115,7 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
                 h2.SetLineColor(r.kRed)
                 h2.SetMarkerColor(r.kRed)
                 h2.Draw("same")
+                h1.GetYaxis().SetRangeUser(0.0, 1.1*max([h1.GetMaximum(), h2.GetMaximum()]))
 
                 if leg is None:
                     leg = r.TLegend(0.65, 0.65, 0.85, 0.85)
@@ -162,7 +163,7 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
                     leg = r.TLegend(0.15, 0.65, 0.45, 0.85)
                     leg.SetBorderSize(0)
                     leg.SetFillStyle(0)
-                    leg.AddEntry(one, "y = (%4.1f/%4.1f) x" % (lumi2, lumi1), "l")
+                    leg.AddEntry(one, "y = (%4.1f/%4.1f) x" % (lumi1, lumi2), "l")
                     misc.append(leg)
                 leg.Draw("same")
 
