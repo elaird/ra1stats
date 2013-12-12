@@ -44,15 +44,11 @@ def graph(h1=None, h2=None):
     return out
 
 
-def go(spec1={}, spec2={}, mode=None):
-    canvas = r.TCanvas(mode, mode, 800, 600)
+def go(spec1={}, spec2={}, mode=None, stem=""):
+    canvas = r.TCanvas(stem+mode, stem+mode, 800, 600)
 
     assert mode in ["yields", "ratios", "scatter"], mode
-
-    fileName = {"yields": "yields.pdf",
-                "ratios": "yields_ratios.pdf",
-                "scatter": "yields_scatter.pdf",
-                }[mode]
+    fileName = "%s_%s.pdf" % (stem, mode)
 
     label1 = spec1["label"]
     if spec1["byLumi"]:
@@ -155,10 +151,21 @@ def go(spec1={}, spec2={}, mode=None):
 if __name__ == "__main__":
     from inputData.data2012hcp import take14
     from inputData.data2012dev import take0, take8
+    from inputData.data2012dev import take8_BC, take8_D
 
     setup()
     for mode in ["yields", "ratios", "scatter"]:
-        go(mode=mode,
+        go(mode=mode, stem="full",
            spec1={"mod": take14, "label": "ABC_P", "lumiFactor": 1.0e-3, "byLumi": mode != "scatter"},
            spec2={"mod": take8,  "label": "BCD_R", "lumiFactor": 1.0,    "byLumi": mode != "scatter"},
+           )
+
+        go(mode=mode, stem="rereco",
+           spec1={"mod": take14,   "label": "ABC_P", "lumiFactor": 1.0e-3, "byLumi": mode != "scatter"},
+           spec2={"mod": take8_BC, "label": "BC_R",  "lumiFactor": 1.0,    "byLumi": mode != "scatter"},
+           )
+
+        go(mode=mode, stem="newdata",
+           spec1={"mod": take8_D,  "label": "D_R",  "lumiFactor": 1.0, "byLumi": mode != "scatter"},
+           spec2={"mod": take8_BC, "label": "BC_R", "lumiFactor": 1.0, "byLumi": mode != "scatter"},
            )
