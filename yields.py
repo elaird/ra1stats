@@ -37,7 +37,15 @@ def graph(h1=None, h2=None):
         y2 = h2.GetBinContent(iBinX)
         yErr1 = h1.GetBinError(iBinX)
         yErr2 = h2.GetBinError(iBinX)
-        if y1 and y2:
+        if y1 or y2:
+            if y1 == 0.0:
+                y1 = graphMin
+                yErr1 = 1.8 - graphMin
+
+            if y2 == 0.0:
+                y2 = graphMin
+                yErr2 = 1.8 - graphMin
+
             out.SetPoint(iPoint, y1, y2)
             out.SetPointError(iPoint, yErr1, yErr2)
             iPoint += 1
@@ -62,6 +70,7 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
 
     line = r.TLine()
 
+    leg = None
     for name in ["0b_le3j", "1b_le3j", "2b_le3j", "3b_le3j",
                  "0b_ge4j", "1b_ge4j", "2b_ge4j", "3b_ge4j",
                  "ge4b_ge4j"]:
@@ -97,11 +106,24 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
             canvas.cd(1 + iKey)
 
             if mode == "yields":
-                h1.Draw()
+                h1.SetMarkerStyle(21)
+                h1.SetMarkerSize(0.4*h1.GetMarkerSize())
+                h1.SetMarkerColor(h1.GetLineColor())
+                h1.Draw("pe")
                 h1.SetStats(False)
+
                 h2.SetLineColor(r.kRed)
                 h2.SetMarkerColor(r.kRed)
                 h2.Draw("same")
+
+                if leg is None:
+                    leg = r.TLegend(0.65, 0.65, 0.85, 0.85)
+                    leg.SetBorderSize(0)
+                    leg.SetFillStyle(0)
+                    leg.AddEntry(h1, label1, "le")
+                    leg.AddEntry(h2, label2, "le")
+                    misc.append(leg)
+                leg.Draw("same")
 
             if mode == "ratios":
                 h2.Divide(h1)
@@ -122,7 +144,7 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
                 gr.SetName(h2.GetTitle())
                 gr.SetTitle("%s;%s  (%4.1f/fb);%s  (%4.1f/fb)" % (h2.GetTitle(), label2, lumi2, label1, lumi1))
 
-                null = r.TH2D("null_"+gr.GetTitle(), gr.GetTitle(), 1, 0.5, 20.0e3, 1, 0.5, 20.0e3)
+                null = r.TH2D("null_"+gr.GetTitle(), gr.GetTitle(), 1, graphMin, graphMax, 1, graphMin, graphMax)
                 null.SetStats(False)
                 null.Draw()
 
@@ -135,6 +157,14 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
                 misc += [gr, one, null]
                 r.gPad.SetLogx()
                 r.gPad.SetLogy()
+
+                if leg is None:
+                    leg = r.TLegend(0.15, 0.65, 0.45, 0.85)
+                    leg.SetBorderSize(0)
+                    leg.SetFillStyle(0)
+                    leg.AddEntry(one, "y = (%4.1f/%4.1f) x" % (lumi2, lumi1), "l")
+                    misc.append(leg)
+                leg.Draw("same")
 
 
             r.gPad.SetTickx()
@@ -152,6 +182,9 @@ if __name__ == "__main__":
     from inputData.data2012hcp import take14
     from inputData.data2012dev import take0, take8
     from inputData.data2012dev import take8_BC, take8_D
+
+    graphMin = 0.5
+    graphMax = 20.0e3
 
     setup()
     for mode in ["yields", "ratios", "scatter"]:
