@@ -1,4 +1,4 @@
-from configuration.units import fb
+from inputData.units import fb
 from data import data
 import utils
 
