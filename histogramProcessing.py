@@ -201,7 +201,7 @@ def xsHisto(model=None):
 
 def xsHistoPhysical(model=None, cmssmProcess=""):
     #get example histo and reset
-    dummyHisto = "m0_m12_mChi_noweight" if model.isSms else "m0_m12_gg"
+    dummyHisto = model.weightedHistName
     s = conf.signal.effHistoSpec(model=model, box="had")
     out = ratio(s["file"],
                 s["beforeDir"], dummyHisto,
@@ -247,9 +247,9 @@ def xsHistoAllOne(model=None, cutFunc=None):
     return h
 
 
-def nEventsInHisto(model=None):
+def sumWeightInHisto(model=None):
     s = conf.signal.effHistoSpec(model=model, box="had")
-    return oneHisto(s["file"], s["beforeDir"], "m0_m12_mChi_noweight")
+    return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
 
 
 def effHisto(model=None, box="",
@@ -268,6 +268,39 @@ def effHisto(model=None, box="",
         return smsEffHisto(spec=spec, model=model)
     else:
         return cmssmEffHisto(spec=spec, model=model)
+
+def meanWeightSigMc(model=None, box="",
+                    htLower=None, htUpper=None,
+                    bJets="", jets=""):
+    if model.ignoreEff(box):
+        return None
+
+    spec = conf.signal.effHistoSpec(model=model,
+                                    box=box,
+                                    htLower=htLower,
+                                    htUpper=htUpper,
+                                    bJets=bJets,
+                                    jets=jets)
+    assert model.isSms
+    return ratio(spec["file"],
+                 spec["afterDir"], spec["weightedHistName"],
+                 spec["afterDir"], spec["unweightedHistName"])
+
+
+def nEventsSigMc(model=None, box="",
+                 htLower=None, htUpper=None,
+                 bJets="", jets=""):
+    if model.ignoreEff(box):
+        return None
+
+    spec = conf.signal.effHistoSpec(model=model,
+                                    box=box,
+                                    htLower=htLower,
+                                    htUpper=htUpper,
+                                    bJets=bJets,
+                                    jets=jets)
+    assert model.isSms
+    return oneHisto(spec["file"], spec["afterDir"], spec["unweightedHistName"])
 
 
 def cmssmEffHisto(spec={}, model=None):
@@ -296,13 +329,9 @@ def cmssmEffHisto(spec={}, model=None):
 
 
 def smsEffHisto(spec={}, model=None):
-    #out = ratio(s["file"],
-    #            s["afterDir"], "m0_m12_mChi",
-    #            s["beforeDir"], "m0_m12_mChi")
     out = ratio(spec["file"],
-                spec["afterDir"], "m0_m12_mChi_noweight",
-                spec["beforeDir"], "m0_m12_mChi_noweight")
-    fillPoints(out, points=patches.overwriteInput()[model.name])
+                spec["afterDir"], spec["weightedHistName"],
+                spec["beforeDir"], spec["weightedHistName"])
     return out
 
 
@@ -314,13 +343,13 @@ def points():
     for model in conf.signal.models():
         name = model.name
         whiteList = conf.signal.whiteListOfPoints(name)
-        h = xsHisto(model)
+        h = sumWeightInHisto(model)
         bins = utils.bins(h, interBin=model.interBin)
         for iBinX, x, iBinY, y, iBinZ, z in bins:
             if whiteList and (x, y) not in whiteList:
                 continue
             content = h.GetBinContent(iBinX, iBinY, iBinZ)
-            if not content:
+            if not model.sumWeightInRange(content):
                 continue
             if multiples and ((x/multiples) % 1 != 0.0):
                 continue

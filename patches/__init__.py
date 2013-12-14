@@ -92,8 +92,6 @@ def curves() :
             }
     return out
 
-def overwriteInput() :
-    return collections.defaultdict(list)
 
 def overwriteOutput() :
     out = collections.defaultdict(list)

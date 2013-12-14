@@ -870,7 +870,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
     canvas.SetLogz(name in logZ)
     if name == "xs" and name in logZ:
         h2.SetMinimum(1.0e-2)
-    if name == "nEventsHad" and name in logZ:
+    if name == "nEventsSigMcHad" and name in logZ:
         h2.SetMinimum(0.9)
     if "NLO_over_LO" in name:
         h2.SetMinimum(0.5)
@@ -896,8 +896,8 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-    minEventsIn, maxEventsIn = conf.signal.nEventsIn(model.name)
-    if "nEventsIn" in name and (minEventsIn or maxEventsIn):
+    minEventsIn, maxEventsIn = conf.signal.sumWeightIn(model.name)
+    if "sumWeightIn" in name and (minEventsIn or maxEventsIn):
         if minEventsIn:
             h2.SetMinimum(minEventsIn)
         if maxEventsIn:

@@ -1092,7 +1092,6 @@ class validationPlotter(object) :
                 continue
             histo.SetBinContent(i+1, l*xs*eff[i])
 
-
     def varHisto(self, spec={}, extraName="", yLabel="", note="", lumiString=""):
         color       = spec.get("color", r.kBlack)
         lineStyle   = spec.get("style", 1)

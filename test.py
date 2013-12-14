@@ -26,13 +26,14 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
+def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False, sigMcUnc=False,
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
     ls = likelihoodSpec.spec(whiteList=whiteList,
                              dataset=dataset,
                              ignoreHad=ignoreHad,
-                             separateSystObs=not ensemble
+                             separateSystObs=not ensemble,
+                             sigMcUnc=sigMcUnc,
                              )
 
     examples_paper = {("0b_le3j",): signals.t2.a,
@@ -79,7 +80,6 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False,
                       #trace=True
                       #rhoSignalMin=0.1,
                       #fIniFactor=0.1,
-                      #extraSigEffUncSources=["effHadSumUncRelMcStats"],
                       )
 
     out = None
@@ -152,7 +152,7 @@ kargs = {"bestFit": True,
 if kargs["dataset"] == "2011":
     go(**kargs)
 else:
-    selections = likelihoodSpec.spec(dataset=kargs["dataset"]).selections()
+    selections = likelihoodSpec.spec(dataset=kargs["dataset"], sigMcUnc=False).selections()
     report = {}
     hMap = {}
     bins = (len(selections), 0.0, len(selections))
@@ -162,6 +162,7 @@ else:
     for iSel, sel in enumerate(selections):
         args = {"whiteList": [sel.name],
                 "allCategories": sorted([x.name for x in selections]),
+                "sigMcUnc": False,
                 }
         args.update(kargs)
         dct = go(**args)
