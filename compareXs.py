@@ -10,7 +10,7 @@ import ROOT as r
 
 
 def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
-              preliminary=None):
+              preliminary=None, dM=None):
     canvas.cd()
     tl = r.TLatex()
     tl.SetNDC()
@@ -22,10 +22,18 @@ def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
     y = 0.3
     dy = 0.06
 
-    tl.DrawLatex(x, y-2*dy,
-                 'm_{%s} = %d GeV' % (configuration.signal.chi(),
-                                      int(lspMass))
-                 )
+    if dM:
+        tl.DrawLatex(x, y-2*dy,
+                     'm_{%s} - m_{%s} = %d GeV' % ("#tilde{t}",
+                                                   configuration.signal.chi(),
+                                                   dM)
+                     )
+    else:
+        tl.DrawLatex(x, y-2*dy,
+                     'm_{%s} = %d GeV' % (configuration.signal.chi(),
+                                          int(lspMass))
+                     )
+
 
     if preliminary:
         tl.DrawLatex(x, y+dy, "CMS Preliminary")
@@ -62,12 +70,12 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
 
 def exclusionHistos(limitFile="", model=None, shift=(True, False)):
     limitHistoDict = {
-        'UpperLimit': {
+        'T2cc_UpperLimit': {
             'label': 'Observed Limit (95% CL)',
             'LineWidth': 3,
             'LineColor': r.kBlue+2,
             },
-        'ExpectedUpperLimit': {
+        'T2cc_ExpectedUpperLimit': {
             'label': 'Median Expected Limit #pm 1#sigma exp.',
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
@@ -76,14 +84,14 @@ def exclusionHistos(limitFile="", model=None, shift=(True, False)):
             'FillStyle': 1001,
             'FillColor': r.kBlue-10,
             },
-        'ExpectedUpperLimit_+1_Sigma': {
+        'T2cc_ExpectedUpperLimit_+1_Sigma': {
             'label': 'Expected Upper Limit (+1#sigma)',
             'FillStyle': 1001,
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'FillColor': r.kBlue-10,
             },
-        'ExpectedUpperLimit_-1_Sigma': {
+        'T2cc_ExpectedUpperLimit_-1_Sigma': {
             'label': 'Expected Upper Limit (-1#sigma)',
             'LineColor': r.kOrange+7,
             'LineWidth': 2,
@@ -169,7 +177,7 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
             ratio.SetLineWidth(2)
             ratio.GetXaxis().SetRange(iBin, iBin)
             ratio.DrawCopy('][same')
-    #ratio.Print('all')
+    ratio.Print('all')
     if xMax is None:
         xMax = ratio.GetXaxis().GetXmax()
     if xMin is None:
@@ -179,15 +187,29 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
     return ratio, line
 
 
-def oneD(h=None, yValue=None):
+def oneD(h=None, yValue=None, dM=None):
     yBin = h.GetYaxis().FindBin(yValue)
-    return h.ProjectionX(h.GetName()+"_", yBin, yBin)
+    proj = h.ProjectionX(h.GetName()+"_", yBin, yBin)
+    if dM:
+        dMhisto = r.TH1D(h.GetName()+"_%i" % dM,"", 11, 87.5, 362.5)
+        #proj.Reset()
+        xBin = h.GetXaxis().FindBin(yValue + dM)
+        for ixBin in range(xBin, h.GetXaxis().GetNbins()):
+            yVal = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin)-dM))
+            yBin = h.GetYaxis().FindBin(yVal)
+            xVal = h.GetXaxis().GetBinCenter(ixBin) 
+            val = h.GetBinContent(ixBin,yBin)
+            err = h.GetBinError(ixBin,yBin)
+            dMhisto.SetBinContent(dMhisto.FindBin(h.GetBinCenter(ixBin)),val)
+            dMhisto.SetBinError(dMhisto.FindBin(h.GetBinCenter(ixBin)),err)
+        return dMhisto
+    return proj
 
 
 def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
-              nSmooth=0, xMin=300, xMax=800, yMin=1e-3, yMax=1e+1,
+              nSmooth=0, xMin=300, xMax=350, yMin=1e-3, yMax=1e+4,
               showRatio=False, dumpRatio=False, preliminary=None,
-              lumiStamp="", processStamp=""):
+              lumiStamp="", processStamp="", dM=None):
 
     canvas = r.TCanvas('c1', 'c1', 700, 600)
     utils.divideCanvas(canvas)
@@ -200,15 +222,15 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
 
-    for iHisto, hname in enumerate(['ExpectedUpperLimit_+1_Sigma',
-                                    'ExpectedUpperLimit',
-                                    'ExpectedUpperLimit_-1_Sigma',
+    for iHisto, hname in enumerate(['T2cc_ExpectedUpperLimit_+1_Sigma',
+                                    'T2cc_ExpectedUpperLimit',
+                                    'T2cc_ExpectedUpperLimit_-1_Sigma',
                                     'refHisto',
-                                    'UpperLimit',
+                                    #'T2cc_UpperLimit',
                                     ]):
         props = histoSpecs[hname]
         if hname != 'refHisto':
-            props["hist"] = oneD(props["hist"], yValue)
+            props["hist"] = oneD(props["hist"], yValue, dM)
             gopts = 'c'
         else:
             gopts = 'e3'
@@ -250,15 +272,15 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
             for h2 in [hCentral, hUpper, hLower][:1]:
                 h2.Draw('lsame')
     leg.Draw()
-    tl = drawStamp(canvas, lspMass=yValue, lumiStamp=lumiStamp,
-                   processStamp=processStamp, preliminary=preliminary)
+    tl = drawStamp(canvas, lspMass=yValue , lumiStamp=lumiStamp,
+                   processStamp=processStamp, preliminary=preliminary, dM=dM)
     pad.RedrawAxis()
     pad.SetLogy()
     pad.SetTickx()
     pad.SetTicky()
 
     ref = histoSpecs['refHisto']
-    obs = histoSpecs['UpperLimit']
+    obs = histoSpecs['T2cc_UpperLimit']
 
     if dumpRatio:
         #printRatio(obs, ref)
@@ -268,12 +290,12 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     if showRatio:
         ratio, line = drawRatio(ref, obs, canvas, 2, xMin=xMin, xMax=xMax)
 
-    epsFile = "_".join([model.name,
-                        "mlsp%d" % int(yValue),
-                        "xmin%d" % int(xMin),
-                        "smooth%d" % nSmooth,
-                        ]
-                       )+".eps"
+    strName = [model.name,
+               "mlsp%d" % int(yValue),
+               "xmin%d" % int(xMin),
+               "smooth%d" % nSmooth,
+               ]
+    epsFile = "_".join((strName + ["dM%d" % int(dM)]) if dM else strname)+".eps"
 
     if preliminary:
         epsFile = epsFile.replace(".eps", "_prelim.eps")
@@ -285,7 +307,7 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     os.system("ps2epsi "+epsFile+" "+epsiFile)
     os.system("epstopdf "+epsiFile)
     os.system("rm       "+epsiFile)
-    os.system("rm       "+epsFile)
+#    os.system("rm       "+epsFile)
 
 
 def setup():
@@ -296,8 +318,8 @@ def setup():
 
 def points():
     out = []
-    for mlsp, xMin in [(0, 300), (50, 300), (100, 300), (150, 350)]:
-        for nSmooth in [0, 1, 2, 5][-1:]:
+    for mlsp, xMin in [(90, 100), (50, 300), (100, 300), (150, 350)][:1]:
+        for nSmooth in [0, 1, 2, 5][:1]:
             out.append({"yValue": mlsp,
                         "nSmooth": nSmooth,
                         "xMin": xMin})
@@ -305,7 +327,7 @@ def points():
 
 
 def onePoint(yValue=None, nSmooth=None, xMin=None):
-    model = configuration.signal.scan(dataset='T2tt', com=8)  # FIXME: use interBin
+    model = configuration.signal.scan(dataset='T2cc', com=8)  # FIXME: use interBin
     hSpec = configuration.signal.xsHistoSpec(model)
 
     refHisto = referenceXsHisto(refHistoName=hSpec['histo'],
@@ -313,7 +335,8 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
                                 xsFileName=hSpec['file'],
                                 )
 
-    exclFileName = 'CLs_frequentist_TS3_T2tt_2012hcp_RQcdFallingExpExt_fZinvTwo_1b_ge4j-1hx2p_2b_ge4j-1h.root'
+    exclFileName = 'CLs_asymptotic_TS3_T2cc_2012dev_RQcdZero_fZinvAll_0b_le3j-1hx2p_0b_ge4j-1hx2p_1b_le3j-1hx2p.root'
+
     exclHistos = exclusionHistos(limitFile='ra1r/scan/%s' % exclFileName, model=model)
 
     options = {
@@ -321,9 +344,10 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
         'xLabel': 'm_{#tilde{t}} (GeV)',
         'yLabel': '#sigma (pb)',
         'showRatio': False,
-        'lumiStamp': 'L = 11.7 fb^{-1}, #sqrt{s} = 8 TeV',
+        'lumiStamp': 'L = 18.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
         'processStamp': configuration.signal.processStamp(model.name)['text'],
+        'dM': 10.0
         }
 
     compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,
