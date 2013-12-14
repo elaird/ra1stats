@@ -158,7 +158,7 @@ class spec(object) :
         self._RQcd = "Zero"
         self._nFZinv = "All"
         self._legendTitle = "CMS Preliminary, 18.7 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012dev import take3 as module
+        from inputData.data2012dev import take4 as module
 
         #QCD test
         if False :
