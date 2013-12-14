@@ -15,7 +15,7 @@ def check(subDir, fileName):
     try:
         exec("from %s import %s" % (subDir, module))
     except:
-        print module
+        print subDir, module
         sys.excepthook(*sys.exc_info())
         print
         return False
@@ -30,7 +30,7 @@ def check(subDir, fileName):
             a = obj()
             return True
         except:
-            print module, item
+            print subDir, module, item
             sys.excepthook(*sys.exc_info())
             print
             return False
@@ -47,7 +47,6 @@ def walk(skip=[]):
             continue
         if os.path.islink(dirName) or not os.path.isdir(dirName):
             continue
-        print "%s:" % dirName
         for fileName in os.listdir(dirName):
             if fileName == "__init__.py" or fileName.endswith(".pyc"):
                 continue
