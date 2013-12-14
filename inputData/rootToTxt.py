@@ -1,4 +1,4 @@
-from collections import Iterable
+import collections
 import ROOT as r
 
 
@@ -57,7 +57,7 @@ def checkHistoBinning(histoList=[]):
 
 def print_unpack(item, level=0, ending_comma=False):
     if not isinstance(item, dict):
-        if not isinstance(item, Iterable):
+        if not isinstance(item, collections.Iterable):
             print "\t"*level, "{item:.4}".format(item=item),
             if ending_comma:
                 print ","
