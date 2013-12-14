@@ -1,4 +1,8 @@
-import math,copy
+import math
+
+
+def quadSum(l) :
+    return math.sqrt(sum([x**2 for x in l]))
 
 def scaled(t, factor) :
     return tuple([factor*a if a!=None else None for a in t])
