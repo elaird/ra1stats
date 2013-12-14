@@ -1,10 +1,63 @@
-from collections import Iterable
-import histogramProcessing as hp
+import collections
+import ROOT as r
+
+
+def subDirHistos(fileName="", check1D=False, check2D=False):
+    oneD = []
+    twoD = []
+    out = {}
+
+    f = r.TFile(fileName)
+    for subDirKey in f.GetListOfKeys():
+        subDir = subDirKey.GetName()
+        out[subDir] = {}
+        for hKey in f.Get(subDir).GetListOfKeys():
+            name = hKey.GetName()
+            h = f.Get("%s/%s" % (subDir, name)).Clone("%s_%s" % (subDir, name))
+            h.SetDirectory(0)
+            out[subDir][name] = h
+            if h.ClassName()[:3] == "TH2":
+                twoD.append(h)
+            if h.ClassName()[:3] == "TH1":
+                oneD.append(h)
+    f.Close()
+    if check2D:
+        checkHistoBinning(twoD)
+    if check1D:
+        checkHistoBinning(oneD)
+    return out
+
+
+def checkHistoBinning(histoList=[]):
+    def axisStuff(axis):
+        return (axis.GetXmin(), axis.GetXmax(), axis.GetNbins())
+
+    def properties(histos):
+        out = collections.defaultdict(list)
+        for h in histos:
+            try:
+                out["type"].append(type(h))
+                out["x"].append(axisStuff(h.GetXaxis()))
+                out["y"].append(axisStuff(h.GetYaxis()))
+                out["z"].append(axisStuff(h.GetZaxis()))
+            except AttributeError as ae:
+                h.Print()
+                raise ae
+        return out
+
+    for axis, values in properties(histoList).iteritems():
+        #print "Here are the %s binnings: %s"%(axis, str(values))
+        sv = set(values)
+        if len(sv) != 1:
+            print "The %s binnings do not match: %s" % (axis, str(values))
+            for h in histoList:
+                print h, properties([h])
+            assert False
 
 
 def print_unpack(item, level=0, ending_comma=False):
     if not isinstance(item, dict):
-        if not isinstance(item, Iterable):
+        if not isinstance(item, collections.Iterable):
             print "\t"*level, "{item:.4}".format(item=item),
             if ending_comma:
                 print ","
@@ -48,9 +101,9 @@ def projection(h2=None, name="", yMin=None, yMax=None):
 
 
 def sliced(dir="", fileName="", yMin=None, yMax=None):
-    perBox = hp.subDirHistos("%s/%s" % (dir, fileName),
-                             check2D=True,
-                             check1D=False)
+    perBox = subDirHistos("%s/%s" % (dir, fileName),
+                          check2D=True,
+                          check1D=False)
     out = {}
     for box, perSample in perBox.iteritems():
         out[box] = {}
