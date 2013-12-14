@@ -8,12 +8,12 @@ def setup() :
     r.gErrorIgnoreLevel = 2000
 
 def plotRatio(canvas=None, factors=None, graphs=None, data=None, name=None, datasets=[], leg=None):
-    
     htMeans = data.htMeans()
     nDataset = len(datasets)
+    graphsToReturn = []
+
     for i,tr in enumerate(factors):
         canvas.cd(i+1)
-
         r.gPad.SetTickx()
         r.gPad.SetTicky()
 
@@ -31,8 +31,9 @@ def plotRatio(canvas=None, factors=None, graphs=None, data=None, name=None, data
         rgr.SetLineColor(r.kRed)
         rgr.SetMarkerColor(r.kRed)
         rgr.SetTitle("%s: %s;<H_{T}> in bin (GeV); translation factor ratio"%(name, tr))
-        
+
         hPoint = 0
+        hrPoint = 0
         for hPoint, ht in enumerate(htMeans):
             t=[]
             dPoint = 0
@@ -41,27 +42,20 @@ def plotRatio(canvas=None, factors=None, graphs=None, data=None, name=None, data
                 Ht = r.Double(0)
                 gr.GetPoint(hPoint, Ht, tf)
                 t.append(tf)
-
-            
             for itf, tf in enumerate(t):
                 if not itf: continue
                 if t[0] == 0.0: continue
                 ratio = t[itf]/t[0]
-                print "itf",itf,"hPoint",hPoint,"Ht", Ht, "t[itf]",t[itf],"t[0]",t[0], "ratio", ratio
-                rgr.SetPoint(hPoint, Ht, ratio)
+                #print "itf",itf,"hrPoint",hrPoint,"Ht", Ht, "t[itf]",t[itf],"t[0]",t[0], "ratio", ratio
+                rgr.SetPoint(hrPoint, Ht, ratio)
             hPoint += 1
-        testFile = r.TFile("test.root","RECREATE")
-        rgr.Draw("same")
-        rgr.Write()
-        testFile.Close()
-        leg.Draw()
-        #hist = rgr.GetHistogram()
-        
-        #for axis in [hist.GetXaxis(), hist.GetYaxis()] :
-        #    axis.SetTitleSize(1.4*axis.GetTitleSize())
-        #    hist.SetMinimum(0.0)
-        
-
+            hrPoint += 1
+        rgr.Draw("ap")
+        hist = rgr.GetHistogram()
+        for axis in [hist.GetXaxis(), hist.GetYaxis()] :
+            axis.SetTitleSize(1.4*axis.GetTitleSize())
+        graphsToReturn.append(rgr)
+    return graphsToReturn
 
 def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset = 0, color = None, afterTrigger = False) :
     htMeans = data.htMeans()
@@ -92,7 +86,6 @@ def oneDataset(canvas = None, factors = None, data = None, name = "", iDataset =
             gr.SetPoint(iGraph, h, t)
             gr.SetPointError(iGraph, 0.0, tE if tE else 0.0)
             iGraph += 1
-
         gr.Draw("psame" if iDataset else "ap")
         hist = gr.GetHistogram()
         for axis in [hist.GetXaxis(), hist.GetYaxis()] :
@@ -136,23 +129,26 @@ def plot(datasets = [], tag = "", factors = ["gZ", "mumuZ", "muW"]) :
         leg.Draw()
         canvas.Print(fileName)
     canvas.Print(fileName+"]")
-    
-    canvas2 = r.TCanvas("canvas2", "canvas2", 600, 800)
+    canvas.Clear()
+
     ratioFileName = "plots/ratio_translation_factors_%s.pdf"%tag
-    canvas2.Print(ratioFileName+"[")
-    for name in slices[0:1]:
-        print name
-        canvas2.cd(0)
-        canvas2.Clear()
-        canvas2.Divide(1, 3)
-        plotRatio(canvas = canvas2,
-                  factors = factors if name!="ge3b" else ["muHad"],
-                  graphs = misc, data = getattr(module, "data_%s"%name)(),
-                  name = name,
-                  datasets = datasets, leg = leg)
-        canvas2.cd(0)
-        canvas2.Print(ratioFileName)    
-    canvas2.Print(ratioFileName+"]")
+    canvas.Print(ratioFileName+"[")
+    for name in slices:
+        canvas.cd(0)
+        canvas.Clear()
+        canvas.Divide(1, 3)
+        rgr = plotRatio(canvas = canvas,
+                        factors = factors if name!="ge3b" else ["muHad"],
+                        graphs = misc,
+                        data = getattr(module, "data_%s"%name)(),
+                        name = name,
+                        datasets = datasets,
+                        leg = leg
+                        )
+        canvas.cd(0)
+        canvas.Print(ratioFileName)    
+    canvas.Print(ratioFileName+"]")
+    canvas.Delete()
 
 
 ##########
@@ -161,7 +157,7 @@ from inputData.data2011reorg import take3
 from inputData.data2012hcp import take5,take5a,take5_capped,take5_unweighted
 from inputData.data2012hcp import take6,take6_capped,take6_unweighted
 from inputData.data2012hcp import take12_weighted,take12_unweighted,take14
-from inputData.data2012dev import take0,take1,take3,take4,take3_sitv
+from inputData.data2012dev import take0,take1,take3,take5,take5_noMHTMET
 
 setup()
 
@@ -219,11 +215,11 @@ elif d=="2012dev" :
     color1 = {"ge2j":r.kBlack, "ge4j":r.kRed,    "le3j":r.kBlue}
     color2 = {"ge2j":r.kGray,  "ge4j":r.kOrange, "le3j":r.kCyan}
 
-    for i,j in enumerate(["ge4j", "le3j"][1:]) :
+    for i,j in enumerate(["ge4j", "le3j"]) :
         bs = ["0b", "1b", "2b", "3b"]+(["ge4b"] if j!="le3j" else [])
         slices = ["%s_%s"%(b,j) for b in bs]
-        datasets = [ {"module": take3, "slices": slices, "color":color1[j], "label": "2012 dev (%s, weighted)"%j},
-                     {"module": take4, "slices": slices, "color":color2[j], "label": "2012 dev w/o MHT/MET sideband weights (%s, weighted)"%j},
+        datasets = [ {"module": take5, "slices": slices, "color":color1[j], "label": "2012 dev (%s, weighted)"%j},
+                     {"module": take5_noMHTMET, "slices": slices, "color":color2[j], "label": "2012 dev w/o MHT/MET sideband weights (%s, weighted)"%j},
                      ]
         #print datasets
         plot(datasets, tag = j)
