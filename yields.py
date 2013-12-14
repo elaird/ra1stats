@@ -52,9 +52,16 @@ def graph(h1=None, h2=None):
     return out
 
 
-def go(spec1={}, spec2={}, mode=None, stem=""):
+def hMax(h=None):
+    iBin = h.GetMaximumBin()
+    return h.GetBinContent(iBin) + h.GetBinError(iBin)
+
+
+def go(spec1={}, spec2={}, spec3={}, mode=None, stem=""):
     canvas = r.TCanvas(stem+mode, stem+mode, 800, 600)
 
+    assert spec1
+    assert spec2
     assert mode in ["yields", "ratios", "scatter"], mode
     fileName = "%s_%s.pdf" % (stem, mode)
 
@@ -65,6 +72,10 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
     if spec2["byLumi"]:
         label2 += "/L"
     
+    label3 = spec3.get("label", "")
+    if spec3.get("byLumi"):
+        label3 += "/L"
+
     canvas.Print(fileName+"[")
     misc = []
 
@@ -81,6 +92,7 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
 
         card1 = getattr(spec1["mod"], "data_%s" % name)()
         card2 = getattr(spec2["mod"], "data_%s" % name)()
+        card3 = getattr(spec3["mod"], "data_%s" % name)() if spec3 else None
         #print dir(card1)
         #print card.htBinLowerEdges()
         for iKey, key in enumerate(["nHad", "nMuon", "nMumu", "nPhot"]):
@@ -91,18 +103,26 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
 
             lumi1 = card1.lumi()[lumiKey]*spec1["lumiFactor"]
             lumi2 = card2.lumi()[lumiKey]*spec2["lumiFactor"]
+            lumi3 = card3.lumi()[lumiKey]*spec3["lumiFactor"] if card3 else 0.0
+
             h1 = histo("%s_%s_1" % (name, key),
                        card1.htBinLowerEdges(),
                        card1.observations()[key])
             h2 = histo("%s_%s_2" % (name, key),
                        card2.htBinLowerEdges(),
                        card2.observations()[key])
+            h3 = histo("%s_%s_3" % (name, key),
+                       card3.htBinLowerEdges(),
+                       card3.observations()[key]) if card3 else None
 
             if spec1["byLumi"]:
                 h1.Scale(1.0 / lumi1)
             if spec2["byLumi"]:
                 h2.Scale(1.0 / lumi2)
+            if spec3.get("byLumi"):
+                h3.Scale(1.0 / lumi3)
 
+            misc += [h1, h2, h3]
             canvas.cd(1 + iKey)
 
             if mode == "yields":
@@ -115,7 +135,15 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
                 h2.SetLineColor(r.kRed)
                 h2.SetMarkerColor(r.kRed)
                 h2.Draw("same")
-                h1.GetYaxis().SetRangeUser(0.0, 1.1*max([h1.GetMaximum(), h2.GetMaximum()]))
+
+                maxes = [hMax(h1), hMax(h2)]
+                if h3:
+                    h3.SetLineColor(8)
+                    h3.SetMarkerColor(8)
+                    h3.Draw("same")
+                    maxes.append(hMax(h3))
+
+                h1.GetYaxis().SetRangeUser(0.0, 1.1*max(maxes))
 
                 if leg is None:
                     leg = r.TLegend(0.65, 0.65, 0.85, 0.85)
@@ -123,6 +151,8 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
                     leg.SetFillStyle(0)
                     leg.AddEntry(h1, label1, "le")
                     leg.AddEntry(h2, label2, "le")
+                    if h3:
+                        leg.AddEntry(h3, label3, "le")
                     misc.append(leg)
                 leg.Draw("same")
 
@@ -171,9 +201,6 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
             r.gPad.SetTickx()
             r.gPad.SetTicky()
 
-            misc.append(h1)
-            misc.append(h2)
-
         canvas.Print(fileName)
 
     canvas.Print(fileName+"]")
@@ -182,7 +209,7 @@ def go(spec1={}, spec2={}, mode=None, stem=""):
 if __name__ == "__main__":
     from inputData.data2012hcp import take14
     from inputData.data2012dev import take0, take8
-    from inputData.data2012dev import take8_BC, take8_D
+    from inputData.data2012dev import take9_B, take9_C, take9_BC, take9_D
 
     graphMin = 0.5
     graphMax = 20.0e3
@@ -196,10 +223,16 @@ if __name__ == "__main__":
 
         go(mode=mode, stem="rereco",
            spec1={"mod": take14,   "label": "ABC_P", "lumiFactor": 1.0e-3, "byLumi": mode != "scatter"},
-           spec2={"mod": take8_BC, "label": "BC_R",  "lumiFactor": 1.0,    "byLumi": mode != "scatter"},
+           spec2={"mod": take9_BC, "label": "BC_R",  "lumiFactor": 1.0,    "byLumi": mode != "scatter"},
            )
 
         go(mode=mode, stem="newdata",
-           spec1={"mod": take8_D,  "label": "D_R",  "lumiFactor": 1.0, "byLumi": mode != "scatter"},
-           spec2={"mod": take8_BC, "label": "BC_R", "lumiFactor": 1.0, "byLumi": mode != "scatter"},
+           spec1={"mod": take9_D,  "label": "D_R",  "lumiFactor": 1.0, "byLumi": mode != "scatter"},
+           spec2={"mod": take9_BC, "label": "BC_R", "lumiFactor": 1.0, "byLumi": mode != "scatter"},
            )
+
+    go(mode="yields", stem="eras",
+       spec1={"mod": take9_B, "label": "B_R", "lumiFactor": 1.0, "byLumi": True},
+       spec2={"mod": take9_C, "label": "C_R", "lumiFactor": 1.0, "byLumi": True},
+       spec3={"mod": take9_D, "label": "D_R", "lumiFactor": 1.0, "byLumi": True},
+       )
