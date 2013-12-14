@@ -5,6 +5,7 @@ import os
 import common
 import configuration as conf
 import histogramProcessing as hp
+from inputData import rootToTxt
 import likelihoodSpec
 import utils
 
@@ -111,7 +112,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
                       "xs": hp.xsHisto(model),
                       "sumWeightIn": hp.sumWeightInHisto(model),
                       }
-        hp.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
+        rootToTxt.checkHistoBinning([args[name]["xs"]]+histoList(args[name]["eff"]))
 
     for point in points:
         name = point[0]
