@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import data
 import os
 import sys
 
 
-def check(topDir, subDir, fileName):
+def check(subDir, fileName):
     if len(fileName) < 3 or fileName[-3:] != ".py":
         return
 
@@ -14,7 +13,7 @@ def check(topDir, subDir, fileName):
         return
 
     try:
-        exec("from %s.%s import %s" % (topDir, subDir, module))
+        exec("from %s import %s" % (subDir, module))
     except:
         print module
         sys.excepthook(*sys.exc_info())
@@ -37,18 +36,22 @@ def check(topDir, subDir, fileName):
             return False
 
 
-def walk(top="", topSkip=[]):
+def walk(skip=[]):
     passed = []
     failed = []
-    for dirName in os.listdir("%s/" % top):
-        if dirName.startswith("__init__") or dirName.startswith("syst") or dirName in topSkip:
-            continue
 
+    filePath = os.path.dirname(__file__)
+    os.chdir(filePath)
+    for dirName in os.listdir("."):
+        if dirName in skip:
+            continue
+        if os.path.islink(dirName) or not os.path.isdir(dirName):
+            continue
         print "%s:" % dirName
-        for fileName in os.listdir("%s/%s" % (top, dirName)):
+        for fileName in os.listdir(dirName):
             if fileName == "__init__.py" or fileName.endswith(".pyc"):
                 continue
-            t = (top, dirName, fileName)
+            t = (dirName, fileName)
             (passed if check(*t) else failed).append(t)
     return passed, failed
 
@@ -64,4 +67,5 @@ def report(passed=[], failed=[]):
     dump(failed)
 
 
-report(*walk(top="inputData", topSkip=["data2011old"]))
+import data
+report(*walk(skip=["data2011old"]))
