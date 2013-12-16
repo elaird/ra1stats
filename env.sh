@@ -5,14 +5,17 @@ TAG=x86_64-slc5-gcc43-opt
 GCCVER="4.3.2"
 PYVER="2.6.5"
 if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
-    BASEDIR=/vols/cms02/elaird1/18_root_from_afs/lcg/
-    ROOTVER="5.32.01"
+    . /vols/cms/grid/setup.sh
+    cd ~elaird1/CMSSW_6_1_2/src
+    cmsenv
 elif [[ "$HOSTNAME" == *.fnal.gov ]]; then
-    BASEDIR=/uscms_data/d1/samr/18_root_from_afs/lcg/
+    #BASEDIR=/uscms_data/d1/samr/18_root_from_afs/lcg/
     ROOTVER="5.32.01"
+    echo "FIX ME"
 else
-    BASEDIR=/afs/cern.ch/sw/lcg/
-    ROOTVER="5.34.02/${TAG}"
+    #BASEDIR=/afs/cern.ch/sw/lcg/
+    #ROOTVER="5.34.03/${TAG}"
+    cd /afs/cern.ch/cms/slc5_amd64_gcc472/cms/cmssw/CMSSW_6_1_2/src && eval `scramv1 runtime -sh` && cd - > /dev/null
 fi
 
 if [[ "$BASEDIR" ]]; then
