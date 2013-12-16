@@ -25,7 +25,7 @@ def collect(wspace, results, extraStructure = False) :
     return out
 
 def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), cutFunc = None, toyNumberMod = 5) :
-    results = utils.rooFitResults(common.pdf(wspace), data, globalObs = wspace.set("systObs"))
+    results = utils.rooFitResults(common.pdf(wspace), data)
     wspace.saveSnapshot("snap", wspace.allVars())
 
     obs = collect(wspace, results, extraStructure = True)
@@ -34,8 +34,8 @@ def ntupleOfFitToys(wspace = None, data = None, nToys = None, cutVar = ("",""), 
     for i,dataSet in enumerate(common.pseudoData(wspace, nToys)) :
         if not (i%toyNumberMod) : print "iToy = %d"%i
         wspace.loadSnapshot("snap")
-        dataSet.Print("v")
-        results = utils.rooFitResults(common.pdf(wspace), dataSet, globalObs = wspace.set("systObs"))
+        #dataSet.Print("v")
+        results = utils.rooFitResults(common.pdf(wspace), dataSet)
 
         wspace.allVars().assignValueOnly(dataSet.get()) #store this toy's observations, needed for (a) computing chi2 in collect(); (b) making "snapA"
         if all(cutVar) and cutFunc and cutFunc(getattr(wspace,cutVar[0])(cutVar[1]).getVal()) :
@@ -97,7 +97,7 @@ def parHistos2D(obs = None, toys = None, pairs = [], suffix = "") :
             h.Fill(toy[pair[0]], toy[pair[1]])
     return histos
 
-def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note = "") :
+def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note = "", nToys = None) :
     src = {}
     lst = []
     for key,q in quantiles.iteritems() :
@@ -113,13 +113,15 @@ def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note =
         for item in sorted(lst) :
             print item
 
-    from makeTables import ensembleResultsBySelection as ltxResults
-    from makeTables import ensembleResultsBySample as ltxSummary
-    ltxResults( src, [ x.data for x in selections ], note = note )
-    ltxSummary( src, [ x.data for x in selections ], note = note )
+    from makeTables import ensembleResultsBySelection,ensembleResultsBySample
+    rootFile = rootFileName(note = note, nToys = nToys)
+    ensembleResultsBySelection(src, [ x.data for x in selections ],
+                               fileName = rootFile.replace(".root","_bySelection.tex"))
+    ensembleResultsBySample(src, [ x.data for x in selections ],
+                            fileName = rootFile.replace(".root","_bySample.tex"))
 
 def rootFileName(note = "", nToys = None) :
-    return "ensemble_%s_%dtoys.root"%(note, nToys)
+    return "ra1r/ensemble/ensemble_%s_%dtoys.root"%(note, nToys)
 
 def pickledFileName(note = "", nToys = None) :
     return rootFileName(note, nToys).replace(".root", ".obs")

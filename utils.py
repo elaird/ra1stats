@@ -27,7 +27,8 @@ def threeToTwo(h3) :
     h2.SetDirectory(0)
     return h2
 #####################################
-def bins(h, interBin = ["LowEdge", "Center"][0]) :
+def bins(h, interBin=""):
+    assert interBin in ["LowEdge", "Center"], interBin
     out = []
     funcs = {"X":getattr(h.GetXaxis(),"GetBin%s"%interBin),
              "Y":getattr(h.GetYaxis(),"GetBin%s"%interBin),
@@ -46,7 +47,7 @@ def histoMax(h) :
     i = h.GetMaximumBin()
     return (h.GetBinContent(i)+h.GetBinError(i))
 #####################################
-def shifted(h = None, shift = (False, False), shiftErrors = True) :
+def shifted(h=None, shift=(False, False), shiftErrors=True, info=True):
     assert len(shift) in range(1,4),shift
 
     axes = [ 'X', 'Y', 'Z' ]
@@ -70,14 +71,14 @@ def shifted(h = None, shift = (False, False), shiftErrors = True) :
         args += [nBins, min - shiftWidths[-1], max - shiftWidths[-1]]
 
     hname = h.GetName()
-    if any(shiftWidths):
+    if any(shiftWidths) and info:
         print "INFO: shifting {0} by {1}".format(hname,shiftWidths)
 
     histoConstructor= getattr(r,'TH%d%s'%(dim,htype))
     out = histoConstructor( hname+"_shifted", h.GetTitle(), *args)
     out.SetDirectory(0)
 
-    for iBinX,x,iBinY,y,iBinZ,z in bins(h) :
+    for iBinX,x,iBinY,y,iBinZ,z in bins(h, interBin="LowEdge"):
         out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
         if shiftErrors:
             out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
@@ -196,9 +197,8 @@ def ps2pdf(psFileName, removePs = True, sameDir = False) :
     os.system(cmd)
     if removePs : os.remove(psFileName)
 #####################################
-def epsToPdf(fileName, tight = True, sameDir = False) :
-    if sameDir :
-        print "WARNING: ignoring sameDir argument to utils.epsToPdf"
+def epsToPdf(fileName, tight = True, alsoPng = False) :
+    pdfFileName = fileName.replace(".eps", ".pdf")
     if not tight : #make pdf
         os.system("epstopdf "+fileName)
         os.system("rm       "+fileName)
@@ -208,13 +208,18 @@ def epsToPdf(fileName, tight = True, sameDir = False) :
         os.system("epstopdf "+epsiFile)
         os.system("rm       "+epsiFile)
         os.system("rm       "+fileName)
-    print "INFO: %s has been written."%fileName.replace(".eps", ".pdf")
+
+    if alsoPng :
+        os.system("convert %s %s"%(pdfFileName, pdfFileName.replace(".pdf",".png")))
+    print "INFO: %s has been written."%pdfFileName
 #####################################
-def rooFitResults(pdf, data, options = (r.RooFit.Verbose(False), r.RooFit.PrintLevel(-1), r.RooFit.Save(True)), globalObs = None) :
-    if globalObs :
-        options = list(options)+[r.RooFit.GlobalObservables(globalObs)]
-        print options
-    return pdf.fitTo(data, *tuple(options))
+def rooFitResults(pdf, data, options=(r.RooFit.Verbose(False),
+                                      r.RooFit.PrintLevel(-1),
+                                      r.RooFit.Save(True),
+                                      #r.RooFit.Strategy(r.RooMinuit.Robustness),
+                                      ),
+                  ):
+    return pdf.fitTo(data, *options)
 #####################################
 def checkResults(results) :
     status = results.status()
@@ -223,6 +228,7 @@ def checkResults(results) :
     if status : print "WARNING: status = %d"%status
     if numIN : print "WARNING: num invalid NLL = %d"%numIN
     #if covQual : print "WARNING: covQual = %d"%covQual
+    return numIN
 #####################################
 def compile(sourceFile) :
     r.gSystem.SetAclicMode(r.TSystem.kDebug)

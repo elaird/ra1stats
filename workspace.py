@@ -66,14 +66,6 @@ def parametrizedExp(w = None, name = "", label = "", kLabel = "", i = None) :
     varName = ni(name, label, i)
     return r.RooFormulaVar(varName, "(@0)*(@1)*exp(-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
 
-def parametrizedExpA(w = None, name = "", label = "", kLabel = "", i = None) :
-    A = ni("A_%s"%name, label)
-    k = ni("k_%s"%name, kLabel)
-    bulk = ni("nHadBulk", label, i)
-    mean = ni("htMean", label, i)
-    varName = ni(name, label, i)
-    return r.RooFormulaVar(varName, "(@0)*exp((@1)-(@2)*(@3))", r.RooArgList(w.var(bulk), w.var(A), w.var(k), w.var(mean)))
-
 def parametrizedLinear(w = None, name = "", label = "", kLabel = "", i = None, iFirst = None, iLast = None) :
     def mean(j) : return ni("htMean", label, j)
     A = ni("A_%s"%name, label)
@@ -141,22 +133,27 @@ def importQcdParameters(w = None, RQcd = None, normIniMinMax = (None, None, None
         w.var(norm).setVal(0.0)
         w.var(norm).setConstant()
 
-def systTerm(w = None, name = "", obsVar = None, muVar = None, sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
+def systTerm(w = None, name = "", obsName = "", obsValue = None, muVar = None,
+             sigmaName = "", sigmaValue = None, makeSigmaRelative = False) :
     pdf = ["gauss", "lognormal"][1]
     if pdf=="gauss" :
+        wimport(w, r.RooRealVar(obsName, obsName, obsValue))
         wimport(w, r.RooRealVar(sigmaName, sigmaName, sigmaValue))
-        wimport(w, r.RooGaussian(name, name, obsVar, muVar, w.var(sigmaName)))
+        wimport(w, r.RooGaussian(name, name, w.var(obsName), muVar, w.var(sigmaName)))
     elif pdf=="lognormal" :
+        wimport(w, r.RooRealVar(obsName, obsName, obsValue, 0.0, r.RooNumber.infinity()))
+        w.var(obsName).setConstant(True)
         #see aux/lognormalExample.py
         if makeSigmaRelative :
-            sigmaValue /= obsVar.getVal()
+            sigmaValue /= w.var(obsName).getVal()
         wimport(w, r.RooRealVar(sigmaName, sigmaName, 1+sigmaValue))
-        wimport(w, r.RooLognormal(name, name, obsVar, muVar, w.var(sigmaName)))
+        wimport(w, r.RooLognormal(name, name, w.var(obsName), muVar, w.var(sigmaName)))
     else :
         assert False,pdf
 
 def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
              REwk = None, RQcd = None, nFZinv = None, poi = {}, qcdParameterIsYield = None,
+             initialValuesFromMuonSample = None, initialFZinvFromMc = None,
              zeroQcd = None, fZinvIni = None, fZinvRange = None, AQcdIni = None, AQcdMax = None) :
     obs = inputData.observations()
     trg = inputData.triggerEfficiencies()
@@ -165,7 +162,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     out = collections.defaultdict(list)
 
     #QCD parameters
-    assert RQcd!="FallingExpA"
     A_ewk_ini = 1.3e-5
     qcdArgs = {}
     for item in ["w", "RQcd", "label", "kQcdLabel", "poi", "zeroQcd", "qcdParameterIsYield"] :
@@ -187,27 +183,53 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     #more
     iFirst = None
     iLast = len(htMeans)-1
-    systBin = inputData.systBins()["sigmaLumiLike"]
     for i,nHadValue in enumerate(obs["nHad"]) :
         if nHadValue==None : continue
         if iFirst==None : iFirst = i
 
-        if RQcd=="FallingExpA" :
-            wimport(w, parametrizedExpA(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
-            qcd = w.function(ni("qcd", label, i))
-        elif qcdParameterIsYield :
+        if qcdParameterIsYield :
             if i :
                 wimport(w, parametrizedExpViaYield(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
                 qcd = w.function(ni("qcd", label, i))
             else :
                 qcd = w.var(ni("qcd", label, i))
+
         else :
             wimport(w, parametrizedExp(w = w, name = "qcd", label = label, kLabel = kQcdLabel, i = i))
             qcd = w.function(ni("qcd", label, i))
 
         ewk = importEwk(w = w, REwk = REwk, name = "ewk", label = label, i = i, iFirst = iFirst, iLast = iLast, nHadValue = nHadValue, A_ini = A_ewk_ini)
-        if not muonForFullEwk :
-            fZinv = importFZinv(w = w, nFZinv = nFZinv, name = "fZinv", label = label, i = i, iFirst = iFirst, iLast = iLast, iniVal = fZinvIni, minMax = fZinvRange)
+        if initialValuesFromMuonSample :
+            ewk.setVal(inputData.observations()["nMuon"][i]*inputData.mcExpectations()["mcHad"][i]/inputData.mcExpectations()["mcMuon"][i])
+
+            if RQcd!="Zero" and i==0 :
+                qcd.setRange(0.0, max(1, 2.0*obs["nHad"][i]))
+                qcd.setVal(abs(inputData.observations()["nHad"][i]-ewk.getVal()))
+                print "Warning: Introduced abs"
+                print "qcd:",qcd, ",qcd.getVal():",qcd.getVal()
+            if RQcd!="Zero" and i==1 :
+                qcd0 = w.var(ni("qcd", label, 0)).getVal()
+                qcd1 = max(1.0, inputData.observations()["nHad"][i]-ewk.getVal())
+                someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
+                print "qcd0:",qcd0,",qcd1:",qcd1,",nHadBulk[0]:",(obs["nHadBulk"][0]),",nHadBulk[1]: ",(obs["nHadBulk"][1])
+                #print (qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1])
+                #print someVal
+                w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
+                print "k_qcd:", w.var(ni("k_qcd", kQcdLabel)).getVal()
+        if not muonForFullEwk:
+            if inputData.mcExpectations()["mcHad"][i]:
+                fZinvIniFromMc = inputData.mcExpectations()["mcZinv"][i] / inputData.mcExpectations()["mcHad"][i]
+            else:
+                fZinvIniFromMc = 0.5
+            fZinv = importFZinv(w=w,
+                                nFZinv=nFZinv,
+                                name="fZinv",
+                                label=label,
+                                i=i,
+                                iFirst=iFirst,
+                                iLast=iLast,
+                                iniVal=fZinvIni if not initialFZinvFromMc else fZinvIniFromMc,
+                                minMax=fZinvRange)
             wimport(w, r.RooFormulaVar(ni("zInv", label, i), "(@0)*(@1)",       r.RooArgList(ewk, fZinv)))
             wimport(w, r.RooFormulaVar(ni("ttw",  label, i), "(@0)*(1.0-(@1))", r.RooArgList(ewk, fZinv)))
 
@@ -222,9 +244,9 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadB)))
         else :
             lumi = ni("hadLumi", label)
-            eff = ni("signalEffHad", label, i)
+            eff = ni("effHad", label, i)
             assert w.var(eff),eff
-            rho = ni("rhoSignal", systematicsLabel, systBin[i])
+            rho = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
@@ -281,8 +303,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             sigma = ni("sigmaMumuZ", label, iPar)
             gaus = ni("mumuGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMumuZ"][iPar])
             out["systObs"].append(one)
             terms.append(gaus)
@@ -322,14 +343,20 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
 
     terms = []
     if label==systematicsLabel :
-        for iPar in set(inputData.systBins()["sigmaPhotZ"]) :
+        systBins = inputData.systBins()["sigmaPhotZ"]
+        nPhot = inputData.observations()["nPhot"]
+        for iPar in set(systBins) :
+            htBins = []
+            for iHt,iSyst in enumerate(systBins) :
+                if iSyst==iPar : htBins.append(iHt)
+            counts = [nPhot[i] for i in htBins]
+            if all(map(lambda x:x==None, counts)) : continue #do not include term if all obs in relevant HT range are None
             rho = ni("rhoPhotZ", label, iPar)
             one = ni("onePhotZ", label, iPar)
             sigma = ni("sigmaPhotZ", label, iPar)
             gaus = ni("photGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaPhotZ"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
@@ -375,14 +402,12 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             sigma = ni("sigmaMuonW", label, iPar)
             gaus = ni("muonGaus", label, iPar)
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
-            wimport(w, r.RooRealVar(one, one, 1.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho),
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMuonW"][iPar])
             terms.append(gaus)
             out["systObs"].append(one)
 
     systBin = inputData.systBins()["sigmaMuonW"]
-    signalSystBin = inputData.systBins()["sigmaLumiLike"]
     for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue in zip(range(len(inputData.observations()["nMuon"])),
                                                                inputData.observations()["nMuon"],
                                                                inputData.mcExpectations()["mcMuon"],
@@ -414,7 +439,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             muonS = ni("muonS", label, i)
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
-            rhoSignal = ni("rhoSignal", systematicsLabel, signalSystBin[i])
+            rhoSignal = ni("rhoSignal", systematicsLabel)
             wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff))))
             wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
@@ -439,8 +464,7 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     qcdGaus = ni("qcdGaus", label)
     qcdTerms = ni("qcdTerms", label)
 
-    wimport(w, r.RooRealVar(k_qcd_nom, k_qcd_nom, inputData.fixedParameters()["k_qcd_nom"]))
-    systTerm(w, name = qcdGaus, obsVar = w.var(k_qcd_nom), muVar = w.var(k_qcd),
+    systTerm(w, name = qcdGaus, obsName = k_qcd_nom, obsValue = inputData.fixedParameters()["k_qcd_nom"], muVar = w.var(k_qcd),
              sigmaName = k_qcd_unc_inp, sigmaValue = inputData.fixedParameters()["k_qcd_unc_inp"], makeSigmaRelative = True)
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
@@ -455,40 +479,84 @@ def lumiVariables(w = None, inputData = None, label = "") :
         lumi = ni(item+"Lumi", label = label)
         wimport(w, r.RooRealVar(lumi, lumi, inputData.lumi()[item]))
 
-def signalEffVariables(w = None, inputData = None, label = "", signalDict = {}) :
-    for key,value in signalDict.iteritems() :
-        if "eff"!=key[:3] : continue
-        box = key.replace("eff", "").lower()
-        if type(value) not in [list,tuple] : continue
-        for iBin,signalEff,trigEff in zip(range(len(value)), value, inputData.triggerEfficiencies()[box]) :
-            name = ni(name = "signal%s"%(key.replace("eff","Eff")), label = label, i = iBin)
-            wimport(w, r.RooRealVar(name, name, signalEff*trigEff))
 
-def signalTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None,
-                signalToTest = {}, extraSigEffUncSources = [], rhoSignalMin = None) :
+def signalEffVariables(w=None, trigEffs=None, label="", signalDict={}, sigMcUnc=None):
+    for key, value in signalDict.iteritems():
+        if type(value) not in [list, tuple]:
+            continue
+        kargs = {"w": w,
+                 "label": label,
+                 "key": key,
+                 "value": value,
+                 }
+        if sigMcUnc:
+            if key.startswith("nEventsSigMc"):
+                storeSig(trigEffs=[1.0]*len(value), **kargs)
+            if key.startswith("meanWeightSigMc"):
+                box = key.replace("meanWeightSigMc", "").lower()
+                storeSig(trigEffs=trigEffs[box], patch=True, **kargs)
+        else:
+            if key.startswith("eff") and not key.endswith("Err"):
+                box = key.replace("eff", "").lower()
+                storeSig(trigEffs=trigEffs[box], **kargs)
 
-    assert not extraSigEffUncSources, "extraSigEffUncSources is not yet supported"
-    signalEffVariables(w, inputData, label, signalToTest)
+
+def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
+    for iBin, y in enumerate(value):
+        if patch:
+            if y == 0.0:
+                for jBin in range(iBin - 1, -1, -1):
+                    if value[jBin]:
+                        y = value[jBin]
+                        break
+            if y == 0.0:
+                for jBin in range(iBin + 1, len(value)):
+                    if value[jBin]:
+                        y = value[jBin]
+                        break
+            if y == 0.0:
+                assert False, "No suitable neighboring bin found (%s, %s, %d)." % (label, key, iBin)
+
+        name = ni(name=key, label=label, i=iBin)
+        wimport(w, r.RooRealVar(name, name, y*trigEffs[iBin]))
+
+
+def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None,
+                signalToTest={}, rhoSignalMin=None, sigMcUnc=None):
+
+    
+    signalEffVariables(w=w,
+                       trigEffs=inputData.triggerEfficiencies(),
+                       label=label,
+                       signalDict=signalToTest,
+                       sigMcUnc=sigMcUnc)
 
     out = collections.defaultdict(list)
-    if label==systematicsLabel :
-        for iPar in set(inputData.systBins()["sigmaLumiLike"]) :
-            #deltaSignalValue = utils.quadSum([inputData.fixedParameters()["sigmaLumiLike"]]+[signalToTest[item] for item in extraSigEffUncSources])
-            deltaSignalValue = inputData.fixedParameters()["sigmaLumiLike"][iPar]
+
+    terms = []
+    if label == systematicsLabel:
+        for iPar in [None]:
             one = ni("oneRhoSignal", label, iPar)
             rho = ni("rhoSignal", label, iPar)
             delta = ni("deltaSignal", label, iPar)
             gaus = ni("signalGaus", label, iPar)
 
-            wimport(w, r.RooRealVar(one, one, 1.0))
             wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
-            systTerm(w, name = gaus, obsVar = w.var(one), muVar = w.var(rho), sigmaName = delta, sigmaValue = deltaSignalValue)
+            systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
+                     sigmaName = delta, sigmaValue = w.var("effUncRel").getVal())
 
-            signalTermsName = ni("signalTerms", label, iPar)
-            w.factory("PROD::%s(%s)"%(signalTermsName, gaus))
-            out["terms"].append(signalTermsName)
+            terms.append(gaus)
             out["systObs"].append(one)
+
+    if sigMcUnc:
+        print "add me!"
+        #out["multiBinObs"].append(ni("nMuon", label))  # fixme
+
+    signalTermsName = ni("signalTerms", label)
+    w.factory("PROD::%s(%s)"%(signalTermsName, ",".join(terms)))
+    out["terms"].append(signalTermsName)
     return out
+
 
 def multi(w, variables, inputData) :
     out = []
@@ -514,9 +582,10 @@ def dataset(obsSet) :
     return out
 
 def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLabel = None, smOnly = None, injectSignal = None,
-                    extraSigEffUncSources = [], rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
+                    rhoSignalMin = 0.0, signalToTest = {}, signalToInject = {},
                     REwk = None, RQcd = None, nFZinv = None, poi = {}, separateSystObs = None,
-                    constrainQcdSlope = None, qcdParameterIsYield = None) :
+                    constrainQcdSlope = None, qcdParameterIsYield = None,
+                    initialValuesFromMuonSample = None, initialFZinvFromMc = None, sigMcUnc=None):
 
     variables = {"terms": [],
                  "systObs": [],
@@ -541,15 +610,16 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax"] :
         moreArgs["had"][item] = getattr(selection, item)
-    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield"] :
+    for item in ["REwk", "RQcd", "nFZinv", "poi", "qcdParameterIsYield",
+                 "initialValuesFromMuonSample", "initialFZinvFromMc"] :
         moreArgs["had"][item] = eval(item)
 
     moreArgs["signal"] = {}
-    for item in ["signalToTest", "extraSigEffUncSources", "rhoSignalMin"] :
+    for item in ["signalToTest", "rhoSignalMin", "sigMcUnc"] :
         moreArgs["signal"][item] = eval(item)
 
     args = tuple([commonArgs[item] for item in ["w", "inputData", "label"]])
-    signalEffVariables(*args, signalDict = signalToInject)
+    # signalEffVariables(*args, signalDict = signalToInject)  # fixme (signal injection)
     if (not smOnly) or injectSignal :
         lumiVariables(*args)
 
@@ -572,8 +642,9 @@ def setupLikelihood(w = None, selection = None, systematicsLabel = None, kQcdLab
     out["systObs" if separateSystObs else "obs"] += variables["systObs"]
     return out
 
-def startLikelihood(w = None, xs = None, fIniFactor = None, poi = {}) :
+def startLikelihood(w = None, xs = None, effUncRel = None, fIniFactor = None, poi = {}) :
     wimport(w, r.RooRealVar("xs", "xs", xs))
+    wimport(w, r.RooRealVar("effUncRel", "effUncRel", effUncRel))
     fIni,fMin,fMax = poi["f"]
     wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
 
@@ -583,20 +654,28 @@ def argSet( w = None, vars = [] ) :
         out.add( w.var(item) )
     return out
 
-def finishLikelihood(w = None, smOnly = None, standard = None, poiList = [], terms = [], obs = [], systObs = []) :
-    w.factory("PROD::model(%s)"%",".join(terms))
+def finishLikelihood(w=None, smOnly=None, standard=None, poiDict={}, terms=[], obs=[], systObs=[]):
+    w.factory("PROD::model(%s)" % ",".join(terms))
 
-    if (not standard) or (not smOnly) :
-        w.defineSet("poi", ",".join(poiList))
+    if (not standard) or (not smOnly):
+        w.defineSet("poi", ",".join(poiDict.keys()))
 
     w.defineSet("obs", argSet(w, obs))
     w.defineSet("systObs", argSet(w, systObs))
 
+    # override values set elsewhere, e.g. in hadTerms()
+    if not standard:
+        for name, (ini, min, max) in poiDict.iteritems():
+            var = w.var(name)
+            var.setMin(min)
+            var.setMax(max)
+            var.setVal(ini)
+
 class foo(object) :
-    def __init__(self, likelihoodSpec = {}, extraSigEffUncSources = [], rhoSignalMin = 0.0, fIniFactor = 1.0,
+    def __init__(self, likelihoodSpec = {}, rhoSignalMin = 0.0, fIniFactor = 1.0,
                  signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
 
-        for item in ["likelihoodSpec", "extraSigEffUncSources", "rhoSignalMin",
+        for item in ["likelihoodSpec", "rhoSignalMin",
                      "signalToTest", "signalExampleToStack", "signalToInject"] :
             setattr(self, item, eval(item))
 
@@ -614,27 +693,33 @@ class foo(object) :
         args["injectSignal"] = self.injectSignal()
 
         for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
-                     "constrainQcdSlope", "qcdParameterIsYield"] :
+                     "constrainQcdSlope", "qcdParameterIsYield",
+                     "initialValuesFromMuonSample", "initialFZinvFromMc"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["extraSigEffUncSources", "rhoSignalMin"] :
+        for item in ["rhoSignalMin"] :
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
+            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, effUncRel = signalToTest.effUncRel,
+                            fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
         total = collections.defaultdict(list)
         for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
-            args["signalToTest"] = self.signalToTest[sel.name] if sel.name in self.signalToTest else {}
-            args["signalToInject"] = self.signalToInject[sel.name] if sel.name in self.signalToInject else {}
+            args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
+            args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
+            args["sigMcUnc"] = self.likelihoodSpec.sigMcUnc
             d = setupLikelihood(**args)
             for key,value in d.iteritems() :
                 total[key] += value
-        finishLikelihood(w = self.wspace, smOnly = self.smOnly(), standard = self.likelihoodSpec.standardPoi(),
-                         poiList = self.likelihoodSpec.poiList(), **total)
+        finishLikelihood(w=self.wspace,
+                         smOnly=self.smOnly(),
+                         standard=self.likelihoodSpec.standardPoi(),
+                         poiDict=self.likelihoodSpec.poi(),
+                         **total)
 
         self.data = dataset(obs(self.wspace))
         self.modelConfig = modelConfiguration(self.wspace)
@@ -647,13 +732,18 @@ class foo(object) :
     def checkInputs(self) :
         l = self.likelihoodSpec
         assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
-        assert l.RQcd() in ["FallingExp", "FallingExpA", "Zero"]
+        assert l.RQcd() in ["FallingExp", "Zero"]
         assert l.nFZinv() in ["One", "Two", "All"]
         assert len(l.poi())==1, len(l.poi())
-        if not l.standardPoi() :
+        if not l.standardPoi():
             assert self.smOnly()
-            assert "FallingExp" in l.RQcd()
+            if "qcd" in l.poi().keys()[0]:
+                assert "FallingExp" in l.RQcd()
             #assert len(l.selections())==1,"%d!=1"%len(l.selections())
+
+        if l.initialValuesFromMuonSample() :
+            if l.RQcd()!="Zero" :
+                assert l.qcdParameterIsYield()
 
         if l.constrainQcdSlope() :
             assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()
@@ -665,10 +755,15 @@ class foo(object) :
                 for box in ["phot", "mumu"] :
                     assert box not in sel.samplesAndSignalEff,box
             bins = sel.data.htBinLowerEdges()
-            for dct in [self.signalToTest, self.signalExampleToStack, self.signalToInject] :
-                if sel.name not in dct : continue
-                for key,value in dct[sel.name].iteritems() :
-                    if type(value) is list : assert len(value)==len(bins)
+            for obj in [self.signalToTest, self.signalExampleToStack, self.signalToInject]:
+                if not obj:
+                    continue
+                effs = obj.effs(sel.name)
+                if not effs:
+                    continue
+                for key, value in effs.iteritems():
+                    if type(value) is list:
+                        assert len(value) == len(bins), "key %s: %d != %d" % (key, len(value), len(bins))
 
     def smOnly(self) :
         return not self.signalToTest
@@ -691,7 +786,7 @@ class foo(object) :
         return name if sum(k)!=1 else selections[k.index(True)].name
 
     def note(self) :
-        return note(likelihoodSpec = self.likelihoodSpec)
+        return note(likelihoodSpec = self.likelihoodSpec)+("_signal" if not self.smOnly() else "")
 
     def debug(self) :
         self.wspace.Print("v")
@@ -700,22 +795,14 @@ class foo(object) :
         utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
-    def writeMlTable(self, fileName = "mlTables.tex") :
+    def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
         def pars() :
             utils.rooFitResults(pdf(self.wspace), self.data)
             return floatingVars(self.wspace)
 
-        def category(v = "") :
-            if "k_qcd" in v : return "common"
-            if "rho" in v : return "common"
-            for item in ["gt2b", "2b", "1b", "0b"] :
-                if item in v : return item
-            assert False,v
-
-        def renamed(v) :
+        def renamed(v, cat = "") :
             out = v
-            for item in ["55"]+categories :
-                out = out.replace("_%s"%item,"")
+            out = out.replace("_"+cat, "")
             for i in range(9) :
                 out = out.replace("_%d"%i, "^%d"%i)
             out = out.replace("ewk", r'\mathrm{EWK}')
@@ -728,25 +815,25 @@ class foo(object) :
             return r'$%s$'%out
 
         p = pars()
-        categories = ["0b", "1b", "2b", "gt2b"]
         s  = "\n".join([r'\documentclass{article}',
                         r'\begin{document}'])
 
-        for cat in ["common"]+categories :
+        for cat in categories :
+            if not any([cat in d["name"] for d in p]) : continue
             s += "\n".join(['', '',
                             r'\begin{table}\centering',
-                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat,
+                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat.replace("_", " "),
                             r'\label{tab:mlParameterValues%s}'%cat,
                             r'\begin{tabular}{lcc}',
                             ])
             s += r'name & value & error \\ \hline'+'\n'
             for d in sorted(p, key = lambda d:d["name"]) :
-                if category(d["name"])!=cat : continue
+                if cat not in d["name"] : continue
                 cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
                 if "rho" in d["name"] or "fZinv" in d["name"] :
                     cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
                 spec = ' & '.join(['%s']+cols)+r'\\'+'\n'
-                s += spec%(renamed(d["name"]), d["value"], d["error"])
+                s += spec%(renamed(d["name"], cat), d["value"], d["error"])
             s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
 
         s += "\n".join(['',r'\end{document}'])
@@ -835,26 +922,24 @@ class foo(object) :
 
         args = {}
         args["activeBins"] = activeBins(selection)
-        args["legendXSub"] = 0.0
         args["systematicsLabel"] = self.systematicsLabel(selection.name)
 
         for item in ["smOnly", "note"] :
             args[item] = getattr(self, item)()
 
-        for item in ["wspace", "signalExampleToStack"] :
+        for item in ["wspace", "signalExampleToStack", "signalToTest"] :
             args[item] = getattr(self, item)
 
-        for arg,member in {"selNote": "note", "label":"name", "inputData":"data", "muonForFullEwk":"muonForFullEwk"}.iteritems() :
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data",
+                           "muonForFullEwk":"muonForFullEwk", "yAxisLogMinMax":"yAxisLogMinMax"}.iteritems() :
             args[arg] = getattr(selection, member)
 
         for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
             args[item] = getattr(selection.data, item)()
 
-        for item in ["REwk", "RQcd"] :
+        for item in ["REwk", "RQcd", "legendTitle", "ignoreHad"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["legendTitle"] :
-            args[item] = getattr(self.likelihoodSpec, item)
         return args
 
     def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
@@ -883,36 +968,77 @@ class foo(object) :
         return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
                              plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
 
-    def bestFit(self, printPages = False, drawMc = True, printValues = False, printNom = False, drawComponents = True,
-                errorsFromToys = 0, drawRatios = False, pullPlotMax = 3.5,
-                pullThreshold = 2.0, signalLineStyle = 1) :
+    def bestFit(self,
+                printPages=False,
+                drawMc=True,
+                printValues=False,
+                printNom=False,
+                drawComponents=True,
+                errorsFromToys=0,
+                drawRatios=False,
+                significance=False,
+                pullPlotMax=3.5,
+                pullThreshold=2.0,
+                msgThreshold=r.RooFit.DEBUG):
         #calc.pullPlots(pdf(self.wspace))
+
+        r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
         results = utils.rooFitResults(pdf(self.wspace), self.data)
-        utils.checkResults(results)
+        out = {}
+        out["numInvalidNll"] = utils.checkResults(results)
 
         poisKey = "simple"
         lognKey = "kMinusOne"
-        pulls = calc.pulls(pdf = pdf(self.wspace), poisKey = poisKey, lognKey = lognKey)
+        pulls = calc.pulls(pdf=pdf(self.wspace),
+                           poisKey=poisKey,
+                           lognKey=lognKey)
 
-        stats = calc.pullStats(pulls = pulls, nParams = len(floatingVars(self.wspace)))
-        for key in sorted(stats.keys()) :
-            print "%s = %g"%(key.ljust(7), stats[key])
+        title = "_".join([x.name for x in self.likelihoodSpec.selections()])
+        calc.pullPlots(pulls=pulls,
+                       poisKey=poisKey,
+                       lognKey=lognKey,
+                       note=self.note(),
+                       plotsDir="plots",
+                       yMax=pullPlotMax,
+                       threshold=pullThreshold,
+                       title=title)
 
-        calc.pullPlots(pulls = pulls, poisKey = poisKey, lognKey = lognKey, note = self.note(),
-                       plotsDir = "plots", yMax = pullPlotMax, threshold = pullThreshold)
-
-        for selection in self.likelihoodSpec.selections() :
+        for selection in self.likelihoodSpec.selections():
             args = self.plotterArgs(selection)
             args.update({"results": results,
                          "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
-                         "printPages": printPages, "drawMc": drawMc, "printNom":printNom,
-                         "drawComponents":drawComponents, "printValues":printValues, "errorsFromToys":errorsFromToys,
-                         "drawRatios" : drawRatios, "signalLineStyle" :
-                         signalLineStyle,
+                         "printPages": printPages,
+                         "drawMc": drawMc,
+                         "printNom": printNom,
+                         "drawComponents": drawComponents,
+                         "printValues": printValues,
+                         "errorsFromToys": errorsFromToys,
+                         "drawRatios": drawRatios,
+                         "significance": significance,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
 
-    def qcdPlot(self) :
-        plotting.errorsPlot(self.wspace, utils.rooFitResults(pdf(self.wspace), self.data))
+        # gather stats
+        out.update(calc.pullStats(pulls=pulls,
+                                  nParams=len(floatingVars(self.wspace)),
+                                  ),
+                   )
+
+        # key change
+        out["chi2ProbSimple"] = out["prob"]
+        del out["prob"]
+
+        if errorsFromToys:
+            pvalues = plotting.ensembleResults(note=self.note(),
+                                               nToys=errorsFromToys)
+            for dct in pvalues:
+                out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
+
+        return out
+
+    def qcdPlot(self):
+        plotting.errorsPlot(self.wspace,
+                            utils.rooFitResults(pdf(self.wspace), self.data),
+                            )

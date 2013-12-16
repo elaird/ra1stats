@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+
+from collections import defaultdict
 from optparse import OptionParser
 import os
-from collections import defaultdict
-############################################
+
+
 def opts() :
     parser = OptionParser("usage: %prog [options]")
     parser.add_option("--batch",      dest = "batch",      default = None,  metavar = "N",          help = "split into N jobs and submit to batch queue (N=0 means max splitting)")
@@ -30,10 +32,9 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     out = []
     if skip : return out,""
 
-    logStem = conf.stringsNoArgs()["logStem"]
-    switches = conf.switches()
+    logDir = conf.directories.log()
 
-    nJobsMax = switches["nJobsMax"]
+    nJobsMax = conf.batch.nJobsMax()
     iStart = offset*nJobsMax
     iFinish = min(iStart+nJobsMax, nSlices) if nJobsMax > 0 else nSlices
     if (iFinish!=nSlices) or offset :
@@ -44,11 +45,11 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
     #assert iStart<iFinish,warning
     for iSlice in range(iStart, iFinish) :
-        argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:switches["envScript"],
-                   3:"%s/%s_%d.log"%(pwd, logStem, iSlice) if options.output else "/dev/null"}
+        argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:conf.batch.envScript(),
+                   3:"%s/%s/job_%d.log"%(pwd, logDir, iSlice) if options.output else "/dev/null"}
         keyslice = 1 if ignoreScript else 0
         args = [argDict[key] for key in sorted(argDict.keys())[keyslice:]]
-        slices = [ "%d %d %d"%point for point in points[iSlice::nSlices] ]
+        slices = ["%s %d %d %d" % point for point in points[iSlice::nSlices]]
         out.append(" ".join(args+slices))
 
     return out,warning
@@ -56,14 +57,12 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
 def pjobCmds(queue=None) :
     from socket import gethostname
 
-    switches = conf.switches()
-    utils.mkdir("points")
     pwd = os.environ["PWD"]
 
     points = histogramProcessing.points()
     n_points = len(points)
 
-    njm = switches["nJobsMax"]
+    njm = conf.batch.nJobsMax()
     pickling.writeSignalFiles(points, outFilesAlso = False)
 
     pos = 0
@@ -73,9 +72,10 @@ def pjobCmds(queue=None) :
     for q_name, num_points in getQueueRanges(n_points,queue).iteritems():
         out[q_name]["args"] = []
         out[q_name]["n_points"] = num_points
-        filename = "points/{host}_{queue}_{pid}.points".format(host=host,
-                                                               queue=q_name,
-                                                               pid=pid)
+        filename = "{dir}/{host}_{queue}_{pid}.points".format(dir=conf.directories.points(),
+                                                              host=host,
+                                                              queue=q_name,
+                                                              pid=pid)
         pointsToFile( filename, points[pos:pos+num_points] )
         pos += num_points
         n_para_jobs = (num_points/njm) + 1
@@ -86,7 +86,7 @@ def pjobCmds(queue=None) :
             iFinish-=1
 
         for i in range(iStart, iFinish) :
-            argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:switches["envScript"],
+            argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:conf.batch.envScript(),
                        3:"/dev/null" }
             args = [argDict[key] for key in sorted(argDict.keys())]
             out[q_name]["args"].append("%s %s" %(" ".join(args),filename))
@@ -101,7 +101,7 @@ def pointsToFile( filename, points ) :
     file.close()
 
 def getQueueRanges( npoints, queue=None ) :
-    from queueData import qData
+    qData = conf.batch.qData()
     from math import ceil
     if queue is not None and queue in qData.keys():
         # allow override for running on a single queue
@@ -121,8 +121,7 @@ def getQueueRanges( npoints, queue=None ) :
 ############################################
 def pbatch(queue=None, debug=False) :
     queue_job_details, n_points = pjobCmds(queue)
-    switches = conf.switches()
-    n_jobs_max = switches["nJobsMax"]
+    n_jobs_max = conf.batch.nJobsMax()
 
     subCmds = []
     for q_name, details in queue_job_details.iteritems():
@@ -131,7 +130,7 @@ def pbatch(queue=None, debug=False) :
             #continue
             start = i*n_jobs_max + 1
             end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
-            base_cmd = switches["subCmdFormat"] % q_name
+            base_cmd = conf.batch.subCmdFormat() % q_name
             cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
                                                               start=start, end=end,
                                                               args=args)
@@ -149,7 +148,7 @@ def batch(nSlices = None, offset = None, skip = False) :
     star = False
     dstar = False
     if conf.batchHost == "IC" :
-        subCmds = ["%s %s"%(conf.switches()["subCmd"], jobCmd) for jobCmd in jcs]
+        subCmds = ["%s %s"%(conf.batch.subCmd(), jobCmd) for jobCmd in jcs]
         qFunc = os.system
     elif conf.batchHost == "FNAL" :
         dstar = True
@@ -172,15 +171,21 @@ def local(nWorkers = None, skip = False) :
     if skip : return
     utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jcs)
 ############################################
-def mkdirs() :
-    s = conf.stringsNoArgs()
-    utils.mkdir(s["logDir"])
-    utils.mkdir(s["outputDir"])
+def mkdirs():
+    module = conf.directories
+    for name in ["job", "log", "plot", "points"]:
+        dirName = getattr(module, name)()
+        utils.mkdir(dirName)
 ############################################
 options = opts()
 
 import configuration as conf
-import plottingGrid,pickling,histogramProcessing,utils,cpp
+import cpp
+import histogramProcessing
+import pickling
+import plottingGrid
+import utils
+
 
 mkdirs()
 cpp.compile()

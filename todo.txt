@@ -1,8 +1,8 @@
 hard-coded
 ----------
-- remove hard-coded HT thresholds in histoSpec(), xsHisto(), nEventsInHisto()
-- consider hard-coded CLb_2 in plottingGrid.clsValidation()
-- 0.95 in StandardHypoTestInvDemo.C
+- remove hard-coded HT thresholds in conf.signal.xsHistoSpec(), hp.xsHistoAllOne()
+- remove 0.95 in StandardHypoTestInvDemo.C
+- remove 95 in plottingGrid.rename()
 
 one
 ---
@@ -10,9 +10,8 @@ one
 - range for par f
 - gaussian counts
 - errors on translation factors
-- muon efficiency spec.
-- likelihoodSpec constructor
 - view call graph to speed up cmssm initialization
+- CLs3Error/CLs3
 
 two
 ---
@@ -26,23 +25,19 @@ three
 - debug page 3 of cls plot
 - bin-by-bin systematics on signal eff.
 - upgrade dirac delta
-- lognormal vs. gaussian
 - check signal efficiency merging
 - separate eff unc. for hadrons and muons
-- restore extraSigEffSources
 - mcStatErr before trigger
 - parHistos 2D ensemble
 
 four
 ----
-- 4x2 syst. bins
 - remove syst. encouragement
 - rho vs. HT
 - automatic N_bins, N_nuisance
 - store workspace / profile wrapper
 - fix leaks in ensemble() and expectedLimit()
 - query fit status for toys (improve 0 cut)
-- (2D) pickling.stuffVars
 - (2D) more histos in check
 - (2D) all sms function in histogramSpecs and histogramProcessing
 - (2D) trigger efficiency uncertainty
@@ -58,7 +53,6 @@ speed-ups for toys
 
 (technical)
 - grid
-- qcd parameterization (also document)
 - profile
 - minuit config: strategy, nFCNCallsMax
 - initial values/ranges

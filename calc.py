@@ -1,7 +1,17 @@
-import math,array,copy,collections
-import utils,cpp,plotting
-import ROOT as r
+import array
+import collections
+import copy
+import math
+import string
+
 import common
+import configuration as conf
+import cpp
+import plotting
+import utils
+
+import ROOT as r
+
 
 cpp.compile()
 
@@ -35,7 +45,8 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
         canvas = r.TCanvas()
         canvas.SetTickx()
         canvas.SetTicky()
-        psFile = "intervalPlot_%s_%g.pdf"%(note, 100*cl)
+        psFile = "%s/intervalPlot_%s_%g.pdf"%(conf.directories.plot(),
+                                              note, 100*cl)
         plot = r.RooStats.LikelihoodIntervalPlot(lInt)
         plot.Draw(); print
         canvas.Print(psFile)
@@ -355,12 +366,19 @@ def profilePlots(dataset, modelconfig, note) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "profilePlots_%s.pdf"%note
+    psFile = "%s/profilePlots_%s.pdf" % (conf.directories.plot(), note)
     canvas.Print(psFile+"[")
 
     plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print
     for i in range(plots.GetSize()) :
-        plots.At(i).Draw("al")
+        graph = plots.At(i)
+        graph.Draw("al")
+        graph.SetLineWidth(2)
+        graph.SetLineColor(r.kBlue)
+        h = graph.GetHistogram()
+        h.SetMinimum(0.0)
+        h.SetMaximum(1.1*h.GetMaximum())
+        canvas.SetGridy()
         canvas.Print(psFile)
     canvas.Print(psFile+"]")
     #utils.ps2pdf(psFile)
@@ -460,13 +478,14 @@ def poisPull(n = None, mu = None) :
     else :
         out["simple"] = 1000.0
 
-    assert float(int(n))==n,n
-    out["quantile"] = r.Math.poisson_cdf(int(n), mu)
-    out["quantileOfMode"] = r.Math.poisson_cdf(out["mode"], mu)
-
-    out["nSigma"] = nSigma(out["quantile"])
-    out["nSigmaOfMode"] = nSigma(out["quantileOfMode"])
-    out["nSigmaPrime"] = out["nSigma"] - out["nSigmaOfMode"]
+    if float(int(n)) == n:
+        out["quantile"] = r.Math.poisson_cdf(int(n), mu)
+        out["quantileOfMode"] = r.Math.poisson_cdf(out["mode"], mu)
+        out["nSigma"] = nSigma(out["quantile"])
+        out["nSigmaOfMode"] = nSigma(out["quantileOfMode"])
+        out["nSigmaPrime"] = out["nSigma"] - out["nSigmaOfMode"]
+    else:
+        pass  # FIXME
     return out
 
 def printPoisPull(dct = {}) :
@@ -535,7 +554,7 @@ def pullHistoTitle(termType = "", key = "") :
     else :
         assert False,termType
 
-def pullHisto(termType = "", pulls = {}, title = "") :
+def pullHisto(termType = "", pulls = {}, title = "", trimLabels = False) :
     p = {}
     for key,value in pulls.iteritems() :
         if key[0]!=termType : continue
@@ -544,17 +563,18 @@ def pullHisto(termType = "", pulls = {}, title = "") :
         return None
     h = r.TH1D("%sPulls"%termType, title, len(p), 0.5, 0.5+len(p))
     for i,key in enumerate(sorted(p.keys())) :
+        iHt = key.split("_")[-1]
+        if termType=="Pois" and (iHt in string.digits) and int(iHt)%2 :
+            label = ""
+        else :
+            label = key.replace("Pois", "").replace("Gaus","").replace("_", " ")
+        if trimLabels :
+            s = label.split(" ")
+            label = s[0]+s[-1]
         h.SetBinContent(1+i, p[key])
-        h.GetXaxis().SetBinLabel(1+i, key)
-        if termType=="Pois" :
-            sample,sel,nB,iHt = common.split(key)
-            sample = sample.replace(termType,"")
-            nB = nB.replace("gt2","3")
-            if not int(iHt)%2 :
-                label = "%s  %s  %s"%(sample,nB,iHt)
-            else :
-                label = ""
-            h.GetXaxis().SetBinLabel(1+i, label)
+        h.GetXaxis().SetBinLabel(1+i, label)
+
+    if trimLabels : plotting.magnify(h)
     return h
 
 def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gausKey = "simple",
@@ -598,9 +618,8 @@ def pullStats(pulls = {}, nParams = None) :
     out["prob"]    = r.TMath.Prob(chi2, nDof)
     return out
 
-def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "") :
-    p = pulls
-
+def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "",
+              title = "", onlyPois = False) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
@@ -614,11 +633,12 @@ def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", thresh
     line.SetLineColor(r.kBlue)
 
     total = r.TH1D("total", ";pull;terms / bin", 100, -yMax, yMax)
-
-    for termType in ["Pois", "Gaus", "Logn"] :
-        h = pullHisto(termType, p)
+    for termType in (["Pois"] if onlyPois else ["Pois", "Gaus", "Logn"]) :
+        h = pullHisto(termType, pulls, trimLabels = onlyPois)
         if not h : continue
         h.SetTitle(pullHistoTitle(termType, key = eval(termType.lower()+"Key")))
+        if onlyPois :
+            h.SetTitle(title)
         h.SetStats(False)
         h.SetMarkerStyle(20)
         h.Draw("p")
@@ -648,5 +668,5 @@ def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", thresh
         canvas.Print(fileName)
 
     total.Draw()
-    canvas.Print(fileName)
+    if not onlyPois : canvas.Print(fileName)
     canvas.Print(fileName+"]")

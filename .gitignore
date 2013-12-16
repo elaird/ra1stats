@@ -2,13 +2,12 @@
 *.pyc
 plots*
 log
-output*
+jobIO
+points
 *.d
 *.so
 .*.swp
-*.root
 *.pdf
-points/
 *.log
 *.aux
 *.tex
@@ -16,3 +15,6 @@ points/
 cpp/drive
 callgrind.out*
 .nfs*
+ensemble*.root
+workspace.root
+xs/sms_xs.root
