@@ -1,7 +1,7 @@
 import math
 import common
 from configuration.signal import pruned, processStamp
-from inputData.units import pb
+from inputData import pb
 
 def effQcdLike(k=None, eff0=None, iBin=None):
     # take14a
