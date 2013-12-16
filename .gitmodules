@@ -4,9 +4,6 @@
 [submodule "ra1r"]
 	path = ra1r
 	url = https://github.com/elaird/ra1r.git
-[submodule "ra1i"]
-	path = ra1i
-	url = https://github.com/elaird/ra1i.git
 [submodule "inputData"]
 	path = inputData
 	url = https://github.com/elaird/ra1i.git
