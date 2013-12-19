@@ -146,9 +146,11 @@ def mergedFile(model=None):
 
 def contents(fileName):
     out = {}
-    signal, results = readNumbers(fileName)
-    out.update(results)
-    out.update(signal.flattened())
+    t = readNumbers(fileName)
+    if t:
+        signal, results = t
+        out.update(results)
+        out.update(signal.flattened())
     return out
 
 
