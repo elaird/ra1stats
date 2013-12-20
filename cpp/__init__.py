@@ -4,12 +4,19 @@ import os
 
 def compile(files=["cpp/StandardHypoTestInvDemo.cxx",
                    #"cpp/NckwWorkspace.cxx", "cpp/RooLognormal2.cxx",
-                   "cpp/Poisson.cxx", "cpp/Gaussian.cxx", "cpp/Lognormal.cxx"],
+                   "cpp/Poisson.cxx", "cpp/Gaussian.cxx", "cpp/Lognormal.cxx",
+                   ],
             ):
     root = "`root-config --cflags --libs`"
     flags = " -W".join(["", "all", "extra"])
     incPaths = " -I".join(["", "${ROOFITSYS}/include"]) if os.environ.get("ROOFITSYS") else ""
-    libs = " -l".join(["", "RooFitCore", "RooFit", "RooStats"])
+    libList = ["", "RooFitCore", "RooFit", "RooStats"]
+
+    # https://sft.its.cern.ch/jira/browse/ROOT-4362
+    if "5.32" in r.gROOT.GetVersion():
+        libList.append("Cint")
+
+    libs = " -l".join(libList)
 
     paths = []
     for var in ["ROOFITSYS", "ROOTSYS"]:
