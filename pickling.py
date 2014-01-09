@@ -1,10 +1,10 @@
 import cPickle
 import os
 
-import common
 import configuration as conf
 import histogramProcessing as hp
 from inputData import rootToTxt
+from signalPoint import signal
 import likelihoodSpec
 
 import ROOT as r
@@ -80,13 +80,13 @@ def histoList(histos={}):
 
 
 def signalModel(model="", point3=None, eff=None, xs=None, sumWeightIn=None):
-    out = common.signal(xs=xs.GetBinContent(*point3),
-                        label="%s_%d_%d_%d" % ((model,)+point3),
-                        effUncRel=conf.signal.effUncRel(model),
-                        sumWeightIn=sumWeightIn.GetBinContent(*point3),
-                        x=xs.GetXaxis().GetBinLowEdge(point3[0]),
-                        y=xs.GetYaxis().GetBinLowEdge(point3[1]),
-                        )
+    out = signal(xs=xs.GetBinContent(*point3),
+                 label="%s_%d_%d_%d" % ((model,)+point3),
+                 effUncRel=conf.signal.effUncRel(model),
+                 sumWeightIn=sumWeightIn.GetBinContent(*point3),
+                 x=xs.GetXaxis().GetBinLowEdge(point3[0]),
+                 y=xs.GetYaxis().GetBinLowEdge(point3[1]),
+    )
 
     for selName, dct in eff.iteritems():
         d = {}
@@ -135,7 +135,7 @@ def mergedFile(model=None):
     if not model.isSms:
         tags.append(model.xsVariation)
 
-    tags.append(common.note(likelihoodSpec.likelihoodSpec(model.name)))
+    tags.append(likelihoodSpec.likelihoodSpec(model.name).note())
     return "".join([conf.directories.mergedFile()+"/",
                     "_".join(tags),
                     ".root"
