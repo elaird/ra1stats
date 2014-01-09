@@ -36,6 +36,24 @@ class selection(object) :
                      "universalSystematics", "universalKQcd"] :
             setattr(self, item, eval(item))
 
+
+def sampleCode(samples):
+    yes = []
+    no = []
+    for box, considerSignal in samples.iteritems():
+        (yes if considerSignal else no).append(box)
+
+    d = {"had":"h", "phot":"p", "muon":"1", "mumu":"2", "simple":"s"}
+    out = ""
+    for item in yes:
+        out += d[item]
+    if no:
+        out += "x"
+        for item in no:
+            out += d[item]
+    return out
+
+
 class spec(object) :
 
     def separateSystObs(self) :
@@ -83,6 +101,26 @@ class spec(object) :
 
     def standardPoi(self) :
         return self.poiList()==["f"]
+
+    def note(self):
+        out = "%s_" % self._dataset
+
+        if self.REwk():
+            out += "REwk%s_" % self.REwk()
+
+        out += "RQcd%s" % self.RQcd()
+
+        if self.constrainQcdSlope():
+            out += "Ext"
+
+        out += "_fZinv%s" % self.nFZinv()
+        if not self.standardPoi():
+            out += "__".join(["poi"] + self.poiList())
+
+        for selection in self.selections():
+            out += "_%s-%s" % (selection.name, sampleCode(selection.samplesAndSignalEff))
+        return out
+
 
     def add(self, sel = []) :
         if self._ignoreHad :
