@@ -1,10 +1,8 @@
 import array
-import collections
 import copy
 import math
 import os
 
-import configuration as conf
 import common
 import ensemble
 import utils

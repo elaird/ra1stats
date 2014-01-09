@@ -1,5 +1,3 @@
-import collections
-
 import configuration as conf
 import likelihoodSpec
 import patches

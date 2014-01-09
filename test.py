@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import common
 import likelihoodSpec
 import plotting
 import signals

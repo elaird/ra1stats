@@ -1,6 +1,5 @@
 import array
 import collections
-import copy
 import math
 import string
 

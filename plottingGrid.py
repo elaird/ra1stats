@@ -1,7 +1,3 @@
-import os
-import sys
-import math
-
 import configuration as conf
 import histogramProcessing as hp
 import likelihoodSpec
