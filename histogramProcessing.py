@@ -46,7 +46,10 @@ def setRange(var, model, histo, axisString):
     if axisString == "Z":
         maxContent = histo.GetBinContent(histo.GetMaximumBin())
         if maxContent > nums[1]:
-            print "ERROR: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s" % (maxContent, nums[1], histo.GetName())
+            print " ".join(["ERROR: histo truncated in Z",
+                            "(maxContent = %g," % maxContent,
+                            "maxSpecified = %g)" % nums[1],
+                            histo.GetName()])
 
     divKey = axisString.lower()+"Divisions"
     if ranges.get(divKey):
@@ -213,6 +216,7 @@ def effHisto(model=None, box="",
         return smsEffHisto(spec=spec, model=model)
     else:
         return cmssmEffHisto(spec=spec, model=model)
+
 
 def meanWeightSigMc(model=None, box="",
                     htLower=None, htUpper=None,
