@@ -171,10 +171,10 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
     simpleExclHistos = {}
     relativeHistos = {}
 
-    items =  [("ExpectedUpperLimit_m1_Sigma", 0.0),
-              ("ExpectedUpperLimit_p1_Sigma", 0.0),
-              ("ExpectedUpperLimit",          0.0),
-              ]
+    items = [("ExpectedUpperLimit_m1_Sigma", 0.0),
+             ("ExpectedUpperLimit_p1_Sigma", 0.0),
+             ("ExpectedUpperLimit",          0.0),
+             ]
     if not expectedMapsOnly:
         items += [("UpperLimit",  0.0),
                   ("UpperLimit", -1.0),
@@ -199,7 +199,9 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
             kargs = {"variation": xsVariation,
                      "xsFactor": xsFactor,
                      "model": model,
-                     "interBin": interBin}
+                     "interBin": interBin,
+                     "whiteList": conf.signal.whiteListOfPoints(model.name),
+                     }
             graph = rxs.excludedGraph(h, info=info, **kargs)
 
             simpleHisto = rxs.exclHisto(h,
