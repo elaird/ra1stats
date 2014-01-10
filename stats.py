@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from collections import defaultdict
 from optparse import OptionParser
 import os
 
@@ -68,10 +67,11 @@ def pjobCmds(queue=None) :
     pos = 0
     host=gethostname()
     pid=os.getpid()
-    out = defaultdict(dict)
+    out = {}
     for q_name, num_points in getQueueRanges(n_points,queue).iteritems():
-        out[q_name]["args"] = []
-        out[q_name]["n_points"] = num_points
+        out[q_name] = {"args": [],
+                       "n_points": num_points,
+                       }
         filename = "{dir}/{host}_{queue}_{pid}.points".format(dir=conf.directories.points(),
                                                               host=host,
                                                               queue=q_name,
