@@ -102,9 +102,6 @@ class thstack(object) :
         if not len(self.histos) : return None
         return max([histoMax(h[0]) for h in self.histos])
 #####################################
-def inDict(d, key, default) :
-    return d[key] if key in d else default
-#####################################
 class thstackMulti(object) :
     def __init__(self, name = "", drawErrors = False) :
         self.name = name
@@ -122,16 +119,16 @@ class thstackMulti(object) :
         for histos,spec in self.histos if not reverse else reversed(self.histos) :
             histos2 = {}
             for key,value in histos.iteritems() :
-                if key in inDict(spec, "suppress", []) : continue
+                if key in spec.get("suppress", []) : continue
                 histos2[key] = value
 
-            if inDict(spec, "repeatNoBand", False) :
+            if spec.get("repeatNoBand", False) :
                 repeat.append( (histos2, spec) )
             self.DrawOne(histos2,
                          goptions = goptions + ("" if "goptions" not in spec else spec["goptions"]),
                          noErrors = ("type" in spec) and spec["type"]=="function" and not self.drawErrors,
-                         errorBand = inDict(spec, "errorBand", False),
-                         bandFillStyle = inDict(spec, "bandStyle", [1001,3004][0]))
+                         errorBand = spec.get("errorBand", False),
+                         bandFillStyle = spec.get("bandStyle", [1001,3004][0]))
 
         for histos,spec in repeat :
             self.DrawOne(histos,
