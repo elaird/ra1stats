@@ -1,7 +1,27 @@
-from multiprocessing import Process,JoinableQueue
-import os,subprocess,math,traceback,sys,array
+import array
+import cPickle
+import math
+import os
+import subprocess
+import sys
+import traceback
+from multiprocessing import Process, JoinableQueue
 import ROOT as r
-#####################################
+
+
+def writeNumbers(fileName=None, d=None):
+    outFile = open(fileName, "w")
+    cPickle.dump(d, outFile)
+    outFile.close()
+
+
+def readNumbers(fileName):
+    inFile = open(fileName)
+    d = cPickle.load(inFile)
+    inFile.close()
+    return d
+
+
 def delete(thing) :
     #free up memory (http://wlav.web.cern.ch/wlav/pyroot/memory.html)
     thing.IsA().Destructor( thing )

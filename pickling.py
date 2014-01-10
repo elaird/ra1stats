@@ -1,5 +1,5 @@
-import cPickle
 import os
+import utils
 
 import configuration as conf
 import histogramProcessing as hp
@@ -8,20 +8,6 @@ from signalPoint import signal
 import likelihoodSpec
 
 import ROOT as r
-
-
-##I/O
-def writeNumbers(fileName=None, d=None):
-    outFile = open(fileName, "w")
-    cPickle.dump(d, outFile)
-    outFile.close()
-
-
-def readNumbers(fileName):
-    inFile = open(fileName)
-    d = cPickle.load(inFile)
-    inFile.close()
-    return d
 
 
 ##number collection
@@ -116,10 +102,10 @@ def writeSignalFiles(points=[], outFilesAlso=False):
         name = point[0]
         signal = signalModel(model=name, point3=point[1:], **args[name])
         stem = conf.directories.pickledFileName(*point)
-        writeNumbers(fileName=stem+".in", d=signal)
+        utils.writeNumbers(fileName=stem+".in", d=signal)
         if not outFilesAlso:
             continue
-        writeNumbers(fileName=stem+".out", d=signal)
+        utils.writeNumbers(fileName=stem+".out", d=signal)
 
 
 ##merge functions
@@ -144,7 +130,7 @@ def mergedFile(model=None):
 
 def contents(fileName):
     out = {}
-    t = readNumbers(fileName)
+    t = utils.readNumbers(fileName)
     if t:
         signal, results = t
         out.update(results)
