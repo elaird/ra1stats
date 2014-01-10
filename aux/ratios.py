@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import array,math,utils
+import array
+import utils
 from inputData import data2011
 import ROOT as r
 
