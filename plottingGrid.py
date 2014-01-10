@@ -165,7 +165,7 @@ def spline(points=[], title=""):
 def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                     pruneYMin=False, debug=None, info=None):
     cutFunc = patches.cutFunc()[model.name]
-    curves = patches.curves()[model.name]
+    curves = patches.curves().get(model.name)
 
     graphs = {}
     simpleExclHistos = {}

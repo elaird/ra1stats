@@ -1,4 +1,3 @@
-import collections
 import sms8
 
 def cmssmCut(iX, x, iY, y, iZ, z) :
@@ -39,7 +38,7 @@ def cutFunc() :
             }
 
 def curves() :
-    out = collections.defaultdict(dict)
+    out = {}
     out["tanBeta10_7"] = {
             ("ExpectedUpperLimit",          "default"): [( 120, 594), ( 160, 595), ( 240, 595), ( 320, 590), ( 400, 580), ( 480, 567),
                                                          ( 560, 550), ( 640, 530), ( 720, 500), ( 800, 465), ( 880, 423),
