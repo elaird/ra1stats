@@ -1,5 +1,4 @@
-import collections
-import configuration.signal
+import configuration
 import ROOT as r
 
 
@@ -65,7 +64,7 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
 
     whiteList = configuration.signal.whiteListOfPoints(model.name)
     refHisto = refXsHisto(model)
-    d = collections.defaultdict(list)
+    d = {}
     for iBinX in range(1, 1+h.GetNbinsX()):
         x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
         for iBinY in range(1, 1+h.GetNbinsY()):
@@ -89,7 +88,11 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
             otherFailed = fail(xs, xsLimitPrev) or fail(xs, xsLimitNext)
             transition = passed and otherFailed
             if transition:
-                d[x].append(y)
+                if x in d:
+                    d[x].append(y)
+                else:
+                    d[x] = [y]
+
         if len(d[x]) == 1:
             if info:
                 print "INFO: %s (factor %g) hit " % (h.GetName(), xsFactor) + \
