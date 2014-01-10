@@ -128,7 +128,7 @@ def pickledFileName(note = "", nToys = None) :
 
 def writeHistosAndGraphs(wspace, data, nToys = None, note = "") :
     obs,toys = ntupleOfFitToys(wspace, data, nToys)
-    pickling.writeNumbers(pickledFileName(note, nToys), d = obs)
+    utils.writeNumbers(pickledFileName(note, nToys), d = obs)
 
     graphs_lMax = pValueGraphs(obs, toys, key = "lMax")
     graphs_chi2Prob = pValueGraphs(obs, toys, key = "chi2Prob")
@@ -168,6 +168,6 @@ def functionQuantiles(note = "", nToys = None) :
     return fQuantiles
 
 def results(note = "", nToys = None) :
-    obs = pickling.readNumbers(pickledFileName(note, nToys))
+    obs = utils.readNumbers(pickledFileName(note, nToys))
     tfile = r.TFile(rootFileName(note, nToys))
     return obs,tfile
