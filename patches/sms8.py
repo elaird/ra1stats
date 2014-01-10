@@ -1,12 +1,10 @@
-import collections
-
 def graphBlackLists() :
     out = {}
     keys  = [ "UpperLimit", "ExpectedUpperLimit" ]
     keys += [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]
     keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
     for key in keys :
-        out[key] = collections.defaultdict(list)
+        out[key] = {}
 
     out["ExpectedUpperLimit_-1_Sigma"].update({"T1": [(1150,425), (1100,300), (1100,350), (1100,375), (875, 550),
                                                       (825, 600), (850,600), (875,600), (800,550), (750,550), (950,525),
@@ -127,7 +125,7 @@ def graphReplacePoints():
     keys += [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]
     keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
     for key in keys :
-        out[key] = collections.defaultdict(dict)
+        out[key] = {}
 
     out["ExpectedUpperLimit_-1_Sigma"].update({"T1": {(1075,500):(1075,487.5),
                                                       (1125,350):(1125,300),
@@ -338,15 +336,5 @@ def graphReplacePoints():
                                                  (575,175):(575,178),
                                                  },
                                        })
-
-    return out
-
-def graphAdditionalPoints():
-    out = {}
-    keys  = [ "UpperLimit", "ExpectedUpperLimit" ]
-    keys += [ "ExpectedUpperLimit_%+d_Sigma" % i for i in [-1,1] ]
-    keys += [ "UpperLimit_%+d_Sigma" % i for i in [-1,1] ]
-    for key in keys :
-        out[key] = collections.defaultdict(list)
 
     return out

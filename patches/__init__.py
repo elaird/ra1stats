@@ -183,8 +183,8 @@ def overwriteOutput() :
 def compat(funcName="", model=""):
     if model in ["T1", "T2", "T2bb", "T2tt", "T1bbbb", "T1tttt", "T1tttt_ichep"]:
         funcName = funcName.replace("m1", "-1").replace("p1", "+1")
-        return {"replace": sms8.graphReplacePoints()[funcName][model],
-                "blackList": sms8.graphBlackLists()[funcName][model],
+        return {"replace": sms8.graphReplacePoints()[funcName].get(model, {}),
+                "blackList": sms8.graphBlackLists()[funcName].get(model, []),
                 }
     else:
         try:
