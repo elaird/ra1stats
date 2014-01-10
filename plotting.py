@@ -10,7 +10,6 @@ import ROOT as r
 
 # compatibility
 ni = common.ni
-inDict = utils.inDict
 
 def rootSetup() :
     #r.gROOT.SetStyle("Plain")
@@ -1081,9 +1080,9 @@ class validationPlotter(object) :
         box = spec["box"]
         l = self.lumi[box]
         xs = spec["example"].xs
-        eff = inDict(spec["example"][self.label],
-                     "eff%s" % spec["box"].capitalize(),
-                     [0.0]*len(self.htBinLowerEdges))
+        eff = spec["example"][self.label].get(
+            "eff%s" % spec["box"].capitalize(),
+            [0.0]*len(self.htBinLowerEdges))
         activeBins = self.activeBins["n%s" % spec["box"].capitalize()]
         for i in range(len(self.htBinLowerEdges)):
             if not activeBins[i]:
@@ -1315,7 +1314,7 @@ class validationPlotter(object) :
         leg.SetFillStyle(0)
 
         stuff = [leg]
-        extraName = str(logY)+"_".join([inDict(o, "var", "") for o in otherVars])
+        extraName = str(logY)+"_".join([o.get("var", "") for o in otherVars])
         lumiString = obs["desc"][obs["desc"].find("["):]
 
         obsHisto = self.varHisto(extraName = extraName, yLabel = yLabel, note = note, lumiString = lumiString,
@@ -1324,15 +1323,15 @@ class validationPlotter(object) :
         if "dens" in obs:
             self.divide(histo=obsHisto, spec=obs)
 
-        obsHisto.SetMarkerStyle(inDict(obs, "markerStyle", 20))
+        obsHisto.SetMarkerStyle(obs.get("markerStyle", 20))
         obsHisto.SetStats(False)
-        obsHisto.Draw(inDict(obs, "goptions", "p"))
+        obsHisto.Draw(obs.get("goptions", "p"))
 
         minimum,maximum = self.yAxisLogMinMax if logY else yAxisMinMax
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
 
-        if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], inDict(obs, "legSpec", "lpe"))
+        if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], obs.get("legSpec", "lpe"))
         stuff += [obs]
 
         r.gPad.SetLogy(logY)
