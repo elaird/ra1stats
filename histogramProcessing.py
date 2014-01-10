@@ -1,5 +1,4 @@
 import configuration as conf
-import likelihoodSpec
 import patches
 import utils
 
@@ -174,17 +173,13 @@ def xsHistoPhysical(model=None, cmssmProcess=""):
 
 
 def xsHistoAllOne(model=None, cutFunc=None):
-    ls = likelihoodSpec.likelihoodSpec(model.name)
-    if ls._dataset in ["2011", "2012ichep"]:
-        kargs = {}
-    else:
-        kargs = {"bJets": "eq0b", "jets": "le3j"}
-
     spec = conf.signal.effHistoSpec(model=model,
                                     box="had",
                                     htLower=375,
                                     htUpper=475,
-                                    **kargs)
+                                    bJets="eq0b",
+                                    jets="le3j",
+                                    )
 
     h = smsEffHisto(spec=spec, model=model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
