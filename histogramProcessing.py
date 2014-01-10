@@ -71,7 +71,7 @@ def modifiedHisto(h3=None,
                       shift=(shiftX, shiftY),
                       shiftErrors=shiftErrors,
                       info=info)
-    fillPoints(h, points=patches.overwriteOutput()[model.name], info=info)
+    fillPoints(h, points=patches.overwriteOutput().get(model.name, []), info=info)
     killPoints(h,
                cutFunc=patches.cutFunc().get(model.name, None),
                interBin=model.interBin)

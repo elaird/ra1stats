@@ -93,7 +93,7 @@ def curves() :
 
 
 def overwriteOutput() :
-    out = collections.defaultdict(list)
+    out = {}
     out.update({"T1": [(35, 25, 1, "ew"),
                        (41, 10, 1, "ew"),
                        (41,  9, 1, "ew"),
