@@ -1,5 +1,5 @@
 import ROOT as r
-import common
+import signalPoint as common
 from configuration.signal import pruned, processStamp
 
 simple = common.signal(xs = 1.0, effUncRel = 0.0, label = "signal")

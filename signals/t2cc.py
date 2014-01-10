@@ -1,7 +1,8 @@
 import math
-import common
 from configuration.signal import pruned, processStamp
 from inputData import pb
+import signalPoint as common
+
 
 def effQcdLike(k=None, eff0=None, iBin=None):
     # take14a
