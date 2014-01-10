@@ -56,13 +56,12 @@ def content(h=None, coords=(0.0,), variation=0.0, factor=1.0):
 
 
 def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
-                  interBin="", prune=False, info=None):
+                  interBin="", prune=False, info=None, whiteList=[]):
     assert interBin in ["Center", "LowEdge"], interBin
 
     def fail(xs, xsLimit):
         return (xs <= xsLimit) or not xsLimit
 
-    whiteList = configuration.signal.whiteListOfPoints(model.name)
     refHisto = refXsHisto(model)
     d = {}
     for iBinX in range(1, 1+h.GetNbinsX()):
