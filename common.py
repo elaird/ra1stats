@@ -46,14 +46,3 @@ def ni(name = "", label = "", i = None) :
     if label : out += "_%s"%label
     if i!=None : out +="_%d"%i
     return out
-
-def split(key) :
-    try:
-        fields = key.split("_")
-        if len(fields)==4 :
-            sample,nB,nJ,iHt = fields
-        else :
-            assert False,"unsupported length %d"%len(fields)
-        return sample,nB,nJ,iHt
-    except:
-        assert False,"Could not split key %s"%key

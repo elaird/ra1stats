@@ -2,7 +2,7 @@
 
 import math,os
 from collections import defaultdict
-import common
+
 
 quiet = False
 
@@ -239,10 +239,21 @@ def ensembleSplit(d, group = "had") :
     out[previous_selection] = selection_out
     return out
 
+def split(key) :
+    try:
+        fields = key.split("_")
+        if len(fields)==4 :
+            sample,nB,nJ,iHt = fields
+        else :
+            assert False,"unsupported length %d"%len(fields)
+        return sample,nB,nJ,iHt
+    except:
+        assert False,"Could not split key %s"%key
+
 def ensembleSplit2(dct, group = "had") :
     out = defaultdict(list)
     for key,latex in dct.iteritems() :
-        sample,nB,nJ,iBin = common.split(key)
+        sample,nB,nJ,iBin = split(key)
         if sample[:len(group)]!=group : continue
         out[" ".join([nB,nJ])] += [(iBin, latex)]
 
