@@ -1,5 +1,4 @@
 import array
-import collections
 import math
 import string
 
@@ -161,8 +160,9 @@ def clsCustom(wspace, data, nToys = 100, smOnly = None, testStatType = None, not
     obs = ts(data = data, **args)
 
     out = {}
-    values = collections.defaultdict(list)
+    values = {}
     for label in ["b", "sb"] :
+        values[label] = []
         for toy in toys[label] :
             values[label].append(ts(data = toy, **args))
         out["CL%s"%label] = 1.0-utils.indexFraction(obs, values[label])
