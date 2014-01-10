@@ -1,5 +1,5 @@
 import ROOT as r
-
+from signalPoint import signal
 
 def wimport(w, item) :
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING) #suppress info messages
