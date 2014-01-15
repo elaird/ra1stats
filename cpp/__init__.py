@@ -31,9 +31,7 @@ def compile(dir="cpp",
     for f in files:
         r.gSystem.CompileMacro("%s/%s" % (dir, f), "kc")
 
-    cmd = "g++ -o cpp/drive cpp/drive.cxx "
-    cmd += " ".join([root, flags, libs, libPaths, incPaths])
-    os.system(cmd)
+    os.system("cd %s; make -s" % dir)
 
 
 def load(dir="cpp"):
