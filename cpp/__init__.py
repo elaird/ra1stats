@@ -2,9 +2,10 @@ import ROOT as r
 import os
 
 
-def compile(files=["cpp/StandardHypoTestInvDemo.cxx",
-                   #"cpp/NckwWorkspace.cxx", "cpp/RooLognormal2.cxx",
-                   "cpp/Poisson.cxx", "cpp/Gaussian.cxx", "cpp/Lognormal.cxx",
+def compile(dir="cpp",
+            files=["StandardHypoTestInvDemo.cxx",
+                   #"NckwWorkspace.cxx", "RooLognormal2.cxx",
+                   "Poisson.cxx", "Gaussian.cxx", "Lognormal.cxx",
                    ],
             ):
     root = "`root-config --cflags --libs`"
@@ -24,12 +25,18 @@ def compile(files=["cpp/StandardHypoTestInvDemo.cxx",
             paths.append("${%s}/lib" % var)
     libPaths = " -L".join([""] + paths) if paths else ""
 
-    #r.gSystem.SetBuildDir("cpp")
+    r.gSystem.SetBuildDir(dir, True)
     r.gSystem.SetIncludePath(incPaths)
     r.gSystem.SetLinkedLibs(libPaths + libs)
     for f in files:
-        r.gROOT.LoadMacro("%s+" % f)
+        r.gSystem.CompileMacro("%s/%s" % (dir, f), "kc")
 
     cmd = "g++ -o cpp/drive cpp/drive.cxx "
     cmd += " ".join([root, flags, libs, libPaths, incPaths])
     os.system(cmd)
+
+
+def load(dir="cpp"):
+    r.gSystem.AddDynamicPath(dir)
+    for name in ["Gaussian", "Lognormal", "Poisson", "StandardHypoTestInvDemo"]:
+        r.gSystem.Load("%s_cxx.so" % name)
