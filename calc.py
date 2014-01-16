@@ -488,19 +488,26 @@ def poisPull(n = None, mu = None) :
         pass  # FIXME
     return out
 
-def printPoisPull(dct = {}) :
-    def n(h, f) :
-        return max(len(h), int(f[1]))
-    headers = ["n",   "mu",    "mode", "simple", "nSigma", "nSigmaPrime", "quantile", "quantileOfMode", "nSigmaOfMode"]
-    formats = ["%4d", "%7.2f", "%5d",  "%6.2f",  "%6.2f",  "%6.2f",       "%4.2f",    "%4.2f",          "%6.2f"       ]
+def printPoisPull(dctIn={}, term=""):
+    dct = {"term": term[:term.find("_")]}
+    dct.update(dctIn)
 
-    if not dct :
+    def n(h, f):
+        return max(len(h), int(f[1]))
+
+    headers = ["term", "n",   "mu",    "mode", "simple", "nSigma", "nSigmaPrime", "quantile", "quantileOfMode", "nSigmaOfMode"]
+    formats = ["%9s", "%4d", "%7.2f", "%5d",  "%6.2f",  "%6.2f",  "%6.2f",       "%4.2f",    "%4.2f",          "%6.2f"       ]
+
+    if len(dct) == 1:
         lst = [h.rjust(n(h,f)) for h,f in zip(headers,formats)]
         s = "  ".join(lst)
         print s
         print "-"*len(s)
     else :
-        lst = [(f%dct[h]).rjust(n(h,f)) for h,f in zip(headers,formats)]
+        lst = []
+        for h, f in zip(headers, formats):
+            x = f % dct[h] if h in dct else " "
+            lst.append(x.rjust(n(h,f)))
         print "  ".join(lst)
 
 def pullsRaw(pdf = None) :
@@ -585,7 +592,7 @@ def pulls(pdf = None, poisKey = ["", "simple", "nSigma", "nSigmaPrime"][0], gaus
         printPoisPull()
         for key in sorted(pRaw.keys()) :
             if key[0]!="Pois" : continue
-            printPoisPull(pRaw[key])
+            printPoisPull(pRaw[key], term=key[1])
 
     assert poisKey,poisKey
     assert lognKey,lognKey
