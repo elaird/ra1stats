@@ -66,6 +66,7 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
     d = {}
     for iBinX in range(1, 1+h.GetNbinsX()):
         x = getattr(h.GetXaxis(), "GetBin%s" % interBin)(iBinX)
+        d[x] = []
         for iBinY in range(1, 1+h.GetNbinsY()):
             y = getattr(h.GetYaxis(), "GetBin%s" % interBin)(iBinY)
             xs = content(h=refHisto, coords=(x, y),
