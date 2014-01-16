@@ -3,11 +3,13 @@ import utils,plotting,calc,ensemble
 from common import obs,pdf,ni,wimport,floatingVars
 import ROOT as r
 
+
 def classifyParameters(w = None, modelConfig = None, paramsFuncs = []) :
     for setName,funcName in paramsFuncs :
         s = w.set(setName)
         if s and s.getSize() :
             getattr(modelConfig, funcName)(s)
+
 
 def modelConfiguration(w) :
     modelConfig = r.RooStats.ModelConfig("modelConfig", w)
@@ -22,6 +24,23 @@ def modelConfiguration(w) :
     w.defineSet("nuis", nuis)
     classifyParameters(w, modelConfig, [("nuis", "SetNuisanceParameters")])
     return modelConfig
+
+
+def rooProduct(name="", title="", vars=[]):
+    if "5.32" in r.gROOT.GetVersion():
+        cl = r.RooArgSet
+    else:
+        cl = r.RooArgList
+    return r.RooProduct(name, title, cl(*tuple(vars)))
+
+
+def rooAddition(name="", title="", vars=[]):
+    if "5.32" in r.gROOT.GetVersion():
+        cl = r.RooArgSet
+    else:
+        cl = r.RooArgList
+    return r.RooAddition(name, title, cl(*tuple(vars)))
+
 
 def q0q1(inputData, factor, A_ewk_ini) :
     def thing(i) :
@@ -247,8 +266,8 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
             eff = ni("effHad", label, i)
             assert w.var(eff),eff
             rho = ni("rhoSignal", systematicsLabel)
-            wimport(w, r.RooProduct(hadS, hadS, r.RooArgSet(w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff))))
-            wimport(w, r.RooAddition(hadExp, hadExp, r.RooArgSet(w.function(hadB), w.function(hadS))))
+            wimport(w, rooProduct(hadS, hadS, [w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff)]))
+            wimport(w, rooAddition(hadExp, hadExp, [w.function(hadB), w.function(hadS)]))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
         terms.append(hadPois)
 
@@ -280,8 +299,8 @@ def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
         else :
             lumi = ni("simpleLumi", label)
             eff = ni("signalEffSimple", label, i)
-            wimport(w, r.RooProduct(s, s, r.RooArgSet(w.var("f"), w.var("xs"), w.var(lumi), w.var(eff))))
-            wimport(w, r.RooAddition(exp, exp, r.RooArgSet(w.function(b), w.function(s))))
+            wimport(w, rooProduct(s, s, [w.var("f"), w.var("xs"), w.var(lumi), w.var(eff)]))
+            wimport(w, rooAddition(exp, exp, [w.function(b), w.function(s)]))
             wimport(w, r.RooPoisson(pois, pois, w.var(n), w.function(exp)))
         terms.append(pois)
 
@@ -440,8 +459,8 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
             rhoSignal = ni("rhoSignal", systematicsLabel)
-            wimport(w, r.RooProduct(muonS, muonS, r.RooArgSet(w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff))))
-            wimport(w, r.RooAddition(muonExp, muonExp, r.RooArgSet(w.function(muonB), w.function(muonS))))
+            wimport(w, rooProduct(muonS, muonS, [w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff)]))
+            wimport(w, rooAddition(muonExp, muonExp, [w.function(muonB), w.function(muonS)]))
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
         terms.append(muonPois)
 

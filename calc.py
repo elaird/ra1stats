@@ -11,7 +11,7 @@ import utils
 import ROOT as r
 
 
-cpp.compile()
+cpp.load()
 
 def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True, poiList = []) :
     assert poiList

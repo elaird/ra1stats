@@ -1024,7 +1024,9 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
         assert len(whiteList) == divide[0]*divide[1], "%d != %d" % (len(whiteList), divide[0]*divide[1])
 
     histos = allHistos(fileName=pickling.mergedFile(model=model), collapse=True)
-    master = histos[name(masterKey)]
+    master = histos.get(name(masterKey))
+    assert master, "%s not found.  Available keys: %s" % (masterKey, str(histos.keys()))
+
     graphs = {}
     for iBinX in range(1, 1 + master.GetNbinsX()):
         for iBinY in range(1, 1 + master.GetNbinsY()):
