@@ -1,5 +1,5 @@
 def likelihoodSpec(model="", allCategories=False):
-    dataset = "2012dev"
+    dataset = "2012hcp"
     kargs = {"T1"          : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_ge4j"]},
              "T2"          : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_le3j"]},
              "T2bb"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["1b_le3j", "2b_le3j"]},
