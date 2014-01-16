@@ -199,10 +199,12 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
             kargs = {"variation": xsVariation,
                      "xsFactor": xsFactor,
                      "model": model,
-                     "interBin": interBin,
-                     "whiteList": conf.signal.whiteListOfPoints(model.name),
-                     }
-            graph = rxs.excludedGraph(h, info=info, **kargs)
+                     "interBin": interBin}
+
+            graph = rxs.excludedGraph(h,
+                                      info=info,
+                                      whiteList=conf.signal.whiteListOfPoints(model.name),
+                                      **kargs)
 
             simpleHisto = rxs.exclHisto(h,
                                         tag="_excludedHistoSimple",
