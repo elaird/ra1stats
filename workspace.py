@@ -223,18 +223,12 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
 
             if RQcd!="Zero" and i==0 :
                 qcd.setRange(0.0, max(1, 2.0*obs["nHad"][i]))
-                qcd.setVal(abs(inputData.observations()["nHad"][i]-ewk.getVal()))
-                print "Warning: Introduced abs"
-                print "qcd:",qcd, ",qcd.getVal():",qcd.getVal()
+                qcd.setVal(max(1.0, inputData.observations()["nHad"][i] - ewk.getVal()))
             if RQcd!="Zero" and i==1 :
                 qcd0 = w.var(ni("qcd", label, 0)).getVal()
                 qcd1 = max(1.0, inputData.observations()["nHad"][i]-ewk.getVal())
                 someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
-                print "qcd0:",qcd0,",qcd1:",qcd1,",nHadBulk[0]:",(obs["nHadBulk"][0]),",nHadBulk[1]: ",(obs["nHadBulk"][1])
-                #print (qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1])
-                #print someVal
                 w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
-                print "k_qcd:", w.var(ni("k_qcd", kQcdLabel)).getVal()
         if not muonForFullEwk:
             if inputData.mcExpectations()["mcHad"][i]:
                 fZinvIniFromMc = inputData.mcExpectations()["mcZinv"][i] / inputData.mcExpectations()["mcHad"][i]
