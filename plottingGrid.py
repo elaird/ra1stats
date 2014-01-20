@@ -552,12 +552,12 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
             func.Draw("same")
 
     if len(model.xsFactors) == 1:
-        s3 = stamp(text=likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
+        s3 = stamp(text=likelihoodSpec.likelihoodSpec(model).legendTitle(),
                    x=0.2075, y=0.64, factor=0.65)
     else:
         yStamp = 0.50
         c = ", "
-        text = likelihoodSpec.likelihoodSpec(model.name).legendTitle().split(c)
+        text = likelihoodSpec.likelihoodSpec(model).legendTitle().split(c)
         s3 = stamp(text=c.join(text[:-1]), x=0.2075, y=yStamp, factor=0.65)
         s4 = stamp(text=text[-1], x=0.2075, y=yStamp-0.04, factor=0.65)
 
@@ -775,7 +775,7 @@ def makeEfficiencyPdfSum(model=None, rootFileName="", key=""):
     coords = conf.signal.processStamp(model.name)
 
     factor = 0.6
-    s3 = stamp(text=likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
+    s3 = stamp(text=likelihoodSpec.likelihoodSpec(model).legendTitle(),
                x=0.23,
                y=0.70,
                factor=factor,
