@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import likelihoodSpec
+import likelihood
 import plotting
 import signals
 import workspace
@@ -28,12 +28,12 @@ def printReport(report={}):
 def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False, sigMcUnc=False,
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
-    ls = likelihoodSpec.spec(whiteList=whiteList,
-                             dataset=dataset,
-                             ignoreHad=ignoreHad,
-                             separateSystObs=not ensemble,
-                             sigMcUnc=sigMcUnc,
-                             )
+    ls = likelihood.spec(whiteList=whiteList,
+                         dataset=dataset,
+                         ignoreHad=ignoreHad,
+                         separateSystObs=not ensemble,
+                         sigMcUnc=sigMcUnc,
+                         )
 
     examples_paper = {("0b_le3j",): signals.t2.a,
                       ("0b_ge4j",): signals.two.t1,
@@ -151,7 +151,7 @@ kargs = {"bestFit": True,
 if kargs["dataset"] == "2011":
     go(**kargs)
 else:
-    selections = likelihoodSpec.spec(dataset=kargs["dataset"], sigMcUnc=False).selections()
+    selections = likelihood.spec(dataset=kargs["dataset"], sigMcUnc=False).selections()
     report = {}
     hMap = {}
     bins = (len(selections), 0.0, len(selections))

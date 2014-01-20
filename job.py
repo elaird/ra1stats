@@ -2,7 +2,7 @@
 import sys
 
 import configuration as conf
-import likelihoodSpec
+import likelihood
 import workspace
 import utils
 
@@ -99,7 +99,7 @@ def compare(item, threshold):
 def go():
     specs = {}
     for model in conf.signal.models():
-        specs[model.name] = likelihoodSpec.spec(dataset=model.llk,
+        specs[model.name] = likelihood.spec(dataset=model.llk,
                                                 whiteList=model.whiteList)
 
     for point in points():

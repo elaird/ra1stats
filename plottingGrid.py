@@ -1,6 +1,6 @@
 import configuration as conf
 import histogramProcessing as hp
-import likelihoodSpec
+import likelihood
 import patches
 import pickling
 import refXsProcessing as rxs
@@ -443,7 +443,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
 
 
 def legendTitle(model=None):
-    return likelihoodSpec.spec(dataset=model.llk, whiteList=model.whiteList).legendTitle()
+    return likelihood.spec(dataset=model.llk, whiteList=model.whiteList).legendTitle()
 
 
 def makeLimitPdf(model=None, expectedMapsOnly=None,
