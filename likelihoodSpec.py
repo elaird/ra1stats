@@ -1,25 +1,14 @@
-def likelihoodSpec(model="", allCategories=False):
-    dataset = "2012hcp"
-    kargs = {"T1"          : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_ge4j"]},
-             "T2"          : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_le3j"]},
-             "T2bb"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["1b_le3j", "2b_le3j"]},
-             "T2tt"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["1b_ge4j", "2b_ge4j"]},
-             "T1bbbb"      : {"dataset":dataset, "sigMcUnc":False, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-             "T1tttt"      : {"dataset":dataset, "sigMcUnc":False, "whiteList":["2b_ge4j", "3b_ge4j", "ge4b_ge4j"]},
-             "T2cc"        : {"dataset":dataset, "sigMcUnc":False, "whiteList":["0b_le3j"]},
-             "T1tttt_ichep": {"dataset":"2012ichep", "sigMcUnc":False, "whiteList":["2b", "ge3b"]},
-             "tanBeta10_7":  {"dataset":"2011", "sigMcUnc":False, "whiteList":[]},
-             }[model]
-
-    if allCategories:
-        kargs["whiteList"] = []
-
-    kargs["blackList"] = ["ge4b_ge4j"] if dataset == "2012dev" else []  # awaits eff maps
-    return spec(**kargs)
+def likelihoodSpec(model=None, allCategories=False):
+    return spec(dataset=model.llk,
+                whiteList=[] if allCategories else model.whiteList,
+                blackList=["ge4b_ge4j"] if model.llk == "2012dev" else [],  # awaits eff maps
+                )
 
 
-nb = "n_{b}^{#color[0]{b}}" #graphical hack (white superscript)
-nj = "n_{j}^{#color[0]{j}}" #graphical hack (white superscript)
+# graphical hacks (white superscript)
+nb = "n_{b}^{#color[0]{b}}"
+nj = "n_{j}^{#color[0]{j}}"
+
 
 class selection(object) :
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
@@ -128,7 +117,7 @@ class spec(object) :
                 del s.samplesAndSignalEff["had"]
         self._selections += sel
 
-    def __init__(self, dataset="", separateSystObs=True, sigMcUnc=None,
+    def __init__(self, dataset="", separateSystObs=True, sigMcUnc=False,
                  whiteList=[], blackList=[], ignoreHad=False):
         for item in ["dataset", "separateSystObs", "sigMcUnc",
                      "whiteList", "blackList", "ignoreHad"]:
