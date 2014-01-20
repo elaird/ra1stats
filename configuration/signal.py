@@ -2,17 +2,25 @@ import directories
 
 
 class scan(object):
-    def __init__(self, dataset="", tag="",
-                 com=None, xsVariation="default",
+    def __init__(self,
+                 dataset="",
+                 tag="",
+                 com=None,
+                 xsVariation="default",
                  xsFactors=[1.0],
-                 had="", muon="", phot="", mumu="",
+                 had="",
+                 muon="",
+                 phot="",
+                 mumu="",
                  interBin="LowEdge",
                  aT=[],
                  extraVars=[],
                  weightedHistName="",
                  unweightedHistName="",
                  minSumWeightIn=1,
-                 maxSumWeightIn=None):
+                 maxSumWeightIn=None,
+                 llk=None,
+                 whiteList=[]):
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
@@ -20,6 +28,7 @@ class scan(object):
                      "xsVariation", "xsFactors", "aT", "extraVars",
                      "weightedHistName", "unweightedHistName",
                      "minSumWeightIn", "maxSumWeightIn",
+                     "llk", "whiteList",
                      ]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
@@ -70,6 +79,14 @@ class scan(object):
     def unweightedHistName(self):
         return self._unweightedHistName
 
+    @property
+    def llk(self):
+        return self._llk
+
+    @property
+    def whiteList(self):
+        return self._whiteList
+
     def sumWeightInRange(self, sumWeightIn):
         out = True
         if self._minSumWeightIn is not None:
@@ -100,47 +117,56 @@ def effUncRel(model=""):
 
 
 def models():
-    old = {"weightedHistName": "m0_m12_mChi_noweight"}
-    new = {"weightedHistName": "m0_m12_mChi_weight", "unweightedHistName": "m0_m12_mChi_noweight"}
-    tb = {"minSumWeightIn": 9.0e3, "maxSumWeightIn": 11.0e3}
+    old7 = {"weightedHistName": "m0_m12_mChi_noweight",
+            "com": 7}
+    hcp = {"weightedHistName": "m0_m12_mChi_noweight",
+           "com": 8,
+           "llk": "2012hcp"}
+    new = {"weightedHistName": "m0_m12_mChi_weight",
+           "unweightedHistName": "m0_m12_mChi_noweight",
+           "com": 8,
+           "llk": "2012dev"}
+
+    tb = {"had": "v2",
+          "muon": "v2",
+          "weightedHistName": "m0_m12_gg",
+          "minSumWeightIn": 9.0e3,
+          "maxSumWeightIn": 11.0e3,
+          "llk": "2011",
+          "com": 7,
+          "whiteList": []}
 
     return [
-        #scan(dataset="T2", com=8, had="v2_new_bin", xsFactors=[0.1, 0.8], **old),
-        #scan(dataset="T2cc", com=8, had="v7_new_bin", **old),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55", "0.6"], extraVars=["SITV"], **old),
-        #scan(dataset="T2tt", com=8, had="v2", aT=["0.55", "0.6"], **old),
-        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"], extraVars=["SITV"], **new),
-        #scan(dataset="T2cc", com=8, had="v9", aT=["0.55", "0.6"], **new),
-        #scan(dataset="T1", com=8, had="v5", **old),
-        scan(dataset="T2", com=8, had="v1", xsFactors=[0.1, 0.8], **old),
-        #scan(dataset="T2cc", com=8, had="v6", **old),
-        #scan(dataset="T2tt", com=8, had="v1", muon="v1", **old),
-        #scan(dataset="T2bb", com=8, had="v3", muon="v3", **old),
-        #scan(dataset="T1bbbb", com=8, had="v3", muon="v3", **old),
-        #scan(dataset="T1tttt", com=8, had="v1", muon="v1", **old),
-        #
-        #scan(dataset="T2bb", com=8, tag="ct6l1", had="v6_yossof_cteq61", **old),
-        #scan(dataset="T2bb", com=8, tag="ct10", had="v6_yossof_ct10_normalized", **old),
-        #scan(dataset="T2bb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized", **old),
-        #scan(dataset="T2bb", com=8, tag="mstw08", had="v6_yossof_mst08_normalized", **old),
-        #scan(dataset="T2bb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized", **old),
-        #scan(dataset="T1bbbb", com=8, tag="ct6l1", had="v6_yossof_cteq61", **old),
-        #scan(dataset="T1bbbb", com=8, tag="ct10", had="v6_yossof_ct10_normalized", **old),
-        #scan(dataset="T1bbbb", com=8, tag="ct66", had="v6_yossof_cteq66_normalized", **old),
-        #scan(dataset="T1bbbb", com=8, tag="mstw08", had="v6_yossof_mstw08_normalized", **old),
-        #scan(dataset="T1bbbb", com=8, tag="nnpdf21", had="v6_yossof_nnpdf21_normalized", **old),
-        #
-        #scan(dataset="T1tttt", com=8, tag="ichep", had="2012full", muon="2012full", **old),
-        #
-        #scan(dataset="T5zz", com=7, had="v1", muon="v1", minSumWeightIn=5.0e3, **old),
-        #scan(dataset="TGQ_0p0", com=7, had="v1", **old),
-        #scan(dataset="TGQ_0p2", com=7, had="v1", **old),
-        #scan(dataset="TGQ_0p4", com=7, had="v1", **old),
-        #scan(dataset="TGQ_0p8", com=7, had="v1", **old),
-        #
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", weightedHistName="m0_m12_gg", **tb),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="up", weightedHistName="m0_m12_gg", **tb),
-        #scan(dataset="tanBeta10", com=7, had="v2", muon="v2", xsVariation="down", weightedHistName="m0_m12_gg", **tb),
+        #scan(dataset="T1", had="v5", whiteList=["0b_ge4j"], **hcp),
+        scan(dataset="T2", had="v1", whiteList=["0b_le3j"], xsFactors=[0.1, 0.8], **hcp),
+        #scan(dataset="T2cc", had="v6", whiteList=["0b_le3j"], **hcp),
+        #scan(dataset="T2tt", had="v1", muon="v1", whiteList=["1b_le3j", "2b_le3j"], **hcp),
+        #scan(dataset="T2bb", had="v3", muon="v3", whiteList=["1b_le3j", "2b_le3j"], **hcp),
+        #scan(dataset="T1bbbb", had="v3", muon="v3", whiteList=["2b_ge4j", "3b_ge4j", "ge4b_ge4j"], **hcp),
+        #scan(dataset="T1tttt", had="v1", muon="v1", whiteList=["2b_ge4j", "3b_ge4j", "ge4b_ge4j"], **hcp),
+
+        # dev
+        #scan(dataset="T2", had="v2_new_bin", whiteList=["0b_le3j"], xsFactors=[0.1, 0.8], **hcp),
+        #scan(dataset="T2cc", had="v7_new_bin", whiteList=["0b_le3j"], **hcp),
+        #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], extraVars=["SITV"], **hcp),
+        #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], **hcp),
+        #scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], extraVars=["SITV"], whiteList=["0b_le3j"], **new),
+        #scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], whiteList=["0b_le3j"], **new),
+
+        # old
+        #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
+        #     whiteList=["2b", "ge3b"], weightedHistName="m0_m12_mChi_noweight", com=8),
+
+        #scan(dataset="tanBeta10", **tb),
+        #scan(dataset="tanBeta10", xsVariation="up", **tb),
+        #scan(dataset="tanBeta10", xsVariation="down", **tb),
+
+        # need llk
+        #scan(dataset="T5zz", had="v1", muon="v1", minSumWeightIn=5.0e3, **old7),
+        #scan(dataset="TGQ_0p0", had="v1", **old7),
+        #scan(dataset="TGQ_0p2", had="v1", **old7),
+        #scan(dataset="TGQ_0p4", had="v1", **old7),
+        #scan(dataset="TGQ_0p8", had="v1", **old7),
         ]
 
 
