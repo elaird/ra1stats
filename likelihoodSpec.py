@@ -1,10 +1,3 @@
-def likelihoodSpec(model=None, allCategories=False):
-    return spec(dataset=model.llk,
-                whiteList=[] if allCategories else model.whiteList,
-                blackList=["ge4b_ge4j"] if model.llk == "2012dev" else [],  # awaits eff maps
-                )
-
-
 # graphical hacks (white superscript)
 nb = "n_{b}^{#color[0]{b}}"
 nj = "n_{j}^{#color[0]{j}}"
@@ -177,6 +170,8 @@ class spec(object) :
 
     def __init2012dev(self) :
         self._blackList += ["ge4b_le3j"]
+        self._blackList += ["ge4b_ge4j"] # awaits eff maps
+
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = True
