@@ -2,12 +2,6 @@ import directories
 from signalPoint import scan
 
 
-def factorString(xsFactor=None):
-    if xsFactor == 1.0:
-        return ""
-    return ("_xs%3.1f" % xsFactor).replace(".", "p")
-
-
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,

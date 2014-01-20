@@ -162,6 +162,12 @@ def spline(points=[], title=""):
     return r.TSpline3(title, graph)
 
 
+def factorString(xsFactor=None):
+    if xsFactor == 1.0:
+        return ""
+    return ("_xs%3.1f" % xsFactor).replace(".", "p")
+
+
 def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                     pruneYMin=False, debug=None, info=None):
     cutFunc = patches.cutFunc()[model.name]
@@ -218,12 +224,12 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                                           **kargs)
 
             patchesFunc = graphName
-            graphName += conf.signal.factorString(xsFactor)
+            graphName += factorString(xsFactor)
             graph.SetName(graphName)
             simpleHisto.SetName(graphName+"_simpleExcl")
             relativeHisto.SetName(graphName+"_relative")
 
-            dct = getattr(patches, patchesFunc)(model.name+conf.signal.factorString(xsFactor))
+            dct = getattr(patches, patchesFunc)(model.name+factorString(xsFactor))
             pruneGraph(graph, debug=debug, breakLink=pruneYMin,
                        lst=dct["blackList"]+(pointsAtYMin(graph) if pruneYMin else []))
             modifyGraph(graph, dct=dct["replace"], debug=debug, info=info)
@@ -484,7 +490,7 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
     graphs = []
     for xsFactor in sorted(model.xsFactors):
         for d in curveSpecs:
-            graph = f.Get(d["name"]+conf.signal.factorString(xsFactor))
+            graph = f.Get(d["name"]+factorString(xsFactor))
             if not graph:
                 continue
             graph.SetLineColor(d["color"])
@@ -624,7 +630,7 @@ def makeHistoPdf(model=None, histoFileName="", graphFileName="",
     c.Print(pdf+"[")
     for xsFactor in model.xsFactors:
         for d in curveSpecs:
-            name = d["name"]+conf.signal.factorString(xsFactor)
+            name = d["name"]+factorString(xsFactor)
             h = hFile.Get(name+tag)
             if not h:
                 continue
