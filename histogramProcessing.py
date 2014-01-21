@@ -1,4 +1,5 @@
 import configuration as conf
+import likelihood
 import patches
 import utils
 
@@ -269,6 +270,37 @@ def smsEffHisto(spec={}, model=None):
     out = ratio(spec["file"],
                 spec["afterDir"], spec["weightedHistName"],
                 spec["beforeDir"], spec["weightedHistName"])
+    return out
+
+
+def effHistos(model=None, allCategories=False):
+    out = {}
+    whiteList = [] if allCategories else model.whiteList
+    ls = likelihood.forSignalModel(signalModel=model, whiteList=whiteList)
+    for sel in ls.selections():
+        bins = sel.data.htBinLowerEdges()
+        htThresholds = zip(bins, list(bins[1:])+[None])
+
+        d = {}
+        for box, considerSignal in sel.samplesAndSignalEff.iteritems():
+            Box = box.capitalize()
+            itemFunc = {"eff%s" % Box: effHisto}
+            if ls.sigMcUnc:
+                itemFunc["meanWeightSigMc%s" % Box] = meanWeightSigMc
+                itemFunc["nEventsSigMc%s" % Box] = nEventsSigMc
+            for item, func in itemFunc.iteritems():
+                if considerSignal:
+                        d[item] = [func(model=model,
+                                        box=box,
+                                        htLower=l,
+                                        htUpper=u,
+                                        bJets=sel.bJets,
+                                        jets=sel.jets,
+                                        ) for l, u in htThresholds]
+                else:
+                    d[item] = [0.0]*len(bins)  # fixme: None?
+
+        out[sel.name] = d
     return out
 
 
