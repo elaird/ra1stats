@@ -17,7 +17,10 @@ class scan(object):
                  minSumWeightIn=1,
                  maxSumWeightIn=None,
                  llk=None,
-                 whiteList=[]):
+                 whiteList=[],
+                 exampleKargs={},
+                 ):
+
         assert xsVariation in ["default", "up", "down"], xsVariation
 
         self.boxNames = ["had", "muon", "phot", "mumu"]
@@ -25,7 +28,7 @@ class scan(object):
                      "xsVariation", "xsFactors", "aT", "extraVars",
                      "weightedHistName", "unweightedHistName",
                      "minSumWeightIn", "maxSumWeightIn",
-                     "llk", "whiteList",
+                     "llk", "whiteList", "exampleKargs",
                      ]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
@@ -83,6 +86,10 @@ class scan(object):
     @property
     def whiteList(self):
         return self._whiteList
+
+    @property
+    def exampleKargs(self):
+        return self._exampleKargs
 
     def sumWeightInRange(self, sumWeightIn):
         out = True
