@@ -8,7 +8,7 @@ def likelihood(signalModel=None, whiteList=None):
     llk = eval("l%s.l%s" % (signalModel.llk, signalModel.llk))
     if whiteList is None:
         whiteList = signalModel.whiteList
-    return llk(name=signalModel.llk, whiteList=whiteList)
+    return llk(whiteList=whiteList)
 
 
 class selection(object):
