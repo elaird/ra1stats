@@ -3,7 +3,7 @@ from signalPoint import scan
 
 
 def effUncRel(model=""):
-    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
+    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230, "T1tttt_ichep": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
             }[model]
 
@@ -57,7 +57,7 @@ def models():
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
-        #     whiteList=["2b", "ge3b"], weightedHistName="m0_m12_mChi_noweight", com=8),
+        #     whiteList=["2b", "ge3b"], weightedHistName="m0_m12_mChi_noweight", com=8, exampleKargs=kargsOld),
 
         #scan(dataset="tanBeta10", **tb),
         #scan(dataset="tanBeta10", xsVariation="up", **tb),
