@@ -6,24 +6,25 @@ nj = "n_{j}^{#color[0]{j}}"
 def likelihood(signalModel=None, whiteList=None):
     exec("from likelihood import l%s" % signalModel.llk)
     llk = eval("l%s.l%s" % (signalModel.llk, signalModel.llk))
-    return llk(name=signalModel.llk,
-               whiteList=signalModel.whiteList if whiteList is None else whiteList,
-               )
+    if whiteList is None:
+        whiteList = signalModel.whiteList
+    return llk(name=signalModel.llk, whiteList=whiteList)
 
 
-class selection(object) :
+class selection(object):
     '''Each key appearing in samplesAndSignalEff is used in the likelihood;
-    the corresponding value determines whether signal efficiency is considered for that sample.'''
+    the corresponding value determines whether signal efficiency is considered
+    for that sample.'''
 
-    def __init__(self, name = "", note = "", samplesAndSignalEff = {}, data = None,
-                 bJets = "", jets = "", fZinvIni = 0.5, fZinvRange = (0.0, 1.0),
-                 AQcdIni = 1.0e-2, AQcdMax = 100.0, yAxisLogMinMax = (0.3, None),
-                 zeroQcd = False, muonForFullEwk = False,
-                 universalSystematics = False, universalKQcd = False) :
-        for item in ["name", "note", "samplesAndSignalEff", "data",
-                     "bJets", "jets", "fZinvIni", "fZinvRange", "yAxisLogMinMax",
+    def __init__(self, name="", note="", samplesAndSignalEff={}, data=None,
+                 bJets="", jets="", fZinvIni=0.5, fZinvRange=(0.0, 1.0),
+                 AQcdIni=1.0e-2, AQcdMax=100.0, yAxisLogMinMax=(0.3, None),
+                 zeroQcd=False, muonForFullEwk=False,
+                 universalSystematics=False, universalKQcd=False):
+        for item in ["name", "note", "samplesAndSignalEff", "data", "bJets",
+                     "jets", "fZinvIni", "fZinvRange", "yAxisLogMinMax",
                      "AQcdIni", "AQcdMax", "zeroQcd", "muonForFullEwk",
-                     "universalSystematics", "universalKQcd"] :
+                     "universalSystematics", "universalKQcd"]:
             setattr(self, item, eval(item))
 
 
@@ -33,7 +34,7 @@ def sampleCode(samples):
     for box, considerSignal in samples.iteritems():
         (yes if considerSignal else no).append(box)
 
-    d = {"had":"h", "phot":"p", "muon":"1", "mumu":"2", "simple":"s"}
+    d = {"had": "h", "phot": "p", "muon": "1", "mumu": "2", "simple": "s"}
     out = ""
     for item in yes:
         out += d[item]
@@ -44,53 +45,63 @@ def sampleCode(samples):
     return out
 
 
-class spec(object) :
-
-    def separateSystObs(self) :
+class spec(object):
+    def separateSystObs(self):
         return self._separateSystObs
-    def poi(self) :
+
+    def poi(self):
         #return {"var": (initialValue, min, max)}
         return {"f": (0.1, 0.0, 0.1)}
         #return {"fZinv_55_0b_7": (0.5, 0.0, 1.0)}
         #return {"qcd_0b_le3j_0": (0.0, 0.0, 1.0e3)}
         #return {"k_qcd_0b_le3j": (3.0e-2, 0.01, 0.04)}
         #return {"ewk_0b_le3j_0": (2.22e4, 2.0e4, 2.5e4)}
-    def REwk(self) :
+
+    def REwk(self):
         return "" if self._ignoreHad else self._REwk
-    def RQcd(self) :
+
+    def RQcd(self):
         return "Zero" if self._ignoreHad else self._RQcd
-    def nFZinv(self) :
+
+    def nFZinv(self):
         return "All" if self._ignoreHad else self._nFZinv
-    def constrainQcdSlope(self) :
+
+    def constrainQcdSlope(self):
         return False if self._ignoreHad else self._constrainQcdSlope
-    def qcdParameterIsYield(self) :
+
+    def qcdParameterIsYield(self):
         return self._qcdParameterIsYield
-    def initialValuesFromMuonSample(self) :
+
+    def initialValuesFromMuonSample(self):
         return self._initialValuesFromMuonSample
-    def initialFZinvFromMc(self) :
+
+    def initialFZinvFromMc(self):
         return self._initialFZinvFromMc
-    def legendTitle(self) :
-        return self._legendTitle+(" [QCD=0; NO HAD IN LLK]" if self._ignoreHad else "")
-    def ignoreHad(self) :
+
+    def legendTitle(self):
+        more = " [QCD=0; NO HAD IN LLK]" if self._ignoreHad else ""
+        return self._legendTitle + more
+
+    def ignoreHad(self):
         return self._ignoreHad
 
     @property
     def sigMcUnc(self):
         return self._sigMcUnc
 
-    def selections(self) :
+    def selections(self):
         out = self._selections
         if self._whiteList:
-            out = filter(lambda x:x.name in self._whiteList, out)
+            out = filter(lambda x: x.name in self._whiteList, out)
         if self._blackList:
-            out = filter(lambda x:x.name not in self._blackList, out)
+            out = filter(lambda x: x.name not in self._blackList, out)
         return out
 
-    def poiList(self) :
+    def poiList(self):
         return self.poi().keys()
 
-    def standardPoi(self) :
-        return self.poiList()==["f"]
+    def standardPoi(self):
+        return self.poiList() == ["f"]
 
     def note(self):
         out = "%s_" % self._name
@@ -108,18 +119,18 @@ class spec(object) :
             out += "__".join(["poi"] + self.poiList())
 
         for selection in self.selections():
-            out += "_%s-%s" % (selection.name, sampleCode(selection.samplesAndSignalEff))
+            code = sampleCode(selection.samplesAndSignalEff)
+            out += "_%s-%s" % (selection.name, code)
         return out
 
-
-    def add(self, sel = []) :
-        if self._ignoreHad :
-            for s in sel :
+    def add(self, sel=[]):
+        if self._ignoreHad:
+            for s in sel:
                 del s.samplesAndSignalEff["had"]
         self._selections += sel
 
     def _fill(self):
-        raise Exception("NotImplemented", "Implement a member function _fill(self)")
+        raise Exception("NotImplemented", "Implement _fill(self)")
 
     def __init__(self, separateSystObs=True, sigMcUnc=False,
                  whiteList=[], blackList=[], ignoreHad=False):
@@ -144,5 +155,6 @@ class spec(object) :
         assert self._nFZinv in ["All", "One", "Two"]
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
         for item in ["qcdParameterIsYield", "constrainQcdSlope",
-                     "initialValuesFromMuonSample", "initialFZinvFromMc", "sigMcUnc"]:
-            assert getattr(self,"_"+item) in [False, True], item
+                     "initialValuesFromMuonSample",
+                     "initialFZinvFromMc", "sigMcUnc"]:
+            assert getattr(self, "_"+item) in [False, True], item
