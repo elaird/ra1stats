@@ -1,7 +1,4 @@
-import collections
-
 import configuration as conf
-import likelihoodSpec
 import patches
 import utils
 
@@ -48,7 +45,10 @@ def setRange(var, model, histo, axisString):
     if axisString == "Z":
         maxContent = histo.GetBinContent(histo.GetMaximumBin())
         if maxContent > nums[1]:
-            print "ERROR: histo truncated in Z (maxContent = %g, maxSpecified = %g) %s" % (maxContent, nums[1], histo.GetName())
+            print " ".join(["ERROR: histo truncated in Z",
+                            "(maxContent = %g," % maxContent,
+                            "maxSpecified = %g)" % nums[1],
+                            histo.GetName()])
 
     divKey = axisString.lower()+"Divisions"
     if ranges.get(divKey):
@@ -71,7 +71,7 @@ def modifiedHisto(h3=None,
                       shift=(shiftX, shiftY),
                       shiftErrors=shiftErrors,
                       info=info)
-    fillPoints(h, points=patches.overwriteOutput()[model.name], info=info)
+    fillPoints(h, points=patches.overwriteOutput().get(model.name, []), info=info)
     killPoints(h,
                cutFunc=patches.cutFunc().get(model.name, None),
                interBin=model.interBin)
@@ -173,17 +173,13 @@ def xsHistoPhysical(model=None, cmssmProcess=""):
 
 
 def xsHistoAllOne(model=None, cutFunc=None):
-    ls = likelihoodSpec.likelihoodSpec(model.name)
-    if ls._dataset in ["2011", "2012ichep"]:
-        kargs = {}
-    else:
-        kargs = {"bJets": "eq0b", "jets": "le3j"}
-
     spec = conf.signal.effHistoSpec(model=model,
                                     box="had",
                                     htLower=375,
                                     htUpper=475,
-                                    **kargs)
+                                    bJets="eq0b",
+                                    jets="le3j",
+                                    )
 
     h = smsEffHisto(spec=spec, model=model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
@@ -215,6 +211,7 @@ def effHisto(model=None, box="",
         return smsEffHisto(spec=spec, model=model)
     else:
         return cmssmEffHisto(spec=spec, model=model)
+
 
 def meanWeightSigMc(model=None, box="",
                     htLower=None, htUpper=None,

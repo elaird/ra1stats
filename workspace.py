@@ -1,6 +1,6 @@
 import collections,math,os
 import utils,plotting,calc,ensemble
-from common import obs,pdf,note,ni,wimport,floatingVars
+from common import obs,pdf,ni,wimport,floatingVars
 import ROOT as r
 
 
@@ -799,7 +799,7 @@ class foo(object) :
         return name if sum(k)!=1 else selections[k.index(True)].name
 
     def note(self) :
-        return note(likelihoodSpec = self.likelihoodSpec)+("_signal" if not self.smOnly() else "")
+        return self.likelihoodSpec.note()+("_signal" if not self.smOnly() else "")
 
     def debug(self) :
         self.wspace.Print("v")

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import utils
-from math import sqrt
 import ROOT as r
 
 rand = r.TRandom3(1)

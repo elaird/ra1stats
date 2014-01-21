@@ -2,7 +2,7 @@
 
 import ROOT as r
 import refXsProcessing as rxs
-import os,copy,array
+import os,array
 
 def setup() :
     r.gROOT.SetBatch(True)

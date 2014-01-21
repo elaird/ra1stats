@@ -167,7 +167,7 @@ def whiteListOfPoints(model="", respect=True):
             #"T2": [(375.0, 50.0)],
             "T2cc": [(175.0, 95.0)],
             #"T2cc": [(175.0, 165.0)],
-            }[model]
+            }.get(model, [])
 
 
 def xsHistoSpec(model=None, cmssmProcess=""):

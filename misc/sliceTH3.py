@@ -1,5 +1,3 @@
-import ROOT as r
-
 def sliceTH3(name, th3, axes = "yx",
              condition = "", inclusive = True) :
     ''' 1) Clone the th3.

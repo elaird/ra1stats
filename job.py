@@ -3,8 +3,8 @@ import sys
 
 import configuration as conf
 import likelihoodSpec
-import pickling
 import workspace
+import utils
 
 
 def points():
@@ -25,7 +25,7 @@ def description(key, cl=None):
 
 def onePoint(likelihoodSpec=None, point=None):
     fileName = conf.directories.pickledFileName(*point)+".in"
-    signal = pickling.readNumbers(fileName=fileName)
+    signal = utils.readNumbers(fileName=fileName)
     print signal
     if conf.limit.method() and signal.anyEffHad():
         return signal, resultsMultiCL(likelihoodSpec=likelihoodSpec,
@@ -104,10 +104,10 @@ def go():
     for point in points():
         name = point[0]
         fileName = conf.directories.pickledFileName(*point)+".out"
-        pickling.writeNumbers(fileName,
-                              onePoint(likelihoodSpec=specs[name],
-                                       point=point),
-                              )
+        utils.writeNumbers(fileName,
+                           onePoint(likelihoodSpec=specs[name],
+                                    point=point),
+                           )
 
 if False:
     import cProfile

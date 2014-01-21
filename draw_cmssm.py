@@ -45,7 +45,9 @@ def spline(points = [], title = "") :
     return r.TSpline3(title, tgraph(points))
 
 def go(outFile = "", model = "tanBeta10", bandOutline = False) :
-    curves = patches.curves()[model]
+    curves = patches.curves().get(model)
+    assert curves
+
     #ROOT
     setup()
 

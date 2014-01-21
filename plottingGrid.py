@@ -1,7 +1,3 @@
-import os
-import sys
-import math
-
 import configuration as conf
 import histogramProcessing as hp
 import likelihoodSpec
@@ -169,16 +165,16 @@ def spline(points=[], title=""):
 def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                     pruneYMin=False, debug=None, info=None):
     cutFunc = patches.cutFunc()[model.name]
-    curves = patches.curves()[model.name]
+    curves = patches.curves().get(model.name)
 
     graphs = {}
     simpleExclHistos = {}
     relativeHistos = {}
 
-    items =  [("ExpectedUpperLimit_m1_Sigma", 0.0),
-              ("ExpectedUpperLimit_p1_Sigma", 0.0),
-              ("ExpectedUpperLimit",          0.0),
-              ]
+    items = [("ExpectedUpperLimit_m1_Sigma", 0.0),
+             ("ExpectedUpperLimit_p1_Sigma", 0.0),
+             ("ExpectedUpperLimit",          0.0),
+             ]
     if not expectedMapsOnly:
         items += [("UpperLimit",  0.0),
                   ("UpperLimit", -1.0),
@@ -204,7 +200,11 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                      "xsFactor": xsFactor,
                      "model": model,
                      "interBin": interBin}
-            graph = rxs.excludedGraph(h, info=info, **kargs)
+
+            graph = rxs.excludedGraph(h,
+                                      info=info,
+                                      whiteList=conf.signal.whiteListOfPoints(model.name),
+                                      **kargs)
 
             simpleHisto = rxs.exclHisto(h,
                                         tag="_excludedHistoSimple",

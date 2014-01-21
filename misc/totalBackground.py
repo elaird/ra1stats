@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import ROOT as r
-import math,array,os
+import math
+import os
 
 htLower    = (250,       300,    350,    450)
 countsBulk = (844459, 331948, 225649, 110034)

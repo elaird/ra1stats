@@ -1,4 +1,4 @@
-import common
+import signalPoint as common
 from configuration.signal import processStamp, pruned
 
 a = common.signal(xs = 0.8*0.244862, effUncRel = 0.134,
