@@ -42,25 +42,6 @@ def writeSignalFiles(points=[], outFilesAlso=False):
         utils.writeNumbers(fileName=stem+".out", d=signal)
 
 
-##merge functions
-def mergedFile(model=None):
-    tags = [conf.limit.method()]
-    if "CLs" in conf.limit.method():
-        tags += [conf.limit.calculatorType(),
-                 #"TS%d" % conf.limit.testStatistic()
-                 ]
-    if conf.limit.binaryExclusion():
-        tags.append("binaryExcl")
-    tags.append(model.name)
-    if not model.isSms:
-        tags.append(model.xsVariation)
-
-    return "".join([conf.directories.mergedFile()+"/",
-                    "_".join(tags + [model.llk] + model.whiteList),
-                    ".root"
-                    ])
-
-
 def contents(fileName):
     out = {}
     t = utils.readNumbers(fileName)
@@ -110,7 +91,7 @@ def mergePickledFiles(printExamples=False):
         os.remove(fileName.replace(".out", ".in"))
 
     for model in conf.signal.models():
-        f = r.TFile(mergedFile(model=model), "RECREATE")
+        f = r.TFile(conf.limit.mergedFile(model=model), "RECREATE")
         for key, histo in histos[model.name].iteritems():
             histo.GetZaxis().SetTitle(zTitles[model.name][key])
             histo.Write()
