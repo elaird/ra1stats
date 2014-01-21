@@ -1,6 +1,6 @@
 hard-coded
 ----------
-- remove hard-coded HT thresholds in conf.signal.xsHistoSpec(), hp.xsHistoAllOne()
+- remove hard-coded HT thresholds in conf.signal.xsHistoSpec()
 - remove 0.95 in StandardHypoTestInvDemo.C
 - remove 95 in plottingGrid.rename()
 
