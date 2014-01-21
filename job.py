@@ -99,7 +99,7 @@ def compare(item, threshold):
 def go():
     specs = {}
     for model in conf.signal.models():
-        specs[model.name] = likelihood.likelihood(signalModel=model)
+        specs[model.name] = likelihood.forSignalModel(signalModel=model)
 
     for point in points():
         name = point[0]

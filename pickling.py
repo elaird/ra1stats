@@ -20,7 +20,7 @@ def effHistos(model=None,
               allCategories=False,
               ):
     out = {}
-    ls = likelihood.likelihood(signalModel=model, whiteList=[])
+    ls = likelihood.forSignalModel(signalModel=model, whiteList=[])
     for sel in ls.selections():
         badMerge = " ".join(["bin merge",
                              str(sel.data._mergeBins),
@@ -99,7 +99,7 @@ def mergedFile(model=None):
     if not model.isSms:
         tags.append(model.xsVariation)
 
-    tags.append(likelihood.likelihood(signalModel=model).note())
+    tags.append(likelihood.forSignalModel(signalModel=model).note())
     return "".join([conf.directories.mergedFile()+"/",
                     "_".join(tags),
                     ".root"
