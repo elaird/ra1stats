@@ -1,10 +1,10 @@
 import directories
 from signalPoint import scan
 
-
 def effUncRel(model=""):
-    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230, "T1tttt_ichep": 0.230,
+    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
+            "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736,
             }[model]
 
 
@@ -16,8 +16,8 @@ def models():
     tb = {"had": "v2",
           "muon": "v2",
           "weightedHistName": "m0_m12_gg",
-          "minSumWeightIn": 9.0e3,
-          "maxSumWeightIn": 11.0e3,
+          #"minSumWeightIn": 9.0e3,
+          #"maxSumWeightIn": 11.0e3,
           "exampleKargs": kargsOld,
           "llk": "2011",
           "com": 7,
