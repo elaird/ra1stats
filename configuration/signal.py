@@ -9,24 +9,34 @@ def effUncRel(model=""):
 
 
 def models():
-    old7 = {"weightedHistName": "m0_m12_mChi_noweight",
-            "com": 7}
-    hcp = {"weightedHistName": "m0_m12_mChi_noweight",
-           "com": 8,
-           "llk": "2012hcp"}
-    new = {"weightedHistName": "m0_m12_mChi_weight",
-           "unweightedHistName": "m0_m12_mChi_noweight",
-           "com": 8,
-           "llk": "2012dev"}
+    kargsOld = {"box": "had", "htLower": 375, "htUpper": 475}
+    kargsNew = {"bJets": "eq0b", "jets": "le3j"}
+    kargsNew.update(kargsOld)
 
     tb = {"had": "v2",
           "muon": "v2",
           "weightedHistName": "m0_m12_gg",
           "minSumWeightIn": 9.0e3,
           "maxSumWeightIn": 11.0e3,
+          "exampleKargs": kargsOld,
           "llk": "2011",
           "com": 7,
           "whiteList": []}
+
+    old7 = {"weightedHistName": "m0_m12_mChi_noweight",
+            "exampleKargs": kargsOld,
+            "com": 7}
+
+    hcp = {"weightedHistName": "m0_m12_mChi_noweight",
+           "exampleKargs": kargsNew,
+           "com": 8,
+           "llk": "2012hcp"}
+
+    new = {"weightedHistName": "m0_m12_mChi_weight",
+           "unweightedHistName": "m0_m12_mChi_noweight",
+           "exampleKargs": kargsNew,
+           "com": 8,
+           "llk": "2012dev"}
 
     return [
         #scan(dataset="T1", had="v5", whiteList=["0b_ge4j"], **hcp),
