@@ -681,10 +681,7 @@ def efficiencyHistos(model=None,
     globalSum = None
     perCategory = {}
 
-    effHistos = pickling.effHistos(model,
-                                   allCategories=includeNonUsedCategories,
-                                   )
-
+    effHistos = hp.effHistos(model, allCategories=includeNonUsedCategories)
     for cat, dct in effHistos.iteritems():
         sum1Cat = None
         for histo in dct[key]:
