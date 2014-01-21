@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import likelihoodSpec
+import likelihood
 import plotting
 import signals
 import workspace
@@ -25,15 +25,8 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False, sigMcUnc=False,
+def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
-
-    ls = likelihoodSpec.spec(whiteList=whiteList,
-                             dataset=dataset,
-                             ignoreHad=ignoreHad,
-                             separateSystObs=not ensemble,
-                             sigMcUnc=sigMcUnc,
-                             )
 
     examples_paper = {("0b_le3j",): signals.t2.a,
                       ("0b_ge4j",): signals.two.t1,
@@ -72,6 +65,13 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False, sigMcUnc=Fal
         signalToInject = {}
         signalExampleToStack = {}#signal
 
+
+    ls = llkClass(whiteList=whiteList,
+                  ignoreHad=ignoreHad,
+                  separateSystObs=not ensemble,
+                  sigMcUnc=sigMcUnc,
+                  )
+
     f = workspace.foo(likelihoodSpec=ls,
                       signalToTest=signalToTest,
                       signalExampleToStack=signalExampleToStack,
@@ -84,7 +84,7 @@ def go(whiteList=[], dataset="", allCategories=[], ignoreHad=False, sigMcUnc=Fal
     out = None
     nToys = {"": 0, "2010": 300, "2011eps": 300, "2011": 3000,
              "2012ichep": 1000, "2012hcp": 300,
-             "2012hcp2": 300, "2012dev": 0}[dataset]
+             "2012hcp2": 300, "2012dev": 0}[llk]
 
     if ensemble:
         f.ensemble(nToys=nToys, stdout=True, reuseResults=ensembleReuse)
@@ -144,14 +144,19 @@ kargs = {"bestFit": True,
          "interval": False,
          "ensemble": False,
          "ensembleReuse": False,
-         "dataset": ["", "2010", "2011eps", "2011",
-                     "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-1],
+         "llk": ["", "2010", "2011eps", "2011",
+                 "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-1],
          }
 
-if kargs["dataset"] == "2011":
+module = "l%s" % kargs["llk"]
+exec("from likelihood import %s" % module)
+exec("llkClass = %s.%s" % (module, module))
+
+
+if kargs["llk"] == "2011":
     go(**kargs)
 else:
-    selections = likelihoodSpec.spec(dataset=kargs["dataset"], sigMcUnc=False).selections()
+    selections = llkClass().selections()
     report = {}
     hMap = {}
     bins = (len(selections), 0.0, len(selections))

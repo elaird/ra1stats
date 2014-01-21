@@ -5,7 +5,7 @@ import configuration as conf
 import histogramProcessing as hp
 from inputData import rootToTxt
 import signalPoint
-import likelihoodSpec
+import likelihood
 
 import ROOT as r
 
@@ -20,7 +20,7 @@ def effHistos(model=None,
               allCategories=False,
               ):
     out = {}
-    ls = likelihoodSpec.likelihoodSpec(model.name, allCategories=allCategories)
+    ls = likelihood.forSignalModel(signalModel=model, whiteList=[])
     for sel in ls.selections():
         badMerge = " ".join(["bin merge",
                              str(sel.data._mergeBins),
@@ -99,7 +99,7 @@ def mergedFile(model=None):
     if not model.isSms:
         tags.append(model.xsVariation)
 
-    tags.append(likelihoodSpec.likelihoodSpec(model.name).note())
+    tags.append(likelihood.forSignalModel(signalModel=model).note())
     return "".join([conf.directories.mergedFile()+"/",
                     "_".join(tags),
                     ".root"

@@ -1,6 +1,6 @@
 import configuration as conf
 import histogramProcessing as hp
-import likelihoodSpec
+import likelihood
 import patches
 import pickling
 import refXsProcessing as rxs
@@ -162,6 +162,12 @@ def spline(points=[], title=""):
     return r.TSpline3(title, graph)
 
 
+def factorString(xsFactor=None):
+    if xsFactor == 1.0:
+        return ""
+    return ("_xs%3.1f" % xsFactor).replace(".", "p")
+
+
 def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                     pruneYMin=False, debug=None, info=None):
     cutFunc = patches.cutFunc()[model.name]
@@ -218,12 +224,12 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                                           **kargs)
 
             patchesFunc = graphName
-            graphName += conf.signal.factorString(xsFactor)
+            graphName += factorString(xsFactor)
             graph.SetName(graphName)
             simpleHisto.SetName(graphName+"_simpleExcl")
             relativeHisto.SetName(graphName+"_relative")
 
-            dct = getattr(patches, patchesFunc)(model.name+conf.signal.factorString(xsFactor))
+            dct = getattr(patches, patchesFunc)(model.name+factorString(xsFactor))
             pruneGraph(graph, debug=debug, breakLink=pruneYMin,
                        lst=dct["blackList"]+(pointsAtYMin(graph) if pruneYMin else []))
             modifyGraph(graph, dct=dct["replace"], debug=debug, info=info)
@@ -436,6 +442,10 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                  )
 
 
+def legendTitle(model=None):
+    return likelihood.forSignalModel(signalModel=model).legendTitle()
+
+
 def makeLimitPdf(model=None, expectedMapsOnly=None,
                  rootFileName="", diagonalLine=False, logZ=False,
                  curveGopts="", mDeltaFuncs=False, curveSpecs=[]):
@@ -484,7 +494,7 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
     graphs = []
     for xsFactor in sorted(model.xsFactors):
         for d in curveSpecs:
-            graph = f.Get(d["name"]+conf.signal.factorString(xsFactor))
+            graph = f.Get(d["name"]+factorString(xsFactor))
             if not graph:
                 continue
             graph.SetLineColor(d["color"])
@@ -552,12 +562,12 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
             func.Draw("same")
 
     if len(model.xsFactors) == 1:
-        s3 = stamp(text=likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
+        s3 = stamp(text=legendTitle(model),
                    x=0.2075, y=0.64, factor=0.65)
     else:
         yStamp = 0.50
         c = ", "
-        text = likelihoodSpec.likelihoodSpec(model.name).legendTitle().split(c)
+        text = legendTitle(model).split(c)
         s3 = stamp(text=c.join(text[:-1]), x=0.2075, y=yStamp, factor=0.65)
         s4 = stamp(text=text[-1], x=0.2075, y=yStamp-0.04, factor=0.65)
 
@@ -624,7 +634,7 @@ def makeHistoPdf(model=None, histoFileName="", graphFileName="",
     c.Print(pdf+"[")
     for xsFactor in model.xsFactors:
         for d in curveSpecs:
-            name = d["name"]+conf.signal.factorString(xsFactor)
+            name = d["name"]+factorString(xsFactor)
             h = hFile.Get(name+tag)
             if not h:
                 continue
@@ -775,7 +785,7 @@ def makeEfficiencyPdfSum(model=None, rootFileName="", key=""):
     coords = conf.signal.processStamp(model.name)
 
     factor = 0.6
-    s3 = stamp(text=likelihoodSpec.likelihoodSpec(model.name).legendTitle(),
+    s3 = stamp(text=legendTitle(model),
                x=0.23,
                y=0.70,
                factor=factor,

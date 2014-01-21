@@ -173,14 +173,7 @@ def xsHistoPhysical(model=None, cmssmProcess=""):
 
 
 def xsHistoAllOne(model=None, cutFunc=None):
-    spec = conf.signal.effHistoSpec(model=model,
-                                    box="had",
-                                    htLower=375,
-                                    htUpper=475,
-                                    bJets="eq0b",
-                                    jets="le3j",
-                                    )
-
+    spec = conf.signal.effHistoSpec(model=model, **model.exampleKargs)
     h = smsEffHisto(spec=spec, model=model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
         content = 1.0
