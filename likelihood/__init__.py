@@ -3,7 +3,7 @@ nb = "n_{b}^{#color[0]{b}}"
 nj = "n_{j}^{#color[0]{j}}"
 
 
-def likelihood(signalModel=None, whiteList=None):
+def forSignalModel(signalModel=None, whiteList=None):
     exec("from likelihood import l%s" % signalModel.llk)
     llk = eval("l%s.l%s" % (signalModel.llk, signalModel.llk))
     if whiteList is None:
