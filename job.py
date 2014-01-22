@@ -3,7 +3,7 @@ import sys
 
 import configuration as conf
 import likelihood
-import foo
+import driver
 import utils
 
 
@@ -60,11 +60,11 @@ def formattedClsResults(results={}, cl=None, cl2=None):
 def resultsOneCL(likelihoodSpec=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
-    f = foo.foo(signalToTest=signal,
-                likelihoodSpec=likelihoodSpec,
-                rhoSignalMin=conf.limit.rhoSignalMin(),
-                fIniFactor=conf.limit.fIniFactor(),
-                )
+    f = driver.driver(signalToTest=signal,
+                      likelihoodSpec=likelihoodSpec,
+                      rhoSignalMin=conf.limit.rhoSignalMin(),
+                      fIniFactor=conf.limit.fIniFactor(),
+                      )
 
     if "CLs" in conf.limit.method():
         if "Custom" in conf.limit.method():
