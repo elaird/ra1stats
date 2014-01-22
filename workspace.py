@@ -1,6 +1,12 @@
-import collections,math,os
-import utils,plotting,calc,ensemble
-from common import obs,pdf,ni,wimport,floatingVars
+import math
+import os
+
+import calc
+from common import obs, pdf, ni, wimport, floatingVars
+import ensemble
+import plotting
+import utils
+
 import ROOT as r
 
 
@@ -178,7 +184,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     trg = inputData.triggerEfficiencies()
     htMeans = inputData.htMeans()
     terms = []
-    out = collections.defaultdict(list)
 
     #QCD parameters
     A_ewk_ini = 1.3e-5
@@ -268,13 +273,14 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     hadTermsName = ni("hadTerms", label)
     w.factory("PROD::%s(%s)"%(hadTermsName, ",".join(terms)))
 
-    out["terms"].append(hadTermsName)
-    out["multiBinObs"].append(ni("nHad", label))
-    return out
+    return {"terms": [hadTermsName],
+            "multiBinObs":[ni("nHad", label)],
+            "systObs": [],
+            }
+
 
 def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
-    out = collections.defaultdict(list)
 
     for i,t in enumerate(zip(inputData.observations()["nSimple"], inputData.mcExpectations()["mcSimple"])) :
         nValue,bValue = t
@@ -301,15 +307,17 @@ def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
     termsName = ni("simpleTerms", label)
     w.factory("PROD::%s(%s)"%(termsName, ",".join(terms)))
 
-    out["terms"].append(termsName)
-    out["multiBinObs"].append(ni("nSimple", label))
-    return out
+    return {"terms": [termsName],
+            "multiBinObs": [ni("nSimple", label)],
+            "systObs": [],
+            }
+
 
 def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
-    out = collections.defaultdict(list)
+    systObs = []
 
-    if label==systematicsLabel :
+    if label == systematicsLabel:
         for iPar in set(inputData.systBins()["sigmaMumuZ"]) :
             rho = ni("rhoMumuZ", label, iPar)
             one = ni("oneMumuZ", label, iPar)
@@ -318,7 +326,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMumuZ"][iPar])
-            out["systObs"].append(one)
+            systObs.append(one)
             terms.append(gaus)
 
     systBin = inputData.systBins()["sigmaMumuZ"]
@@ -347,15 +355,17 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     mumuTermsName = ni("mumuTerms", label)
     w.factory("PROD::%s(%s)"%(mumuTermsName, ",".join(terms)))
 
-    out["terms"].append(mumuTermsName)
-    out["multiBinObs"].append(ni("nMumu", label))
-    return out
+    return {"terms": [mumuTermsName],
+            "multiBinObs": [ni("nMumu", label)],
+            "systObs": systObs,
+            }
+
 
 def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
-    out = collections.defaultdict(list)
-
     terms = []
-    if label==systematicsLabel :
+    systObs = []
+
+    if label == systematicsLabel:
         systBins = inputData.systBins()["sigmaPhotZ"]
         nPhot = inputData.observations()["nPhot"]
         for iPar in set(systBins) :
@@ -372,7 +382,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaPhotZ"][iPar])
             terms.append(gaus)
-            out["systObs"].append(one)
+            systObs.append(one)
 
     systBin = inputData.systBins()["sigmaPhotZ"]
     for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(inputData.observations()["nPhot"])),
@@ -400,15 +410,17 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     photTermsName = ni("photTerms", label)
     w.factory("PROD::%s(%s)"%(photTermsName, ",".join(terms)))
 
-    out["terms"].append(photTermsName)
-    out["multiBinObs"].append(ni("nPhot", label))
-    return out
+    return {"terms": [photTermsName],
+            "multiBinObs": [ni("nPhot", label)],
+            "systObs": systObs,
+            }
+
 
 def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
-    out = collections.defaultdict(list)
+    systObs = []
 
-    if label==systematicsLabel :
+    if label == systematicsLabel:
         for iPar in set(inputData.systBins()["sigmaMuonW"]) :
             rho = ni("rhoMuonW", label, iPar)
             one = ni("oneMuonW", label, iPar)
@@ -418,7 +430,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMuonW"][iPar])
             terms.append(gaus)
-            out["systObs"].append(one)
+            systObs.append(one)
 
     systBin = inputData.systBins()["sigmaMuonW"]
     for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue in zip(range(len(inputData.observations()["nMuon"])),
@@ -461,14 +473,18 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     muonTermsName = ni("muonTerms", label)
     w.factory("PROD::%s(%s)"%(muonTermsName, ",".join(terms)))
 
-    out["terms"].append(muonTermsName)
-    out["multiBinObs"].append(ni("nMuon", label))
-    return out
+    return {"terms": [muonTermsName],
+            "multiBinObs": [ni("nMuon", label)],
+            "systObs": systObs,
+            }
+
 
 def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
-    out = collections.defaultdict(list)
-
-    if label!=kQcdLabel : return out
+    if label != kQcdLabel:
+        return {"terms": [],
+                "multiBinObs": [],
+                "systObs": [],
+                }
 
     k_qcd_nom = ni("k_qcd_nom", label)
     k_qcd_unc_inp = ni("k_qcd_unc_inp", label)
@@ -482,9 +498,11 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
-    out["terms"].append(qcdTerms)
-    out["systObs"].append(k_qcd_nom)
-    return out
+    return {"terms": [qcdTerms],
+            "multiBinObs": [],
+            "systObs": [k_qcd_nom],
+            }
+
 
 def lumiVariables(w = None, inputData = None, label = "") :
     for item in ["had", "muon", "simple"] :
@@ -537,16 +555,14 @@ def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
 def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None,
                 signalToTest={}, rhoSignalMin=None, sigMcUnc=None):
 
-    
     signalEffVariables(w=w,
                        trigEffs=inputData.triggerEfficiencies(),
                        label=label,
                        signalDict=signalToTest,
                        sigMcUnc=sigMcUnc)
 
-    out = collections.defaultdict(list)
-
     terms = []
+    systObs = []
     if label == systematicsLabel:
         for iPar in [None]:
             one = ni("oneRhoSignal", label, iPar)
@@ -559,7 +575,7 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel
                      sigmaName = delta, sigmaValue = w.var("effUncRel").getVal())
 
             terms.append(gaus)
-            out["systObs"].append(one)
+            systObs.append(one)
 
     if sigMcUnc:
         print "add me!"
@@ -567,8 +583,10 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel
 
     signalTermsName = ni("signalTerms", label)
     w.factory("PROD::%s(%s)"%(signalTermsName, ",".join(terms)))
-    out["terms"].append(signalTermsName)
-    return out
+    return {"terms": [signalTermsName],
+            "multiBinObs": [],
+            "systObs": systObs,
+            }
 
 
 def multi(w, variables, inputData) :
@@ -717,7 +735,7 @@ class foo(object) :
             startLikelihood(w = self.wspace, xs = self.signalToTest.xs, effUncRel = signalToTest.effUncRel,
                             fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
 
-        total = collections.defaultdict(list)
+        total = {}
         for sel in self.likelihoodSpec.selections() :
             args["selection"] = sel
             args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
@@ -726,8 +744,11 @@ class foo(object) :
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
             args["sigMcUnc"] = self.likelihoodSpec.sigMcUnc
             d = setupLikelihood(**args)
-            for key,value in d.iteritems() :
+            for key, value in d.iteritems():
+                if key not in total:
+                    total[key] = []
                 total[key] += value
+
         finishLikelihood(w=self.wspace,
                          smOnly=self.smOnly(),
                          standard=self.likelihoodSpec.standardPoi(),
