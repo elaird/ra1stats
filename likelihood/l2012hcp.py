@@ -3,7 +3,7 @@ import likelihood
 
 class l2012hcp(likelihood.spec):
     def _fill(self, moduleName="take14", cms=True):
-        self._name = self.__class__.__name__
+        self._name = self.__class__.__name__[1:]
         self._blackList += ["3b_le3j", "ge4b_le3j"]
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = True

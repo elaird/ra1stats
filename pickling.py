@@ -5,54 +5,8 @@ import configuration as conf
 import histogramProcessing as hp
 from inputData import rootToTxt
 import signalPoint
-import likelihood
 
 import ROOT as r
-
-
-##number collection
-def effHistos(model=None,
-              okMerges=[None,
-                        (0, 1, 2, 2, 2, 2, 2, 2),  # 8 --> 3
-                        (0, 1, 2, 3, 3, 3, 3, 3, 3, 3),  # 10 --> 4
-                        (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9),  # 11 --> 10
-                        ],
-              allCategories=False,
-              ):
-    out = {}
-    ls = likelihood.forSignalModel(signalModel=model, whiteList=[])
-    for sel in ls.selections():
-        badMerge = " ".join(["bin merge",
-                             str(sel.data._mergeBins),
-                             "not yet supported:",
-                             sel.name,
-                             ])
-
-        assert sel.data._mergeBins in okMerges, badMerge
-        bins = sel.data.htBinLowerEdges()
-        htThresholds = zip(bins, list(bins[1:])+[None])
-
-        d = {}
-        for box, considerSignal in sel.samplesAndSignalEff.iteritems():
-            Box = box.capitalize()
-            itemFunc = {"eff%s" % Box: hp.effHisto}
-            if ls.sigMcUnc:
-                itemFunc["meanWeightSigMc%s" % Box] = hp.meanWeightSigMc
-                itemFunc["nEventsSigMc%s" % Box] = hp.nEventsSigMc
-            for item, func in itemFunc.iteritems():
-                if considerSignal:
-                        d[item] = [func(model=model,
-                                        box=box,
-                                        htLower=l,
-                                        htUpper=u,
-                                        bJets=sel.bJets,
-                                        jets=sel.jets,
-                                        ) for l, u in htThresholds]
-                else:
-                    d[item] = [0.0]*len(bins)  # fixme: None?
-
-        out[sel.name] = d
-    return out
 
 
 def histoList(histos={}):
@@ -69,12 +23,14 @@ def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
     
     for model in conf.signal.models():
-        args[model.name] = {"eff": effHistos(model),
+        args[model.name] = {"eff": hp.effHistos(model),
                             "xs": hp.xsHisto(model),
                             "sumWeightIn": hp.sumWeightInHisto(model),
                             "effUncRel": conf.signal.effUncRel(model.name),
                         }
-        rootToTxt.checkHistoBinning([args[model.name]["xs"]] + histoList(args[model.name]["eff"]))
+        toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
+        toCheck += histoList(args[model.name]["eff"])
+        rootToTxt.checkHistoBinning(toCheck)
 
     for point in points:
         name = point[0]
@@ -84,26 +40,6 @@ def writeSignalFiles(points=[], outFilesAlso=False):
         if not outFilesAlso:
             continue
         utils.writeNumbers(fileName=stem+".out", d=signal)
-
-
-##merge functions
-def mergedFile(model=None):
-    tags = [conf.limit.method()]
-    if "CLs" in conf.limit.method():
-        tags += [conf.limit.calculatorType(),
-                 "TS%d" % conf.limit.testStatistic()
-                 ]
-    if conf.limit.binaryExclusion():
-        tags.append("binaryExcl")
-    tags.append(model.name)
-    if not model.isSms:
-        tags.append(model.xsVariation)
-
-    tags.append(likelihood.forSignalModel(signalModel=model).note())
-    return "".join([conf.directories.mergedFile()+"/",
-                    "_".join(tags),
-                    ".root"
-                    ])
 
 
 def contents(fileName):
@@ -155,7 +91,7 @@ def mergePickledFiles(printExamples=False):
         os.remove(fileName.replace(".out", ".in"))
 
     for model in conf.signal.models():
-        f = r.TFile(mergedFile(model=model), "RECREATE")
+        f = r.TFile(conf.limit.mergedFile(model=model), "RECREATE")
         for key, histo in histos[model.name].iteritems():
             histo.GetZaxis().SetTitle(zTitles[model.name][key])
             histo.Write()

@@ -2,7 +2,6 @@ import configuration as conf
 import histogramProcessing as hp
 import likelihood
 import patches
-import pickling
 import refXsProcessing as rxs
 import utils
 
@@ -307,7 +306,7 @@ def outFileName(model=None, tag="", simple=False):
     if simple:
         base = model.name+".root"
     else:
-        base = pickling.mergedFile(model=model).split("/")[-1]
+        base = conf.limit.mergedFile(model=model).split("/")[-1]
 
     root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root" % tag)
     return {"root": root,
@@ -326,7 +325,7 @@ def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simp
 
     histos = upperLimitHistos(model=model,
                               expectedMapsOnly=expectedMapsOnly,
-                              inFileName=pickling.mergedFile(model=model),
+                              inFileName=conf.limit.mergedFile(model=model),
                               shiftX=shiftX,
                               shiftY=shiftY,
                               info=info)
@@ -681,10 +680,7 @@ def efficiencyHistos(model=None,
     globalSum = None
     perCategory = {}
 
-    effHistos = pickling.effHistos(model,
-                                   allCategories=includeNonUsedCategories,
-                                   )
-
+    effHistos = hp.effHistos(model, allCategories=includeNonUsedCategories)
     for cat, dct in effHistos.iteritems():
         sum1Cat = None
         for histo in dct[key]:
@@ -949,7 +945,7 @@ def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackLi
                outputRootFile=False, modify=False, square=False):
     assert tag
 
-    inFile = pickling.mergedFile(model=model)
+    inFile = conf.limit.mergedFile(model=model)
     f = r.TFile(inFile)
     r.gROOT.cd()
 
@@ -1035,7 +1031,7 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
     if whiteList:
         assert len(whiteList) == divide[0]*divide[1], "%d != %d" % (len(whiteList), divide[0]*divide[1])
 
-    histos = allHistos(fileName=pickling.mergedFile(model=model), collapse=True)
+    histos = allHistos(fileName=conf.limit.mergedFile(model=model), collapse=True)
     master = histos.get(name(masterKey))
     assert master, "%s not found.  Available keys: %s" % (masterKey, str(histos.keys()))
 

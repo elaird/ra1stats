@@ -1,3 +1,6 @@
+import directories
+
+
 def CL():
     return [0.95, 0.90][:1]
 
@@ -53,3 +56,18 @@ def rhoSignalMin():
 
 def fIniFactor():
     return 1.0 if binaryExclusion() else 0.05
+
+
+def mergedFile(model=None):
+    tags = [method()]
+    if "CLs" in method():
+        tags += [calculatorType(),
+                #"TS%d" % testStatistic()
+                ]
+    if binaryExclusion():
+        tags.append("binaryExcl")
+
+    return "".join([directories.mergedFile()+"/",
+                    "_".join(tags + model.tags()),
+                    ".root"
+                    ])

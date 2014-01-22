@@ -91,6 +91,13 @@ class scan(object):
     def exampleKargs(self):
         return self._exampleKargs
 
+    def tags(self):
+        out = [self.name]
+        if not self.isSms:
+            out.append(self.xsVariation)
+        out += [self.llk] + self.whiteList
+        return out
+
     def sumWeightInRange(self, sumWeightIn):
         out = True
         if self._minSumWeightIn is not None:
