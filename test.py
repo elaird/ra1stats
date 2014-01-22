@@ -3,7 +3,7 @@
 import likelihood
 import plotting
 import signals
-import workspace
+import foo
 import ROOT as r
 
 
@@ -72,14 +72,14 @@ def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
                   sigMcUnc=sigMcUnc,
                   )
 
-    f = workspace.foo(likelihoodSpec=ls,
-                      signalToTest=signalToTest,
-                      signalExampleToStack=signalExampleToStack,
-                      signalToInject=signalToInject,
-                      #trace=True
-                      #rhoSignalMin=0.1,
-                      #fIniFactor=0.1,
-                      )
+    f = foo.foo(likelihoodSpec=ls,
+                signalToTest=signalToTest,
+                signalExampleToStack=signalExampleToStack,
+                signalToInject=signalToInject,
+                #trace=True
+                #rhoSignalMin=0.1,
+                #fIniFactor=0.1,
+                )
 
     out = None
     nToys = {"": 0, "2010": 300, "2011eps": 300, "2011": 3000,
