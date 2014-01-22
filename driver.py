@@ -1,8 +1,7 @@
-import math
 import os
 
 import calc
-from common import obs, pdf, floatingVars, wimport
+import common
 import ensemble
 import plotting
 import workspace
@@ -64,7 +63,7 @@ class driver(object):
                          poiDict=self.likelihoodSpec.poi(),
                          **total)
 
-        self.data = workspace.dataset(obs(self.wspace))
+        self.data = workspace.dataset(common.obs(self.wspace))
         self.modelConfig = workspace.modelConfiguration(self.wspace)
 
         if trace :
@@ -134,14 +133,14 @@ class driver(object):
     def debug(self) :
         self.wspace.Print("v")
         plotting.writeGraphVizTree(self.wspace)
-        #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
-        utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
+        #pars = utils.rooFitResults(common.pdf(wspace), data).floatParsFinal(); pars.Print("v")
+        utils.rooFitResults(common.pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
     def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
         def pars() :
-            utils.rooFitResults(pdf(self.wspace), self.data)
-            return floatingVars(self.wspace)
+            utils.rooFitResults(common.pdf(self.wspace), self.data)
+            return common.floatingVars(self.wspace)
 
         def renamed(v, cat = "") :
             out = v
@@ -323,16 +322,16 @@ class driver(object):
                 pullPlotMax=3.5,
                 pullThreshold=2.0,
                 msgThreshold=r.RooFit.DEBUG):
-        #calc.pullPlots(pdf(self.wspace))
+        #calc.pullPlots(common.pdf(self.wspace))
 
         r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
-        results = utils.rooFitResults(pdf(self.wspace), self.data)
+        results = utils.rooFitResults(common.pdf(self.wspace), self.data)
         out = {}
         out["numInvalidNll"] = utils.checkResults(results)
 
         poisKey = "simple"
         lognKey = "kMinusOne"
-        pulls = calc.pulls(pdf=pdf(self.wspace),
+        pulls = calc.pulls(pdf=common.pdf(self.wspace),
                            poisKey=poisKey,
                            lognKey=lognKey)
 
@@ -365,7 +364,7 @@ class driver(object):
 
         # gather stats
         out.update(calc.pullStats(pulls=pulls,
-                                  nParams=len(floatingVars(self.wspace)),
+                                  nParams=len(common.floatingVars(self.wspace)),
                                   ),
                    )
 
@@ -383,5 +382,5 @@ class driver(object):
 
     def qcdPlot(self):
         plotting.errorsPlot(self.wspace,
-                            utils.rooFitResults(pdf(self.wspace), self.data),
+                            utils.rooFitResults(common.pdf(self.wspace), self.data),
                             )
