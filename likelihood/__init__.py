@@ -104,7 +104,7 @@ class spec(object):
         return self.poiList() == ["f"]
 
     def note(self):
-        out = "%s_" % self._name[1:]
+        out = "%s_" % self._name
 
         if self.REwk():
             out += "REwk%s_" % self.REwk()

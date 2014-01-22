@@ -2,7 +2,7 @@ import likelihood
 
 class l2012ichep(likelihood.spec):
     def _fill(self):
-        self._name = self.__class__.__name__
+        self._name = self.__class__.__name__[1:]
         self._constrainQcdSlope = True
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
