@@ -4,7 +4,6 @@ class l2012dev(likelihood.spec):
     def _fill(self):
         self._name = self.__class__.__name__[1:]
         self._blackList += ["ge4b_le3j"]
-        self._blackList += ["ge4b_ge4j"] # awaits eff maps
 
         self._constrainQcdSlope = False
         self._qcdParameterIsYield = True
