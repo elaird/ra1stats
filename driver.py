@@ -11,7 +11,7 @@ import utils
 import ROOT as r
 
 
-class foo(object) :
+class driver(object):
     def __init__(self, likelihoodSpec = {}, rhoSignalMin = 0.0, fIniFactor = 1.0,
                  signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
 
