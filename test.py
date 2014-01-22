@@ -3,7 +3,7 @@
 import likelihood
 import plotting
 import signals
-import workspace
+import driver
 import ROOT as r
 
 
@@ -72,7 +72,7 @@ def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
                   sigMcUnc=sigMcUnc,
                   )
 
-    f = workspace.foo(likelihoodSpec=ls,
+    f = driver.driver(likelihoodSpec=ls,
                       signalToTest=signalToTest,
                       signalExampleToStack=signalExampleToStack,
                       signalToInject=signalToInject,

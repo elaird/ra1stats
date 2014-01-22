@@ -1,6 +1,5 @@
-import collections,math,os
-import utils,plotting,calc,ensemble
-from common import obs,pdf,ni,wimport,floatingVars
+import math
+from common import pdf, ni, wimport
 import ROOT as r
 
 
@@ -178,7 +177,6 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     trg = inputData.triggerEfficiencies()
     htMeans = inputData.htMeans()
     terms = []
-    out = collections.defaultdict(list)
 
     #QCD parameters
     A_ewk_ini = 1.3e-5
@@ -268,13 +266,14 @@ def hadTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     hadTermsName = ni("hadTerms", label)
     w.factory("PROD::%s(%s)"%(hadTermsName, ",".join(terms)))
 
-    out["terms"].append(hadTermsName)
-    out["multiBinObs"].append(ni("nHad", label))
-    return out
+    return {"terms": [hadTermsName],
+            "multiBinObs":[ni("nHad", label)],
+            "systObs": [],
+            }
+
 
 def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
-    out = collections.defaultdict(list)
 
     for i,t in enumerate(zip(inputData.observations()["nSimple"], inputData.mcExpectations()["mcSimple"])) :
         nValue,bValue = t
@@ -301,15 +300,17 @@ def simpleTerms(w = None, inputData = None, label = "", systematicsLabel = "", k
     termsName = ni("simpleTerms", label)
     w.factory("PROD::%s(%s)"%(termsName, ",".join(terms)))
 
-    out["terms"].append(termsName)
-    out["multiBinObs"].append(ni("nSimple", label))
-    return out
+    return {"terms": [termsName],
+            "multiBinObs": [ni("nSimple", label)],
+            "systObs": [],
+            }
+
 
 def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
-    out = collections.defaultdict(list)
+    systObs = []
 
-    if label==systematicsLabel :
+    if label == systematicsLabel:
         for iPar in set(inputData.systBins()["sigmaMumuZ"]) :
             rho = ni("rhoMumuZ", label, iPar)
             one = ni("oneMumuZ", label, iPar)
@@ -318,7 +319,7 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             wimport(w, r.RooRealVar(rho, rho, 1.0, 0.0, 3.0))
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMumuZ"][iPar])
-            out["systObs"].append(one)
+            systObs.append(one)
             terms.append(gaus)
 
     systBin = inputData.systBins()["sigmaMumuZ"]
@@ -347,15 +348,17 @@ def mumuTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     mumuTermsName = ni("mumuTerms", label)
     w.factory("PROD::%s(%s)"%(mumuTermsName, ",".join(terms)))
 
-    out["terms"].append(mumuTermsName)
-    out["multiBinObs"].append(ni("nMumu", label))
-    return out
+    return {"terms": [mumuTermsName],
+            "multiBinObs": [ni("nMumu", label)],
+            "systObs": systObs,
+            }
+
 
 def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
-    out = collections.defaultdict(list)
-
     terms = []
-    if label==systematicsLabel :
+    systObs = []
+
+    if label == systematicsLabel:
         systBins = inputData.systBins()["sigmaPhotZ"]
         nPhot = inputData.observations()["nPhot"]
         for iPar in set(systBins) :
@@ -372,7 +375,7 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaPhotZ"][iPar])
             terms.append(gaus)
-            out["systObs"].append(one)
+            systObs.append(one)
 
     systBin = inputData.systBins()["sigmaPhotZ"]
     for i,nPhotValue,mcPhotValue,mcZinvValue in zip(range(len(inputData.observations()["nPhot"])),
@@ -400,15 +403,17 @@ def photTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     photTermsName = ni("photTerms", label)
     w.factory("PROD::%s(%s)"%(photTermsName, ",".join(terms)))
 
-    out["terms"].append(photTermsName)
-    out["multiBinObs"].append(ni("nPhot", label))
-    return out
+    return {"terms": [photTermsName],
+            "multiBinObs": [ni("nPhot", label)],
+            "systObs": systObs,
+            }
+
 
 def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
     terms = []
-    out = collections.defaultdict(list)
+    systObs = []
 
-    if label==systematicsLabel :
+    if label == systematicsLabel:
         for iPar in set(inputData.systBins()["sigmaMuonW"]) :
             rho = ni("rhoMuonW", label, iPar)
             one = ni("oneMuonW", label, iPar)
@@ -418,7 +423,7 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
             systTerm(w, name = gaus, obsName = one, obsValue = 1.0, muVar = w.var(rho),
                      sigmaName = sigma, sigmaValue = inputData.fixedParameters()["sigmaMuonW"][iPar])
             terms.append(gaus)
-            out["systObs"].append(one)
+            systObs.append(one)
 
     systBin = inputData.systBins()["sigmaMuonW"]
     for i,nMuonValue,mcMuonValue,mcTtwValue,mcZinvValue in zip(range(len(inputData.observations()["nMuon"])),
@@ -461,14 +466,18 @@ def muonTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQc
     muonTermsName = ni("muonTerms", label)
     w.factory("PROD::%s(%s)"%(muonTermsName, ",".join(terms)))
 
-    out["terms"].append(muonTermsName)
-    out["multiBinObs"].append(ni("nMuon", label))
-    return out
+    return {"terms": [muonTermsName],
+            "multiBinObs": [ni("nMuon", label)],
+            "systObs": systObs,
+            }
+
 
 def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcdLabel = "", smOnly = None, muonForFullEwk = None) :
-    out = collections.defaultdict(list)
-
-    if label!=kQcdLabel : return out
+    if label != kQcdLabel:
+        return {"terms": [],
+                "multiBinObs": [],
+                "systObs": [],
+                }
 
     k_qcd_nom = ni("k_qcd_nom", label)
     k_qcd_unc_inp = ni("k_qcd_unc_inp", label)
@@ -482,9 +491,11 @@ def qcdTerms(w = None, inputData = None, label = "", systematicsLabel = "", kQcd
     w.var(k_qcd).setVal(inputData.fixedParameters()["k_qcd_nom"])
     w.factory("PROD::%s(%s)"%(qcdTerms, qcdGaus))
 
-    out["terms"].append(qcdTerms)
-    out["systObs"].append(k_qcd_nom)
-    return out
+    return {"terms": [qcdTerms],
+            "multiBinObs": [],
+            "systObs": [k_qcd_nom],
+            }
+
 
 def lumiVariables(w = None, inputData = None, label = "") :
     for item in ["had", "muon", "simple"] :
@@ -537,16 +548,14 @@ def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
 def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None,
                 signalToTest={}, rhoSignalMin=None, sigMcUnc=None):
 
-    
     signalEffVariables(w=w,
                        trigEffs=inputData.triggerEfficiencies(),
                        label=label,
                        signalDict=signalToTest,
                        sigMcUnc=sigMcUnc)
 
-    out = collections.defaultdict(list)
-
     terms = []
+    systObs = []
     if label == systematicsLabel:
         for iPar in [None]:
             one = ni("oneRhoSignal", label, iPar)
@@ -559,7 +568,7 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel
                      sigmaName = delta, sigmaValue = w.var("effUncRel").getVal())
 
             terms.append(gaus)
-            out["systObs"].append(one)
+            systObs.append(one)
 
     if sigMcUnc:
         print "add me!"
@@ -567,8 +576,10 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel
 
     signalTermsName = ni("signalTerms", label)
     w.factory("PROD::%s(%s)"%(signalTermsName, ",".join(terms)))
-    out["terms"].append(signalTermsName)
-    return out
+    return {"terms": [signalTermsName],
+            "multiBinObs": [],
+            "systObs": systObs,
+            }
 
 
 def multi(w, variables, inputData) :
@@ -683,375 +694,3 @@ def finishLikelihood(w=None, smOnly=None, standard=None, poiDict={}, terms=[], o
             var.setMin(min)
             var.setMax(max)
             var.setVal(ini)
-
-class foo(object) :
-    def __init__(self, likelihoodSpec = {}, rhoSignalMin = 0.0, fIniFactor = 1.0,
-                 signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
-
-        for item in ["likelihoodSpec", "rhoSignalMin",
-                     "signalToTest", "signalExampleToStack", "signalToInject"] :
-            setattr(self, item, eval(item))
-
-        self.checkInputs()
-        r.gROOT.SetBatch(True)
-        r.gErrorIgnoreLevel = r.kWarning
-        r.gPrintViaErrorHandler = True
-        r.RooRandom.randomGenerator().SetSeed(1)
-
-        self.wspace = r.RooWorkspace("Workspace")
-
-        args = {}
-        args["w"] = self.wspace
-        args["smOnly"] = self.smOnly()
-        args["injectSignal"] = self.injectSignal()
-
-        for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
-                     "constrainQcdSlope", "qcdParameterIsYield",
-                     "initialValuesFromMuonSample", "initialFZinvFromMc"] :
-            args[item] = getattr(self.likelihoodSpec, item)()
-
-        for item in ["rhoSignalMin"] :
-            args[item] = getattr(self, item)
-
-        if not self.smOnly() :
-            startLikelihood(w = self.wspace, xs = self.signalToTest.xs, effUncRel = signalToTest.effUncRel,
-                            fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
-
-        total = collections.defaultdict(list)
-        for sel in self.likelihoodSpec.selections() :
-            args["selection"] = sel
-            args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
-            args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
-            args["systematicsLabel"] = self.systematicsLabel(sel.name)
-            args["kQcdLabel"] = self.kQcdLabel(sel.name)
-            args["sigMcUnc"] = self.likelihoodSpec.sigMcUnc
-            d = setupLikelihood(**args)
-            for key,value in d.iteritems() :
-                total[key] += value
-        finishLikelihood(w=self.wspace,
-                         smOnly=self.smOnly(),
-                         standard=self.likelihoodSpec.standardPoi(),
-                         poiDict=self.likelihoodSpec.poi(),
-                         **total)
-
-        self.data = dataset(obs(self.wspace))
-        self.modelConfig = modelConfiguration(self.wspace)
-
-        if trace :
-            #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
-            #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
-            r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
-
-    def checkInputs(self) :
-        l = self.likelihoodSpec
-        assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
-        assert l.RQcd() in ["FallingExp", "Zero"]
-        assert l.nFZinv() in ["One", "Two", "All"]
-        assert len(l.poi())==1, len(l.poi())
-        if not l.standardPoi():
-            assert self.smOnly()
-            if "qcd" in l.poi().keys()[0]:
-                assert "FallingExp" in l.RQcd()
-            #assert len(l.selections())==1,"%d!=1"%len(l.selections())
-
-        if l.initialValuesFromMuonSample() :
-            if l.RQcd()!="Zero" :
-                assert l.qcdParameterIsYield()
-
-        if l.constrainQcdSlope() :
-            assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()
-        if any([sel.universalKQcd for sel in l.selections()]) :
-            assert "FallingExp" in l.RQcd()
-        for sel in l.selections() :
-            assert sel.samplesAndSignalEff,sel.name
-            if sel.muonForFullEwk :
-                for box in ["phot", "mumu"] :
-                    assert box not in sel.samplesAndSignalEff,box
-            bins = sel.data.htBinLowerEdges()
-            for obj in [self.signalToTest, self.signalExampleToStack, self.signalToInject]:
-                if not obj:
-                    continue
-                effs = obj.effs(sel.name)
-                if not effs:
-                    continue
-                for key, value in effs.iteritems():
-                    if type(value) is list:
-                        assert len(value) == len(bins), "key %s: %d != %d" % (key, len(value), len(bins))
-
-    def smOnly(self) :
-        return not self.signalToTest
-
-    def injectSignal(self) :
-        return bool(self.signalToInject)
-
-    def systematicsLabel(self, name) :
-        selections = self.likelihoodSpec.selections()
-        syst = [s.universalSystematics for s in selections]
-        assert sum(syst)<2
-        if any(syst) : assert not syst.index(True)
-        return name if sum(syst)!=1 else selections[syst.index(True)].name
-
-    def kQcdLabel(self, name) :
-        selections = self.likelihoodSpec.selections()
-        k = [s.universalKQcd for s in selections]
-        assert sum(k)<2
-        if any(k) : assert not k.index(True)
-        return name if sum(k)!=1 else selections[k.index(True)].name
-
-    def note(self) :
-        return self.likelihoodSpec.note()+("_signal" if not self.smOnly() else "")
-
-    def debug(self) :
-        self.wspace.Print("v")
-        plotting.writeGraphVizTree(self.wspace)
-        #pars = utils.rooFitResults(pdf(wspace), data).floatParsFinal(); pars.Print("v")
-        utils.rooFitResults(pdf(self.wspace), self.data).Print("v")
-        #wspace.Print("v")
-
-    def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
-        def pars() :
-            utils.rooFitResults(pdf(self.wspace), self.data)
-            return floatingVars(self.wspace)
-
-        def renamed(v, cat = "") :
-            out = v
-            out = out.replace("_"+cat, "")
-            for i in range(9) :
-                out = out.replace("_%d"%i, "^%d"%i)
-            out = out.replace("ewk", r'\mathrm{EWK}')
-            out = out.replace("qcd", r'\mathrm{QCD}')
-            out = out.replace("rho", r'\rho_')
-            out = out.replace("MumuZ", r'{\mu\mu Z}')
-            out = out.replace("MuonW", r'{\mu W}')
-            out = out.replace("PhotZ", r'{\gamma Z}')
-            out = out.replace("Zinv", r'_\mathrm{Zinv}')
-            return r'$%s$'%out
-
-        p = pars()
-        s  = "\n".join([r'\documentclass{article}',
-                        r'\begin{document}'])
-
-        for cat in categories :
-            if not any([cat in d["name"] for d in p]) : continue
-            s += "\n".join(['', '',
-                            r'\begin{table}\centering',
-                            r'\caption{SM-only maximum-likelihood parameter values (%s).}'%cat.replace("_", " "),
-                            r'\label{tab:mlParameterValues%s}'%cat,
-                            r'\begin{tabular}{lcc}',
-                            ])
-            s += r'name & value & error \\ \hline'+'\n'
-            for d in sorted(p, key = lambda d:d["name"]) :
-                if cat not in d["name"] : continue
-                cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
-                if "rho" in d["name"] or "fZinv" in d["name"] :
-                    cols = [r'{\tt %3.2f}', r'{\tt %3.2f}']
-                spec = ' & '.join(['%s']+cols)+r'\\'+'\n'
-                s += spec%(renamed(d["name"], cat), d["value"], d["error"])
-            s += "\n".join([r'\hline', r'\end{tabular}', r'\end{table}'])
-
-        s += "\n".join(['',r'\end{document}'])
-        import makeTables as mt
-        mt.write(s, fileName)
-
-    def profile(self) :
-        calc.profilePlots(self.data, self.modelConfig, self.note())
-
-    def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
-                 nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
-
-        hack = False
-        if hack :
-            print "HACK!"
-            d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
-            d["nIterations"] = 1
-            s = self.wspace.set("poi"); assert s.getSize()==1
-            s.first().setMax(40.0)
-            s.first().setMin(0.0)
-            return d
-
-        for i in range(nIterationsMax) :
-            d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
-            d["nIterations"] = i+1
-            if nIterationsMax==1 : return d
-
-            s = self.wspace.set("poi"); assert s.getSize()==1
-            m = s.first().getMax()
-            if d["upperLimit"]>upperItCut*m :
-                s.first().setMax(m*itFactor)
-                s.first().setMin(m/itFactor)
-            elif d["upperLimit"]<lowerItCut*m :
-                s.first().setMax(m/itFactor)
-            else :
-                break
-        return d
-
-    def intervalSimple(self, cl = None, method = "", makePlots = None) :
-        if method=="profileLikelihood" :
-            return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(),
-                                   cl = cl, poiList = self.likelihoodSpec.poiList(), makePlots = makePlots)
-        elif method=="feldmanCousins" :
-            return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
-
-    def cppDrive(self, tool = ["", "valgrind", "igprof"][0]) :
-        wimport(self.wspace, self.data)
-        wimport(self.wspace, self.modelConfig)
-        fileName = "workspace.root"
-        self.wspace.writeToFile(fileName)
-        cmd = {"":"",
-               "valgrind":"valgrind --tool=callgrind",
-               "igprof":"igprof",
-               }[tool]
-        os.system(cmd+" cpp/drive %s"%fileName)
-
-    def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1, plSeedParams = {}) :
-        args = {}
-        out = {}
-        if plSeedParams["usePlSeed"] :
-            plUpperLimit = self.interval(cl = cl, nIterationsMax = plSeedParams["plNIterationsMax"])["upperLimit"]
-            out["PlUpperLimit"] = plUpperLimit
-            args["nPoints"] = plSeedParams["nPoints"]
-            args["poiMin"] = plUpperLimit*plSeedParams["minFactor"]
-            args["poiMax"] = plUpperLimit*plSeedParams["maxFactor"]
-
-            s = self.wspace.set("poi"); assert s.getSize()==1
-            if s.first().getMin() : s.first().setMin(0.0)
-            if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
-
-        out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
-                        cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
-                        plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
-        out.update(out2)
-        return out
-
-    def clsCustom(self, nToys = 200, testStatType = 3) :
-        return calc.clsCustom(self.wspace, self.data, nToys = nToys, testStatType = testStatType, smOnly = self.smOnly(), note = self.note())
-
-    def plotterArgs(self, selection) :
-        def activeBins(selection) :
-            out = {}
-            for key,value in selection.data.observations().iteritems() :
-                out[key] = map(lambda x:x!=None, value)
-            return out
-
-        args = {}
-        args["activeBins"] = activeBins(selection)
-        args["systematicsLabel"] = self.systematicsLabel(selection.name)
-
-        for item in ["smOnly", "note"] :
-            args[item] = getattr(self, item)()
-
-        for item in ["wspace", "signalExampleToStack", "signalToTest"] :
-            args[item] = getattr(self, item)
-
-        for arg,member in {"selNote": "note", "label":"name", "inputData":"data",
-                           "muonForFullEwk":"muonForFullEwk", "yAxisLogMinMax":"yAxisLogMinMax"}.iteritems() :
-            args[arg] = getattr(selection, member)
-
-        for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
-            args[item] = getattr(selection.data, item)()
-
-        for item in ["REwk", "RQcd", "legendTitle", "ignoreHad"] :
-            args[item] = getattr(self.likelihoodSpec, item)()
-
-        return args
-
-    def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
-        args = {"note":self.note(), "nToys":nToys}
-        if not reuseResults :
-            ensemble.writeHistosAndGraphs(self.wspace, self.data, **args)
-        else :
-            print "WARNING: ensemble plots/tables are being created from previous results."
-
-        args.update({"plotsDir":"plots", "stdout":stdout, "selections":self.likelihoodSpec.selections()})
-        plotting.ensemblePlotsAndTables(**args)
-
-    def bestFitToy(self, nToys = 200) :
-        #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "A_qcd"), cutFunc = lambda x:x>90.0); return toys,i
-        #obs,results,i = ntupleOfFitToys(self.wspace, self.data, nToys, cutVar = ("var", "rhoPhotZ"), cutFunc = lambda x:x>2.0); return toys,i
-        for selection in self.likelihoodSpec.selections() :
-            args = self.plotterArgs(selection)
-            args.update({"results": results, "note": self.note()+"_toy%d"%i, "obsLabel":"Toy %d"%i,
-                         "printPages": False, "drawMc": True, "printNom":False, "drawComponents":True, "printValues":True
-                         })
-            plotter = plotting.validationPlotter(args)
-            plotter.inputData = selection.data
-            plotter.go()
-
-    def expectedLimit(self, cl = 0.95, nToys = 200, plusMinus = {}, makePlots = False) :
-        return expectedLimit(self.data, self.modelConfig, self.wspace, smOnly = self.smOnly(), cl = cl, nToys = nToys,
-                             plusMinus = plusMinus, note = self.note(), makePlots = makePlots)
-
-    def bestFit(self,
-                printPages=False,
-                drawMc=True,
-                printValues=False,
-                printNom=False,
-                drawComponents=True,
-                errorsFromToys=0,
-                drawRatios=False,
-                significance=False,
-                pullPlotMax=3.5,
-                pullThreshold=2.0,
-                msgThreshold=r.RooFit.DEBUG):
-        #calc.pullPlots(pdf(self.wspace))
-
-        r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
-        results = utils.rooFitResults(pdf(self.wspace), self.data)
-        out = {}
-        out["numInvalidNll"] = utils.checkResults(results)
-
-        poisKey = "simple"
-        lognKey = "kMinusOne"
-        pulls = calc.pulls(pdf=pdf(self.wspace),
-                           poisKey=poisKey,
-                           lognKey=lognKey)
-
-        title = "_".join([x.name for x in self.likelihoodSpec.selections()])
-        calc.pullPlots(pulls=pulls,
-                       poisKey=poisKey,
-                       lognKey=lognKey,
-                       note=self.note(),
-                       plotsDir="plots",
-                       yMax=pullPlotMax,
-                       threshold=pullThreshold,
-                       title=title)
-
-        for selection in self.likelihoodSpec.selections():
-            args = self.plotterArgs(selection)
-            args.update({"results": results,
-                         "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
-                         "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
-                         "printPages": printPages,
-                         "drawMc": drawMc,
-                         "printNom": printNom,
-                         "drawComponents": drawComponents,
-                         "printValues": printValues,
-                         "errorsFromToys": errorsFromToys,
-                         "drawRatios": drawRatios,
-                         "significance": significance,
-                         })
-            plotter = plotting.validationPlotter(args)
-            plotter.go()
-
-        # gather stats
-        out.update(calc.pullStats(pulls=pulls,
-                                  nParams=len(floatingVars(self.wspace)),
-                                  ),
-                   )
-
-        # key change
-        out["chi2ProbSimple"] = out["prob"]
-        del out["prob"]
-
-        if errorsFromToys:
-            pvalues = plotting.ensembleResults(note=self.note(),
-                                               nToys=errorsFromToys)
-            for dct in pvalues:
-                out[dct["key"]] = utils.ListFromTGraph(dct["pValue"])[-1]
-
-        return out
-
-    def qcdPlot(self):
-        plotting.errorsPlot(self.wspace,
-                            utils.rooFitResults(pdf(self.wspace), self.data),
-                            )

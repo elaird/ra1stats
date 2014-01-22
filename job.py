@@ -3,7 +3,7 @@ import sys
 
 import configuration as conf
 import likelihood
-import workspace
+import driver
 import utils
 
 
@@ -60,7 +60,7 @@ def formattedClsResults(results={}, cl=None, cl2=None):
 def resultsOneCL(likelihoodSpec=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
-    f = workspace.foo(signalToTest=signal,
+    f = driver.driver(signalToTest=signal,
                       likelihoodSpec=likelihoodSpec,
                       rhoSignalMin=conf.limit.rhoSignalMin(),
                       fIniFactor=conf.limit.fIniFactor(),
