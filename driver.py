@@ -33,7 +33,7 @@ class driver(object):
 
         for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
                      "constrainQcdSlope", "qcdParameterIsYield",
-                     "initialValuesFromMuonSample", "initialFZinvFromMc"] :
+                     "initialValuesFromMuonSample", "initialFZinvFromMc", "sigMcUnc"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
         for item in ["rhoSignalMin"] :
@@ -50,7 +50,7 @@ class driver(object):
             args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
-            args["sigMcUnc"] = self.likelihoodSpec.sigMcUnc
+
             d = workspace.setupLikelihood(**args)
             for key, value in d.iteritems():
                 if key not in total:

@@ -285,7 +285,7 @@ def effHistos(model=None, allCategories=False):
         for box, considerSignal in sel.samplesAndSignalEff.iteritems():
             Box = box.capitalize()
             itemFunc = {"eff%s" % Box: effHisto}
-            if ls.sigMcUnc:
+            if ls.sigMcUnc():
                 itemFunc["meanWeightSigMc%s" % Box] = meanWeightSigMc
                 itemFunc["nEventsSigMc%s" % Box] = nEventsSigMc
             for item, func in itemFunc.iteritems():
