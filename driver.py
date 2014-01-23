@@ -145,7 +145,7 @@ class driver(object):
         def renamed(v, cat = "") :
             out = v
             out = out.replace("_"+cat, "")
-            for i in range(9) :
+            for i in range(10) :
                 out = out.replace("_%d"%i, "^%d"%i)
             out = out.replace("ewk", r'\mathrm{EWK}')
             out = out.replace("qcd", r'\mathrm{QCD}')
@@ -169,7 +169,8 @@ class driver(object):
                             r'\begin{tabular}{lcc}',
                             ])
             s += r'name & value & error \\ \hline'+'\n'
-            for d in sorted(p, key = lambda d:d["name"]) :
+
+            for d in sorted(p, key = lambda d: utils.naturalSortKey(d["name"])) :
                 if cat not in d["name"] : continue
                 cols = [r'{\tt %9.2e}', r'{\tt %8.1e}']
                 if "rho" in d["name"] or "fZinv" in d["name"] :
