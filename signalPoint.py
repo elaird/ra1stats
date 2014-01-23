@@ -19,6 +19,7 @@ class scan(object):
                  llk=None,
                  whiteList=[],
                  exampleKargs={},
+                 sigMcUnc=False,
                  ):
 
         assert xsVariation in ["default", "up", "down"], xsVariation
@@ -28,7 +29,7 @@ class scan(object):
                      "xsVariation", "xsFactors", "aT", "extraVars",
                      "weightedHistName", "unweightedHistName",
                      "minSumWeightIn", "maxSumWeightIn",
-                     "llk", "whiteList", "exampleKargs",
+                     "llk", "whiteList", "exampleKargs", "sigMcUnc",
                      ]+self.boxNames:
             setattr(self, "_"+item, eval(item))
 
@@ -90,6 +91,10 @@ class scan(object):
     @property
     def exampleKargs(self):
         return self._exampleKargs
+
+    @property
+    def sigMcUnc(self):
+        return self._sigMcUnc
 
     def tags(self):
         out = [self.name]
