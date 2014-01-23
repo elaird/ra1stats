@@ -25,7 +25,7 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
+def go(whiteList=[], llk="", allCategories=[], ignoreHad=True, sigMcUnc=False,
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
     examples_paper = {("0b_le3j",): signals.t2.a,
@@ -121,7 +121,7 @@ def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
     #                          "maxFactor":3.0},
     #            ); print out
     #
-    #f.writeMlTable(fileName="mlTables_%s.tex" % "_".join(whiteList),
+    #f.writeMlTable(fileName="../ra1stats/mlTables_%s.tex" % "_".join(whiteList),
     #               categories=allCategories)
 
     if bestFit:
