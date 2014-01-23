@@ -8,7 +8,7 @@ def forSignalModel(signalModel=None, whiteList=None):
     llk = eval("l%s.l%s" % (signalModel.llk, signalModel.llk))
     if whiteList is None:
         whiteList = signalModel.whiteList
-    return llk(whiteList=whiteList)
+    return llk(whiteList=whiteList, sigMcUnc=signalModel.sigMcUnc)
 
 
 class selection(object):
@@ -85,7 +85,6 @@ class spec(object):
     def ignoreHad(self):
         return self._ignoreHad
 
-    @property
     def sigMcUnc(self):
         return self._sigMcUnc
 
