@@ -34,6 +34,7 @@ def models():
 
     new = {"weightedHistName": "m0_m12_mChi_weight",
            "unweightedHistName": "m0_m12_mChi_noweight",
+           "sigMcUnc": True,
            "exampleKargs": kargsNew,
            "com": 8,
            "llk": "2012dev"}
