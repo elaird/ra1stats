@@ -22,6 +22,7 @@ class selection(object):
                      "AQcdIni", "AQcdMax", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"]:
             setattr(self, item, eval(item))
+            assert type(boxes) is list
 
 
 def sampleCode(samples):
