@@ -353,6 +353,7 @@ class driver(object):
             args = self.plotterArgs(selection)
             args.update({"results": results,
                          "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
+                         "nSelections": len(self.likelihoodSpec.selections()),
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages,
                          "drawMc": drawMc,
