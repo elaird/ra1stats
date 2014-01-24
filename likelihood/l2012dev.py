@@ -55,7 +55,7 @@ class l2012dev(likelihood.spec):
 
                 for samplesAndSignalEff in options :
                     sel = likelihood.selection(name = name, note = note,
-                                    samplesAndSignalEff = samplesAndSignalEff,
+                                    boxes = samplesAndSignalEff.keys(),
                                     muonForFullEwk = len(samplesAndSignalEff)==2,
                                     data = getattr(module, "data_%s"%name)(),
                                     bJets = ("eq%sb"%b).replace("eqge","ge"),
