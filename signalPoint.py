@@ -24,16 +24,15 @@ class scan(object):
 
         assert xsVariation in ["default", "up", "down"], xsVariation
 
-        self.boxNames = ["had", "muon", "phot", "mumu"]
+        self._boxNames = ["had", "muon", "phot", "mumu"]
         for item in ["dataset", "tag", "interBin", "com",
                      "xsVariation", "xsFactors", "aT", "extraVars",
                      "weightedHistName", "unweightedHistName",
                      "minSumWeightIn", "maxSumWeightIn",
                      "llk", "whiteList", "exampleKargs", "sigMcUnc",
-                     ]+self.boxNames:
+                     ]+self._boxNames:
             setattr(self, "_"+item, eval(item))
 
-        self.warned = {}
 
     @property
     def name(self):
@@ -111,12 +110,11 @@ class scan(object):
             out &= (sumWeightIn <= self._maxSumWeightIn)
         return out
 
-    def ignoreEff(self, box):
-        assert box in self.boxNames, box
-        out = not getattr(self, "_"+box)
-        if out and not self.warned.get(box):
-            print "WARNING: ignoring %s efficiency for %s" % (box, self.name)
-            self.warned[box] = True
+    def boxes(self):
+        out = []
+        for boxName in self._boxNames:
+            if getattr(self, "_" + boxName):
+                out.append(boxName)
         return out
 
 
