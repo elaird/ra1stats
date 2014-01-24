@@ -575,8 +575,25 @@ def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
         wimport(w, r.RooRealVar(name, name, y*trigEffs[iBin]))
 
 
-def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None,
-                signalToTest={}, rhoSignalMin=None, sigMcUnc=None):
+def Boxes(keys=[]):
+    l = []
+    for key in keys:
+        for item in ["eff", "Sum", "Err", "SigMc", "meanWeight", "nEvents"]:
+            key = key.replace(item, "")
+        l.append(key)
+    return list(set(l))
+
+
+def noMoreEff(w=None, Box="", label="", indices=[]):
+    eventCounts = []
+    for j in indices:
+        n = w.var(ni("nEventsSigMc%s" % Box, label, j)).getVal()
+        eventCounts.append(n)
+    return all([n < 0.5 for n in eventCounts])
+
+
+def signalTerms(w=None, inputData=None, label="", systematicsLabel="",
+                signalToTest={}, rhoSignalMin=None, sigMcUnc=None, **_):
 
     signalEffVariables(w=w,
                        trigEffs=inputData.triggerEfficiencies(),
@@ -601,8 +618,31 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel
             systObs.append(one)
 
     if sigMcUnc:
-        print "add me!"
-        #out["multiBinObs"].append(ni("nMuon", label))  # fixme
+        for Box in Boxes(signalToTest.keys()):  # FIXME: improve box generation
+            nBins = len(inputData.htBinLowerEdges())
+            for i in range(nBins):
+                nEventsSigMc = ni("nEventsSigMc%s" % Box, label, i)
+                systObs.append(nEventsSigMc)
+
+                nValue = w.var(nEventsSigMc).getVal()
+                mu = ni("muEventsSigMc%s" % Box, label, i)
+                wimport(w, r.RooRealVar(mu, mu, nValue, 0.0, 10.0*max(1, nValue)))
+
+                # if this and all higher HT bins have zero MC events,
+                # then fix eff to zero.
+                if noMoreEff(w, Box, label, range(i, nBins)):
+                    w.var(mu).setVal(0.0)
+                    w.var(mu).setConstant()
+
+                pois = ni("poisSigMc%s" % Box, label, i)
+                wimport(w, r.RooPoisson(pois, pois, w.var(nEventsSigMc), w.var(mu)))
+                terms.append(pois)
+
+                eff = ni("eff%s" % Box, label, i)
+                wimport(w, rooProduct(eff, eff, [w.var(mu),
+                                                 w.var(ni("meanWeightSigMc%s" % Box, label, i)),
+                                                 w.var("invSumWeightIn")]),
+                        )
 
     signalTermsName = ni("signalTerms", label)
     w.factory("PROD::%s(%s)" % (signalTermsName, ",".join(terms)))
