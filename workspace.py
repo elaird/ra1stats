@@ -294,7 +294,7 @@ def hadTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel=""
             }
 
 
-def simpleTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None):
+def simpleTerms(w=None, inputData=None, label="", smOnly=None, **_):
     terms = []
 
     for i, t in enumerate(zip(inputData.observations()["nSimple"], inputData.mcExpectations()["mcSimple"])):
@@ -329,7 +329,7 @@ def simpleTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel
             }
 
 
-def mumuTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None):
+def mumuTerms(w=None, inputData=None, label="", systematicsLabel="", smOnly=None, **_):
     terms = []
     systObs = []
 
@@ -378,7 +378,7 @@ def mumuTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="
             }
 
 
-def photTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None):
+def photTerms(w=None, inputData=None, label="", systematicsLabel="", smOnly=None, **_):
     terms = []
     systObs = []
 
@@ -436,7 +436,7 @@ def photTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="
             }
 
 
-def muonTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="", smOnly=None, muonForFullEwk=None):
+def muonTerms(w=None, inputData=None, label="", systematicsLabel="", smOnly=None, muonForFullEwk=None, **_):
     terms = []
     systObs = []
 
