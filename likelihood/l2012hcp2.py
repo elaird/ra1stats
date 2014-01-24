@@ -64,14 +64,14 @@ class l2012hcp2(likelihood.spec):
 
                 for samplesAndSignalEff in options :
                     sel = likelihood.selection(name = name, note = note,
-                                    samplesAndSignalEff = samplesAndSignalEff,
-                                    muonForFullEwk = len(samplesAndSignalEff)==2,
-                                    data = getattr(module, "data_%s"%name)(),
-                                    bJets = ("eq%sb"%b).replace("eqge","ge"),
-                                    jets = "%sj"%j,
-                                    fZinvIni = fZinvIni,
-                                    AQcdIni = 0.0,
-                                    yAxisLogMinMax = yAxisLogMinMax,
-                                    )
+                                               boxes = samplesAndSignalEff.keys(),
+                                               muonForFullEwk = len(samplesAndSignalEff)==2,
+                                               data = getattr(module, "data_%s"%name)(),
+                                               bJets = ("eq%sb"%b).replace("eqge","ge"),
+                                               jets = "%sj"%j,
+                                               fZinvIni = fZinvIni,
+                                               AQcdIni = 0.0,
+                                               yAxisLogMinMax = yAxisLogMinMax,
+                                               )
                     lst.append(sel)
         self.add(lst)
