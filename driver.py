@@ -75,31 +75,31 @@ class driver(object):
             #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
 
-    def checkInputs(self) :
+    def checkInputs(self):
         l = self.likelihoodSpec
         assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
         assert l.RQcd() in ["FallingExp", "Zero"]
         assert l.nFZinv() in ["One", "Two", "All"]
-        assert len(l.poi())==1, len(l.poi())
+        assert len(l.poi()) == 1, len(l.poi())
         if not l.standardPoi():
             assert self.smOnly()
             if "qcd" in l.poi().keys()[0]:
                 assert "FallingExp" in l.RQcd()
             #assert len(l.selections())==1,"%d!=1"%len(l.selections())
 
-        if l.initialValuesFromMuonSample() :
-            if l.RQcd()!="Zero" :
+        if l.initialValuesFromMuonSample():
+            if l.RQcd() != "Zero":
                 assert l.qcdParameterIsYield()
 
-        if l.constrainQcdSlope() :
-            assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()
-        if any([sel.universalKQcd for sel in l.selections()]) :
+        if l.constrainQcdSlope():
+            assert l.RQcd() == "FallingExp","%s!=FallingExp" % l.RQcd()
+        if any([sel.universalKQcd for sel in l.selections()]):
             assert "FallingExp" in l.RQcd()
-        for sel in l.selections() :
-            assert sel.samplesAndSignalEff,sel.name
-            if sel.muonForFullEwk :
-                for box in ["phot", "mumu"] :
-                    assert box not in sel.samplesAndSignalEff,box
+        for sel in l.selections():
+            assert sel.boxes, sel.name
+            if sel.muonForFullEwk:
+                for box in ["phot", "mumu"]:
+                    assert box not in sel.boxes, box
             bins = sel.data.htBinLowerEdges()
             for obj in [self.signalToTest, self.signalExampleToStack, self.signalToInject]:
                 if not obj:
