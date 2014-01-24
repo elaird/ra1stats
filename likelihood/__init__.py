@@ -25,21 +25,10 @@ class selection(object):
             assert type(boxes) is list
 
 
-def sampleCode(samples):
-    yes = []
-    no = []
-    for box, considerSignal in samples.iteritems():
-        (yes if considerSignal else no).append(box)
-
+def sampleCode(boxes=[]):
     d = {"had": "h", "phot": "p", "muon": "1", "mumu": "2", "simple": "s"}
-    out = ""
-    for item in yes:
-        out += d[item]
-    if no:
-        out += "x"
-        for item in no:
-            out += d[item]
-    return out
+    out = [d[box] for box in boxes]
+    return "".join(sorted(out))
 
 
 class spec(object):
@@ -115,7 +104,7 @@ class spec(object):
             out += "__".join(["poi"] + self.poiList())
 
         for selection in self.selections():
-            code = "fixme"  # sampleCode(selection.samplesAndSignalEff)
+            code = sampleCode(selection.boxes)
             out += "_%s-%s" % (selection.name, code)
         return out
 
