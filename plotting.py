@@ -404,8 +404,11 @@ class validationPlotter(object) :
     def go(self) :
         self.canvas = utils.numberedCanvas()
         utils.divideCanvas( self.canvas, self.drawRatios )
-        fields = ["%s/bestFit"%self.plotsDir, self.note, "sel%s"%self.label]
-        if self.smOnly : fields.append("smOnly")
+        fields = ["%s/bestFit" % self.plotsDir, self.note]
+        if self.nSelections >= 2:
+            fields.append("sel%s" % self.label)
+        if self.smOnly:
+            fields.append("smOnly")
         self.psFileName = "_".join(fields)+".pdf"
         self.canvas.Print(self.psFileName+"[")
 
