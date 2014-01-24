@@ -121,7 +121,7 @@ def go(whiteList=[], llk="", allCategories=[], ignoreHad=True, sigMcUnc=False,
     #                          "maxFactor":3.0},
     #            ); print out
     #
-    #f.writeMlTable(fileName="../ra1stats/mlTables_%s.tex" % "_".join(whiteList),
+    #f.writeMlTable(fileName="mlTables_%s.tex" % "_".join(whiteList),
     #               categories=allCategories)
 
     if bestFit:
