@@ -277,10 +277,10 @@ def hadTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel=""
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadB)))
         else:
             lumi = ni("hadLumi", label)
-            eff = ni("effHad", label, i)
-            assert w.var(eff), eff
+            eff = varOrFunc(w, "effHad", label, i)
+            assert eff, ni("effHad", label, i)
             rho = ni("rhoSignal", systematicsLabel)
-            wimport(w, rooProduct(hadS, hadS, [w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), w.var(eff)]))
+            wimport(w, rooProduct(hadS, hadS, [w.var("f"), w.var(rho), w.var("xs"), w.var(lumi), eff]))
             wimport(w, rooAddition(hadExp, hadExp, [w.function(hadB), w.function(hadS)]))
             wimport(w, r.RooPoisson(hadPois, hadPois, w.var(nHad), w.function(hadExp)))
         terms.append(hadPois)
@@ -479,15 +479,15 @@ def muonTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel="
                 )
 
         muonPois = ni("muonPois", label, i)
-        eff = ni("signalEffMuon", label, i)
-        if smOnly or not w.var(eff):
+        eff = varOrFunc(w, "effMuon", label, i)
+        if smOnly or not eff:
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonB)))
         else:
             muonS = ni("muonS", label, i)
             muonExp = ni("muonExp", label, i)
             lumi = ni("muonLumi", label)
             rhoSignal = ni("rhoSignal", systematicsLabel)
-            wimport(w, rooProduct(muonS, muonS, [w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), w.var(eff)]))
+            wimport(w, rooProduct(muonS, muonS, [w.var("f"), w.var(rhoSignal), w.var("xs"), w.var(lumi), eff]))
             wimport(w, rooAddition(muonExp, muonExp, [w.function(muonB), w.function(muonS)]))
             wimport(w, r.RooPoisson(muonPois, muonPois, w.var(nMuon), w.function(muonExp)))
         terms.append(muonPois)
@@ -704,8 +704,10 @@ def setupLikelihood(w=None, selection=None, systematicsLabel=None, kQcdLabel=Non
     return out
 
 
-def startLikelihood(w=None, xs=None, effUncRel=None, fIniFactor=None, poi={}):
+def startLikelihood(w=None, xs=None, sumWeightIn=None, effUncRel=None, fIniFactor=None, poi={}):
     wimport(w, r.RooRealVar("xs", "xs", xs))
+    assert sumWeightIn
+    wimport(w, r.RooRealVar("invSumWeightIn", "invSumWeightIn", 1.0/sumWeightIn))
     wimport(w, r.RooRealVar("effUncRel", "effUncRel", effUncRel))
     fIni, fMin, fMax = poi["f"]
     wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
