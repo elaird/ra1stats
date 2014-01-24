@@ -145,8 +145,8 @@ class driver(object):
         def renamed(v, cat = "") :
             out = v
             out = out.replace("_"+cat, "")
-            for i in range(10) :
-                out = out.replace("_%d"%i, "^%d"%i)
+            for i in range(20,-1,-1) :
+                out = out.replace("_%d"%i, "^{%d}"%i)
             out = out.replace("ewk", r'\mathrm{EWK}')
             out = out.replace("qcd", r'\mathrm{QCD}')
             out = out.replace("rho", r'\rho_')
