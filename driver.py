@@ -40,8 +40,12 @@ class driver(object):
             args[item] = getattr(self, item)
 
         if not self.smOnly() :
-            workspace.startLikelihood(w = self.wspace, xs = self.signalToTest.xs, effUncRel = signalToTest.effUncRel,
-                                    fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
+            workspace.startLikelihood(w=self.wspace,
+                                      xs=self.signalToTest.xs,
+                                      sumWeightIn=self.signalToTest.sumWeightIn,
+                                      effUncRel=signalToTest.effUncRel,
+                                      fIniFactor=fIniFactor,
+                                      poi=self.likelihoodSpec.poi())
 
         total = {}
         for sel in self.likelihoodSpec.selections() :
