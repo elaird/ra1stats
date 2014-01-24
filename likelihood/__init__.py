@@ -12,20 +12,17 @@ def forSignalModel(signalModel=None, whiteList=None):
 
 
 class selection(object):
-    '''Each key appearing in samplesAndSignalEff is used in the likelihood;
-    the corresponding value determines whether signal efficiency is considered
-    for that sample.'''
-
-    def __init__(self, name="", note="", samplesAndSignalEff={}, data=None,
+    def __init__(self, name="", note="", boxes=[], data=None,
                  bJets="", jets="", fZinvIni=0.5, fZinvRange=(0.0, 1.0),
                  AQcdIni=1.0e-2, AQcdMax=100.0, yAxisLogMinMax=(0.3, None),
                  zeroQcd=False, muonForFullEwk=False,
                  universalSystematics=False, universalKQcd=False):
-        for item in ["name", "note", "samplesAndSignalEff", "data", "bJets",
+        for item in ["name", "note", "boxes", "data", "bJets",
                      "jets", "fZinvIni", "fZinvRange", "yAxisLogMinMax",
                      "AQcdIni", "AQcdMax", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"]:
             setattr(self, item, eval(item))
+            assert type(boxes) is list
 
 
 def sampleCode(samples):
@@ -118,14 +115,14 @@ class spec(object):
             out += "__".join(["poi"] + self.poiList())
 
         for selection in self.selections():
-            code = sampleCode(selection.samplesAndSignalEff)
+            code = "fixme"  # sampleCode(selection.samplesAndSignalEff)
             out += "_%s-%s" % (selection.name, code)
         return out
 
     def add(self, sel=[]):
         if self._ignoreHad:
             for s in sel:
-                del s.samplesAndSignalEff["had"]
+                del s.boxes["had"]
         self._selections += sel
 
     def _fill(self):

@@ -649,7 +649,7 @@ def setupLikelihood(w=None, selection=None, systematicsLabel=None, kQcdLabel=Non
                  "multiBinObs": [],
                  }
 
-    samples = selection.samplesAndSignalEff.keys()
+    samples = selection.boxes
 
     boxes = ["had", "phot", "muon", "mumu", "simple"]
     items = [] if smOnly else ["signal"]
