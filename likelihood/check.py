@@ -5,7 +5,7 @@ import sys
 
 sys.path.append(os.path.dirname(__file__)+"/..")
 
-for file in os.listdir(os.path.dirname(__file__)):
+for file in sorted(os.listdir(os.path.dirname(__file__))):
     if not file.endswith(".py") or file in ["__init__.py", "check.py"]:
         continue
     module = file[:-3]
