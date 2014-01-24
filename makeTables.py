@@ -410,6 +410,8 @@ def write(doc, fileName = "") :
     f.close()
     dir = "/".join(fileName.split("/")[:-1])
     fileName = fileName.replace(dir,"")
+    if dir == "":
+        dir = "."
     cmd = "cd %s; pdflatex ./%s; rm ./%s ./%s"%(dir,
                                             fileName,
                                             fileName.replace("tex","log"),
