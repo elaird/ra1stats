@@ -35,7 +35,7 @@ class point(object):
 
     def __str__(self):
         out = []
-        out.append("s = common.signal(xs=%g, sumWeightIn=%g, x=%s, y=%s)" %
+        out.append("s = signals.point(xs=%g, sumWeightIn=%g, x=%s, y=%s)" %
                    (self.xs, self.sumWeightIn, self.x, self.y))
         for sel, dct in sorted(self.__selEffs.iteritems()):
             out.append('s.insert("%s", {' % sel)
