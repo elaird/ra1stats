@@ -25,7 +25,7 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
+def go(whiteList=[], llk="", allCategories=[], ignoreHad=True, sigMcUnc=False,
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
     examples_paper = {("0b_le3j",): signals.t2.a,
