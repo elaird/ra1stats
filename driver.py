@@ -56,8 +56,9 @@ class driver(object):
                                       poi=self.likelihoodSpec.poi())
 
         total = {}
-        for sel in self.likelihoodSpec.selections() :
+        for sel in self.likelihoodSpec.selections():
             args["selection"] = sel
+            args["sigMcUnc"] = self.signalToTest.sigMcUnc
             args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
             args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
