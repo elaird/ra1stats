@@ -2,7 +2,6 @@
 import sys
 
 import configuration as conf
-import likelihood
 import driver
 import utils
 
@@ -23,20 +22,20 @@ def description(key, cl=None):
         return ""
 
 
-def onePoint(likelihoodSpec=None, point=None):
+def onePoint(llkName=None, point=None):
     fileName = conf.directories.pickledFileName(*point)+".in"
     signal = utils.readNumbers(fileName=fileName)
     print signal
     if conf.limit.method() and signal.anyEffHad():
-        return signal, resultsMultiCL(likelihoodSpec=likelihoodSpec,
+        return signal, resultsMultiCL(llkName=llkName,
                                       signal=signal,
                                       )
 
 
-def resultsMultiCL(likelihoodSpec=None, signal=None):
+def resultsMultiCL(llkName=None, signal=None):
     out = {}
     for cl in conf.limit.CL():
-        out.update(resultsOneCL(likelihoodSpec=likelihoodSpec,
+        out.update(resultsOneCL(llkName=llkName,
                                 signal=signal,
                                 cl=cl)
                    )
@@ -57,11 +56,12 @@ def formattedClsResults(results={}, cl=None, cl2=None):
     return out
 
 
-def resultsOneCL(likelihoodSpec=None, signal=None, cl=None):
+def resultsOneCL(llkName=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
     f = driver.driver(signalToTest=signal,
-                      likelihoodSpec=likelihoodSpec,
+                      whiteList=signal.categories(),
+                      llkName=llkName,
                       rhoSignalMin=conf.limit.rhoSignalMin(),
                       fIniFactor=conf.limit.fIniFactor(),
                       )
@@ -97,15 +97,15 @@ def compare(item, threshold):
 
 
 def go():
-    specs = {}
+    llk = {}
     for model in conf.signal.models():
-        specs[model.name] = likelihood.forSignalModel(signalModel=model)
+        llk[model.name] = model.llk
 
     for point in points():
         name = point[0]
         fileName = conf.directories.pickledFileName(*point)+".out"
         utils.writeNumbers(fileName,
-                           onePoint(likelihoodSpec=specs[name],
+                           onePoint(llkName=llk[name],
                                     point=point),
                            )
 
