@@ -286,8 +286,7 @@ def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
 
 def effHistos(model=None, allCategories=False):
     out = {}
-    ls = likelihood.spec(name=model.llk)
-    for sel in ls.selections():
+    for sel in likelihood.spec(name=model.llk).selections():
         if (not allCategories) and (sel.name not in model.whiteList):
             continue
         bins = sel.data.htBinLowerEdges()
