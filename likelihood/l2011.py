@@ -1,7 +1,7 @@
 import likelihood
 
 
-class l2011(likelihood.spec):
+class l2011(likelihood.base):
     def _fill(self, updated=True):
         self._name = self.__class__.__name__[1:]
         self._constrainQcdSlope = True

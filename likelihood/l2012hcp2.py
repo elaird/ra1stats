@@ -1,7 +1,7 @@
 import likelihood
 
 
-class l2012hcp2(likelihood.spec):
+class l2012hcp2(likelihood.base):
     def _fill(self, moduleName="take14a", cms=False):
         self._name = self.__class__.__name__[1:]
         self._blackList += ["3b_le3j", "ge4b_le3j"]

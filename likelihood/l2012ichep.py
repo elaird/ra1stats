@@ -1,6 +1,6 @@
 import likelihood
 
-class l2012ichep(likelihood.spec):
+class l2012ichep(likelihood.base):
     def _fill(self):
         self._name = self.__class__.__name__[1:]
         self._constrainQcdSlope = True
