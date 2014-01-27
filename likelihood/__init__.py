@@ -3,12 +3,12 @@ nb = "n_{b}^{#color[0]{b}}"
 nj = "n_{j}^{#color[0]{j}}"
 
 
-def forSignalModel(signalModel=None, whiteList=None):
-    exec("from likelihood import l%s" % signalModel.llk)
-    llk = eval("l%s.l%s" % (signalModel.llk, signalModel.llk))
-    if whiteList is None:
-        whiteList = signalModel.whiteList
-    return llk(whiteList=whiteList, sigMcUnc=signalModel.sigMcUnc)
+def spec(name="", whiteList=[], separateSystObs=True, ignoreHad=False):
+    exec("from likelihood import l%s" % name)
+    llk = eval("l%s.l%s" % (name, name))
+    return llk(whiteList=whiteList,
+               separateSystObs=separateSystObs,
+               ignoreHad=ignoreHad)
 
 
 class selection(object):
@@ -31,7 +31,7 @@ def sampleCode(boxes=[]):
     return "".join(sorted(out))
 
 
-class spec(object):
+class base(object):
     def separateSystObs(self):
         return self._separateSystObs
 
@@ -70,9 +70,6 @@ class spec(object):
 
     def ignoreHad(self):
         return self._ignoreHad
-
-    def sigMcUnc(self):
-        return self._sigMcUnc
 
     def selections(self):
         out = self._selections
@@ -117,9 +114,9 @@ class spec(object):
     def _fill(self):
         raise Exception("NotImplemented", "Implement _fill(self)")
 
-    def __init__(self, separateSystObs=True, sigMcUnc=False,
+    def __init__(self, separateSystObs=True,
                  whiteList=[], blackList=[], ignoreHad=False):
-        for item in ["separateSystObs", "sigMcUnc",
+        for item in ["separateSystObs",
                      "whiteList", "blackList", "ignoreHad"]:
             setattr(self, "_"+item, eval(item))
 
@@ -141,5 +138,5 @@ class spec(object):
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
         for item in ["qcdParameterIsYield", "constrainQcdSlope",
                      "initialValuesFromMuonSample",
-                     "initialFZinvFromMc", "sigMcUnc"]:
+                     "initialFZinvFromMc"]:
             assert getattr(self, "_"+item) in [False, True], item
