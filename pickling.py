@@ -27,7 +27,8 @@ def writeSignalFiles(points=[], outFilesAlso=False):
                             "xs": hp.xsHisto(model),
                             "sumWeightIn": hp.sumWeightInHisto(model),
                             "effUncRel": conf.signal.effUncRel(model.name),
-                        }
+                            "sigMcUnc": model.sigMcUnc,
+                            }
         toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
         toCheck += histoList(args[model.name]["eff"])
         rootToTxt.checkHistoBinning(toCheck)
