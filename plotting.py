@@ -427,7 +427,7 @@ class validationPlotter(object) :
         if self.significance:
             self.significancePlots()
         self.rhoPlots()
-        #self.sigMcUncPlots()
+        self.sigMcUncPlots()
         self.printPars()
         self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
@@ -853,15 +853,17 @@ class validationPlotter(object) :
         if self.smOnly:
             return
 
-        print "had only!!"
-        for logY in [False, True] :
+        print "FIXME: had only."
+        for logY in [False, True]:
             self.plot(fileName=["sigMcUncHad"]+(["logy"] if logY else []),
-                      obs={"var":"nEventsMcHad",
+                      obs={"var":"nEventsSigMcHad",
                            "desc": "MC events selected (signal region, %s)" % self.selNote,
+                           #"color": r.kViolet,
                            },
                       otherVars=[{"var":"muEventsSigMcHad",
+                                  #"errorsFrom":"muEventsSigMcHad",
                                   "type":"var",
-                                  "desc":self.signalDesc,
+                                  "desc":"mean (fitted) MC events selected",
                                   "color":self.sig,
                                   "style":1,
                                   "width":self.width1,
