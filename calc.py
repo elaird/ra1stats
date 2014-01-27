@@ -2,10 +2,10 @@ import array
 import math
 import string
 
-import common
 import configuration as conf
 import cpp
 import plotting
+import workspace as common
 import utils
 
 import ROOT as r
