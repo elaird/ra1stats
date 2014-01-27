@@ -1,5 +1,5 @@
 import directories
-from signalPoint import scan
+from signalScan import scan
 
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
@@ -41,7 +41,7 @@ def models():
 
     return [
         #scan(dataset="T1", had="v5", whiteList=["0b_ge4j"], **hcp),
-        scan(dataset="T2", had="v1", whiteList=["0b_le3j"], xsFactors=[0.1, 0.8], **hcp),
+        #scan(dataset="T2", had="v1", whiteList=["0b_le3j"], xsFactors=[0.1, 0.8], **hcp),
         #scan(dataset="T2cc", had="v6", whiteList=["0b_le3j"], **hcp),
         #scan(dataset="T2tt", had="v1", muon="v1", whiteList=["1b_le3j", "2b_le3j"], **hcp),
         #scan(dataset="T2bb", had="v3", muon="v3", whiteList=["1b_le3j", "2b_le3j"], **hcp),
@@ -54,7 +54,7 @@ def models():
         #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], extraVars=["SITV"], **hcp),
         #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], **hcp),
         #scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], extraVars=["SITV"], whiteList=["0b_le3j"], **new),
-        #scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], whiteList=["0b_le3j"], **new),
+        scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], whiteList=["0b_le3j"], **new),
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
