@@ -65,14 +65,10 @@ def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
         signalToInject = {}
         signalExampleToStack = {}#signal
 
-
-    ls = llkClass(whiteList=whiteList,
-                  ignoreHad=ignoreHad,
-                  separateSystObs=not ensemble,
-                  sigMcUnc=sigMcUnc,
-                  )
-
-    f = driver.driver(likelihoodSpec=ls,
+    f = driver.driver(llkName=llk,
+                      whiteList=whiteList,
+                      ignoreHad=ignoreHad,
+                      separateSystObs=not ensemble,
                       signalToTest=signalToTest,
                       signalExampleToStack=signalExampleToStack,
                       signalToInject=signalToInject,
@@ -148,15 +144,11 @@ kargs = {"bestFit": True,
                  "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-1],
          }
 
-module = "l%s" % kargs["llk"]
-exec("from likelihood import %s" % module)
-exec("llkClass = %s.%s" % (module, module))
-
 
 if kargs["llk"] == "2011":
     go(**kargs)
 else:
-    selections = llkClass().selections()
+    selections = likelihood.spec(name=kargs["llk"]).selections()
     report = {}
     hMap = {}
     bins = (len(selections), 0.0, len(selections))

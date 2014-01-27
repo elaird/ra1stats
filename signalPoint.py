@@ -120,21 +120,23 @@ class scan(object):
 
 class signal(object):
     def __init__(self, xs=None, sumWeightIn=None, label="",
-                 effUncRel=None, lineColor=907, lineStyle=2,
+                 effUncRel=None, sigMcUnc=False,
+                 lineColor=907, lineStyle=2,
                  x=None, y=None,
                  ):
 
-        # not checked
-        for item in ["sumWeightIn", "x", "y"]:
-            setattr(self, item, eval(item))
-
-        for item in ["xs", "label", "effUncRel", "lineColor", "lineStyle"]:
-            assert eval(item) != None, item
+        for item in ["xs", "sumWeightIn", "label", "effUncRel", "sigMcUnc",
+                     "lineColor", "lineStyle", "x", "y"]:
+            if item not in ["x", "y", "sumWeightIn"]:
+                assert eval(item) != None, item
             setattr(self, item, eval(item))
         self.__selEffs = {}
 
     def effs(self, sel=""):
         return self.__selEffs.get(sel)
+
+    def categories(self):
+        return self.__selEffs.keys()
 
     def insert(self, key, value):
         self.__selEffs[key] = value
@@ -184,27 +186,3 @@ class signal(object):
                 else:
                     assert False, type(value)
         return out
-
-
-def signalModel(modelName="", point3=None,
-                eff=None, effUncRel=None,
-                xs=None, sumWeightIn=None):
-    out = signal(xs=xs.GetBinContent(*point3),
-                 label="%s_%d_%d_%d" % ((modelName,)+point3),
-                 effUncRel=effUncRel,
-                 sumWeightIn=sumWeightIn.GetBinContent(*point3),
-                 x=xs.GetXaxis().GetBinLowEdge(point3[0]),
-                 y=xs.GetYaxis().GetBinLowEdge(point3[1]),
-    )
-
-    for selName, dct in eff.iteritems():
-        d = {}
-        for box, histos in dct.iteritems():
-            if not all([hasattr(item, "GetBinContent") for item in histos]):
-                continue
-            d[box] = map(lambda x: x.GetBinContent(*point3), histos)
-            if "eff" in box:
-                d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
-                d[box+"Sum"] = sum(d[box])
-        out.insert(selName, d)
-    return out

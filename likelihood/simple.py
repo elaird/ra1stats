@@ -1,7 +1,7 @@
 import likelihood
 
 
-class simple(likelihood.spec):
+class simple(likelihood.base):
     def _fill(self):
         self._name = self.__class__.__name__
         self._constrainQcdSlope = False

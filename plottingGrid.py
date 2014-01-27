@@ -442,7 +442,7 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
 
 
 def legendTitle(model=None):
-    return likelihood.forSignalModel(signalModel=model).legendTitle()
+    return likelihood.spec(name=model.llk).legendTitle()
 
 
 def makeLimitPdf(model=None, expectedMapsOnly=None,
