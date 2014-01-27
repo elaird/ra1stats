@@ -47,7 +47,8 @@ class driver(object):
         for item in ["rhoSignalMin"] :
             args[item] = getattr(self, item)
 
-        if not self.smOnly() :
+        if not self.smOnly():
+            args["sigMcUnc"] = self.signalToTest.sigMcUnc
             workspace.startLikelihood(w=self.wspace,
                                       xs=self.signalToTest.xs,
                                       sumWeightIn=self.signalToTest.sumWeightIn,
@@ -58,7 +59,6 @@ class driver(object):
         total = {}
         for sel in self.likelihoodSpec.selections():
             args["selection"] = sel
-            args["sigMcUnc"] = self.signalToTest.sigMcUnc
             args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
             args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
