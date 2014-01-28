@@ -1,6 +1,6 @@
 import math
 import calc
-import common
+import workspace as common
 import utils
 
 import ROOT as r

@@ -1,7 +1,7 @@
 import likelihood
 
 
-class l2011eps(likelihood.spec):
+class l2011eps(likelihood.base):
     def _fill(self):
         self._name = self.__class__.__name__[1:]
         self._constrainQcdSlope = False
@@ -14,9 +14,9 @@ class l2011eps(likelihood.spec):
         self._legendTitle = "CMS (re-analyzed), L = 1.1 fb^{-1}, #sqrt{s} = 7 TeV"
         from inputData.dataMisc import orig as module
 
-        self.add([likelihood.selection(name = "55",
-                            samplesAndSignalEff = {"had":True, "muon":True, "phot":False},
-                            data = module.data_2011_4(),
-                            fZinvRange = (0.2, 0.8),
-                            ),
+        self.add([likelihood.selection(name="55",
+                                       boxes={"had":True, "muon":True, "phot":False}.keys(),
+                                       data=module.data_2011_4(),
+                                       fZinvRange=(0.2, 0.8),
+                                       ),
                   ])

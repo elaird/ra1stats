@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+import driver
 import likelihood
 import plotting
-import signals
-import driver
+from signals import t2, two, t2cc
+
 import ROOT as r
 
 
@@ -25,24 +26,24 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], llk="", allCategories=[], ignoreHad=True, sigMcUnc=False,
+def go(llk="", whiteList=[], ignoreHad=False, allCategories=[],
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
-    examples_paper = {("0b_le3j",): signals.t2.a,
-                      ("0b_ge4j",): signals.two.t1,
-                      ("1b_le3j",): signals.two.t2bb,
-                      ("1b_ge4j",): signals.two.t2tt,
-                      ("2b_le3j",): signals.two.t2bb,
-                      ("2b_ge4j",): signals.two.t2tt,
+    examples_paper = {("0b_le3j",): t2.a,
+                      ("0b_ge4j",): two.t1,
+                      ("1b_le3j",): two.t2bb,
+                      ("1b_ge4j",): two.t2tt,
+                      ("2b_le3j",): two.t2bb,
+                      ("2b_ge4j",): two.t2tt,
                       ("3b_le3j",): {},
-                      ("3b_ge4j",): signals.two.t1bbbb,
-                      ("ge4b_ge4j",): signals.two.t1tttt,
+                      ("3b_ge4j",): two.t1bbbb,
+                      ("ge4b_ge4j",): two.t1tttt,
                       }
 
-    examples_t2cc = {("0b_le3j",): signals.t2cc.far10,
-                     ("0b_ge4j",): signals.t2cc.far10,
-                     ("1b_le3j",): signals.t2cc.far10,
-                     ("1b_ge4j",): signals.t2cc.far10,
+    examples_t2cc = {("0b_le3j",): t2cc.testMcUnc1,
+                     ("0b_ge4j",): t2cc.far10,
+                     ("1b_le3j",): t2cc.far10,
+                     ("1b_ge4j",): t2cc.far10,
                      ("2b_le3j",): {},
                      ("2b_ge4j",): {},
                      ("3b_le3j",): {},
@@ -65,14 +66,10 @@ def go(whiteList=[], llk="", allCategories=[], ignoreHad=True, sigMcUnc=False,
         signalToInject = {}
         signalExampleToStack = {}#signal
 
-
-    ls = llkClass(whiteList=whiteList,
-                  ignoreHad=ignoreHad,
-                  separateSystObs=not ensemble,
-                  sigMcUnc=sigMcUnc,
-                  )
-
-    f = driver.driver(likelihoodSpec=ls,
+    f = driver.driver(llkName=llk,
+                      whiteList=whiteList,
+                      ignoreHad=ignoreHad,
+                      separateSystObs=not ensemble,
                       signalToTest=signalToTest,
                       signalExampleToStack=signalExampleToStack,
                       signalToInject=signalToInject,
@@ -148,15 +145,11 @@ kargs = {"bestFit": True,
                  "2012ichep", "2012hcp", "2012hcp2", "2012dev"][-1],
          }
 
-module = "l%s" % kargs["llk"]
-exec("from likelihood import %s" % module)
-exec("llkClass = %s.%s" % (module, module))
-
 
 if kargs["llk"] == "2011":
     go(**kargs)
 else:
-    selections = llkClass().selections()
+    selections = likelihood.spec(name=kargs["llk"]).selections()
     report = {}
     hMap = {}
     bins = (len(selections), 0.0, len(selections))
@@ -166,7 +159,6 @@ else:
     for iSel, sel in enumerate(selections):
         args = {"whiteList": [sel.name],
                 "allCategories": sorted([x.name for x in selections]),
-                "sigMcUnc": False,
                 }
         args.update(kargs)
         dct = go(**args)

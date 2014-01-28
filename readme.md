@@ -6,7 +6,7 @@
 ## Quick Start
 1. Clone the repository:
 ```bash
-git clone git://github.com/elaird/ra1stats.git
+git clone https://github.com/elaird/ra1stats.git
 cd ra1stats
 git submodule update --init
 ```
@@ -22,19 +22,18 @@ source env.sh
 ```
 
 ## Brief Description
-* The likelihood function is specified in workspace.py.  To fit a set of
+* The likelihood function is built in workspace.py.  To fit a set of
 data or test a signal model, one uses an instance of the class
-fresh.foo.
+driver.driver.
 
-* test.py shows how to use an instance of fresh.foo, and will produce
-a pdf file in the subdirectory plots.  The plotting is done in
-plotting.py.  The observations, MC yields, etc. are stored in
-inputData.py.  The switches selecting options for the likelihood are
-in likelihoodSpec.py.
+* test.py shows how to use an instance of driver, and will produce a
+pdf file in the subdirectory plots.  The observations, MC yields,
+etc. are stored in inputData/.  The switches selecting options for the
+likelihood are in likelihood/.
 
-* stats.py and configuration.py allow one to run on many signal models
-  in parallel, using either one computer (`--local`) or a farm
-  (`--batch`).  The results are merged into a root file using `--merge`.
+* stats.py allows one to run on many signal models in parallel, using
+either one computer (`--local`) or a farm (`--batch`).  The results
+are merged into a root file using `--merge`.
 
 ## Requirements
 * ROOT >= v5.32.01

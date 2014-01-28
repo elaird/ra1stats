@@ -192,9 +192,6 @@ def sumWeightInHisto(model=None):
 def effHisto(model=None, box="",
              htLower=None, htUpper=None,
              bJets="", jets=""):
-    if model.ignoreEff(box):
-        return None
-
     spec = conf.signal.effHistoSpec(model=model,
                                     box=box,
                                     htLower=htLower,
@@ -210,9 +207,6 @@ def effHisto(model=None, box="",
 def meanWeightSigMc(model=None, box="",
                     htLower=None, htUpper=None,
                     bJets="", jets=""):
-    if model.ignoreEff(box):
-        return None
-
     spec = conf.signal.effHistoSpec(model=model,
                                     box=box,
                                     htLower=htLower,
@@ -228,9 +222,6 @@ def meanWeightSigMc(model=None, box="",
 def nEventsSigMc(model=None, box="",
                  htLower=None, htUpper=None,
                  bJets="", jets=""):
-    if model.ignoreEff(box):
-        return None
-
     spec = conf.signal.effHistoSpec(model=model,
                                     box=box,
                                     htLower=htLower,
@@ -273,34 +264,36 @@ def smsEffHisto(spec={}, model=None):
     return out
 
 
+def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
+    d = {}
+    for box in model.boxes():
+        Box = box.capitalize()
+        itemFunc = {"eff%s" % Box: effHisto}
+        if model.sigMcUnc:
+            itemFunc["meanWeightSigMc%s" % Box] = meanWeightSigMc
+            itemFunc["nEventsSigMc%s" % Box] = nEventsSigMc
+        for item, func in itemFunc.iteritems():
+            d[item] = [func(model=model,
+                            box=box,
+                            htLower=l,
+                            htUpper=u,
+                            bJets=bJets,
+                            jets=jets,
+                            ) for l, u in htThresholds]
+    return d
+
+
 def effHistos(model=None, allCategories=False):
     out = {}
-    whiteList = [] if allCategories else model.whiteList
-    ls = likelihood.forSignalModel(signalModel=model, whiteList=whiteList)
-    for sel in ls.selections():
+    for sel in likelihood.spec(name=model.llk).selections():
+        if (not allCategories) and (sel.name not in model.whiteList):
+            continue
         bins = sel.data.htBinLowerEdges()
         htThresholds = zip(bins, list(bins[1:])+[None])
-
-        d = {}
-        for box, considerSignal in sel.samplesAndSignalEff.iteritems():
-            Box = box.capitalize()
-            itemFunc = {"eff%s" % Box: effHisto}
-            if ls.sigMcUnc:
-                itemFunc["meanWeightSigMc%s" % Box] = meanWeightSigMc
-                itemFunc["nEventsSigMc%s" % Box] = nEventsSigMc
-            for item, func in itemFunc.iteritems():
-                if considerSignal:
-                        d[item] = [func(model=model,
-                                        box=box,
-                                        htLower=l,
-                                        htUpper=u,
-                                        bJets=sel.bJets,
-                                        jets=sel.jets,
-                                        ) for l, u in htThresholds]
-                else:
-                    d[item] = [0.0]*len(bins)  # fixme: None?
-
-        out[sel.name] = d
+        out[sel.name] = perSelHistos(model=model,
+                                     htThresholds=htThresholds,
+                                     jets=sel.jets,
+                                     bJets=sel.bJets)
     return out
 
 

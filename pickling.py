@@ -4,7 +4,7 @@ import utils
 import configuration as conf
 import histogramProcessing as hp
 from inputData import rootToTxt
-import signalPoint
+import signals
 
 import ROOT as r
 
@@ -19,6 +19,31 @@ def histoList(histos={}):
     return out
 
 
+def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
+                xs=None, sumWeightIn=None, sigMcUnc=None):
+
+    out = signals.point(xs=xs.GetBinContent(*point3),
+                        label="%s_%d_%d_%d" % ((modelName,)+point3),
+                        effUncRel=effUncRel,
+                        sumWeightIn=sumWeightIn.GetBinContent(*point3),
+                        sigMcUnc=sigMcUnc,
+                        x=xs.GetXaxis().GetBinLowEdge(point3[0]),
+                        y=xs.GetYaxis().GetBinLowEdge(point3[1]),
+                        )
+
+    for selName, dct in eff.iteritems():
+        d = {}
+        for box, histos in dct.iteritems():
+            if not all([hasattr(item, "GetBinContent") for item in histos]):
+                continue
+            d[box] = map(lambda x: x.GetBinContent(*point3), histos)
+            if "eff" in box:
+                d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
+                d[box+"Sum"] = sum(d[box])
+        out.insert(selName, d)
+    return out
+
+
 def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
     
@@ -27,14 +52,15 @@ def writeSignalFiles(points=[], outFilesAlso=False):
                             "xs": hp.xsHisto(model),
                             "sumWeightIn": hp.sumWeightInHisto(model),
                             "effUncRel": conf.signal.effUncRel(model.name),
-                        }
+                            "sigMcUnc": model.sigMcUnc,
+                            }
         toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
         toCheck += histoList(args[model.name]["eff"])
         rootToTxt.checkHistoBinning(toCheck)
 
     for point in points:
         name = point[0]
-        signal = signalPoint.signalModel(modelName=name, point3=point[1:], **args[name])
+        signal = signalModel(modelName=name, point3=point[1:], **args[name])
         stem = conf.directories.pickledFileName(*point)
         utils.writeNumbers(fileName=stem+".in", d=signal)
         if not outFilesAlso:

@@ -1,6 +1,6 @@
 import likelihood
 
-class l2012ichep(likelihood.spec):
+class l2012ichep(likelihood.base):
     def _fill(self):
         self._name = self.__class__.__name__[1:]
         self._constrainQcdSlope = True
@@ -16,7 +16,7 @@ class l2012ichep(likelihood.spec):
         self.add([
                 likelihood.selection(name = "55_0b",
                           note = "%s= 0"%likelihood.nb,
-                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          boxes = {"had":True, "muon":True, "phot":False, "mumu":False}.keys(),
                           data = module.data_0b(),
                           bJets = "btag_==_0",
                           fZinvIni = 0.50,
@@ -24,7 +24,7 @@ class l2012ichep(likelihood.spec):
                           ),
                 #likelihood.selection(name = "55_0b_no_aT",
                 #          note = "%s= 0"%likelihood.nb,
-                #          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                #          boxes = {"had":True, "muon":True, "phot":False, "mumu":False}.keys(),
                 #          data = module.data_0b_no_aT(),
                 #          bJets = "btag_==_0",
                 #          fZinvIni = 0.50,
@@ -32,7 +32,7 @@ class l2012ichep(likelihood.spec):
                 #          ),
                 likelihood.selection(name = "55_1b",
                           note = "%s= 1"%likelihood.nb,
-                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          boxes = {"had":True, "muon":True, "phot":False, "mumu":False}.keys(),
                           data = module.data_1b(),
                           bJets = "btag_==_1",
                           fZinvIni = 0.25,
@@ -40,7 +40,7 @@ class l2012ichep(likelihood.spec):
                           ),
                 likelihood.selection(name = "55_2b",
                           note = "%s= 2"%likelihood.nb,
-                          samplesAndSignalEff = {"had":True, "muon":True, "phot":False, "mumu":False},
+                          boxes = {"had":True, "muon":True, "phot":False, "mumu":False}.keys(),
                           data = module.data_2b(),
                           bJets = "btag_==_2",
                           fZinvIni = 0.1,
@@ -48,7 +48,7 @@ class l2012ichep(likelihood.spec):
                           ),
                 likelihood.selection(name = "55_gt2b",
                           note = "%s#geq 3"%likelihood.nb,
-                          samplesAndSignalEff = {"had":True, "muon":True},
+                          boxes = {"had":True, "muon":True}.keys(),
                           muonForFullEwk = True,
                           data = module.data_ge3b(),
                           bJets = "btag_>_2",

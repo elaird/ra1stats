@@ -3,49 +3,33 @@ nb = "n_{b}^{#color[0]{b}}"
 nj = "n_{j}^{#color[0]{j}}"
 
 
-def forSignalModel(signalModel=None, whiteList=None):
-    exec("from likelihood import l%s" % signalModel.llk)
-    llk = eval("l%s.l%s" % (signalModel.llk, signalModel.llk))
-    if whiteList is None:
-        whiteList = signalModel.whiteList
-    return llk(whiteList=whiteList)
+def spec(name="", **kargs):
+    exec("from likelihood import l%s" % name)
+    llk = eval("l%s.l%s" % (name, name))
+    return llk(**kargs)
 
 
 class selection(object):
-    '''Each key appearing in samplesAndSignalEff is used in the likelihood;
-    the corresponding value determines whether signal efficiency is considered
-    for that sample.'''
-
-    def __init__(self, name="", note="", samplesAndSignalEff={}, data=None,
+    def __init__(self, name="", note="", boxes=[], data=None,
                  bJets="", jets="", fZinvIni=0.5, fZinvRange=(0.0, 1.0),
                  AQcdIni=1.0e-2, AQcdMax=100.0, yAxisLogMinMax=(0.3, None),
                  zeroQcd=False, muonForFullEwk=False,
                  universalSystematics=False, universalKQcd=False):
-        for item in ["name", "note", "samplesAndSignalEff", "data", "bJets",
+        for item in ["name", "note", "boxes", "data", "bJets",
                      "jets", "fZinvIni", "fZinvRange", "yAxisLogMinMax",
                      "AQcdIni", "AQcdMax", "zeroQcd", "muonForFullEwk",
                      "universalSystematics", "universalKQcd"]:
             setattr(self, item, eval(item))
+            assert type(boxes) is list
 
 
-def sampleCode(samples):
-    yes = []
-    no = []
-    for box, considerSignal in samples.iteritems():
-        (yes if considerSignal else no).append(box)
-
+def sampleCode(boxes=[]):
     d = {"had": "h", "phot": "p", "muon": "1", "mumu": "2", "simple": "s"}
-    out = ""
-    for item in yes:
-        out += d[item]
-    if no:
-        out += "x"
-        for item in no:
-            out += d[item]
-    return out
+    out = [d[box] for box in boxes]
+    return "".join(sorted(out))
 
 
-class spec(object):
+class base(object):
     def separateSystObs(self):
         return self._separateSystObs
 
@@ -85,10 +69,6 @@ class spec(object):
     def ignoreHad(self):
         return self._ignoreHad
 
-    @property
-    def sigMcUnc(self):
-        return self._sigMcUnc
-
     def selections(self):
         out = self._selections
         if self._whiteList:
@@ -119,22 +99,22 @@ class spec(object):
             out += "__".join(["poi"] + self.poiList())
 
         for selection in self.selections():
-            code = sampleCode(selection.samplesAndSignalEff)
+            code = sampleCode(selection.boxes)
             out += "_%s-%s" % (selection.name, code)
         return out
 
     def add(self, sel=[]):
         if self._ignoreHad:
             for s in sel:
-                del s.samplesAndSignalEff["had"]
+                del s.boxes["had"]
         self._selections += sel
 
     def _fill(self):
         raise Exception("NotImplemented", "Implement _fill(self)")
 
-    def __init__(self, separateSystObs=True, sigMcUnc=False,
+    def __init__(self, separateSystObs=True,
                  whiteList=[], blackList=[], ignoreHad=False):
-        for item in ["separateSystObs", "sigMcUnc",
+        for item in ["separateSystObs",
                      "whiteList", "blackList", "ignoreHad"]:
             setattr(self, "_"+item, eval(item))
 
@@ -156,5 +136,5 @@ class spec(object):
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
         for item in ["qcdParameterIsYield", "constrainQcdSlope",
                      "initialValuesFromMuonSample",
-                     "initialFZinvFromMc", "sigMcUnc"]:
+                     "initialFZinvFromMc"]:
             assert getattr(self, "_"+item) in [False, True], item

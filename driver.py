@@ -1,8 +1,8 @@
 import os
 
 import calc
-import common
 import ensemble
+import likelihood
 import plotting
 import workspace
 import utils
@@ -11,12 +11,19 @@ import ROOT as r
 
 
 class driver(object):
-    def __init__(self, likelihoodSpec = {}, rhoSignalMin = 0.0, fIniFactor = 1.0,
-                 signalToTest = {}, signalExampleToStack = {}, signalToInject = {}, trace = False) :
+    def __init__(self, llkName="", rhoSignalMin=0.0, fIniFactor=1.0,
+                 whiteList=[], ignoreHad=False, separateSystObs=True,
+                 signalToTest=None, signalExampleToStack=None, signalToInject=None,
+                 trace=False):
 
-        for item in ["likelihoodSpec", "rhoSignalMin",
-                     "signalToTest", "signalExampleToStack", "signalToInject"] :
+        for item in ["rhoSignalMin", "signalToTest",
+                     "signalExampleToStack", "signalToInject"]:
             setattr(self, item, eval(item))
+
+        self.likelihoodSpec = likelihood.spec(name=llkName,
+                                              whiteList=whiteList,
+                                              ignoreHad=ignoreHad,
+                                              separateSystObs=separateSystObs)
 
         self.checkInputs()
         r.gROOT.SetBatch(True)
@@ -39,18 +46,23 @@ class driver(object):
         for item in ["rhoSignalMin"] :
             args[item] = getattr(self, item)
 
-        if not self.smOnly() :
-            workspace.startLikelihood(w = self.wspace, xs = self.signalToTest.xs, effUncRel = signalToTest.effUncRel,
-                                    fIniFactor = fIniFactor, poi = self.likelihoodSpec.poi())
+        if not self.smOnly():
+            args["sigMcUnc"] = self.signalToTest.sigMcUnc
+            workspace.startLikelihood(w=self.wspace,
+                                      xs=self.signalToTest.xs,
+                                      sumWeightIn=self.signalToTest.sumWeightIn,
+                                      effUncRel=self.signalToTest.effUncRel,
+                                      fIniFactor=fIniFactor,
+                                      poi=self.likelihoodSpec.poi())
 
         total = {}
-        for sel in self.likelihoodSpec.selections() :
+        for sel in self.likelihoodSpec.selections():
             args["selection"] = sel
             args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
             args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
-            args["sigMcUnc"] = self.likelihoodSpec.sigMcUnc
+
             d = workspace.setupLikelihood(**args)
             for key, value in d.iteritems():
                 if key not in total:
@@ -63,7 +75,7 @@ class driver(object):
                          poiDict=self.likelihoodSpec.poi(),
                          **total)
 
-        self.data = workspace.dataset(common.obs(self.wspace))
+        self.data = workspace.dataset(workspace.obs(self.wspace))
         self.modelConfig = workspace.modelConfiguration(self.wspace)
 
         if trace :
@@ -71,31 +83,31 @@ class driver(object):
             #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
 
-    def checkInputs(self) :
+    def checkInputs(self):
         l = self.likelihoodSpec
         assert l.REwk() in ["", "FallingExp", "Linear", "Constant"]
         assert l.RQcd() in ["FallingExp", "Zero"]
         assert l.nFZinv() in ["One", "Two", "All"]
-        assert len(l.poi())==1, len(l.poi())
+        assert len(l.poi()) == 1, len(l.poi())
         if not l.standardPoi():
             assert self.smOnly()
             if "qcd" in l.poi().keys()[0]:
                 assert "FallingExp" in l.RQcd()
             #assert len(l.selections())==1,"%d!=1"%len(l.selections())
 
-        if l.initialValuesFromMuonSample() :
-            if l.RQcd()!="Zero" :
+        if l.initialValuesFromMuonSample():
+            if l.RQcd() != "Zero":
                 assert l.qcdParameterIsYield()
 
-        if l.constrainQcdSlope() :
-            assert l.RQcd() == "FallingExp","%s!=FallingExp"%l.RQcd()
-        if any([sel.universalKQcd for sel in l.selections()]) :
+        if l.constrainQcdSlope():
+            assert l.RQcd() == "FallingExp","%s!=FallingExp" % l.RQcd()
+        if any([sel.universalKQcd for sel in l.selections()]):
             assert "FallingExp" in l.RQcd()
-        for sel in l.selections() :
-            assert sel.samplesAndSignalEff,sel.name
-            if sel.muonForFullEwk :
-                for box in ["phot", "mumu"] :
-                    assert box not in sel.samplesAndSignalEff,box
+        for sel in l.selections():
+            assert sel.boxes, sel.name
+            if sel.muonForFullEwk:
+                for box in ["phot", "mumu"]:
+                    assert box not in sel.boxes, box
             bins = sel.data.htBinLowerEdges()
             for obj in [self.signalToTest, self.signalExampleToStack, self.signalToInject]:
                 if not obj:
@@ -133,14 +145,14 @@ class driver(object):
     def debug(self) :
         self.wspace.Print("v")
         plotting.writeGraphVizTree(self.wspace)
-        #pars = utils.rooFitResults(common.pdf(wspace), data).floatParsFinal(); pars.Print("v")
-        utils.rooFitResults(common.pdf(self.wspace), self.data).Print("v")
+        #pars = utils.rooFitResults(workspace.pdf(wspace), data).floatParsFinal(); pars.Print("v")
+        utils.rooFitResults(workspace.pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
     def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
         def pars() :
-            utils.rooFitResults(common.pdf(self.wspace), self.data)
-            return common.floatingVars(self.wspace)
+            utils.rooFitResults(workspace.pdf(self.wspace), self.data)
+            return workspace.floatingVars(self.wspace)
 
         def renamed(v, cat = "") :
             out = v
@@ -223,8 +235,8 @@ class driver(object):
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
     def cppDrive(self, tool = ["", "valgrind", "igprof"][0]) :
-        common.wimport(self.wspace, self.data)
-        common.wimport(self.wspace, self.modelConfig)
+        workspace.wimport(self.wspace, self.data)
+        workspace.wimport(self.wspace, self.modelConfig)
         fileName = "workspace.root"
         self.wspace.writeToFile(fileName)
         cmd = {"":"",
@@ -323,16 +335,16 @@ class driver(object):
                 pullPlotMax=3.5,
                 pullThreshold=2.0,
                 msgThreshold=r.RooFit.DEBUG):
-        #calc.pullPlots(common.pdf(self.wspace))
+        #calc.pullPlots(workspace.pdf(self.wspace))
 
         r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
-        results = utils.rooFitResults(common.pdf(self.wspace), self.data)
+        results = utils.rooFitResults(workspace.pdf(self.wspace), self.data)
         out = {}
         out["numInvalidNll"] = utils.checkResults(results)
 
         poisKey = "simple"
         lognKey = "kMinusOne"
-        pulls = calc.pulls(pdf=common.pdf(self.wspace),
+        pulls = calc.pulls(pdf=workspace.pdf(self.wspace),
                            poisKey=poisKey,
                            lognKey=lognKey)
 
@@ -350,6 +362,7 @@ class driver(object):
             args = self.plotterArgs(selection)
             args.update({"results": results,
                          "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
+                         "nSelections": len(self.likelihoodSpec.selections()),
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages,
                          "drawMc": drawMc,
@@ -365,7 +378,7 @@ class driver(object):
 
         # gather stats
         out.update(calc.pullStats(pulls=pulls,
-                                  nParams=len(common.floatingVars(self.wspace)),
+                                  nParams=len(workspace.floatingVars(self.wspace)),
                                   ),
                    )
 
@@ -383,5 +396,5 @@ class driver(object):
 
     def qcdPlot(self):
         plotting.errorsPlot(self.wspace,
-                            utils.rooFitResults(common.pdf(self.wspace), self.data),
+                            utils.rooFitResults(workspace.pdf(self.wspace), self.data),
                             )

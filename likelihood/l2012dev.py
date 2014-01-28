@@ -1,6 +1,7 @@
 import likelihood
 
-class l2012dev(likelihood.spec):
+
+class l2012dev(likelihood.base):
     def _fill(self):
         self._name = self.__class__.__name__[1:]
         self._blackList += ["ge4b_le3j"]
@@ -55,7 +56,7 @@ class l2012dev(likelihood.spec):
 
                 for samplesAndSignalEff in options :
                     sel = likelihood.selection(name = name, note = note,
-                                    samplesAndSignalEff = samplesAndSignalEff,
+                                    boxes = samplesAndSignalEff.keys(),
                                     muonForFullEwk = len(samplesAndSignalEff)==2,
                                     data = getattr(module, "data_%s"%name)(),
                                     bJets = ("eq%sb"%b).replace("eqge","ge"),
