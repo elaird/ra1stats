@@ -427,7 +427,7 @@ class validationPlotter(object) :
         if self.significance:
             self.significancePlots()
         self.rhoPlots()
-        self.sigMcUncPlots()
+        #self.sigMcUncPlots()
         self.printPars()
         self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
