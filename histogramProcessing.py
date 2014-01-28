@@ -280,7 +280,6 @@ def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
                             bJets=bJets,
                             jets=jets,
                             ) for l, u in htThresholds]
-            #d[item] = [None]*len(item)
     return d
 
 
