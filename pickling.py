@@ -4,7 +4,7 @@ import utils
 import configuration as conf
 import histogramProcessing as hp
 from inputData import rootToTxt
-import signalPoint
+import signals
 
 import ROOT as r
 
@@ -22,14 +22,14 @@ def histoList(histos={}):
 def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
                 xs=None, sumWeightIn=None, sigMcUnc=None):
 
-    out = signalPoint.signal(xs=xs.GetBinContent(*point3),
-                             label="%s_%d_%d_%d" % ((modelName,)+point3),
-                             effUncRel=effUncRel,
-                             sumWeightIn=sumWeightIn.GetBinContent(*point3),
-                             sigMcUnc=sigMcUnc,
-                             x=xs.GetXaxis().GetBinLowEdge(point3[0]),
-                             y=xs.GetYaxis().GetBinLowEdge(point3[1]),
-                             )
+    out = signals.point(xs=xs.GetBinContent(*point3),
+                        label="%s_%d_%d_%d" % ((modelName,)+point3),
+                        effUncRel=effUncRel,
+                        sumWeightIn=sumWeightIn.GetBinContent(*point3),
+                        sigMcUnc=sigMcUnc,
+                        x=xs.GetXaxis().GetBinLowEdge(point3[0]),
+                        y=xs.GetYaxis().GetBinLowEdge(point3[1]),
+                        )
 
     for selName, dct in eff.iteritems():
         d = {}

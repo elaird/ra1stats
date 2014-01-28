@@ -1,7 +1,6 @@
 import os
 
 import calc
-import common
 import ensemble
 import likelihood
 import plotting
@@ -76,7 +75,7 @@ class driver(object):
                          poiDict=self.likelihoodSpec.poi(),
                          **total)
 
-        self.data = workspace.dataset(common.obs(self.wspace))
+        self.data = workspace.dataset(workspace.obs(self.wspace))
         self.modelConfig = workspace.modelConfiguration(self.wspace)
 
         if trace :
@@ -146,14 +145,14 @@ class driver(object):
     def debug(self) :
         self.wspace.Print("v")
         plotting.writeGraphVizTree(self.wspace)
-        #pars = utils.rooFitResults(common.pdf(wspace), data).floatParsFinal(); pars.Print("v")
-        utils.rooFitResults(common.pdf(self.wspace), self.data).Print("v")
+        #pars = utils.rooFitResults(workspace.pdf(wspace), data).floatParsFinal(); pars.Print("v")
+        utils.rooFitResults(workspace.pdf(self.wspace), self.data).Print("v")
         #wspace.Print("v")
 
     def writeMlTable(self, fileName = "mlTables.tex", categories = []) :
         def pars() :
-            utils.rooFitResults(common.pdf(self.wspace), self.data)
-            return common.floatingVars(self.wspace)
+            utils.rooFitResults(workspace.pdf(self.wspace), self.data)
+            return workspace.floatingVars(self.wspace)
 
         def renamed(v, cat = "") :
             out = v
@@ -235,8 +234,8 @@ class driver(object):
             return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
     def cppDrive(self, tool = ["", "valgrind", "igprof"][0]) :
-        common.wimport(self.wspace, self.data)
-        common.wimport(self.wspace, self.modelConfig)
+        workspace.wimport(self.wspace, self.data)
+        workspace.wimport(self.wspace, self.modelConfig)
         fileName = "workspace.root"
         self.wspace.writeToFile(fileName)
         cmd = {"":"",
@@ -335,16 +334,16 @@ class driver(object):
                 pullPlotMax=3.5,
                 pullThreshold=2.0,
                 msgThreshold=r.RooFit.DEBUG):
-        #calc.pullPlots(common.pdf(self.wspace))
+        #calc.pullPlots(workspace.pdf(self.wspace))
 
         r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
-        results = utils.rooFitResults(common.pdf(self.wspace), self.data)
+        results = utils.rooFitResults(workspace.pdf(self.wspace), self.data)
         out = {}
         out["numInvalidNll"] = utils.checkResults(results)
 
         poisKey = "simple"
         lognKey = "kMinusOne"
-        pulls = calc.pulls(pdf=common.pdf(self.wspace),
+        pulls = calc.pulls(pdf=workspace.pdf(self.wspace),
                            poisKey=poisKey,
                            lognKey=lognKey)
 
@@ -378,7 +377,7 @@ class driver(object):
 
         # gather stats
         out.update(calc.pullStats(pulls=pulls,
-                                  nParams=len(common.floatingVars(self.wspace)),
+                                  nParams=len(workspace.floatingVars(self.wspace)),
                                   ),
                    )
 
@@ -396,5 +395,5 @@ class driver(object):
 
     def qcdPlot(self):
         plotting.errorsPlot(self.wspace,
-                            utils.rooFitResults(common.pdf(self.wspace), self.data),
+                            utils.rooFitResults(workspace.pdf(self.wspace), self.data),
                             )

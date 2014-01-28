@@ -3,9 +3,10 @@ import copy
 import math
 import os
 
-import common
 import ensemble
+import workspace as common
 import utils
+
 import ROOT as r
 
 # compatibility
@@ -426,6 +427,7 @@ class validationPlotter(object) :
         if self.significance:
             self.significancePlots()
         self.rhoPlots()
+        #self.sigMcUncPlots()
         self.printPars()
         self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
@@ -846,6 +848,30 @@ class validationPlotter(object) :
         if "mumu" in self.lumi:
             otherVars.update({"var":"rhoMumuZ", "desc":"#rho_{#mu#muZ}"})
             self.plot(otherVars = [otherVars], **kargs)
+
+    def sigMcUncPlots(self):
+        if self.smOnly:
+            return
+
+        print "FIXME: had only."
+        for logY in [False, True]:
+            self.plot(fileName=["sigMcUncHad"]+(["logy"] if logY else []),
+                      obs={"var":"nEventsSigMcHad",
+                           "desc": "MC events selected (signal region, %s)" % self.selNote,
+                           #"color": r.kViolet,
+                           },
+                      otherVars=[{"var":"muEventsSigMcHad",
+                                  #"errorsFrom":"muEventsSigMcHad",
+                                  "type":"var",
+                                  "desc":"mean (fitted) MC events selected",
+                                  "color":self.sig,
+                                  "style":1,
+                                  "width":self.width1,
+                                  "stack":"total"}],
+                      logY=logY,
+                      stampParams=True,
+                      )
+
 
     def printPars(self) :
         def ini(x, y) :
