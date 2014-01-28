@@ -144,6 +144,7 @@ def expectedLimitPlots(quantiles = {}, hist = None, obsLimit = None, note = "", 
 
 def pValuePlots(pValue = None, observed = None, pseudo = None, note = "", plotsDir = "", stdout = False,
                 key = "", keyLatex = "") :
+    assert pValue.GetN()
     finalPValue = utils.ListFromTGraph(pValue)[-1]
     if stdout : print "pValue (TS = %s) = %g"%(key, finalPValue)
 
