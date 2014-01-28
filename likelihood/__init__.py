@@ -3,12 +3,10 @@ nb = "n_{b}^{#color[0]{b}}"
 nj = "n_{j}^{#color[0]{j}}"
 
 
-def spec(name="", whiteList=[], separateSystObs=True, ignoreHad=False):
+def spec(name="", **kargs):
     exec("from likelihood import l%s" % name)
     llk = eval("l%s.l%s" % (name, name))
-    return llk(whiteList=whiteList,
-               separateSystObs=separateSystObs,
-               ignoreHad=ignoreHad)
+    return llk(**kargs)
 
 
 class selection(object):
