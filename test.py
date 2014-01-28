@@ -26,7 +26,7 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
+def go(llk="", whiteList=[], ignoreHad=False, allCategories=[],
        bestFit=False, interval=False, ensemble=False, ensembleReuse=False):
 
     examples_paper = {("0b_le3j",): t2.a,
@@ -40,7 +40,7 @@ def go(whiteList=[], llk="", allCategories=[], ignoreHad=False, sigMcUnc=False,
                       ("ge4b_ge4j",): two.t1tttt,
                       }
 
-    examples_t2cc = {("0b_le3j",): t2cc.far10,
+    examples_t2cc = {("0b_le3j",): t2cc.testMcUnc1,
                      ("0b_ge4j",): t2cc.far10,
                      ("1b_le3j",): t2cc.far10,
                      ("1b_ge4j",): t2cc.far10,
@@ -159,7 +159,6 @@ else:
     for iSel, sel in enumerate(selections):
         args = {"whiteList": [sel.name],
                 "allCategories": sorted([x.name for x in selections]),
-                "sigMcUnc": False,
                 }
         args.update(kargs)
         dct = go(**args)
