@@ -257,8 +257,10 @@ def ensembleSplit2(dct, group = "had") :
         if sample[:len(group)]!=group : continue
         out[" ".join([nB,nJ])] += [(iBin, latex)]
 
-    for key in out.keys() :
-        out[key] = map(lambda x:x[1],sorted(out[key]))
+    for key in out.keys() :    
+        outSorted = sorted(out[key], key=lambda x:int(x[0]))
+        out[key] = map(lambda x:x[1], outSorted)
+
     return out
 
 def ensembleRow( data, indices, d ) :
@@ -407,7 +409,13 @@ def write(doc, fileName = "") :
     f.write(doc)
     f.close()
     dir = "/".join(fileName.split("/")[:-1])
-    cmd = "cd %s; pdflatex ./%s"%(dir, fileName.replace(dir,""))
+    fileName = fileName.replace(dir,"")
+    if dir == "":
+        dir = "."
+    cmd = "cd %s; pdflatex ./%s; rm ./%s ./%s"%(dir,
+                                            fileName,
+                                            fileName.replace("tex","log"),
+                                            fileName.replace("tex","aux"))
     if quiet : cmd += " >& /dev/null"
     os.system(cmd)
 

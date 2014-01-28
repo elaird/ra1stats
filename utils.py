@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import traceback
+import re
 from multiprocessing import Process, JoinableQueue
 import ROOT as r
 
@@ -433,3 +434,6 @@ def cyclePlot(d = {}, f = None, args = {}, optStat = 1110, canvas = None, fileNa
     if optStat!=None : r.gStyle.SetOptStat(oldOptStat)
     return
 ##############################
+def naturalSortKey(s):
+        return tuple(int(part) if re.match(r'[0-9]+$', part) else part
+                     for part in re.split(r'([0-9]+)', s))

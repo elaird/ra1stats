@@ -225,6 +225,10 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
     ensemble.latex(quantiles = fQuantiles, bestDict = obs["funcBestFit"],
                    stdout = stdout, selections = selections, note = note, nToys = nToys)
 
+    #hadB -> nHad for datacard
+    ensemble.hadBFromFit(quantiles = fQuantiles, bestDict = obs["funcBestFit"],
+                   stdout = stdout, selections = selections, note = note, nToys = nToys)
+    
     #ensemble plots
     canvas = utils.numberedCanvas()
     fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)

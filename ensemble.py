@@ -124,6 +124,28 @@ def latex(quantiles = {}, bestDict = {}, stdout = False, selections = [], note =
     ensembleResultsBySample(src, [ x.data for x in selections ],
                             fileName = rootFile.replace(".root","_bySample.tex"))
 
+def hadBFromFit(quantiles = {}, bestDict = {}, stdout = False, selections = [], note = "", nToys = None) :
+    nHad = []
+    ss = selections[0].name + "\n"
+    ss += "\"nHad\"               :   ( "
+    for key,q in sorted(quantiles.iteritems(), key=lambda t: utils.naturalSortKey(t[0])):
+        if "hadB" not in key : continue
+        best = bestDict[key]
+        digits = 0
+        if best > 0.0:
+            digits = int(math.log10(best))+1
+        if 4 - digits > 0 :
+            hadB = round(best, 4-digits)
+        elif digits > 4:
+            hadB = str(round(best)/(10**(digits-1))) + "e+0%i"%(digits-1)
+        else :
+            hadB = int(best)
+        ss += str(hadB) + ", "
+    ss += ") ,\n"
+    f = open("nHad_%s.txt" % selections[0].name, "w")
+    f.write(ss)
+    f.close()
+
 def rootFileName(note = "", nToys = None) :
     return "ra1r/ensemble/ensemble_%s_%dtoys.root"%(note, nToys)
 
