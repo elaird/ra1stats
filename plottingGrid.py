@@ -1,4 +1,6 @@
-import configuration as conf
+import configuration.directories
+import configuration.limit
+import configuration.signal
 import histogramProcessing as hp
 import likelihood
 import patches
@@ -44,7 +46,7 @@ def printOnce(model=None, canvas=None, fileName="", alsoC=False, factor=0.6, ali
         latex = r.TLatex()
         latex.SetNDC()
         latex.SetTextAlign(align)
-        stamp = conf.signal.processStamp(model.name)
+        stamp = configuration.signal.processStamp(model.name)
         latex.SetTextSize(factor*latex.GetTextSize())
         if stamp:
             latex.DrawLatex(stamp['xpos'], stamp['ypos'], stamp['text'])
@@ -208,7 +210,7 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
 
             graph = rxs.excludedGraph(h,
                                       info=info,
-                                      whiteList=conf.signal.whiteListOfPoints(model.name),
+                                      whiteList=configuration.signal.whiteListOfPoints(model.name),
                                       **kargs)
 
             simpleHisto = rxs.exclHisto(h,
@@ -240,15 +242,15 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
 
 
 def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=None, shiftY=None, info=None):
-    assert len(conf.limit.CL()) == 1
-    cl = conf.limit.CL()[0]
+    assert len(configuration.limit.CL()) == 1
+    cl = configuration.limit.CL()[0]
 
     items = [("ExpectedUpperLimit", "expected upper limit"),
              ("ExpectedUpperLimit_-1_Sigma", "title"),
              ("ExpectedUpperLimit_+1_Sigma", "title")]
 
     if not expectedMapsOnly:
-        items = [("UpperLimit" if conf.limit.method() == "CLs" else "upperLimit95", "upper limit")] + items
+        items = [("UpperLimit" if configuration.limit.method() == "CLs" else "upperLimit95", "upper limit")] + items
 
     histos = {}
     for name, pretty in items:
@@ -273,7 +275,7 @@ def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=No
                              info=info)
 
         zTitle = "%g%% CL %s on  #sigma (pb)" % (100.0*cl, pretty)
-        adjustHisto(h, title=";".join([conf.signal.histoTitle(model=model.name), zTitle]))
+        adjustHisto(h, title=";".join([configuration.signal.histoTitle(model=model.name), zTitle]))
 
         if info:
             hp.printHoles(h)
@@ -306,9 +308,9 @@ def outFileName(model=None, tag="", simple=False):
     if simple:
         base = model.name+".root"
     else:
-        base = conf.limit.mergedFile(model=model).split("/")[-1]
+        base = configuration.limit.mergedFile(model=model).split("/")[-1]
 
-    root = conf.directories.plot()+"/"+base.replace(".root", "_%s.root" % tag)
+    root = configuration.directories.plot()+"/"+base.replace(".root", "_%s.root" % tag)
     return {"root": root,
             "eps": root.replace(".root", ".eps"),
             "pdf": root.replace(".root", ".pdf"),
@@ -325,7 +327,7 @@ def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simp
 
     histos = upperLimitHistos(model=model,
                               expectedMapsOnly=expectedMapsOnly,
-                              inFileName=conf.limit.mergedFile(model=model),
+                              inFileName=configuration.limit.mergedFile(model=model),
                               shiftX=shiftX,
                               shiftY=shiftY,
                               info=info)
@@ -454,8 +456,8 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
 
     canvas = squareCanvas()
 
-    if conf.limit.method() == "CLs":
-        if conf.limit.binaryExclusion():
+    if configuration.limit.method() == "CLs":
+        if configuration.limit.binaryExclusion():
             # FIXME: handle expected
             print "ERROR: handle expected"
             hName = "excluded_CLs_95"
@@ -547,7 +549,7 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
         epsFile = epsFile.replace(".eps", "_noRef.eps")
 
     if diagonalLine:
-        ranges = conf.signal.ranges(model.name)
+        ranges = configuration.signal.ranges(model.name)
         yx = r.TF1("yx", "x", ranges["xRange"][0], ranges["xMaxDiag"])
         yx.SetLineColor(1)
         yx.SetLineStyle(3)
@@ -710,7 +712,7 @@ def efficiencyHistos(model=None,
                              )
 
         zTitle = "A #times #epsilon"
-        adjustHisto(h, title=";".join([conf.signal.histoTitle(model=model.name), zTitle]))
+        adjustHisto(h, title=";".join([configuration.signal.histoTitle(model=model.name), zTitle]))
         rename(h)
         out[key] = h
 
@@ -778,7 +780,7 @@ def makeEfficiencyPdfSum(model=None, rootFileName="", key=""):
     h.Draw("colz")
     hp.setRange("effZRange", model, h, "Z")
 
-    coords = conf.signal.processStamp(model.name)
+    coords = configuration.signal.processStamp(model.name)
 
     factor = 0.6
     s3 = stamp(text=legendTitle(model),
@@ -828,7 +830,7 @@ def printLumis():
 
     text.DrawText(x, y,   "sample     lumi (/pb)")
     text.DrawText(x, y-s, "---------------------")
-    inputData = conf.data()
+    inputData = configuration.data()
     i = 1
     d = inputData.lumi()
     for key in sorted(d.keys()):
@@ -839,7 +841,7 @@ def printLumis():
 
 
 def drawBenchmarks(model=None):
-    parameters = conf.signal.scanParameters()
+    parameters = configuration.signal.scanParameters()
     if not (model in parameters):
         return
 
@@ -847,7 +849,7 @@ def drawBenchmarks(model=None):
 
     text = r.TText()
     out = []
-    for label, coords in conf.signal.benchmarkPoints().iteritems():
+    for label, coords in configuration.signal.benchmarkPoints().iteritems():
         drawIt = True
         for key, value in coords.iteritems():
             if key in params and value != params[key]:
@@ -867,7 +869,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
     if "upper" in name:
         hp.printHoles(h2)
     h2.SetStats(False)
-    h2.SetTitle("%s%s" % (name, conf.signal.histoTitle(model=model.name)))
+    h2.SetTitle("%s%s" % (name, configuration.signal.histoTitle(model=model.name)))
     h2.Draw("colz")
     if not h2.Integral():
         suppressed.append(name)
@@ -913,7 +915,7 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
             den = utils.threeToTwo(f.Get(denName))
             num.Divide(den)
             num.SetStats(False)
-            num.SetTitle("%s/%s%s;" % (name, denName, conf.signal.histoTitle(model=model.name)))
+            num.SetTitle("%s/%s%s;" % (name, denName, configuration.signal.histoTitle(model=model.name)))
             num.Draw("colz")
             if not num.Integral():
                 continue
@@ -945,7 +947,7 @@ def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackLi
                outputRootFile=False, modify=False, square=False):
     assert tag
 
-    inFile = conf.limit.mergedFile(model=model)
+    inFile = configuration.limit.mergedFile(model=model)
     f = r.TFile(inFile)
     r.gROOT.cd()
 
@@ -1031,7 +1033,7 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
     if whiteList:
         assert len(whiteList) == divide[0]*divide[1], "%d != %d" % (len(whiteList), divide[0]*divide[1])
 
-    histos = allHistos(fileName=conf.limit.mergedFile(model=model), collapse=True)
+    histos = allHistos(fileName=configuration.limit.mergedFile(model=model), collapse=True)
     master = histos.get(name(masterKey))
     assert master, "%s not found.  Available keys: %s" % (masterKey, str(histos.keys()))
 
@@ -1115,7 +1117,7 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
 
 
 def makePlots(square=False):
-    for model in conf.signal.models():
+    for model in configuration.signal.models():
         multiPlots(model=model,
                    tag="validation",
                    first=["excluded", "upperLimit", "CLs", "CLb", "xs"],
@@ -1151,8 +1153,8 @@ def makePlots(square=False):
         #           modify=True,
         #           square=square)
 
-        if model.isSms and conf.limit.method() == "CLs":
-            for cl in conf.limit.CL():
+        if model.isSms and configuration.limit.method() == "CLs":
+            for cl in configuration.limit.CL():
                 clsValidation(model=model,
                               tag="clsValidation",
                               cl=cl,
