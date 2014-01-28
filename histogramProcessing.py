@@ -1,4 +1,5 @@
-import configuration as conf
+import configuration.limit
+import configuration.signal
 import likelihood
 import patches
 import utils
@@ -35,7 +36,7 @@ def oneHisto(file="", dir="", name=""):
 
 def setRange(var, model, histo, axisString):
 
-    ranges = conf.signal.ranges(model.name)
+    ranges = configuration.signal.ranges(model.name)
     if var not in ranges:
         return
     nums = ranges[var]
@@ -139,7 +140,7 @@ def killPoints(h, cutFunc=None, interBin=""):
 
 ##signal-related histograms
 def xsHisto(model=None):
-    if conf.limit.binaryExclusion():
+    if configuration.limit.binaryExclusion():
         cmssmProcess = "" if model.isSms else "total"
         return xsHistoPhysical(model=model, cmssmProcess=cmssmProcess)
     else:
@@ -150,13 +151,13 @@ def xsHisto(model=None):
 def xsHistoPhysical(model=None, cmssmProcess=""):
     #get example histo and reset
     dummyHisto = model.weightedHistName
-    s = conf.signal.effHistoSpec(model=model, box="had")
+    s = configuration.signal.effHistoSpec(model=model, box="had")
     out = ratio(s["file"],
                 s["beforeDir"], dummyHisto,
                 s["beforeDir"], dummyHisto)
     out.Reset()
 
-    spec = conf.signal.xsHistoSpec(model=model, cmssmProcess=cmssmProcess)
+    spec = configuration.signal.xsHistoSpec(model=model, cmssmProcess=cmssmProcess)
 
     h = oneHisto(spec["file"], "/", spec["histo"])
     assert h.ClassName()[:2] == "TH", h.ClassName()
@@ -174,7 +175,7 @@ def xsHistoPhysical(model=None, cmssmProcess=""):
 
 
 def xsHistoAllOne(model=None, cutFunc=None):
-    spec = conf.signal.effHistoSpec(model=model, **model.exampleKargs)
+    spec = configuration.signal.effHistoSpec(model=model, **model.exampleKargs)
     h = smsEffHisto(spec=spec, model=model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
         content = 1.0
@@ -185,14 +186,14 @@ def xsHistoAllOne(model=None, cutFunc=None):
 
 
 def sumWeightInHisto(model=None):
-    s = conf.signal.effHistoSpec(model=model, box="had")
+    s = configuration.signal.effHistoSpec(model=model, box="had")
     return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
 
 
 def effHisto(model=None, box="",
              htLower=None, htUpper=None,
              bJets="", jets=""):
-    spec = conf.signal.effHistoSpec(model=model,
+    spec = configuration.signal.effHistoSpec(model=model,
                                     box=box,
                                     htLower=htLower,
                                     htUpper=htUpper,
@@ -207,7 +208,7 @@ def effHisto(model=None, box="",
 def meanWeightSigMc(model=None, box="",
                     htLower=None, htUpper=None,
                     bJets="", jets=""):
-    spec = conf.signal.effHistoSpec(model=model,
+    spec = configuration.signal.effHistoSpec(model=model,
                                     box=box,
                                     htLower=htLower,
                                     htUpper=htUpper,
@@ -222,7 +223,7 @@ def meanWeightSigMc(model=None, box="",
 def nEventsSigMc(model=None, box="",
                  htLower=None, htUpper=None,
                  bJets="", jets=""):
-    spec = conf.signal.effHistoSpec(model=model,
+    spec = configuration.signal.effHistoSpec(model=model,
                                     box=box,
                                     htLower=htLower,
                                     htUpper=htUpper,
@@ -237,7 +238,7 @@ def cmssmEffHisto(spec={}, model=None):
 
     # FIXME: Implement some check of the agreement
     # in sets of processes between yield file and xs file
-    for proc in conf.signal.processes():
+    for proc in configuration.signal.processes():
         # efficiency of a process
         h = ratio(spec["file"],
                   spec["afterDir"], "m0_m12_%s" % proc,
@@ -300,11 +301,11 @@ def effHistos(model=None, allCategories=False):
 ##signal point selection
 def points():
     out = []
-    multiples = conf.limit.multiplesInGeV()
+    multiples = configuration.limit.multiplesInGeV()
 
-    for model in conf.signal.models():
+    for model in configuration.signal.models():
         name = model.name
-        whiteList = conf.signal.whiteListOfPoints(name)
+        whiteList = configuration.signal.whiteListOfPoints(name)
         h = sumWeightInHisto(model)
         bins = utils.bins(h, interBin=model.interBin)
         for iBinX, x, iBinY, y, iBinZ, z in bins:
