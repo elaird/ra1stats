@@ -19,6 +19,7 @@ source env.sh
 3. Run it:
 ```bash
 ./stats.py --help
+./test.py --help
 ```
 
 ## Brief Description
