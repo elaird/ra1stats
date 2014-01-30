@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import configuration as conf
+import configuration.signal
 import plottingGrid as pg
 
-for model in conf.signal.models():
+for model in configuration.signal.models():
     interBinOut = "Center"
     pg.makeXsUpperLimitPlots(model=model,
                              logZ=True,

@@ -31,9 +31,9 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     out = []
     if skip : return out,""
 
-    logDir = conf.directories.log()
+    logDir = configuration.directories.log()
 
-    nJobsMax = conf.batch.nJobsMax()
+    nJobsMax = configuration.batch.nJobsMax()
     iStart = offset*nJobsMax
     iFinish = min(iStart+nJobsMax, nSlices) if nJobsMax > 0 else nSlices
     if (iFinish!=nSlices) or offset :
@@ -44,7 +44,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
     #assert iStart<iFinish,warning
     for iSlice in range(iStart, iFinish) :
-        argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:conf.batch.envScript(),
+        argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:configuration.batch.envScript(),
                    3:"%s/%s/job_%d.log"%(pwd, logDir, iSlice) if options.output else "/dev/null"}
         keyslice = 1 if ignoreScript else 0
         args = [argDict[key] for key in sorted(argDict.keys())[keyslice:]]
@@ -61,7 +61,7 @@ def pjobCmds(queue=None) :
     points = histogramProcessing.points()
     n_points = len(points)
 
-    njm = conf.batch.nJobsMax()
+    njm = configuration.batch.nJobsMax()
     pickling.writeSignalFiles(points, outFilesAlso = False)
 
     pos = 0
@@ -72,7 +72,7 @@ def pjobCmds(queue=None) :
         out[q_name] = {"args": [],
                        "n_points": num_points,
                        }
-        filename = "{dir}/{host}_{queue}_{pid}.points".format(dir=conf.directories.points(),
+        filename = "{dir}/{host}_{queue}_{pid}.points".format(dir=configuration.directories.points(),
                                                               host=host,
                                                               queue=q_name,
                                                               pid=pid)
@@ -86,7 +86,7 @@ def pjobCmds(queue=None) :
             iFinish-=1
 
         for i in range(iStart, iFinish) :
-            argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:conf.batch.envScript(),
+            argDict = {0:"%s/pjob.sh"%pwd, 1:pwd, 2:configuration.batch.envScript(),
                        3:"/dev/null" }
             args = [argDict[key] for key in sorted(argDict.keys())]
             out[q_name]["args"].append("%s %s" %(" ".join(args),filename))
@@ -101,7 +101,7 @@ def pointsToFile( filename, points ) :
     file.close()
 
 def getQueueRanges( npoints, queue=None ) :
-    qData = conf.batch.qData()
+    qData = configuration.batch.qData()
     from math import ceil
     if queue is not None and queue in qData.keys():
         # allow override for running on a single queue
@@ -121,7 +121,7 @@ def getQueueRanges( npoints, queue=None ) :
 ############################################
 def pbatch(queue=None, debug=False) :
     queue_job_details, n_points = pjobCmds(queue)
-    n_jobs_max = conf.batch.nJobsMax()
+    n_jobs_max = configuration.batch.nJobsMax()
 
     subCmds = []
     for q_name, details in queue_job_details.iteritems():
@@ -130,7 +130,7 @@ def pbatch(queue=None, debug=False) :
             #continue
             start = i*n_jobs_max + 1
             end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
-            base_cmd = conf.batch.subCmdFormat() % q_name
+            base_cmd = configuration.batch.subCmdFormat() % q_name
             cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
                                                               start=start, end=end,
                                                               args=args)
@@ -143,14 +143,14 @@ def pbatch(queue=None, debug=False) :
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip,
-            ignoreScript = (conf.batchHost=="FNAL"))
+            ignoreScript = (configuration.batchHost=="FNAL"))
     subCmds = []
     star = False
     dstar = False
-    if conf.batchHost == "IC" :
-        subCmds = ["%s %s"%(conf.batch.subCmd(), jobCmd) for jobCmd in jcs]
+    if configuration.batchHost == "IC" :
+        subCmds = ["%s %s"%(configuration.batch.subCmd(), jobCmd) for jobCmd in jcs]
         qFunc = os.system
-    elif conf.batchHost == "FNAL" :
+    elif configuration.batchHost == "FNAL" :
         dstar = True
         # replaces os.system in the below example
         from condor import submitBatchJob
@@ -158,7 +158,7 @@ def batch(nSlices = None, offset = None, skip = False) :
         subCmds = [ {
                         "jobCmd": "./job.sh %s" % (jc),
                         "indexDict": { "dir": "condor_batch", "ind": i },
-                        "subScript": conf.getSubCmds(),
+                        "subScript": conf.getSubCmds(),  # FIXME
                         "jobScript": "job.sh",
                         "condorTemplate": "condor/fnal_cmsTemplate.condor",
                         "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
@@ -172,14 +172,15 @@ def local(nWorkers = None, skip = False) :
     utils.operateOnListUsingQueue(nWorkers, utils.qWorker(os.system, star = False), jcs)
 ############################################
 def mkdirs():
-    module = conf.directories
+    module = configuration.directories
     for name in ["job", "log", "plot", "points"]:
         dirName = getattr(module, name)()
         utils.mkdir(dirName)
 ############################################
 options = opts()
 
-import configuration as conf
+import configuration.batch
+import configuration.directories
 import cpp
 import histogramProcessing
 import pickling

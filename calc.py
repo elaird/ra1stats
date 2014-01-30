@@ -2,7 +2,7 @@ import array
 import math
 import string
 
-import configuration as conf
+from configuration import directories
 import cpp
 import plotting
 import workspace as common
@@ -43,7 +43,7 @@ def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots 
         canvas = r.TCanvas()
         canvas.SetTickx()
         canvas.SetTicky()
-        psFile = "%s/intervalPlot_%s_%g.pdf"%(conf.directories.plot(),
+        psFile = "%s/intervalPlot_%s_%g.pdf"%(directories.plot(),
                                               note, 100*cl)
         plot = r.RooStats.LikelihoodIntervalPlot(lInt)
         plot.Draw(); print
@@ -365,7 +365,7 @@ def profilePlots(dataset, modelconfig, note) :
     canvas = r.TCanvas()
     canvas.SetTickx()
     canvas.SetTicky()
-    psFile = "%s/profilePlots_%s.pdf" % (conf.directories.plot(), note)
+    psFile = "%s/profilePlots_%s.pdf" % (directories.plot(), note)
     canvas.Print(psFile+"[")
 
     plots = r.RooStats.ProfileInspector().GetListOfProfilePlots(dataset, modelconfig); print

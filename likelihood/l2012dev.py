@@ -21,7 +21,7 @@ class l2012dev(likelihood.base):
             print "WARNING: QCD test"
             self._constrainQcdSlope = False
             self._legendTitle += "[NO MHT/MET CUT]"
-            from inputData.data2012 import take15a as module
+            from inputData.data2012hcp import take15a as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :

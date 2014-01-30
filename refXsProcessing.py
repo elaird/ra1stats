@@ -1,4 +1,4 @@
-import configuration
+import configuration.signal
 import ROOT as r
 
 

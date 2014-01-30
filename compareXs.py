@@ -2,7 +2,7 @@
 
 import os
 
-import configuration
+import configuration.signal
 import histogramProcessing as hp
 import utils
 

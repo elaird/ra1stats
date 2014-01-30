@@ -1,7 +1,9 @@
 import os
 import utils
 
-import configuration as conf
+import configuration.directories
+import configuration.limit
+import configuration.signal
 import histogramProcessing as hp
 from inputData import rootToTxt
 import signals
@@ -47,11 +49,11 @@ def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
 def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
     
-    for model in conf.signal.models():
+    for model in configuration.signal.models():
         args[model.name] = {"eff": hp.effHistos(model),
                             "xs": hp.xsHisto(model),
                             "sumWeightIn": hp.sumWeightInHisto(model),
-                            "effUncRel": conf.signal.effUncRel(model.name),
+                            "effUncRel": configuration.signal.effUncRel(model.name),
                             "sigMcUnc": model.sigMcUnc,
                             }
         toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
@@ -61,7 +63,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
     for point in points:
         name = point[0]
         signal = signalModel(modelName=name, point3=point[1:], **args[name])
-        stem = conf.directories.pickledFileName(*point)
+        stem = configuration.directories.pickledFileName(*point)
         utils.writeNumbers(fileName=stem+".in", d=signal)
         if not outFilesAlso:
             continue
@@ -83,7 +85,7 @@ def mergePickledFiles(printExamples=False):
     histos = {}
     zTitles = {}
 
-    for model in conf.signal.models():
+    for model in configuration.signal.models():
         name = model.name
         examples[name] = hp.xsHisto(model)
         histos[name] = {}
@@ -101,7 +103,7 @@ def mergePickledFiles(printExamples=False):
                                 ])
 
     for name, iX, iY, iZ in hp.points():
-        fileName = conf.directories.pickledFileName(name, iX, iY, iZ)+".out"
+        fileName = configuration.directories.pickledFileName(name, iX, iY, iZ)+".out"
         if not os.path.exists(fileName):
             print "skipping file", fileName
             continue
@@ -116,8 +118,8 @@ def mergePickledFiles(printExamples=False):
         os.remove(fileName)
         os.remove(fileName.replace(".out", ".in"))
 
-    for model in conf.signal.models():
-        f = r.TFile(conf.limit.mergedFile(model=model), "RECREATE")
+    for model in configuration.signal.models():
+        f = r.TFile(configuration.limit.mergedFile(model=model), "RECREATE")
         for key, histo in histos[model.name].iteritems():
             histo.GetZaxis().SetTitle(zTitles[model.name][key])
             histo.Write()
