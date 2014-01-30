@@ -106,7 +106,7 @@ class base(object):
     def add(self, sel=[]):
         if self._ignoreHad:
             for s in sel:
-                del s.boxes["had"]
+                s.boxes.remove("had")
         self._selections += sel
 
     def _fill(self):

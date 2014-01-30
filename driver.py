@@ -298,6 +298,7 @@ class driver(object):
         return args
 
     def ensemble(self, nToys = 200, stdout = False, reuseResults = False) :
+        assert nToys
         args = {"note":self.note(), "nToys":nToys}
         if not reuseResults :
             ensemble.writeHistosAndGraphs(self.wspace, self.data, **args)
