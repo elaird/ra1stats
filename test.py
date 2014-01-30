@@ -14,9 +14,22 @@ def opts():
 
     parser.add_option("--nToys",
                       dest="nToys",
-                      default=0,
+                      default=300,
                       metavar="N",
                       help="number of pseudo-experiments to generate/use")
+
+    parser.add_option("--genBands",
+                      dest="genBands",
+                      default=False,
+                      action="store_true",
+                      help=r'''generate an ensemble of pseudo-data
+                      (used for uncertainty bands)''')
+
+    parser.add_option("--plotBands",
+                      dest="plotBands",
+                      default=False,
+                      action="store_true",
+                      help="plot results of a previous --genBands")
 
     parser.add_option("--simultaneous",
                       dest="simultaneous",
@@ -41,23 +54,13 @@ def opts():
                       action="store_true",
                       help="scan nll vs. likelihood/__init__.py:poi()")
 
-    parser.add_option("--ensemble",
-                      dest="ensemble",
-                      default=False,
-                      action="store_true",
-                      help="generate an ensemble of pseudo-data")
-
-    parser.add_option("--reuse",
-                      dest="reuse",
-                      default=False,
-                      action="store_true",
-                      help="reuse results of a previous --ensemble")
     options, _ = parser.parse_args()
 
     options.nToys = int(options.nToys)
-    options.bestFit = not options.interval
-    if options.ensemble:
+    if options.genBands:
         assert options.nToys
+    assert not (options.interval and options.genBands)
+    options.bestFit = not (options.interval or options.genBands)
     return options
 
 
@@ -111,7 +114,7 @@ def signalArgs(whiteList=[], options=None):
              }
     if options.interval:
         kargs["signalToTest"] = signal
-    elif options.bestFit or options.ensemble:
+    elif options.bestFit or options.genBands:
         kargs["signalExampleToStack"] = None  # signal
     return kargs
 
@@ -137,17 +140,17 @@ def go(selections=[], options=None, hMap=None, report=None):
         f = driver.driver(llkName=options.llk,
                           whiteList=whiteList,
                           ignoreHad=options.ignoreHad,
-                          separateSystObs=not options.ensemble,
+                          separateSystObs=not options.genBands,
                           #trace=True
                           #rhoSignalMin=0.1,
                           #fIniFactor=0.1,
                           **signalArgs(whiteList, options)
                           )
 
-        if options.ensemble:
+        if options.genBands:
             f.ensemble(nToys=options.nToys,
                        stdout=True,
-                       reuseResults=options.reuse)
+                       reuseResults=False)
 
         if options.interval:
             cl = 0.95 if f.likelihoodSpec.standardPoi() else 0.68
@@ -158,9 +161,10 @@ def go(selections=[], options=None, hMap=None, report=None):
             #f.profile()
 
         if options.bestFit:
+            errorsFromToys = options.nToys * bool(options.plotBands)
             dct = f.bestFit(drawMc=False,
                             drawComponents=False,
-                            errorsFromToys=options.nToys,
+                            errorsFromToys=errorsFromToys,
                             printPages=False,
                             drawRatios=False,
                             significance=options.ignoreHad,
