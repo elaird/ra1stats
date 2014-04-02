@@ -11,10 +11,10 @@ class l2012dev(likelihood.base):
         self._initialValuesFromMuonSample = True
         self._initialFZinvFromMc = True
         self._REwk = ""
-        self._RQcd = "FallingExp"
+        self._RQcd = "Zero"
         self._nFZinv = "All"
         self._legendTitle = "CMS Preliminary, 18.7 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012dev import take5_trig as module
+        from inputData.data2012dev import take12_blind_nHadFromFitWithTrigEff as module
 
         #QCD test
         if False :
