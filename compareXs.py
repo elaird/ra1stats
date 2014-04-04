@@ -295,7 +295,8 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
                "xmin%d" % int(xMin),
                "smooth%d" % nSmooth,
                ]
-    epsFile = "_".join((strName + ["dM%d" % int(dM)]) if dM else strname)+".eps"
+
+    epsFile = "plots/" + "_".join((strName + ["dM%d" % int(dM)]) if dM else strname)+".eps"
 
     if preliminary:
         epsFile = epsFile.replace(".eps", "_prelim.eps")
@@ -307,7 +308,7 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     os.system("ps2epsi "+epsFile+" "+epsiFile)
     os.system("epstopdf "+epsiFile)
     os.system("rm       "+epsiFile)
-#    os.system("rm       "+epsFile)
+    os.system("rm       "+epsFile)
 
 
 def setup():
@@ -318,15 +319,16 @@ def setup():
 
 def points():
     out = []
-    for mlsp, xMin in [(90, 100), (50, 300), (100, 300), (150, 350)][:1]:
+    for mlsp, xMin in [(90, 100), (20,100), (50, 300), (100, 300), (150, 350)][0:2]:
         for nSmooth in [0, 1, 2, 5][:1]:
             out.append({"yValue": mlsp,
                         "nSmooth": nSmooth,
-                        "xMin": xMin})
+                        "xMin": xMin,
+                        "dM" : xMin-mlsp})
     return out
 
 
-def onePoint(yValue=None, nSmooth=None, xMin=None):
+def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None):
     model = configuration.signal.scan(dataset='T2cc', com=8)  # FIXME: use interBin
     hSpec = configuration.signal.xsHistoSpec(model)
 
@@ -335,7 +337,8 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
                                 xsFileName=hSpec['file'],
                                 )
 
-    exclFileName = 'CLs_asymptotic_TS3_T2cc_2012dev_RQcdZero_fZinvAll_0b_le3j-1hx2p_0b_ge4j-1hx2p_1b_le3j-1hx2p.root'
+    exclFileName = 'CLs_asymptotic_T2cc_2012dev_0b_le3j_1b_le3j_0b_ge4j_1b_ge4j.root'
+
 
     exclHistos = exclusionHistos(limitFile='ra1r/scan/%s' % exclFileName, model=model)
 
@@ -347,7 +350,7 @@ def onePoint(yValue=None, nSmooth=None, xMin=None):
         'lumiStamp': 'L = 18.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
         'processStamp': configuration.signal.processStamp(model.name)['text'],
-        'dM': 10.0
+        'dM': dM
         }
 
     compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,

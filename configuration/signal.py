@@ -34,7 +34,7 @@ def models():
 
     new = {"weightedHistName": "m0_m12_mChi_weight",
            "unweightedHistName": "m0_m12_mChi_noweight",
-           "sigMcUnc": True,
+           "sigMcUnc": False,
            "exampleKargs": kargsNew,
            "com": 8,
            "llk": "2012dev"}
@@ -51,10 +51,14 @@ def models():
         # dev
         #scan(dataset="T2", had="v2_new_bin", whiteList=["0b_le3j"], xsFactors=[0.1, 0.8], **hcp),
         #scan(dataset="T2cc", had="v7_new_bin", whiteList=["0b_le3j"], **hcp),
-        #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], extraVars=["SITV"], **hcp),
-        #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], **hcp),
-        #scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], extraVars=["SITV"], whiteList=["0b_le3j"], **new),
-        scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], whiteList=["0b_le3j"], **new),
+        #scan(dataset="T2tt", had="v2", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["1b_le3j", "2b_le3j"], extraVars=["SITV"], **hcp),
+        #scan(dataset="T2tt", had="v2", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["1b_le3j", "2b_le3j"], **hcp),
+        #scan(dataset="T2cc", had="v9", aT={"200":"0.6","275":"0.55","325":"0.55"}, extraVars=["SITV"], whiteList=["0b_le3j"], **new),
+        #scan(dataset="T2cc", had="v9", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], **new),
+        #scan(dataset="T2cc", had="v10", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["0b_ge4j"],  extraVars=["SITV"], **new),
+        #scan(dataset="T2cc", had="v11", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
+        #scan(dataset="T2cc", had="v12", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
+        scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
@@ -73,7 +77,7 @@ def models():
         ]
 
 
-def whiteListOfPoints(model="", respect=True):
+def whiteListOfPoints(model="", respect=False):
     if not respect:
         return []
 
@@ -159,10 +163,20 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(" ".join(model.extraVars))
     if box == "had":
         if model.aT:
-            if htLower < 275.:
-                tags.append("AlphaT"+model.aT[1])
-            else:
-                tags.append("AlphaT"+model.aT[0])
+            if htLower:
+                tags.append("AlphaT"+model.aT[str(int(htLower) if htLower < 375. else 325 )])
+#            if len(model.aT) == 3:
+#                if htLower < 275.:
+#                    tags.append("AlphaT"+model.aT[1])
+#                elif htLower == 275. :
+#                    tags.append("AlphaT"+model.aT[2])
+#                else:
+#                    tags.append("AlphaT"+model.aT[0])
+#            else :
+#                if htLower < 275.:
+#                    tags.append("AlphaT"+model.aT[1])
+#                else:
+#                    tags.append("AlphaT"+model.aT[0])
         else:
             tags.append("AlphaT55")
     else:
@@ -188,7 +202,7 @@ def ranges(model):
          "T2":   (287.5, 1000),
          "T2tt": (300.0, 800.0),
          "T2bb": (287.5, 900.0),
-         "T2cc":   (87.5, 300.0),
+         "T2cc":   (87.5, 400.0),
          "T1bbbb": (287.5, 1400),
          "T1tttt": (387.5, 1400),
          "T1tttt_ichep": (375.0, 1200.0),
@@ -200,7 +214,7 @@ def ranges(model):
          "T2":      (0.0,  825),
          "T2tt":    (0.0,  600),
          "T2bb":    (0.0,  725),
-         "T2cc":    (0.0,  300),
+         "T2cc":    (0.0,  400),
          "T1bbbb":  (0.0, 1225),
          "T1tttt":  (0.0, 1050),
          "T1tttt_ichep":  (50.0, 800.0),
@@ -214,7 +228,7 @@ def ranges(model):
                 "T2":     550.0,
                 "T2tt":   400.0,
                 "T2bb":   500.0,
-                "T2cc":   300.0,
+                "T2cc":   400.0,
                 "T1bbbb": 800.0,
                 "T1tttt": 700.0,
                 }

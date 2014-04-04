@@ -10,7 +10,7 @@ class scan(object):
                  phot="",
                  mumu="",
                  interBin="LowEdge",
-                 aT=[],
+                 aT={},
                  extraVars=[],
                  weightedHistName="",
                  unweightedHistName="",
