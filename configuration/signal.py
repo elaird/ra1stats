@@ -51,13 +51,14 @@ def models():
         # dev
         #scan(dataset="T2", had="v2_new_bin", whiteList=["0b_le3j"], xsFactors=[0.1, 0.8], **hcp),
         #scan(dataset="T2cc", had="v7_new_bin", whiteList=["0b_le3j"], **hcp),
-        #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], extraVars=["SITV"], **hcp),
-        #scan(dataset="T2tt", had="v2", aT=["0.55", "0.6"], whiteList=["1b_le3j", "2b_le3j"], **hcp),
-        #scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], extraVars=["SITV"], whiteList=["0b_le3j"], **new),
-        #scan(dataset="T2cc", had="v9", aT=["0.55", "0.6"], whiteList=["0b_le3j","1b_le3j","0b_ge4j"], **new),
-        #scan(dataset="T2cc", had="v10", aT=["0.55", "0.6"], whiteList=["0b_ge4j"],  extraVars=["SITV"], **new),
-        #scan(dataset="T2cc", had="v11", aT=["0.55", "0.6", "0.58"], whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
-        scan(dataset="T2cc", had="v12", aT=["0.55", "0.6", "0.58"], whiteList=["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"], extraVars=["SITV"], **new),
+        #scan(dataset="T2tt", had="v2", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["1b_le3j", "2b_le3j"], extraVars=["SITV"], **hcp),
+        #scan(dataset="T2tt", had="v2", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["1b_le3j", "2b_le3j"], **hcp),
+        #scan(dataset="T2cc", had="v9", aT={"200":"0.6","275":"0.55","325":"0.55"}, extraVars=["SITV"], whiteList=["0b_le3j"], **new),
+        #scan(dataset="T2cc", had="v9", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], **new),
+        #scan(dataset="T2cc", had="v10", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["0b_ge4j"],  extraVars=["SITV"], **new),
+        #scan(dataset="T2cc", had="v11", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
+        #scan(dataset="T2cc", had="v12", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
+        scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
@@ -162,18 +163,20 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(" ".join(model.extraVars))
     if box == "had":
         if model.aT:
-            if len(model.aT) == 3:
-                if htLower < 275.:
-                    tags.append("AlphaT"+model.aT[1])
-                elif htLower == 275. :
-                    tags.append("AlphaT"+model.aT[2])
-                else:
-                    tags.append("AlphaT"+model.aT[0])
-            else :
-                if htLower < 275.:
-                    tags.append("AlphaT"+model.aT[1])
-                else:
-                    tags.append("AlphaT"+model.aT[0])
+            if htLower:
+                tags.append("AlphaT"+model.aT[str(int(htLower) if htLower < 375. else 325 )])
+#            if len(model.aT) == 3:
+#                if htLower < 275.:
+#                    tags.append("AlphaT"+model.aT[1])
+#                elif htLower == 275. :
+#                    tags.append("AlphaT"+model.aT[2])
+#                else:
+#                    tags.append("AlphaT"+model.aT[0])
+#            else :
+#                if htLower < 275.:
+#                    tags.append("AlphaT"+model.aT[1])
+#                else:
+#                    tags.append("AlphaT"+model.aT[0])
         else:
             tags.append("AlphaT55")
     else:
