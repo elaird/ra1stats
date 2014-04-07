@@ -190,6 +190,14 @@ def sumWeightInHisto(model=None):
     return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
 
 
+def systHisto(model=None, box="had", bJets="", jets=""):
+    s = configuration.signal.systHistoSpec(model=model,
+                                              box=box,
+                                              bJets=bJets,
+                                              jets=jets)
+    return oneHisto(s["file"], s["histDir"], s["systHistName"])
+
+
 def effHisto(model=None, box="",
              htLower=None, htUpper=None,
              bJets="", jets=""):
@@ -284,6 +292,18 @@ def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
     return d
 
 
+def perSelHisto(model=None, jets="", bJets=""):
+    for box in model.boxes():
+        itemFunc = {"effUncRel": systHisto}
+        for item, func in itemFunc.iteritems():
+            d = func(model=model,
+                          box=box,
+                          bJets=bJets,
+                          jets=jets,
+                          )
+    return d
+
+
 def effHistos(model=None, allCategories=False):
     out = {}
     for sel in likelihood.spec(name=model.llk).selections():
@@ -295,6 +315,17 @@ def effHistos(model=None, allCategories=False):
                                      htThresholds=htThresholds,
                                      jets=sel.jets,
                                      bJets=sel.bJets)
+    return out
+
+
+def systHistos(model=None, allCategories=False):
+    out = {}
+    for sel in likelihood.spec(name=model.llk).selections():
+        if (not allCategories) and (sel.name not in model.whiteList):
+            continue
+        out[sel.name] = perSelHisto(model=model,
+                                    jets=sel.jets,
+                                    bJets=sel.bJets)
     return out
 
 
