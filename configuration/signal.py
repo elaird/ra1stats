@@ -77,7 +77,7 @@ def models():
         ]
 
 
-def whiteListOfPoints(model="", respect=False):
+def whiteListOfPoints(model="", respect=True):
     if not respect:
         return []
 
@@ -165,18 +165,6 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         if model.aT:
             if htLower:
                 tags.append("AlphaT"+model.aT[str(int(htLower) if htLower < 375. else 325 )])
-#            if len(model.aT) == 3:
-#                if htLower < 275.:
-#                    tags.append("AlphaT"+model.aT[1])
-#                elif htLower == 275. :
-#                    tags.append("AlphaT"+model.aT[2])
-#                else:
-#                    tags.append("AlphaT"+model.aT[0])
-#            else :
-#                if htLower < 275.:
-#                    tags.append("AlphaT"+model.aT[1])
-#                else:
-#                    tags.append("AlphaT"+model.aT[0])
         else:
             tags.append("AlphaT55")
     else:
@@ -196,6 +184,23 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "weightedHistName": model.weightedHistName,
             "unweightedHistName": model.unweightedHistName}
 
+def systHistoSpec(model=None, box=None,
+                 bJets=None, jets=None):
+    assert box in ["had", "muon"], box
+
+    if model.isSms:
+        subDirs = [directories.eff(), "sms_%d" % model.com]
+    fileName = ("_").join([model.name,"systematics.root"])
+    tags = [model.name]
+    if bJets:
+        tags.append(bJets)
+    if jets:
+        tags.append(jets)
+
+    fileFields = [model.name, box, getattr(model, "_"+box), fileName]
+    return {"histDir": "",
+            "file": "/".join(subDirs + fileFields),
+            "systHistName":("_").join(tags+["incl"]*2)}
 
 def ranges(model):
     x = {"T1":   (287.5, 1400),  # (min, max)
