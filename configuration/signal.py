@@ -79,7 +79,7 @@ def models():
         ]
 
 
-def whiteListOfPoints(model="", respect=True):
+def whiteListOfPoints(model="", respect=False):
     if not respect:
         return []
 
