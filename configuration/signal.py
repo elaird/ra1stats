@@ -1,6 +1,7 @@
 import directories
 from signalScan import scan
 
+
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
@@ -60,7 +61,7 @@ def models():
         #scan(dataset="T2cc", had="v11", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v12", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         ##scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
-        scan(dataset="T2cc", had="v14", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
+        scan(dataset="T2cc", had="v14", aT={"200": "0.65", "275": "0.6", "325": "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"][:3], extraVars=["SITV"], **new),
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
@@ -166,7 +167,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     if box == "had":
         if model.aT:
             if htLower:
-                tags.append("AlphaT"+model.aT[str(int(htLower) if htLower < 375. else 325 )])
+                tags.append("AlphaT"+model.aT[str(int(htLower) if htLower < 375. else 325)])
         else:
             tags.append("AlphaT55")
     else:
@@ -186,8 +187,9 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "weightedHistName": model.weightedHistName,
             "unweightedHistName": model.unweightedHistName}
 
+
 def effUncRelHistoSpec(model=None, box=None,
-                 bJets=None, jets=None):
+                       bJets=None, jets=None):
     assert box in ["had", "muon"], box
 
     if model.isSms:
@@ -202,7 +204,8 @@ def effUncRelHistoSpec(model=None, box=None,
     fileFields = [model.name, box, getattr(model, "_"+box), fileName]
     return {"histDir": "",
             "file": "/".join(subDirs + fileFields),
-            "effUncRelHistName":("_").join(tags+["incl"])}
+            "effUncRelHistName": ("_").join(tags+["incl"])}
+
 
 def ranges(model):
     x = {"T1":   (287.5, 1400),  # (min, max)
