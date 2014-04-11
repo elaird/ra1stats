@@ -20,6 +20,7 @@ def histoList(histos={}):
             out.append(item)
     return out
 
+
 def histo(histos={}):
     out = []
     for key, value in histos.iteritems():
@@ -44,8 +45,10 @@ def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
         for box, histos in dct.iteritems():
             if not all([hasattr(item, "GetBinContent") for item in histos]):
                 continue
-            d["effUncRel"] = effUncRel if type(effUncRel) == float \
-                             else effUncRel[selName].GetBinContent(*point3)
+            if type(effUncRel) == float:
+                d["effUncRel"] = effUncRel
+            else:
+                d["effUncRel"] = effUncRel[selName].GetBinContent(*point3)
             d[box] = map(lambda x: x.GetBinContent(*point3), histos)
             if "eff" in box:
                 d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
@@ -56,12 +59,12 @@ def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
 
 def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
-    
+
     for model in configuration.signal.models():
         args[model.name] = {"eff": hp.effHistos(model),
                             "xs": hp.xsHisto(model),
                             "sumWeightIn": hp.sumWeightInHisto(model),
-                            "effUncRel": configuration.signal.effUncRel(model.name) \
+                            "effUncRel": configuration.signal.effUncRel(model.name)
                             if model.flatEffUncRel else hp.effUncRelHistos(model),
                             "sigMcUnc": model.sigMcUnc,
                             }
