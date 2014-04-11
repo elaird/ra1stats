@@ -190,12 +190,12 @@ def sumWeightInHisto(model=None):
     return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
 
 
-def systHisto(model=None, box="had", bJets="", jets=""):
-    s = configuration.signal.systHistoSpec(model=model,
+def effUncRelHisto(model=None, box="had", bJets="", jets=""):
+    s = configuration.signal.effUncRelHistoSpec(model=model,
                                               box=box,
                                               bJets=bJets,
                                               jets=jets)
-    return oneHisto(s["file"], s["histDir"], s["systHistName"])
+    return oneHisto(s["file"], s["histDir"], s["effUncRelHistName"])
 
 
 def effHisto(model=None, box="",
@@ -294,7 +294,7 @@ def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
 
 def perSelHisto(model=None, jets="", bJets=""):
     for box in model.boxes():
-        itemFunc = {"effUncRel": systHisto}
+        itemFunc = {"effUncRel": effUncRelHisto}
         for item, func in itemFunc.iteritems():
             d = func(model=model,
                           box=box,
@@ -318,7 +318,7 @@ def effHistos(model=None, allCategories=False):
     return out
 
 
-def systHistos(model=None, allCategories=False):
+def effUncRelHistos(model=None, allCategories=False):
     out = {}
     for sel in likelihood.spec(name=model.llk).selections():
         if (not allCategories) and (sel.name not in model.whiteList):
