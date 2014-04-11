@@ -1,11 +1,11 @@
 class point(object):
     def __init__(self, xs=None, sumWeightIn=None, label="",
-                 effUncRel=None, sigMcUnc=False,
+                 sigMcUnc=False,
                  lineColor=907, lineStyle=2,
                  x=None, y=None,
                  ):
 
-        for item in ["xs", "sumWeightIn", "label", "effUncRel", "sigMcUnc",
+        for item in ["xs", "sumWeightIn", "label", "sigMcUnc",
                      "lineColor", "lineStyle", "x", "y"]:
             if item not in ["x", "y", "sumWeightIn"]:
                 assert eval(item) != None, item
