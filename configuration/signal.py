@@ -35,6 +35,7 @@ def models():
     new = {"weightedHistName": "m0_m12_mChi_weight",
            "unweightedHistName": "m0_m12_mChi_noweight",
            "sigMcUnc": False,
+           "flatEffUncRel": False,
            "exampleKargs": kargsNew,
            "com": 8,
            "llk": "2012dev"}
@@ -58,7 +59,8 @@ def models():
         #scan(dataset="T2cc", had="v10", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["0b_ge4j"],  extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v11", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v12", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
-        scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
+        ##scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
+        scan(dataset="T2cc", had="v14", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
@@ -184,14 +186,14 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "weightedHistName": model.weightedHistName,
             "unweightedHistName": model.unweightedHistName}
 
-def systHistoSpec(model=None, box=None,
+def effUncRelHistoSpec(model=None, box=None,
                  bJets=None, jets=None):
     assert box in ["had", "muon"], box
 
     if model.isSms:
         subDirs = [directories.eff(), "sms_%d" % model.com]
-    fileName = ("_").join([model.name,"systematics.root"])
-    tags = [model.name]
+    fileName = "syst.root"
+    tags = ["total", model.name]
     if bJets:
         tags.append(bJets)
     if jets:
@@ -200,7 +202,7 @@ def systHistoSpec(model=None, box=None,
     fileFields = [model.name, box, getattr(model, "_"+box), fileName]
     return {"histDir": "",
             "file": "/".join(subDirs + fileFields),
-            "systHistName":("_").join(tags+["incl"]*2)}
+            "effUncRelHistName":("_").join(tags+["incl"])}
 
 def ranges(model):
     x = {"T1":   (287.5, 1400),  # (min, max)
