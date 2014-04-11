@@ -20,6 +20,7 @@ class scan(object):
                  whiteList=[],
                  exampleKargs={},
                  sigMcUnc=False,
+                 flatEffUncRel=True,
                  ):
 
         assert xsVariation in ["default", "up", "down"], xsVariation
@@ -30,6 +31,7 @@ class scan(object):
                      "weightedHistName", "unweightedHistName",
                      "minSumWeightIn", "maxSumWeightIn",
                      "llk", "whiteList", "exampleKargs", "sigMcUnc",
+                     "flatEffUncRel",
                      ]+self._boxNames:
             setattr(self, "_"+item, eval(item))
 
@@ -94,6 +96,10 @@ class scan(object):
     @property
     def sigMcUnc(self):
         return self._sigMcUnc
+
+    @property
+    def flatEffUncRel(self):
+        return self._flatEffUncRel
 
     def tags(self):
         out = [self.name]
