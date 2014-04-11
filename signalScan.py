@@ -35,7 +35,6 @@ class scan(object):
                      ]+self._boxNames:
             setattr(self, "_"+item, eval(item))
 
-
     @property
     def name(self):
         out = self._dataset
