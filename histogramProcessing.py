@@ -192,9 +192,9 @@ def sumWeightInHisto(model=None):
 
 def effUncRelHisto(model=None, box="had", bJets="", jets=""):
     s = configuration.signal.effUncRelHistoSpec(model=model,
-                                              box=box,
-                                              bJets=bJets,
-                                              jets=jets)
+                                                box=box,
+                                                bJets=bJets,
+                                                jets=jets)
     return oneHisto(s["file"], s["histDir"], s["effUncRelHistName"])
 
 
@@ -202,11 +202,11 @@ def effHisto(model=None, box="",
              htLower=None, htUpper=None,
              bJets="", jets=""):
     spec = configuration.signal.effHistoSpec(model=model,
-                                    box=box,
-                                    htLower=htLower,
-                                    htUpper=htUpper,
-                                    bJets=bJets,
-                                    jets=jets)
+                                             box=box,
+                                             htLower=htLower,
+                                             htUpper=htUpper,
+                                             bJets=bJets,
+                                             jets=jets)
     if model.isSms:
         return smsEffHisto(spec=spec, model=model)
     else:
@@ -217,11 +217,11 @@ def meanWeightSigMc(model=None, box="",
                     htLower=None, htUpper=None,
                     bJets="", jets=""):
     spec = configuration.signal.effHistoSpec(model=model,
-                                    box=box,
-                                    htLower=htLower,
-                                    htUpper=htUpper,
-                                    bJets=bJets,
-                                    jets=jets)
+                                             box=box,
+                                             htLower=htLower,
+                                             htUpper=htUpper,
+                                             bJets=bJets,
+                                             jets=jets)
     assert model.isSms
     return ratio(spec["file"],
                  spec["afterDir"], spec["weightedHistName"],
@@ -232,11 +232,11 @@ def nEventsSigMc(model=None, box="",
                  htLower=None, htUpper=None,
                  bJets="", jets=""):
     spec = configuration.signal.effHistoSpec(model=model,
-                                    box=box,
-                                    htLower=htLower,
-                                    htUpper=htUpper,
-                                    bJets=bJets,
-                                    jets=jets)
+                                             box=box,
+                                             htLower=htLower,
+                                             htUpper=htUpper,
+                                             bJets=bJets,
+                                             jets=jets)
     assert model.isSms
     return oneHisto(spec["file"], spec["afterDir"], spec["unweightedHistName"])
 
@@ -297,10 +297,10 @@ def perSelHisto(model=None, jets="", bJets=""):
         itemFunc = {"effUncRel": effUncRelHisto}
         for item, func in itemFunc.iteritems():
             d = func(model=model,
-                          box=box,
-                          bJets=bJets,
-                          jets=jets,
-                          )
+                     box=box,
+                     bJets=bJets,
+                     jets=jets,
+                     )
     return d
 
 
