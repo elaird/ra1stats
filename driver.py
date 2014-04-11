@@ -51,7 +51,6 @@ class driver(object):
             workspace.startLikelihood(w=self.wspace,
                                       xs=self.signalToTest.xs,
                                       sumWeightIn=self.signalToTest.sumWeightIn,
-                                      effUncRel=self.signalToTest.effUncRel,
                                       fIniFactor=fIniFactor,
                                       poi=self.likelihoodSpec.poi())
 
