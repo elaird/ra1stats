@@ -1114,7 +1114,7 @@ class validationPlotter(object) :
         box = spec["box"]
         l = self.lumi[box]
         xs = spec["example"].xs
-        eff = spec["example"][self.label].get(
+        eff = spec["example"].effs(self.label).get(
             "eff%s" % spec["box"].capitalize(),
             [0.0]*len(self.htBinLowerEdges))
         activeBins = self.activeBins["n%s" % spec["box"].capitalize()]
