@@ -54,13 +54,20 @@ def opts():
                       action="store_true",
                       help="scan nll vs. likelihood/__init__.py:poi()")
 
+    parser.add_option("--significances",
+                      dest="significances",
+                      default=False,
+                      action="store_true",
+                      help="print nll(poi=0) for each HT bin")
+
     options, _ = parser.parse_args()
 
     options.nToys = int(options.nToys)
     if options.genBands:
         assert options.nToys
-    assert not (options.interval and options.genBands)
-    options.bestFit = not (options.interval or options.genBands)
+    exclusive = [options.interval, options.genBands, options.significances]
+    assert exclusive.count(True) <= 1, exclusive
+    options.bestFit = not any(exclusive)
     return options
 
 
@@ -128,6 +135,70 @@ def hMapInit(nBins=0):
     return out
 
 
+def significances(whiteList=[], selName="", options=None):
+    assert len(whiteList) == 1, whiteList
+    ll = likelihood.spec(name=options.llk, whiteList=whiteList)
+    sel = ll.selections()[0]
+    nBins = len(sel.data.htBinLowerEdges())
+
+    for iBin in range(nBins):
+        if iBin:
+            continue
+        sigModel = signals.point(xs=1.0, sumWeightIn=1.0, x=0.0, y=0.0, effUncRel=0.01,
+                             label="foo")
+        effs = [0.0] * nBins
+        effs[iBin] = 0.5
+        sigModel.insert(selName, {"effHad": effs})
+
+        f = driver.driver(llkName=options.llk,
+                           whiteList=whiteList,
+                           ignoreHad=options.ignoreHad,
+                           separateSystObs=not options.genBands,
+                           signalToTest=sigModel,
+                           )
+
+        print f.interval(cl=0.95,
+                         method="profileLikelihood",
+                         makePlots=True,
+                         nIterationsMax=2,
+                         )
+
+
+#        print sb.interval(cl=0.95,
+#                          method="profileLikelihood",
+#                          makePlots=True,
+#                          )
+#        
+#        nllSb = sb.bestFit(earlyExit=True,
+#                           #msgThreshold=r.RooFit.DEBUG,
+#                           msgThreshold=r.RooFit.WARNING,
+#                           ).minNll()
+#
+#        smModel = signals.point(xs=1.0, sumWeightIn=1.0, x=0.0, y=0.0, effUncRel=0.01,
+#                             label="foo")
+#        smModel.insert(selName, {"effHad": [0.0] * nBins})
+#
+#
+#        b = driver.driver(llkName=options.llk,
+#                           whiteList=whiteList,
+#                           ignoreHad=options.ignoreHad,
+#                           separateSystObs=not options.genBands,
+#                           signalToTest=smModel,
+#                           )
+#
+#        print b.interval(cl=0.99,
+#                         method="profileLikelihood",
+#                         makePlots=True,
+#                         )
+#
+#        nllB = b.bestFit(earlyExit=True,
+#                         #msgThreshold=r.RooFit.DEBUG,
+#                         msgThreshold=r.RooFit.WARNING,
+#                         ).minNll()
+#
+#        print selName, iBin, nllSb, nllB
+
+
 def go(selections=[], options=None, hMap=None, report=None):
     nCategories = 0
     for iSel, sel in enumerate(selections):
@@ -136,6 +207,12 @@ def go(selections=[], options=None, hMap=None, report=None):
         nCategories += 1
 
         whiteList = [sel.name] if sel.name else []
+
+        if options.significances and sel:
+            significances(whiteList=whiteList,
+                          selName=sel.name,
+                          options=options)
+            continue
 
         f = driver.driver(llkName=options.llk,
                           whiteList=whiteList,
@@ -219,7 +296,9 @@ if __name__ == "__main__":
     import likelihood
     import plotting
     from signals import t2, two, t2cc
+    import signals
     import ROOT as r
+    r.gROOT.SetBatch(True)
 
     if options.simultaneous:
         selections = [""]
@@ -233,7 +312,9 @@ if __name__ == "__main__":
                      hMap=hMap,
                      report=report)
 
-    plotting.pValueCategoryPlots(hMap, )  # logYMinMax=(1.0e-4, 1.0e2))
-    printReport(report)
+    if not options.significances:
+        plotting.pValueCategoryPlots(hMap, )  # logYMinMax=(1.0e-4, 1.0e2))
+        printReport(report)
+
     if not nCategories:
         print "WARNING: category %s not found." % options.category
