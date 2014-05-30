@@ -91,16 +91,24 @@ def printReport(report={}):
 
 def printNlls(nlls={}):
     n = max([len(c) for c in nlls.keys()])
-    header = "  ".join(["cat".ljust(n), "iBin", " nllSb", "  nllB", " delta", "sqrt(2*delta)"])
-    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "%6.2f", "%6.2f", "%6.2f", "%5.2f"])
+    header = "  ".join(["cat".ljust(n), "iBin", "nIter", " (fMin", "  fHat+=   Err", "  fMax)",
+                        "", "nll_fHat", "nll_f=0", " delta", "sqrt(2*delta)"])
+    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%6.2f", "%6.2f+-%6.2f", "%6.2f ",
+                     "", "  %6.2f", " %6.2f", "%6.2f", "%s"])
     print header
     print "-" * len(header)
 
-    for cat, dct in sorted(nlls.iteritems()):
-        for iBin, (nllSb, nllB) in sorted(dct.iteritems()):
-            delta = nllB - nllSb
-            significance = (2.0*delta)**0.5
-            print fmt % (cat, iBin, nllSb, nllB, delta, significance)
+    for cat, nllDct in sorted(nlls.iteritems()):
+        for iBin, d in sorted(nllDct.iteritems()):
+            delta = d["nllB"] - d["nllSb"]
+            if 0.0 < delta:
+                s = "-" if d["poiVal"] < 0.0 else " "
+                s += "%5.2f" % (2.0*delta)**0.5
+            else:
+                s = "  -  "
+            print fmt % (cat, iBin, d["nIterations"],
+                         d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
+                         d["nllSb"], d["nllB"], delta, s)
 
 
 def signalArgs(whiteList=[], options=None):
@@ -149,20 +157,8 @@ def hMapInit(nBins=0):
     return out
 
 
-def point(selName, iBin):
-    xs = 0.1 * r.TMath.Exp(-iBin)
-    return signals.point(xs=xs, sumWeightIn=1.0, x=0.0, y=0.0,
-                         effUncRel=0.01, label="%s_ht%d" % (selName, iBin))
-
-
 def significances(whiteList=[], selName="", options=None):
     out = {}
-
-    dArgs = {"llkName": options.llk,
-             "whiteList": whiteList,
-             "ignoreHad": options.ignoreHad,
-             "separateSystObs": not options.genBands,
-             }
 
     assert len(whiteList) == 1, whiteList
     ll = likelihood.spec(name=options.llk, whiteList=whiteList)
@@ -170,33 +166,42 @@ def significances(whiteList=[], selName="", options=None):
     nBins = len(sel.data.htBinLowerEdges())
 
     for iBin in range(nBins):
-        if 3 <= iBin:
-            continue
-        sModel = point(selName, iBin)
+        # make xs fall vs. HT
+        xs1 = 0.1*r.TMath.Exp(-iBin)
+        xs2 = 1.0*(1+iBin)**-4.0
+        model = signals.point(xs=xs2,
+                              label="%s_ht%d" % (selName, iBin),
+                              sumWeightIn=1.0, x=0.0, y=0.0, effUncRel=0.01,  # dummy
+                              )
         effs = [0.0] * nBins
         effs[iBin] = 0.5
-        sModel.insert(selName, {"effHad": effs})
+        model.insert(selName, {"effHad": effs})
 
-        smModel = point(selName, iBin)
-        smModel.insert(selName, {"effHad": [0.0] * nBins})
+        f = driver.driver(signalToTest=model,
+                          llkName=options.llk,
+                          whiteList=whiteList,
+                          ignoreHad=options.ignoreHad,
+                          separateSystObs=not options.genBands,
+                          )
 
+        nIterations, poi = f.expandPoiRange(allowNegative=True,
+                                            nIterationsMax=10,
+                                            )
+        out[iBin] = {"nIterations": nIterations,
+                     "poiVal": poi.getVal(),
+                     "poiErr": poi.getError(),
+                     "poiMin": poi.getMin(),
+                     "poiMax": poi.getMax(),
+                     }
 
-        sb = driver.driver(signalToTest=sModel, **dArgs)
-        sb.interval(cl=0.95,
-                    method="profileLikelihood",
-                    makePlots=True,
-                    nIterationsMax=2,
-                    )
-        # hacked poi-min to zero
-        nllSb = sb.rooFitResults().minNll()
+        out[iBin]["nllSb"] = f.rooFitResults().minNll()
 
-        b = driver.driver(signalToTest=smModel, **dArgs)
-        b.interval(cl=0.99,
-                   method="profileLikelihood",
-                   makePlots=True,
-                   )
-        nllB = b.rooFitResults().minNll()
-        out[iBin] = (nllSb, nllB)
+        # fix POI to zero
+        poi.setMin(0.0)
+        poi.setMax(0.0)
+        poi.setVal(0.0)
+        out[iBin]["nllB"] = f.rooFitResults().minNll()
+
     return out
 
 
