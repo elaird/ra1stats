@@ -201,6 +201,38 @@ class driver(object):
     def profile(self) :
         calc.profilePlots(self.data, self.modelConfig, self.note())
 
+
+    def expandPoiRange(self, allowNegative=True, nIterationsMax=1):
+        s = self.wspace.set("poi")
+        assert s.getSize() == 1
+        poi = s.first()
+
+        r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING)
+        nIterations = 0
+
+        for i in range(nIterationsMax):
+            results = self.rooFitResults()
+            #results.Print()
+            #poi.Print()
+
+            again = False
+            nIterations += 1
+            if nIterationsMax <= nIterations:
+                break
+            if poi.getMax() < poi.getVal() + 2.0 * poi.getError():
+                poi.setMax(poi.getMax() + 2.0 * (poi.getMax() - poi.getMin()))
+                poi.setMin(0.0)
+                again = True
+            if allowNegative and (poi.getVal() - 2.0 * poi.getError() <  poi.getMin()):
+                again = True
+                if results.numInvalidNLL():
+                    poi.setMin(0.5*poi.getMin())
+                else:
+                    poi.setMin(-poi.getMax())
+            if not again:
+                break
+        return nIterations, poi
+
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
                  nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
 
