@@ -224,11 +224,8 @@ class driver(object):
                 poi.setMin(0.0)
                 again = True
             if allowNegative and (poi.getVal() - 2.0 * poi.getError() <  poi.getMin()):
+                poi.setMin(poi.getMin() - 1.0 * (poi.getMax() - poi.getMin()))
                 again = True
-                if results.numInvalidNLL():
-                    poi.setMin(0.5*poi.getMin())
-                else:
-                    poi.setMin(-poi.getMax())
             if not again:
                 break
         return nIterations, poi
