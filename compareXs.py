@@ -68,7 +68,7 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
     return histoD
 
 
-def exclusionHistos(limitFile="", model=None, shift=(True, False)):
+def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, shift=(True, False)):
     limitHistoDict = {
         'T2cc_UpperLimit': {
             'label': 'Observed Limit (95% CL)',
@@ -76,7 +76,7 @@ def exclusionHistos(limitFile="", model=None, shift=(True, False)):
             'LineColor': r.kBlue+2,
             },
         'T2cc_ExpectedUpperLimit': {
-            'label': 'Median Expected Limit #pm 1#sigma exp.',
+            'label': 'Median Expected Limit #pm #sigma exp.',
             'LineWidth': 2,
             'LineColor': r.kOrange+7,
             'LineStyle': 9,
@@ -98,18 +98,42 @@ def exclusionHistos(limitFile="", model=None, shift=(True, False)):
             'FillStyle': 1001,
             'FillColor': 10,
             },
+        'T2cc_ExpectedUpperLimit_+2_Sigma': {
+            'label': 'Expected Upper Limit (+2#sigma)',
+            'FillStyle': 1001,
+            'LineWidth': 2,
+            'LineColor': r.kOrange+7,
+            'FillColor': r.kBlue-10,
+            },
+        'T2cc_ExpectedUpperLimit_-2_Sigma': {
+            'label': 'Expected Upper Limit (-2#sigma)',
+            'LineColor': r.kOrange+7,
+            'LineWidth': 2,
+            'FillStyle': 1001,
+            'FillColor': 10,
+            }
         }
-
-    rfile = r.TFile(limitFile, 'READ')
+    efile = r.TFile(expectedLimitFile, 'READ')
+    ofile = r.TFile(observedLimitFile, 'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
-        opts['hist'] = hp.modifiedHisto(h3=rfile.Get(limitHistoName),
-                                        model=model,
-                                        shiftX=True,
-                                        shiftY=True,
-                                        shiftErrors=False,
-                                        range=False,
-                                        info=False)
-    rfile.Close()
+        if limitHistoName in "T2cc_UpperLimit":
+            opts['hist'] = hp.modifiedHisto(h3=ofile.Get(limitHistoName),
+                                            model=model,
+                                            shiftX=True,
+                                            shiftY=True,
+                                            shiftErrors=False,
+                                            range=False,)
+        else:
+            opts['hist'] = hp.modifiedHisto(h3=efile.Get(limitHistoName),
+                                            model=model,
+                                            shiftX=True,
+                                            shiftY=True,
+                                            shiftErrors=False,
+                                            range=False,
+                                            info=False)
+
+    efile.Close()
+    ofile.Close()
     return limitHistoDict
 
 
@@ -197,9 +221,17 @@ def oneD(h=None, yValue=None, dM=None):
         for ixBin in range(xBin, h.GetXaxis().GetNbins()):
             yVal = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin)-dM))
             yBin = h.GetYaxis().FindBin(yVal)
-            xVal = h.GetXaxis().GetBinCenter(ixBin) 
+            xVal = h.GetXaxis().GetBinCenter(ixBin)
             val = h.GetBinContent(ixBin,yBin)
             err = h.GetBinError(ixBin,yBin)
+            if val == 0.0 :
+                print "HACK! SO that curve doesnt connect empty bin, don't publish like this"
+                yBin = h.GetYaxis().FindBin(yVal)
+                yValHigh = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin-1)-dM))
+                yBinHigh = h.GetYaxis().FindBin(yValHigh)
+                yValLow = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin+1)-dM))
+                yBinLow = h.GetYaxis().FindBin(yValLow)
+                val = (h.GetBinContent(ixBin-1,yBinHigh)+h.GetBinContent(ixBin+1,yBinLow))/2.
             dMhisto.SetBinContent(dMhisto.FindBin(h.GetBinCenter(ixBin)),val)
             dMhisto.SetBinError(dMhisto.FindBin(h.GetBinCenter(ixBin)),err)
         return dMhisto
@@ -209,7 +241,7 @@ def oneD(h=None, yValue=None, dM=None):
 def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
               nSmooth=0, xMin=300, xMax=350, yMin=1e-3, yMax=1e+4,
               showRatio=False, dumpRatio=False, preliminary=None,
-              lumiStamp="", processStamp="", dM=None):
+              lumiStamp="", processStamp="", dM=None, nSigma=1):
 
     canvas = r.TCanvas('c1', 'c1', 700, 600)
     utils.divideCanvas(canvas)
@@ -222,19 +254,22 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
 
-    for iHisto, hname in enumerate(['T2cc_ExpectedUpperLimit_+1_Sigma',
+    for iHisto, hname in enumerate(['T2cc_ExpectedUpperLimit_+%s_Sigma' % nSigma,
                                     'T2cc_ExpectedUpperLimit',
-                                    'T2cc_ExpectedUpperLimit_-1_Sigma',
+                                    'T2cc_ExpectedUpperLimit_-%s_Sigma' % nSigma,
+                                    #'T2cc_ExpectedUpperLimit_+2_Sigma',
+                                    #'T2cc_ExpectedUpperLimit',
+                                    #'T2cc_ExpectedUpperLimit_-2_Sigma',
                                     'refHisto',
-                                    #'T2cc_UpperLimit',
+                                    'T2cc_UpperLimit',
                                     ]):
         props = histoSpecs[hname]
         if hname != 'refHisto':
             props["hist"] = oneD(props["hist"], yValue, dM)
-            gopts = 'c'
+            gopts = 'HIST C'
+
         else:
             gopts = 'e3'
-
         h = props['hist']
         h.SetStats(False)
         h.GetXaxis().SetRangeUser(xMin, xMax)
@@ -251,6 +286,8 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
                 setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
                 setAttr(props.get(attr, 1))
         if "Sigma" not in hname:
+            if "Expected" in hname:
+                props['label'] = props['label'].replace("#sig","%s#sig"%nSigma)
             leg.AddEntry(h, props['label'], "lf")
         h.GetXaxis().SetTitle(xLabel)
         h.GetYaxis().SetTitle(yLabel)
@@ -296,7 +333,7 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
                "smooth%d" % nSmooth,
                ]
 
-    epsFile = "plots/" + "_".join((strName + ["dM%d" % int(dM)]) if dM else strname)+".eps"
+    epsFile = "plots/" + "_".join((strName + ["dM%d" % int(dM)]) if dM else strname)+"_%ssigma"%nSigma+".eps"
 
     if preliminary:
         epsFile = epsFile.replace(".eps", "_prelim.eps")
@@ -321,14 +358,16 @@ def points():
     out = []
     for mlsp, xMin in [(90, 100), (20,100), (50, 300), (100, 300), (150, 350)][0:2]:
         for nSmooth in [0, 1, 2, 5][:1]:
-            out.append({"yValue": mlsp,
-                        "nSmooth": nSmooth,
-                        "xMin": xMin,
-                        "dM" : xMin-mlsp})
+            for nSig in [1,2]:
+                out.append({"yValue": mlsp,
+                            "nSmooth": nSmooth,
+                            "xMin": xMin,
+                            "dM" : xMin-mlsp,
+                            "nSigma": nSig})
     return out
 
 
-def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None):
+def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None, nSigma=None):
     model = configuration.signal.scan(dataset='T2cc', com=8)  # FIXME: use interBin
     hSpec = configuration.signal.xsHistoSpec(model)
 
@@ -337,10 +376,12 @@ def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None):
                                 xsFileName=hSpec['file'],
                                 )
 
-    exclFileName = 'CLs_asymptotic_T2cc_2012dev_0b_le3j_1b_le3j_0b_ge4j_1b_ge4j.root'
+    expectedFileName = 'CLs_frequentist_T2cc_2012dev_0b_le3j_0b_ge4j_1b_ge4j_semi-blind.root'
+    observedFileName = 'CLs_frequentist_T2cc_2012dev_0b_le3j_0b_ge4j_1b_ge4j_not_blind.root'
 
-
-    exclHistos = exclusionHistos(limitFile='ra1r/scan/%s' % exclFileName, model=model)
+    exclHistos = exclusionHistos(expectedLimitFile='ra1r/scan/%s' % expectedFileName,
+                                 observedLimitFile='ra1r/scan/%s' % observedFileName,
+                                 model=model)
 
     options = {
         'histoSpecs': dict(refHisto.items() + exclHistos.items()),
@@ -350,7 +391,8 @@ def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None):
         'lumiStamp': 'L = 18.7 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': False,
         'processStamp': configuration.signal.processStamp(model.name)['text'],
-        'dM': dM
+        'dM': dM,
+        'nSigma': nSigma
         }
 
     compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,
