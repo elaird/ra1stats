@@ -178,7 +178,9 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
     simpleExclHistos = {}
     relativeHistos = {}
 
-    items = [("ExpectedUpperLimit_m1_Sigma", 0.0),
+    items = [("ExpectedUpperLimit_m2_Sigma", 0.0),
+             ("ExpectedUpperLimit_p2_Sigma", 0.0),
+             ("ExpectedUpperLimit_m1_Sigma", 0.0),
              ("ExpectedUpperLimit_p1_Sigma", 0.0),
              ("ExpectedUpperLimit",          0.0),
              ]
@@ -247,7 +249,9 @@ def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=No
 
     items = [("ExpectedUpperLimit", "expected upper limit"),
              ("ExpectedUpperLimit_-1_Sigma", "title"),
-             ("ExpectedUpperLimit_+1_Sigma", "title")]
+             ("ExpectedUpperLimit_+1_Sigma", "title"),
+             ("ExpectedUpperLimit_-2_Sigma", "title"),
+             ("ExpectedUpperLimit_+2_Sigma", "title")]
 
     if not expectedMapsOnly:
         items = [("UpperLimit" if configuration.limit.method() == "CLs" else "upperLimit95", "upper limit")] + items
@@ -394,11 +398,15 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                        info=info)
 
     r.gStyle.SetLineStyleString(19, "50 20")
-    curveSpecs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit #pm1 #sigma exp.",
+    curveSpecs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit #pm2 #sigma exp.",
                    "lineStyle": 7, "lineWidth": 3, "color": r.kViolet},
                   {"name": "ExpectedUpperLimit_m1_Sigma", "label": "",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
                   {"name": "ExpectedUpperLimit_p1_Sigma", "label": "",
+                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
+                  {"name": "ExpectedUpperLimit_m2_Sigma", "label": "",
+                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
+                  {"name": "ExpectedUpperLimit_p2_Sigma", "label": "",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
                   ]
     if observedCurves:
@@ -522,6 +530,8 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
                     lineStyle = {"ExpectedUpperLimit": 7,
                                  "ExpectedUpperLimit_m1_Sigma": 2,
                                  "ExpectedUpperLimit_p1_Sigma": 2,
+                                 "ExpectedUpperLimit_m2_Sigma": 2,
+                                 "ExpectedUpperLimit_p2_Sigma": 2,
                                  "UpperLimit": 19,  # 9,#3,#1,#5,
                                  "UpperLimit_m1_Sigma": 19,
                                  "UpperLimit_p1_Sigma": 19
@@ -904,7 +914,8 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-
+    if alsoC:
+        canvas.Print(fileName.replace(".pdf","_%s.C"%name))
     #effMu/effHad
     if effRatioPlots:
         for name in names:
@@ -987,7 +998,7 @@ def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackLi
             hp.modifyHisto(h2, model)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
                       logZ=["xs", "nEventsHad"], model=model,
-                      suppressed=suppressed)
+                      suppressed=suppressed, alsoC=False)
         if outputRootFile:
             outFile.cd()
             h2.Write()
