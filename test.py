@@ -99,16 +99,23 @@ def printNlls(nlls={}):
     print "-" * len(header)
 
     for cat, nllDct in sorted(nlls.iteritems()):
+        chi2 = 0.0
+        nDof = 0
         for iBin, d in sorted(nllDct.iteritems()):
             delta = d["nllB"] - d["nllSb"]
             if 0.0 < delta:
+                sVal = (2.0*delta)**0.5
                 s = "-" if d["poiVal"] < 0.0 else " "
-                s += "%5.2f" % (2.0*delta)**0.5
+                s += "%5.2f" % sVal
             else:
+                sVal = 0.0
                 s = "  -  "
             print fmt % (cat, iBin, d["nIterations"],
                          d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
                          d["nllSb"], d["nllB"], delta, s)
+            nDof += 1
+            chi2 += sVal**2
+        print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, r.TMath.Prob(chi2, nDof))
 
 
 def signalArgs(whiteList=[], options=None):
