@@ -49,6 +49,7 @@ def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
                 d["effUncRel"] = effUncRel
             else:
                 d["effUncRel"] = effUncRel[selName].GetBinContent(*point3)
+                if d["effUncRel"] < .05: d["effUncRel"] = .20
             d[box] = map(lambda x: x.GetBinContent(*point3), histos)
             if "eff" in box:
                 d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
