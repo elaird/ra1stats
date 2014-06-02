@@ -61,7 +61,7 @@ def models():
         #scan(dataset="T2cc", had="v11", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v12", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         ##scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
-        scan(dataset="T2cc", had="v14", aT={"200": "0.65", "275": "0.6", "325": "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"][:3], extraVars=["SITV"], **new),
+        scan(dataset="T2cc", had="v14", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"][:3], extraVars=["SITV"], **new),
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
@@ -101,7 +101,7 @@ def whiteListOfPoints(model="", respect=False):
             #"T2": [(400.0, 25.0)],
             #"T2": [(400.0, 50.0)],
             #"T2": [(375.0, 50.0)],
-            "T2cc": [(175.0, 95.0)],
+            "T2cc": [(250.0, 240.0)],
             #"T2cc": [(175.0, 165.0)],
             }.get(model, [])
 
@@ -166,8 +166,10 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(" ".join(model.extraVars))
     if box == "had":
         if model.aT:
-            if htLower:
-                tags.append("AlphaT"+model.aT[str(int(htLower) if htLower < 375. else 325)])
+            if htLower in model.aT:
+                tags.append("AlphaT"+model.aT[htLower])
+            else:
+                tags.append("AlphaT"+model.aT[max(model.aT)])
         else:
             tags.append("AlphaT55")
     else:
