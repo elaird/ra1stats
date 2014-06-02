@@ -181,8 +181,9 @@ def overwriteOutput() :
 
 
 def compat(funcName="", model=""):
-    if model in ["T1", "T2", "T2bb", "T2tt", "T1bbbb", "T1tttt", "T1tttt_ichep"]:
+    if model in ["T1", "T2", "T2bb", "T2tt", "T1bbbb", "T1tttt", "T1tttt_ichep", "T2cc"]:
         funcName = funcName.replace("m1", "-1").replace("p1", "+1")
+        funcName = funcName.replace("m2", "-2").replace("p2", "+2")
         return {"replace": sms8.graphReplacePoints()[funcName].get(model, {}),
                 "blackList": sms8.graphBlackLists()[funcName].get(model, []),
                 }
@@ -199,10 +200,14 @@ def compat(funcName="", model=""):
 def ExpectedUpperLimit_m1_Sigma(model=""):
     return compat(funcName="ExpectedUpperLimit_m1_Sigma", model=model)
 
+def ExpectedUpperLimit_m2_Sigma(model=""):
+    return compat(funcName="ExpectedUpperLimit_m2_Sigma", model=model)
 
 def ExpectedUpperLimit_p1_Sigma(model=""):
     return compat(funcName="ExpectedUpperLimit_p1_Sigma", model=model)
 
+def ExpectedUpperLimit_p2_Sigma(model=""):
+    return compat(funcName="ExpectedUpperLimit_p2_Sigma", model=model)
 
 def ExpectedUpperLimit(model=""):
     return compat(funcName="ExpectedUpperLimit", model=model)
