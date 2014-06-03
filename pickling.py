@@ -38,8 +38,8 @@ def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
             if type(effUncRel) == float:
                 d["effUncRel"] = effUncRel
             else:
-                d["effUncRel"] = effUncRel[selName].GetBinContent(*point3)
-                if d["effUncRel"] < .05: d["effUncRel"] = .20
+                d["effUncRel"] = configuration.signal.effUncRelModified(model=modelName,
+                                                   raw=effUncRel[selName].GetBinContent(*point3))
             d[box] = map(lambda x: x.GetBinContent(*point3), histos)
             if "eff" in box:
                 d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
@@ -61,7 +61,8 @@ def writeSignalFiles(points=[], outFilesAlso=False):
                             }
         toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
         toCheck += histoList(args[model.name]["eff"])
-        #Need to also check effUncRel 
+        if not model.flatEffUncRel:
+            print "Warning: Check signal systematic histogram binning"
         rootToTxt.checkHistoBinning(toCheck)
     for point in points:
         name = point[0]
