@@ -20,16 +20,6 @@ def histoList(histos={}):
             out.append(item)
     return out
 
-
-def histo(histos={}):
-    out = []
-    for key, value in histos.iteritems():
-        if not hasattr(value, "GetBinContent"):
-            continue
-        out.append(value)
-    return out
-
-
 def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
                 xs=None, sumWeightIn=None, sigMcUnc=None):
 
@@ -71,7 +61,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
                             }
         toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
         toCheck += histoList(args[model.name]["eff"])
-        #toCheck += histo(args[model.name]["effUncRel"])
+        #Need to also check effUncRel 
         rootToTxt.checkHistoBinning(toCheck)
     for point in points:
         name = point[0]
