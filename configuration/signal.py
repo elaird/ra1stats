@@ -8,6 +8,11 @@ def effUncRel(model=""):
             "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736,
             }[model]
 
+def effUncRelModified(model="", raw=None):
+    if raw < 0.05:
+        return effUncRel(model)
+    else:
+        return raw
 
 def models():
     kargsOld = {"box": "had", "htLower": 375, "htUpper": 475}
