@@ -294,14 +294,13 @@ def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
 
 def perSelHisto(model=None, jets="", bJets=""):
     for box in model.boxes():
-        itemFunc = {"effUncRel": effUncRelHisto}
-        for item, func in itemFunc.iteritems():
-            d = func(model=model,
-                     box=box,
-                     bJets=bJets,
-                     jets=jets,
-                     )
-    return d
+        assert box == "had", " %s signal systematic not yet implemented" % box
+        d = effUncRelHisto(model=model,
+                           box=box,
+                           bJets=bJets,
+                           jets=jets,
+                           )
+        return d
 
 
 def effHistos(model=None, allCategories=False):
