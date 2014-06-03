@@ -22,7 +22,7 @@ class point(object):
         self.__selEffs[key] = value
 
     def keyPresent(self, key=""):
-        for _,dct in self.__selEffs.iteritems():
+        for dct in self.__selEffs.values():
             if key in dct.keys():
                 return True
         return False
