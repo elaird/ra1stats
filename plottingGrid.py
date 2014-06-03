@@ -875,7 +875,7 @@ def drawBenchmarks(model=None):
 
 def printOneHisto(h2=None, name="", canvas=None, fileName="",
                   effRatioPlots=False, drawBenchmarkPoints=False,
-                  logZ=[], model=None, suppressed=[]):
+                  logZ=[], model=None, suppressed=[], alsoC=False):
     if "upper" in name:
         hp.printHoles(h2)
     h2.SetStats(False)
@@ -998,7 +998,7 @@ def multiPlots(model=None, tag="", first=[], last=[], whiteListMatch=[], blackLi
             hp.modifyHisto(h2, model)
         printOneHisto(h2=h2, name=name, canvas=canvas, fileName=fileName,
                       logZ=["xs", "nEventsHad"], model=model,
-                      suppressed=suppressed, alsoC=False)
+                      suppressed=suppressed)
         if outputRootFile:
             outFile.cd()
             h2.Write()
