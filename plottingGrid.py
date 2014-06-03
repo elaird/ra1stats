@@ -398,15 +398,15 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                        info=info)
 
     r.gStyle.SetLineStyleString(19, "50 20")
-    curveSpecs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit #pm2 #sigma exp.",
+    curveSpecs = [{"name": "ExpectedUpperLimit", "label": "Expected Limit #pm1 #sigma exp.",
                    "lineStyle": 7, "lineWidth": 3, "color": r.kViolet},
                   {"name": "ExpectedUpperLimit_m1_Sigma", "label": "",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
                   {"name": "ExpectedUpperLimit_p1_Sigma", "label": "",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
-                  {"name": "ExpectedUpperLimit_m2_Sigma", "label": "",
+                  {"name": "ExpectedUpperLimit_m2_Sigma", "label": "Expected Limit #m2 #sigma exp.",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
-                  {"name": "ExpectedUpperLimit_p2_Sigma", "label": "",
+                  {"name": "ExpectedUpperLimit_p2_Sigma", "label": "Expected Limit #p2 #sigma exp.",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
                   ]
     if observedCurves:
