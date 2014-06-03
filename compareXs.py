@@ -116,7 +116,7 @@ def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, sh
     efile = r.TFile(expectedLimitFile, 'READ')
     ofile = r.TFile(observedLimitFile, 'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
-        if limitHistoName in "T2cc_UpperLimit":
+        if limitHistoName == "T2cc_UpperLimit":
             opts['hist'] = hp.modifiedHisto(h3=ofile.Get(limitHistoName),
                                             model=model,
                                             shiftX=True,
@@ -257,9 +257,6 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     for iHisto, hname in enumerate(['T2cc_ExpectedUpperLimit_+%s_Sigma' % nSigma,
                                     'T2cc_ExpectedUpperLimit',
                                     'T2cc_ExpectedUpperLimit_-%s_Sigma' % nSigma,
-                                    #'T2cc_ExpectedUpperLimit_+2_Sigma',
-                                    #'T2cc_ExpectedUpperLimit',
-                                    #'T2cc_ExpectedUpperLimit_-2_Sigma',
                                     'refHisto',
                                     'T2cc_UpperLimit',
                                     ]):
