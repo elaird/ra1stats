@@ -294,7 +294,8 @@ def hadTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel=""
 
         ewk = importEwk(w=w, REwk=REwk, name="ewk", label=label, i=i, iFirst=iFirst, iLast=iLast, nHadValue=nHadValue, A_ini=A_ewk_ini)
         if initialValuesFromMuonSample:
-            ewk.setVal(inputData.observations()["nMuon"][i]*inputData.mcExpectations()["mcHad"][i]/inputData.mcExpectations()["mcMuon"][i])
+            mcHad = inputData.mcExpectations()["mcTtw"][i] + inputData.mcExpectations()["mcZinv"][i]
+            ewk.setVal(inputData.observations()["nMuon"][i]*mcHad/inputData.mcExpectations()["mcMuon"][i])
 
             if RQcd != "Zero" and i == 0:
                 qcd.setRange(0.0, max(1, 2.0*obs["nHad"][i]))
@@ -305,8 +306,9 @@ def hadTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel=""
                 someVal = -r.TMath.Log((qcd1/qcd0) * (obs["nHadBulk"][0]/obs["nHadBulk"][1]))/(htMeans[1]-htMeans[0])
                 w.var(ni("k_qcd", kQcdLabel)).setVal(someVal)
         if not muonForFullEwk:
-            if inputData.mcExpectations()["mcHad"][i]:
-                fZinvIniFromMc = inputData.mcExpectations()["mcZinv"][i] / inputData.mcExpectations()["mcHad"][i]
+            mcHad = inputData.mcExpectations()["mcTtw"][i] + inputData.mcExpectations()["mcZinv"][i]
+            if mcHad:
+                fZinvIniFromMc = inputData.mcExpectations()["mcZinv"][i] / mcHad
             else:
                 fZinvIniFromMc = 0.5
             fZinv = importFZinv(w=w,
