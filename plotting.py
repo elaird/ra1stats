@@ -346,6 +346,8 @@ def obsString(label = "", other = "", lumi = 0.0) :
 
 class validationPlotter(object) :
     def __init__(self, args) :
+        self.rhoMinMax = (0.0, 2.0)
+
         for key,value in args.iteritems() :
             setattr(self,key,value)
         if self.signalExampleToStack : assert self.smOnly
@@ -839,7 +841,7 @@ class validationPlotter(object) :
                      "errorBand": self.ewk-6,
                      "systMap":True}
 
-        kargs = {"yAxisMinMax": (0.0, 2.0), "yLabel": "", "legend0": (0.18, 0.7), "legend1": (0.45, 0.9)}
+        kargs = {"yAxisMinMax": self.rhoMinMax, "yLabel": "", "legend0": (0.18, 0.7), "legend1": (0.45, 0.9)}
         if "phot" in self.lumi:
             otherVars.update({"var":"rhoPhotZ", "desc":"#rho_{#gammaZ}"})
             self.plot(otherVars = [otherVars], **kargs)
