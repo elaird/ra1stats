@@ -428,6 +428,95 @@ class driver(object):
 
         return out
 
+
+    def translate(self, w, attr="allVars", verbose=False):
+        d = {"n_obs_binhad":  "nHad_",
+             "n_obs_binmuon": "nMuon_",
+             "n_obs_binmumu": "nMumu_",
+             "n_obs_binphot": "nPhot_",
+             "n_exp_binhad":  "hadB_",  # FIXME: s + b
+             "n_exp_binmuon": "muonB_",  # FIXME: s + b
+             "n_exp_binmumu": "mumuExp_",
+             "n_exp_binphot": "photExp_",
+             }
+
+        allX = getattr(w, attr)()
+        it = allX.createIterator()
+        while it.Next():
+            n = it.GetName()
+            for old, new in d.iteritems():
+                if n.startswith(old):
+                    n2 = n.replace(old, new)
+                    a = it.Clone(n2)
+                    workspace.wimport(w, a)
+                    if verbose:
+                        print n, n2
+                        a.Print()
+
+
+    def hcgBestFit(self,
+                   printPages=False,
+                   drawMc=True,
+                   printValues=False,
+                   printNom=False,
+                   drawComponents=True,
+                   errorsFromToys=0,
+                   drawRatios=False,
+                   significance=False,
+                   pullPlotMax=3.5,
+                   pullThreshold=2.0,
+                   msgThreshold=None):
+
+        if msgThreshold:
+            r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
+
+        for fileName in self.likelihoodSpec.dumpHcgCards():
+            cmd = ["combine",
+                   "-M MaxLikelihoodFit",
+                   "--saveWorkspace",
+                   #"--saveNLL",
+                   #"--plots",
+                   "--rMin 0.0",
+                   "--rMax 1.0e-6",
+                   "--preFitValue 0.0",
+                   fileName,
+                   ]
+            os.system(" ".join(cmd))
+
+        r.gSystem.Load("libHiggsAnalysisCombinedLimit.so")
+
+        f1 = r.TFile("mlfit.root")
+        results = f1.Get("fit_b")
+        f1.Close()
+
+        f = r.TFile("MaxLikelihoodFitResult.root")
+        wspace = f.Get("MaxLikelihoodFitResult")
+        self.translate(wspace, attr="allVars")
+        self.translate(wspace, attr="allFunctions")
+
+        for selection in self.likelihoodSpec.selections():
+            args = self.plotterArgs(selection)
+            args.update({"results": results,
+                         "wspace": wspace,
+                         "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
+                         "nSelections": len(self.likelihoodSpec.selections()),
+                         "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
+                         "printPages": printPages,
+                         "drawMc": drawMc,
+                         "printNom": printNom,
+                         "drawComponents": drawComponents,
+                         "printValues": printValues,
+                         "errorsFromToys": errorsFromToys,
+                         "drawRatios": drawRatios,
+                         "significance": significance,
+                         "rhoMinMax": (-2.0, 2.0),
+                         })
+            plotter = plotting.validationPlotter(args)
+            plotter.go()
+
+        f.Close()
+
+
     def qcdPlot(self):
         plotting.errorsPlot(self.wspace,
                             utils.rooFitResults(workspace.pdf(self.wspace), self.data),
