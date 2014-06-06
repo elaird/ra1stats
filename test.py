@@ -6,6 +6,12 @@ import optparse
 def opts():
     parser = optparse.OptionParser("usage: %prog [options]")
 
+    parser.add_option("--hcg",
+                      dest="hcg",
+                      default=False,
+                      action="store_true",
+                      help="use HCG ``combine'' tool for bestFit")
+
     parser.add_option("--ignoreHad",
                       dest="ignoreHad",
                       default=False,
@@ -255,15 +261,16 @@ def go(selections=[], options=None, hMap=None):
 
         if options.bestFit:
             errorsFromToys = options.nToys * bool(options.plotBands)
-            dct = f.bestFit(drawMc=False,
-                            drawComponents=False,
-                            errorsFromToys=errorsFromToys,
-                            printPages=False,
-                            drawRatios=False,
-                            significance=options.ignoreHad,
-                            #msgThreshold=r.RooFit.DEBUG,
-                            msgThreshold=r.RooFit.WARNING,
-                            )
+            func = getattr(f, "hcgBestFit" if options.hcg else "bestFit")
+            dct = func(drawMc=False,
+                       drawComponents=False,
+                       errorsFromToys=errorsFromToys,
+                       printPages=False,
+                       drawRatios=False,
+                       significance=options.ignoreHad,
+                       #msgThreshold=r.RooFit.DEBUG,
+                       msgThreshold=r.RooFit.WARNING,
+                       )
             if dct:
                 report[sel.name] = dct
                 for key, pValue in dct.iteritems():
