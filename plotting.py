@@ -919,6 +919,8 @@ class validationPlotter(object) :
         if self.smOnly and "simple" in self.lumi : return
 
         name = "correlation_matrix"
+        if not self.results:
+            return
         h = self.results.correlationHist(name)
         h.SetStats(False)
         r.gStyle.SetPaintTextFormat("4.1f")
