@@ -4,13 +4,11 @@ import math
 import os
 
 import ensemble
-import workspace as common
+import workspace
 import utils
 
 import ROOT as r
 
-# compatibility
-ni = common.ni
 
 def rootSetup() :
     #r.gROOT.SetStyle("Plain")
@@ -904,7 +902,7 @@ class validationPlotter(object) :
 
         self.canvas.Clear()
 
-        for i, d in enumerate(common.floatingVars(self.wspace)):
+        for i, d in enumerate(workspace.floatingVars(self.wspace)):
             if not (i%nLines) :
                 x += 0.5
                 y = y0
@@ -1172,8 +1170,8 @@ class validationPlotter(object) :
         for i in range(len(self.htBinLowerEdges)) :
             if wspaceMemberFunc :
                 iLabel = i if not systMap else self.inputData.systBins()[varName.replace("rho", "sigma")][i]
-                item1 = ni(varName, "", iLabel)
-                item2 = ni(varName, self.label, iLabel)
+                item1 = workspace.ni(varName, "", iLabel)
+                item2 = workspace.ni(varName, self.label, iLabel)
                 var = self.wspace.var(item1)
                 if not var : var = self.wspace.var(item2)
                 func = self.wspace.function(item1)
@@ -1200,7 +1198,7 @@ class validationPlotter(object) :
                     d["noErrors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
                     d["noErrors"].SetBinError(i+1, 0.0)
                 elif self.errorsFromToys :
-                    q = self.quantiles[ni(varName, self.label, i)]
+                    q = self.quantiles[workspace.ni(varName, self.label, i)]
                     d["errors"].SetBinContent(i+1, (q[2]+q[0])/2.0)
                     d["errors"].SetBinError(i+1, (q[2]-q[0])/2.0)
                     d["uncFromToys"].SetBinContent(i+1, d["errors"].GetBinError(i+1))
@@ -1209,8 +1207,8 @@ class validationPlotter(object) :
                     d["errorsLo"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)-d["errors"].GetBinError(i+1)) #used in ratioPlots
                     d["errorsHi"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)+d["errors"].GetBinError(i+1)) #used in ratioPlots
                 elif errorsFrom :
-                    noI = ni(errorsFrom, self.label)
-                    errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, self.label, i))
+                    noI = workspace.ni(errorsFrom, self.label)
+                    errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(workspace.ni(errorsFrom, self.label, i))
                     if errorsVar and errorsVar.getVal() :
                         d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
                         d["errors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
@@ -1267,7 +1265,7 @@ class validationPlotter(object) :
         for i,t in enumerate(l) :
             var,label,iPar = t
             obj = self.wspace.var(var)
-            if not obj : obj = self.wspace.var(ni(var, self.label, iPar))
+            if not obj : obj = self.wspace.var(workspace.ni(var, self.label, iPar))
             if not obj : continue
             text.DrawLatex(x, y-i*s, label%(obj.getVal(), obj.getError()))
         return
