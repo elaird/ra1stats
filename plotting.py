@@ -1368,13 +1368,18 @@ class validationPlotter(object) :
 
         obsHisto.SetMarkerStyle(obs.get("markerStyle", 20))
         obsHisto.SetStats(False)
-        obsHisto.Draw(obs.get("goptions", "p"))
+        if obs["desc"]:
+            obsHisto.Draw(obs.get("goptions", "p"))
+            leg.AddEntry(obsHisto, obs["desc"], obs.get("legSpec", "lpe"))
+        else:
+            obsHisto.SetLineColor(r.kWhite)
+            obsHisto.SetMarkerColor(r.kWhite)
+            obsHisto.Draw("l")
 
         minimum,maximum = self.yAxisLogMinMax if logY else yAxisMinMax
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
 
-        if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], obs.get("legSpec", "lpe"))
         stuff += [obs]
 
         r.gPad.SetLogy(logY)
@@ -1395,7 +1400,8 @@ class validationPlotter(object) :
             stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = False)
 
         obsHisto.Draw("sameaxis") #redraw axis
-        obsHisto.Draw("psame") #redraw data points
+        if obs["desc"]:
+            obsHisto.Draw("psame") #redraw data points
 
         for item in reversed(legEntries) if reverseLegend else legEntries :
             leg.AddEntry(*item)
