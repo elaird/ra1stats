@@ -481,6 +481,12 @@ class driver(object):
                         f.Print()
 
 
+    def addBulkYields(self, w, selection):
+        for i, y in enumerate(selection.data.observations()["nHadBulkTriggerCorrected"]):
+            b = workspace.ni("nHadBulk", selection.name, i)
+            workspace.wimport(w, r.RooRealVar(b, b, y))
+
+
     def hcgBestFit(self,
                    printPages=False,
                    drawMc=True,
@@ -530,6 +536,7 @@ class driver(object):
             note += "_SIGNALINJECTED"
 
         for selection in self.likelihoodSpec.selections():
+            self.addBulkYields(wspace, selection)  #  FIXME: move to data cards
             args = self.plotterArgs(selection)
             args.update({"results": results,
                          "wspace": wspace,
