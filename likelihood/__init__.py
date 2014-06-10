@@ -267,8 +267,8 @@ class base(object):
         fixedPs = sel.data.fixedParameters()
         sigmaLumiLike = fixedPs.get("sigmaLumiLike")
         if not sigmaLumiLike:
-            sigmaLumiLike = 1.10
-            print "WARNING: using fake sigmaLumiLike: %g" % sigmaLumiLike
+            sigmaLumiLike = 0.10
+            print "WARNING: using fake sigmaLumiLike for %s: %g" % (sel.name, sigmaLumiLike)
 
         for box in ["had", "muon", "phot", "mumu"]:
             if box not in sel.boxes:
@@ -346,7 +346,6 @@ class base(object):
                             else:
                                 dct[jSystBin].append(None)
 
-        print filter(lambda x: not x.startswith("_"), dir(sel.data))
         return obs, processes, rates, lumiUncs, normZinv, normTtw, rhoPhotZ, rhoMumuZ, rhoMuonW
 
 
@@ -354,7 +353,7 @@ class base(object):
                            lumiUncs, normZinv, normTtw,
                            rhoPhotZ, rhoMumuZ, rhoMuonW,
                            label=""):
-        w1 = 20
+        w1 = 25
         w2 = 9
         iFmt = "%" + str(w2) + "d"
         rFmt = "%" + str(w2) + ".3e"
