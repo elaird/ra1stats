@@ -209,6 +209,7 @@ class base(object):
         if not os.path.exists(dirName):
             os.mkdir(dirName)
 
+        fileNames = []
         for sel in self.selections():
             if sel.muonForFullEwk:
                 print "FAIL muonForFullEwk: skipping", sel
@@ -220,12 +221,16 @@ class base(object):
                 print "Fail uinversalKQcd: skipping", sel
                 continue
 
-            lines = self.formattedSelection(*self.preparedSelection(sel, lnU))
+            lines = self.formattedSelection(*self.preparedSelection(sel, lnU),
+                                            label=sel.name)
 
             fileName = "%s/%s.txt" % (dirName, sel.name)
             f = open(fileName, "w")
             print >> f, "\n".join(lines)
             f.close()
+            fileNames.append(fileName)
+
+        return fileNames
 
 
     def preparedSelection(self, sel, lnU=None):
@@ -334,7 +339,8 @@ class base(object):
 
     def formattedSelection(self, obs, processes, rates,
                            lumiUncs, normZinv, normTtw,
-                           rhoPhotZ, rhoMumuZ, rhoMuonW):
+                           rhoPhotZ, rhoMumuZ, rhoMuonW,
+                           label=""):
         w1 = 20
         w2 = 9
         iFmt = "%" + str(w2) + "d"
@@ -364,7 +370,7 @@ class base(object):
                            ]:
             dct = eval(stem)
             for iParam, lst in sorted(dct.iteritems()):
-                pName = "%s_%d %s" % (stem, iParam, form)
+                pName = "%s_%s_%d %s" % (stem, label, iParam, form)
                 lines += [pName.ljust(w1)   + "  ".join([(sFmt % x) if x else "-".rjust(w2) for x in lst])]
 
         return lines
