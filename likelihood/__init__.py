@@ -68,6 +68,9 @@ class base(object):
     def initialFZinvFromMc(self):
         return self._initialFZinvFromMc
 
+    def lnUMax(self):
+        return self._lnUMax
+
     def legendTitle(self):
         more = " [QCD=0; NO HAD IN LLK]" if self._ignoreHad else ""
         return self._legendTitle + more
@@ -132,11 +135,13 @@ class base(object):
         self._constrainQcdSlope = None
         self._initialValuesFromMuonSample = None
         self._initialFZinvFromMc = None
+        self._lnUMax = None
         self._selections = []
 
         self._fill()
 
         assert self._name
+        #  assert self._lnUMax  # set in dumpHcgCards()
         assert self._RQcd in ["Zero", "FallingExp"]
         assert self._nFZinv in ["All", "One", "Two"]
         assert self._REwk in ["", "Linear", "FallingExp", "Constant"]
@@ -155,7 +160,7 @@ class base(object):
         harmless = ["add", "checkHcgImpl", "constrainQcdSlope",
                     "dumpHcgCards", "formattedSelection", "preparedSelection",
                     "initialFZinvFromMc", "initialValuesFromMuonSample",
-                    "legendTitle", "note", "poi", "poiList",
+                    "legendTitle", "lnUMax", "note", "poi", "poiList",
                     "qcdParameterIsYield", "selections"]
         for item in harmless:
             p.remove(item)
@@ -195,7 +200,7 @@ class base(object):
             sys.exit("likelihood.checkHgImpl(): deal with the above list.")
 
 
-    def dumpHcgCards(self, signal={}, lnU=3.0):
+    def dumpHcgCards(self, signal={}):
         """
         https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideHiggsAnalysisCombinedLimit
         https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideCMSDataAnalysisSchool2014HiggsCombPropertiesExercise
@@ -221,7 +226,7 @@ class base(object):
                 print "Fail uinversalKQcd: skipping", sel
                 continue
 
-            lines = self.formattedSelection(*self.preparedSelection(sel, lnU),
+            lines = self.formattedSelection(*self.preparedSelection(sel),
                                             label=sel.name)
 
             fileName = "%s/%s.txt" % (dirName, sel.name)
@@ -233,8 +238,10 @@ class base(object):
         return fileNames
 
 
-    def preparedSelection(self, sel, lnU=None):
-        assert lnU
+    def preparedSelection(self, sel):
+        if not self._lnUMax:
+            self._lnUMax = 3.0
+            print "WARNING: lnUMax not set.  Using %g." % self._lnUMax
 
         obs = []
         processes = []
@@ -316,11 +323,11 @@ class base(object):
                     for jBin in normZinv.keys():
                         if jBin == iBin:
                             if proc in ["zinv", "phot", "mumu"]:
-                                normZinv[jBin].append(lnU)
+                                normZinv[jBin].append(self._lnUMax)
                                 normTtw[jBin].append(None)
                             elif proc in ["ttw", "muon"]:
                                 normZinv[jBin].append(None)
-                                normTtw[jBin].append(lnU)
+                                normTtw[jBin].append(self._lnUMax)
                             else:
                                 normZinv[jBin].append(None)
                                 normTtw[jBin].append(None)
