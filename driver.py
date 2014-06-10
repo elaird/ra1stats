@@ -454,13 +454,13 @@ class driver(object):
                         a.Print()
 
 
-    def compute(self, w, attr="", verbose=False):
+    def compute(self, w, attr="", label="", verbose=False):
         allX = getattr(w, attr)()
         it = allX.createIterator()
         while it.Next():
             n = it.GetName()
             if n.startswith("n_exp_binhad") and n.endswith("_proc_zinv"):
-                fZinv = r.RooFormulaVar(n.replace("n_exp_binhad", "fZinv_55_").replace("_proc_zinv", ""),  # FIXME: hard-coded label
+                fZinv = r.RooFormulaVar(n.replace("n_exp_binhad", "fZinv_%s_" % label).replace("_proc_zinv", ""),
                                         "(@0)/((@0) + (@1))",
                                         r.RooArgList(w.function(n), w.function(n.replace("_zinv", "_ttw"))),
                                         )
@@ -523,7 +523,7 @@ class driver(object):
         self.translate(wspace, attr="allFunctions")
 
         self.compute(wspace, attr="allVars")
-        self.compute(wspace, attr="allFunctions")
+        self.compute(wspace, attr="allFunctions", label="0b_ge4j")
 
         note = self.note() + "_hcg"
         if self.injectSignal():
