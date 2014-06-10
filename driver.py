@@ -473,7 +473,7 @@ class driver(object):
                                           ]:
                 if n.startswith(varPrefix):
                     f = r.RooFormulaVar(n.replace(varPrefix, funcPrefix),
-                                        "TMath::Exp((@0)*TMath::Log(3.0))",  # FIXME: hard-coded 3.0
+                                        "TMath::Exp((@0)*TMath::Log(%g))" % self.likelihoodSpec.lnUMax(),
                                         r.RooArgList(w.var(n)),
                                         )
                     workspace.wimport(w, f)
