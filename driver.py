@@ -429,7 +429,7 @@ class driver(object):
         return out
 
 
-    def translate(self, w, attr="allVars", verbose=False):
+    def translate(self, w, attr="", verbose=False):
         d = {"n_obs_binhad":  "nHad_",
              "n_obs_binmuon": "nMuon_",
              "n_obs_binmumu": "nMumu_",
@@ -452,6 +452,33 @@ class driver(object):
                     if verbose:
                         print n, n2
                         a.Print()
+
+
+    def compute(self, w, attr="", verbose=False):
+        allX = getattr(w, attr)()
+        it = allX.createIterator()
+        while it.Next():
+            n = it.GetName()
+            if n.startswith("n_exp_binhad") and n.endswith("_proc_zinv"):
+                fZinv = r.RooFormulaVar(n.replace("n_exp_binhad", "fZinv_55_").replace("_proc_zinv", ""),  # FIXME: hard-coded label
+                                        "(@0)/((@0) + (@1))",
+                                        r.RooArgList(w.function(n), w.function(n.replace("_zinv", "_ttw"))),
+                                        )
+                workspace.wimport(w, fZinv)
+                if verbose:
+                    fZinv.Print()
+
+            for varPrefix, funcPrefix in [("normTtw", "ttw"),
+                                          ("normZinv", "zInv"),
+                                          ]:
+                if n.startswith(varPrefix):
+                    f = r.RooFormulaVar(n.replace(varPrefix, funcPrefix),
+                                        "TMath::Exp((@0)*TMath::Log(3.0))",  # FIXME: hard-coded 3.0
+                                        r.RooArgList(w.var(n)),
+                                        )
+                    workspace.wimport(w, f)
+                    if verbose:
+                        f.Print()
 
 
     def hcgBestFit(self,
@@ -479,6 +506,7 @@ class driver(object):
                    "--rMin 0.0",
                    "--rMax 1.0e-6",
                    "--preFitValue 0.0",
+                   #"-v -1",
                    fileName,
                    ]
             os.system(" ".join(cmd))
@@ -494,11 +522,18 @@ class driver(object):
         self.translate(wspace, attr="allVars")
         self.translate(wspace, attr="allFunctions")
 
+        self.compute(wspace, attr="allVars")
+        self.compute(wspace, attr="allFunctions")
+
+        note = self.note() + "_hcg"
+        if self.injectSignal():
+            note += "_SIGNALINJECTED"
+
         for selection in self.likelihoodSpec.selections():
             args = self.plotterArgs(selection)
             args.update({"results": results,
                          "wspace": wspace,
-                         "note": self.note() if not self.injectSignal() else self.note()+"_SIGNALINJECTED",
+                         "note": note,
                          "nSelections": len(self.likelihoodSpec.selections()),
                          "obsLabel": "Data" if not self.injectSignal() else "Data (SIGNAL INJECTED)",
                          "printPages": printPages,
@@ -509,7 +544,7 @@ class driver(object):
                          "errorsFromToys": errorsFromToys,
                          "drawRatios": drawRatios,
                          "significance": significance,
-                         "rhoMinMax": (-2.0, 2.0),
+                         "hcg": True,
                          })
             plotter = plotting.validationPlotter(args)
             plotter.go()
