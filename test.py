@@ -237,8 +237,7 @@ def go(selections=[], options=None, hMap=None):
             continue
 
         f = drv(llkName=options.llk,
-                #whiteList=whiteList,
-                whiteList=["0b_ge4j", "1b_ge4j"],
+                whiteList=whiteList,
                 ignoreHad=options.ignoreHad,
                 separateSystObs=not options.genBands,
                 #trace=True
@@ -262,16 +261,15 @@ def go(selections=[], options=None, hMap=None):
 
         if options.bestFit:
             errorsFromToys = options.nToys * bool(options.plotBands)
-            func = getattr(f, "hcgBestFit" if options.hcg else "bestFit")
-            dct = func(drawMc=False,
-                       drawComponents=False,
-                       errorsFromToys=errorsFromToys,
-                       printPages=False,
-                       drawRatios=False,
-                       significance=options.ignoreHad,
-                       #msgThreshold=r.RooFit.DEBUG,
-                       msgThreshold=r.RooFit.WARNING,
-                       )
+            dct = f.bestFit(drawMc=False,
+                            drawComponents=False,
+                            errorsFromToys=errorsFromToys,
+                            printPages=False,
+                            drawRatios=False,
+                            significance=options.ignoreHad,
+                            #msgThreshold=r.RooFit.DEBUG,
+                            msgThreshold=r.RooFit.WARNING,
+                            )
             if dct:
                 report[sel.name] = dct
                 for key, pValue in dct.iteritems():
