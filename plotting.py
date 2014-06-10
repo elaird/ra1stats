@@ -346,7 +346,7 @@ def obsString(label = "", other = "", lumi = 0.0) :
 
 class validationPlotter(object) :
     def __init__(self, args) :
-        self.rhoMinMax = (0.0, 2.0)
+        self.hcg = False
 
         for key,value in args.iteritems() :
             setattr(self,key,value)
@@ -647,11 +647,17 @@ class validationPlotter(object) :
 
         if not self.muonForFullEwk :
             self.plot(note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), yAxisMinMax = (0.0,3.0), yLabel = "",
-                      otherVars = [ {"var":"ttw", "type":"function", "dens":["mcTtw"], "denTypes":[None], "desc":"ML ttW / MC ttW",
+                      otherVars = [ {"var":"ttw", "type":"function",
+                                     "dens": [] if self.hcg else ["mcTtw"],
+                                     "denTypes": [] if self.hcg else [None],
+                                     "desc":"ML ttW / MC ttW",
                                      "stack":None, "color":r.kGreen, "goptions": "hist"} ])
 
             self.plot(note = "Zinv scale factor (result of fit)", legend0 = (0.5, 0.8), yAxisMinMax = (0.0,3.0), yLabel = "",
-                      otherVars = [ {"var":"zInv", "type":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv",
+                      otherVars = [ {"var":"zInv", "type":"function",
+                                     "dens": [] if self.hcg else ["mcZinv"],
+                                     "denTypes": [] if self.hcg else [None],
+                                     "desc":"ML Z->inv / MC Z->inv",
                                      "stack":None, "color":r.kRed, "goptions": "hist"}])
 
             self.plot(note = "fraction of EWK background which is Zinv (result of fit)" if not self.printPages else "",
@@ -841,7 +847,8 @@ class validationPlotter(object) :
                      "errorBand": self.ewk-6,
                      "systMap":True}
 
-        kargs = {"yAxisMinMax": self.rhoMinMax, "yLabel": "", "legend0": (0.18, 0.7), "legend1": (0.45, 0.9)}
+        kargs = {"yAxisMinMax": (-2.0, 2.0) if self.hcg else (0.0, 2.0),
+                 "yLabel": "", "legend0": (0.18, 0.7), "legend1": (0.45, 0.9)}
         if "phot" in self.lumi:
             otherVars.update({"var":"rhoPhotZ", "desc":"#rho_{#gammaZ}"})
             self.plot(otherVars = [otherVars], **kargs)
