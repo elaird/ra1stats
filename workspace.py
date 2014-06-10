@@ -264,13 +264,13 @@ def hadTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel=""
     importQcdParameters(**qcdArgs)
 
     #observed "constants", not depending upon slice
-    for i, htMeanValue, nHadBulkValue, hadTrgEff, hadBulkTrgEff in zip(range(len(htMeans)), htMeans, obs["nHadBulk"], trg["had"], trg["hadBulk"]):
+    for i, htMeanValue, nHadBulkValueTrgCorrected in zip(range(len(htMeans)), htMeans, obs["nHadBulkTriggerCorrected"]):
         m = ni("htMean", label, i)
         if not w.var(m):
             wimport(w, r.RooRealVar(m, m, htMeanValue))
         b = ni("nHadBulk", label, i)
         if not w.var(b):
-            wimport(w, r.RooRealVar(b, b, nHadBulkValue*hadTrgEff/hadBulkTrgEff))
+            wimport(w, r.RooRealVar(b, b, nHadBulkValueTrgCorrected))
 
     #more
     iFirst = None
