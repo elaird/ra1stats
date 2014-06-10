@@ -257,6 +257,12 @@ class base(object):
         mcExp = sel.data.mcExpectations()
         lumiDct = sel.data.lumi()
         systBins = sel.data.systBins()
+        fixedPs = sel.data.fixedParameters()
+        sigmaLumiLike = fixedPs.get("sigmaLumiLike")
+        if not sigmaLumiLike:
+            sigmaLumiLike = 1.10
+            print "WARNING: using fake sigmaLumiLike: %g" % sigmaLumiLike
+
         for box in ["had", "muon", "phot", "mumu"]:
             if box not in sel.boxes:
                 continue
@@ -303,7 +309,7 @@ class base(object):
                         lumiUncs.append(None)
                     else:
                         rate = 1.23456789
-                        lumiUncs.append(1.0 + sel.data.fixedParameters()["sigmaLumiLike"])
+                        lumiUncs.append(1.0 + sigmaLumiLike)
                     rates.append((name, iProc, proc, rate))
 
                     # background normalizations
@@ -329,7 +335,7 @@ class base(object):
                                                     ]:
                         for jSystBin in dct.keys():
                             if proc == theProc and systBins[systKey][iBin] == jSystBin:
-                                dct[jSystBin].append(1.0 + sel.data.fixedParameters()[systKey][jSystBin])
+                                dct[jSystBin].append(1.0 + fixedPs[systKey][jSystBin])
                             else:
                                 dct[jSystBin].append(None)
 
