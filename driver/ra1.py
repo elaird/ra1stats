@@ -201,12 +201,12 @@ class driver(object):
         calc.profilePlots(self.data, self.modelConfig, self.note())
 
 
-    def expandPoiRange(self, allowNegative=True, nIterationsMax=1):
+    def expandPoiRange(self, allowNegative=True, nIterationsMax=1, msgThreshold=r.RooFit.DEBUG):
         s = self.wspace.set("poi")
         assert s.getSize() == 1
         poi = s.first()
 
-        r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING)
+        r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
         nIterations = 0
 
         for i in range(nIterationsMax):

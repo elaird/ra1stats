@@ -66,6 +66,12 @@ def opts():
                       action="store_true",
                       help="print nll(poi=0) for each HT bin")
 
+    parser.add_option("--system",
+                      dest="system",
+                      default=False,
+                      action="store_true",
+                      help="do each category's computation in a separate system call (e.g. to work around memory leaks)")
+
     options, _ = parser.parse_args()
 
     options.nToys = int(options.nToys)
@@ -96,11 +102,14 @@ def printReport(report={}):
 
 
 def printNlls(nlls={}):
+    if not nlls:
+        return
+
     n = max([len(c) for c in nlls.keys()])
-    header = "  ".join(["cat".ljust(n), "iBin", "nIter", " (fMin", "  fHat+=   Err", "  fMax)",
-                        "", "nll_fHat", "nll_f=0", " delta", "sqrt(2*delta)"])
-    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%6.2f", "%6.2f+-%6.2f", "%6.2f ",
-                     "", "  %6.2f", " %6.2f", "%6.2f", "%s"])
+    header = "  ".join(["cat".ljust(n), "iBin", "nIter", "(fMin", "       fHat +-     Err", "   fMax)",
+                        "", "nll_(f=fHat)", "nll_(f=0)", " delta", "sqrt(2*delta)"])
+    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%8.1e", "%8.1e +- %7.1e", "%7.1e",
+                     "", "      %6.2f ", "  %6.2f ", "%6.2f", "%s"])
     print header
     print "-" * len(header)
 
@@ -109,27 +118,23 @@ def printNlls(nlls={}):
         chi2 = 0.0
         nDof = 0
         labelSig = []
-        canvas = r.TCanvas("canvas")
+        canvas = r.TCanvas("canvas_%s" % cat)
         for iBin, d in sorted(nllDct.iteritems()):
-            delta = d["nllB"] - d["nllSb"]
-            if 0.0 < delta:
-                sVal = (2.0*delta)**0.5
-                s = "-" if d["poiVal"] < 0.0 else " "
-                s += "%5.2f" % sVal
-            else:
-                sVal = 0.0
-                s = "  -  "
+            delta = max(0.0, d["nllB"] - d["nllSb"])
+            sVal = (2.0*delta)**0.5
+            if d["poiVal"] < 0.0:
+                sVal *= -1.0
             print fmt % (cat, iBin, d["nIterations"],
                          d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
-                         d["nllSb"], d["nllB"], delta, s)
+                         d["nllSb"], d["nllB"], delta, " %5.2f" % sVal)
             nDof += 1
             chi2 += sVal**2
-            labelSig.append((iBin+1, -1*sVal if d["poiVal"]<0.0 else 1*sVal))
+            labelSig.append((iBin+1, sVal))
         pVal = r.TMath.Prob(chi2, nDof)
         print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, pVal)
 
         labelpVal.append((cat,pVal))
-        h = r.TH1D("sig","",len(labelSig),0,len(labelSig))
+        h = r.TH1D("sig_%s" % cat,"",len(labelSig),0,len(labelSig))
         for sig in labelSig:
             h.SetStats(0)
             h.SetBinContent(sig[0], float(sig[1]))
@@ -205,7 +210,7 @@ def significances(whiteList=[], selName="", options=None):
     for iBin in range(nBins):
         # make xs fall vs. HT
         xs1 = 0.1*r.TMath.Exp(-iBin)
-        xs2 = 1.0*(1+iBin)**-4.0
+        xs2 = 1.0*(2+iBin)**-4.0
         model = signals.point(xs=xs2,
                               label="%s_ht%d" % (selName, iBin),
                               sumWeightIn=1.0, x=0.0, y=0.0,
@@ -224,6 +229,7 @@ def significances(whiteList=[], selName="", options=None):
 
         nIterations, poi = f.expandPoiRange(allowNegative=True,
                                             nIterationsMax=10,
+                                            msgThreshold=r.RooFit.WARNING,
                                             )
         out[iBin] = {"nIterations": nIterations,
                      "poiVal": poi.getVal(),
@@ -251,6 +257,29 @@ def go(selections=[], options=None, hMap=None):
     for iSel, sel in enumerate(selections):
         if options.category and sel.name != options.category:
             continue
+
+        if options.system:
+            cmd = ["time", "./test.py"]
+            for item in dir(options):
+                if item.startswith("_"):
+                    continue
+                if item in ['read_file', 'read_module', 'ensure_value']:
+                    continue
+                if item in ["system", "bestFit"]:
+                    continue
+
+                if item in ["genBands", "hcg", "ignoreHad", "interval", "plotBands", "significances", "simultaneous"]:
+                    if getattr(options, item):
+                        cmd.append("--%s" % item)
+                elif item == "category":
+                    cmd.append("--category=%s" % sel.name)
+                else:
+                    cmd.append("--%s=%s" % (item, getattr(options, item)))
+            cmd = " ".join(cmd)
+            print cmd
+            os.system(cmd)
+            continue
+
         nCategories += 1
 
         whiteList = [sel.name] if sel.name else []
@@ -344,6 +373,7 @@ if __name__ == "__main__":
     else:
         from driver.ra1 import driver as drv
 
+    import os
     import likelihood
     import plotting
     from signals import t2, two, t2cc
@@ -368,5 +398,5 @@ if __name__ == "__main__":
     else:
         printNlls(nlls)
 
-    if not nCategories:
+    if (not options.system) and (not nCategories):
         print "WARNING: category %s not found." % options.category
