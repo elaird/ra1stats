@@ -39,61 +39,62 @@ class driver(ra1.driver):
         # self.modelConfig = workspace.modelConfiguration(self.wspace)
 
 
-    def translate(self, attr="", ch="", verbose=False):
-        # n_obs_bin_0b_ge4j_had4  -->  nHad_0b_ge4j_4
-        d = {"n_obs_bin%shad"  % ch: "nHad%s"    % ch,
-             "n_obs_bin%smuon" % ch: "nMuon%s"   % ch,
-             "n_obs_bin%smumu" % ch: "nMumu%s"   % ch,
-             "n_obs_bin%sphot" % ch: "nPhot%s"   % ch,
-             "n_exp_bin%shad"  % ch: "hadB%s"    % ch,  # FIXME: s + b
-             "n_exp_bin%smuon" % ch: "muonB%s"   % ch,  # FIXME: s + b
-             "n_exp_bin%smumu" % ch: "mumuExp%s" % ch,
-             "n_exp_bin%sphot" % ch: "photExp%s" % ch,
-             }
-
-        allX = getattr(self.wspace, attr)()
-        it = allX.createIterator()
-        while it.Next():
-            n = it.GetName()
-            for old, new in d.iteritems():
-                if n.startswith(old):
-                    n2 = n.replace(old, new)
-                    a = it.Clone(n2)
-                    workspace.wimport(self.wspace, a)
-                    if verbose:
-                        print n, n2
-                        a.Print()
-
-
     def compute(self, attr="", ch="", verbose=False):
         allX = getattr(self.wspace, attr)()
         it = allX.createIterator()
         while it.Next():
             n = it.GetName()
-            prefix = "n_exp_bin%shad" % ch
-            suffix = "_proc_zinv"
-            if n.startswith(prefix) and n.endswith(suffix):
-                fZinv = r.RooFormulaVar(n.replace(prefix, "fZinv%s" % ch).replace(suffix, ""),
-                                        "(@0)/((@0) + (@1))",
-                                        r.RooArgList(self.wspace.function(n),
-                                                     self.wspace.function(n.replace("_zinv", "_ttw")),
-                                                     ),
-                                        )
-                workspace.wimport(self.wspace, fZinv)
-                if verbose:
-                    fZinv.Print()
+            self.translate_fZinv(ch, n)
+            self.translate_zinvTtw(ch, n)
+            self.clone_nobs(it, ch, n)
+            self.clone_exp(it, ch, n)
 
-            for varPrefix, funcPrefix in [("normTtw%s" % ch, "ttw%s" % ch),
-                                          ("normZinv%s" % ch, "zInv%s" % ch),
-                                          ]:
-                if n.startswith(varPrefix):
-                    f = r.RooFormulaVar(n.replace(varPrefix, funcPrefix),
-                                        "TMath::Exp((@0)*TMath::Log(%g))" % self.likelihoodSpec.lnUMax(),
-                                        r.RooArgList(self.wspace.var(n)),
-                                        )
-                    workspace.wimport(self.wspace, f)
-                    if verbose:
-                        f.Print()
+
+    def clone_nobs(self, it=None, ch="", n=""):
+        for box in ["had", "muon", "mumu", "phot"]:
+            old = "n_obs_bin%s%s" % (ch, box)
+            new = "n%s%s" % (box.capitalize(), ch)
+            if n.startswith(old):
+                    a = it.Clone(n.replace(old, new))
+                    workspace.wimport(self.wspace, a)
+
+
+    def clone_exp(self, it=None, ch="", n=""):
+        d = {"n_exp_bin%shad"  % ch: "hadB%s"    % ch,  # FIXME: s + b
+             "n_exp_bin%smuon" % ch: "muonB%s"   % ch,  # FIXME: s + b
+             "n_exp_bin%smumu" % ch: "mumuExp%s" % ch,
+             "n_exp_bin%sphot" % ch: "photExp%s" % ch,
+             }
+        for old, new in d.iteritems():
+            if n.startswith(old):
+                a = it.Clone(n.replace(old, new))
+                workspace.wimport(self.wspace, a)
+
+
+    def translate_fZinv(self, ch="", n=""):
+        prefix = "n_exp_bin%shad" % ch
+        suffix = "_proc_zinv"
+        if n.startswith(prefix) and n.endswith(suffix):
+            fZinv = r.RooFormulaVar(n.replace(prefix, "fZinv%s" % ch).replace(suffix, ""),
+                                    "(@0)/((@0) + (@1))",
+                                    r.RooArgList(self.wspace.function(n),
+                                                 self.wspace.function(n.replace("_zinv", "_ttw")),
+                                                 ),
+                                    )
+            workspace.wimport(self.wspace, fZinv)
+
+
+    def translate_zinvTtw(self, ch="", n=""):
+        for varPrefix, funcPrefix in [("normTtw%s" % ch, "ttw%s" % ch),
+                                      ("normZinv%s" % ch, "zInv%s" % ch),
+                                      ]:
+            if n.startswith(varPrefix):
+                f = r.RooFormulaVar(n.replace(varPrefix, funcPrefix),
+                                    "TMath::Exp((@0)*TMath::Log(%g))" % self.likelihoodSpec.lnUMax(),
+                                    r.RooArgList(self.wspace.var(n)),
+                                    )
+                workspace.wimport(self.wspace, f)
+
 
 
     def addBulkYields(self, selection):
@@ -130,6 +131,14 @@ class driver(ra1.driver):
         return results
 
 
+    def setWspace(self):
+        results = self.rooFitResults()
+        f = r.TFile("MaxLikelihoodFitResult.root")
+        self.wspace = f.Get("MaxLikelihoodFitResult")
+        f.Close()
+        return results
+
+
     def bestFit(self,
                 printPages=False,
                 drawMc=True,
@@ -143,12 +152,7 @@ class driver(ra1.driver):
                 pullThreshold=2.0,
                 msgThreshold=None):
 
-        if msgThreshold:
-            r.RooMsgService.instance().setGlobalKillBelow(msgThreshold)
-
-        results = self.rooFitResults()
-        f = r.TFile("MaxLikelihoodFitResult.root")
-        self.wspace = f.Get("MaxLikelihoodFitResult")
+        results = self.setWspace()
 
         note = self.note() + "_hcg"
         if self.injectSignal():
@@ -156,11 +160,8 @@ class driver(ra1.driver):
 
         for selection in self.likelihoodSpec.selections():
             self.addBulkYields(selection)  #  FIXME: move to data cards
+
             ch = "_%s_" % selection.name
-
-            self.translate(attr="allVars", ch=ch)
-            self.translate(attr="allFunctions", ch=ch)
-
             self.compute(attr="allVars", ch=ch)
             self.compute(attr="allFunctions", ch=ch)
 
@@ -182,4 +183,4 @@ class driver(ra1.driver):
             plotter = plotting.validationPlotter(args)
             plotter.go()
 
-        f.Close()
+
