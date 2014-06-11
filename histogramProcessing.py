@@ -293,6 +293,7 @@ def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
 
 
 def perSelHisto(model=None, jets="", bJets=""):
+    print "FIXME: Signal Unc. for muon"
     for box in model.boxes():
         assert box == "had", " %s signal systematic not yet implemented" % box
         d = effUncRelHisto(model=model,
