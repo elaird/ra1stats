@@ -106,10 +106,10 @@ def printNlls(nlls={}):
         return
 
     n = max([len(c) for c in nlls.keys()])
-    header = "  ".join(["cat".ljust(n), "iBin", "nIter", " (fMin", "  fHat +-   Err", "  fMax)",
+    header = "  ".join(["cat".ljust(n), "iBin", "nIter", "(fMin", "       fHat +-     Err", "   fMax)",
                         "", "nll_(f=fHat)", "nll_(f=0)", " delta", "sqrt(2*delta)"])
-    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%6.2f", "%6.2f +-%6.2f", "%6.2f ",
-                     "", "     %6.2f ", "  %6.2f ", "%6.2f", "%s"])
+    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%8.1e", "%8.1e +- %7.1e", "%7.1e",
+                     "", "      %6.2f ", "  %6.2f ", "%6.2f", "%s"])
     print header
     print "-" * len(header)
 
@@ -118,20 +118,15 @@ def printNlls(nlls={}):
         chi2 = 0.0
         nDof = 0
         labelSig = []
-        canvas = r.TCanvas("canvas")
+        canvas = r.TCanvas("canvas_%s" % cat)
         for iBin, d in sorted(nllDct.iteritems()):
-            delta = d["nllB"] - d["nllSb"]
-            if 0.0 < delta:
-                sVal = (2.0*delta)**0.5
-                if d["poiVal"] < 0.0:
-                    sVal *= -1.0
-                s = " %5.2f" % sVal
-            else:
-                sVal = 0.0
-                s = "  -  "
+            delta = max(0.0, d["nllB"] - d["nllSb"])
+            sVal = (2.0*delta)**0.5
+            if d["poiVal"] < 0.0:
+                sVal *= -1.0
             print fmt % (cat, iBin, d["nIterations"],
                          d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
-                         d["nllSb"], d["nllB"], delta, s)
+                         d["nllSb"], d["nllB"], delta, " %5.2f" % sVal)
             nDof += 1
             chi2 += sVal**2
             labelSig.append((iBin+1, sVal))
@@ -139,7 +134,7 @@ def printNlls(nlls={}):
         print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, pVal)
 
         labelpVal.append((cat,pVal))
-        h = r.TH1D("sig","",len(labelSig),0,len(labelSig))
+        h = r.TH1D("sig_%s" % cat,"",len(labelSig),0,len(labelSig))
         for sig in labelSig:
             h.SetStats(0)
             h.SetBinContent(sig[0], float(sig[1]))
