@@ -1,12 +1,18 @@
 import directories
 from signalScan import scan
 
+
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
             "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736,
             }[model]
 
+def effUncRelModified(model="", raw=None):
+    if raw < 0.05:
+        return effUncRel(model)
+    else:
+        return raw
 
 def models():
     kargsOld = {"box": "had", "htLower": 375, "htUpper": 475}
@@ -35,6 +41,7 @@ def models():
     new = {"weightedHistName": "m0_m12_mChi_weight",
            "unweightedHistName": "m0_m12_mChi_noweight",
            "sigMcUnc": False,
+           "flatEffUncRel": False,
            "exampleKargs": kargsNew,
            "com": 8,
            "llk": "2012dev"}
@@ -58,7 +65,8 @@ def models():
         #scan(dataset="T2cc", had="v10", aT={"200":"0.6","275":"0.55","325":"0.55"}, whiteList=["0b_ge4j"],  extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v11", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v12", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
-        scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
+        ##scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
+        scan(dataset="T2cc", had="v14", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"][:3], extraVars=["SITV"], **new),
 
         # old
         #scan(dataset="T1tttt", tag="ichep", had="2012full", muon="2012full", llk="2012ichep",
@@ -98,7 +106,7 @@ def whiteListOfPoints(model="", respect=False):
             #"T2": [(400.0, 25.0)],
             #"T2": [(400.0, 50.0)],
             #"T2": [(375.0, 50.0)],
-            "T2cc": [(175.0, 95.0)],
+            "T2cc": [(250.0, 240.0)],
             #"T2cc": [(175.0, 165.0)],
             }.get(model, [])
 
@@ -163,20 +171,10 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(" ".join(model.extraVars))
     if box == "had":
         if model.aT:
-            if htLower:
-                tags.append("AlphaT"+model.aT[str(int(htLower) if htLower < 375. else 325 )])
-#            if len(model.aT) == 3:
-#                if htLower < 275.:
-#                    tags.append("AlphaT"+model.aT[1])
-#                elif htLower == 275. :
-#                    tags.append("AlphaT"+model.aT[2])
-#                else:
-#                    tags.append("AlphaT"+model.aT[0])
-#            else :
-#                if htLower < 275.:
-#                    tags.append("AlphaT"+model.aT[1])
-#                else:
-#                    tags.append("AlphaT"+model.aT[0])
+            if htLower in model.aT:
+                tags.append("AlphaT"+model.aT[htLower])
+            else:
+                tags.append("AlphaT"+model.aT[max(model.aT)])
         else:
             tags.append("AlphaT55")
     else:
@@ -195,6 +193,25 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "file": "/".join(subDirs + fileFields),
             "weightedHistName": model.weightedHistName,
             "unweightedHistName": model.unweightedHistName}
+
+
+def effUncRelHistoSpec(model=None, box=None,
+                       bJets=None, jets=None):
+    assert box in ["had", "muon"], box
+
+    if model.isSms:
+        subDirs = [directories.eff(), "sms_%d" % model.com]
+    fileName = "syst.root"
+    tags = ["total", model.name]
+    if bJets:
+        tags.append(bJets)
+    if jets:
+        tags.append(jets)
+
+    fileFields = [model.name, box, getattr(model, "_"+box), fileName]
+    return {"histDir": "",
+            "file": "/".join(subDirs + fileFields),
+            "effUncRelHistName": ("_").join(tags+["incl"])}
 
 
 def ranges(model):
