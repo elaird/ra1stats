@@ -205,7 +205,7 @@ def significances(whiteList=[], selName="", options=None):
     for iBin in range(nBins):
         # make xs fall vs. HT
         xs1 = 0.1*r.TMath.Exp(-iBin)
-        xs2 = 1.0*(1+iBin)**-4.0
+        xs2 = 1.0*(2+iBin)**-4.0
         model = signals.point(xs=xs2,
                               label="%s_ht%d" % (selName, iBin),
                               sumWeightIn=1.0, x=0.0, y=0.0,
@@ -224,6 +224,7 @@ def significances(whiteList=[], selName="", options=None):
 
         nIterations, poi = f.expandPoiRange(allowNegative=True,
                                             nIterationsMax=10,
+                                            msgThreshold=r.RooFit.WARNING,
                                             )
         out[iBin] = {"nIterations": nIterations,
                      "poiVal": poi.getVal(),
