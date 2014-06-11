@@ -202,11 +202,12 @@ def significances(whiteList=[], selName="", options=None):
         xs2 = 1.0*(1+iBin)**-4.0
         model = signals.point(xs=xs2,
                               label="%s_ht%d" % (selName, iBin),
-                              sumWeightIn=1.0, x=0.0, y=0.0, effUncRel=0.01,  # dummy
+                              sumWeightIn=1.0, x=0.0, y=0.0,
                               )
         effs = [0.0] * nBins
         effs[iBin] = 0.5
-        model.insert(selName, {"effHad": effs})
+        model.insert(selName, {"effHad": effs,
+                               "effUncRel":0.01}) # dummy}
 
         f = driver.driver(signalToTest=model,
                           llkName=options.llk,
