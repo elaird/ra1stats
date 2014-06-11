@@ -1,11 +1,8 @@
 import os
 import ra1
-import calc
-import ensemble
 import likelihood
 import plotting
 import workspace
-import utils
 
 import ROOT as r
 
