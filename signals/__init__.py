@@ -23,7 +23,7 @@ class point(object):
 
     def keyPresent(self, key=""):
         for dct in self.__selEffs.values():
-            if key in dct.keys():
+            if key in dct:
                 return True
         return False
 
