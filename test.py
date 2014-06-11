@@ -66,6 +66,12 @@ def opts():
                       action="store_true",
                       help="print nll(poi=0) for each HT bin")
 
+    parser.add_option("--system",
+                      dest="system",
+                      default=False,
+                      action="store_true",
+                      help="do each category's computation in a separate system call (e.g. to work around memory leaks)")
+
     options, _ = parser.parse_args()
 
     options.nToys = int(options.nToys)
@@ -96,6 +102,9 @@ def printReport(report={}):
 
 
 def printNlls(nlls={}):
+    if not nlls:
+        return
+
     n = max([len(c) for c in nlls.keys()])
     header = "  ".join(["cat".ljust(n), "iBin", "nIter", " (fMin", "  fHat+=   Err", "  fMax)",
                         "", "nll_fHat", "nll_f=0", " delta", "sqrt(2*delta)"])
@@ -252,6 +261,29 @@ def go(selections=[], options=None, hMap=None):
     for iSel, sel in enumerate(selections):
         if options.category and sel.name != options.category:
             continue
+
+        if options.system:
+            cmd = ["time", "./test.py"]
+            for item in dir(options):
+                if item.startswith("_"):
+                    continue
+                if item in ['read_file', 'read_module', 'ensure_value']:
+                    continue
+                if item in ["system", "bestFit"]:
+                    continue
+
+                if item in ["genBands", "hcg", "ignoreHad", "interval", "plotBands", "significances", "simultaneous"]:
+                    if getattr(options, item):
+                        cmd.append("--%s" % item)
+                elif item == "category":
+                    cmd.append("--category=%s" % sel.name)
+                else:
+                    cmd.append("--%s=%s" % (item, getattr(options, item)))
+            cmd = " ".join(cmd)
+            print cmd
+            os.system(cmd)
+            continue
+
         nCategories += 1
 
         whiteList = [sel.name] if sel.name else []
@@ -345,6 +377,7 @@ if __name__ == "__main__":
     else:
         from driver.ra1 import driver as drv
 
+    import os
     import likelihood
     import plotting
     from signals import t2, two, t2cc
@@ -369,5 +402,5 @@ if __name__ == "__main__":
     else:
         printNlls(nlls)
 
-    if not nCategories:
+    if (not options.system) and (not nCategories):
         print "WARNING: category %s not found." % options.category
