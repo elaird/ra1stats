@@ -4,7 +4,7 @@ import sys
 import configuration.directories
 import configuration.limit
 import configuration.signal
-import driver
+from driver import ra1
 import utils
 
 
@@ -61,12 +61,12 @@ def formattedClsResults(results={}, cl=None, cl2=None):
 def resultsOneCL(llkName=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
-    f = driver.driver(signalToTest=signal,
-                      whiteList=signal.categories(),
-                      llkName=llkName,
-                      rhoSignalMin=configuration.limit.rhoSignalMin(),
-                      fIniFactor=configuration.limit.fIniFactor(),
-                      )
+    f = ra1.driver(signalToTest=signal,
+                   whiteList=signal.categories(),
+                   llkName=llkName,
+                   rhoSignalMin=configuration.limit.rhoSignalMin(),
+                   fIniFactor=configuration.limit.fIniFactor(),
+                   )
 
     if "CLs" in configuration.limit.method():
         if "Custom" in configuration.limit.method():

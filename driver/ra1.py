@@ -426,6 +426,7 @@ class driver(object):
 
         return out
 
+
     def qcdPlot(self):
         plotting.errorsPlot(self.wspace,
                             utils.rooFitResults(workspace.pdf(self.wspace), self.data),

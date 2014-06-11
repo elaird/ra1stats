@@ -4,13 +4,11 @@ import math
 import os
 
 import ensemble
-import workspace as common
+import workspace
 import utils
 
 import ROOT as r
 
-# compatibility
-ni = common.ni
 
 def rootSetup() :
     #r.gROOT.SetStyle("Plain")
@@ -347,6 +345,8 @@ def obsString(label = "", other = "", lumi = 0.0) :
 
 class validationPlotter(object) :
     def __init__(self, args) :
+        self.hcg = False
+
         for key,value in args.iteritems() :
             setattr(self,key,value)
         if self.signalExampleToStack : assert self.smOnly
@@ -647,11 +647,17 @@ class validationPlotter(object) :
 
         if not self.muonForFullEwk :
             self.plot(note = "ttW scale factor (result of fit)", legend0 = (0.5, 0.8), yAxisMinMax = (0.0,3.0), yLabel = "",
-                      otherVars = [ {"var":"ttw", "type":"function", "dens":["mcTtw"], "denTypes":[None], "desc":"ML ttW / MC ttW",
+                      otherVars = [ {"var":"ttw", "type":"function",
+                                     "dens": [] if self.hcg else ["mcTtw"],
+                                     "denTypes": [] if self.hcg else [None],
+                                     "desc":"ML ttW / MC ttW",
                                      "stack":None, "color":r.kGreen, "goptions": "hist"} ])
 
             self.plot(note = "Zinv scale factor (result of fit)", legend0 = (0.5, 0.8), yAxisMinMax = (0.0,3.0), yLabel = "",
-                      otherVars = [ {"var":"zInv", "type":"function", "dens":["mcZinv"], "denTypes":[None], "desc":"ML Z->inv / MC Z->inv",
+                      otherVars = [ {"var":"zInv", "type":"function",
+                                     "dens": [] if self.hcg else ["mcZinv"],
+                                     "denTypes": [] if self.hcg else [None],
+                                     "desc":"ML Z->inv / MC Z->inv",
                                      "stack":None, "color":r.kRed, "goptions": "hist"}])
 
             self.plot(note = "fraction of EWK background which is Zinv (result of fit)" if not self.printPages else "",
@@ -841,7 +847,8 @@ class validationPlotter(object) :
                      "errorBand": self.ewk-6,
                      "systMap":True}
 
-        kargs = {"yAxisMinMax": (0.0, 2.0), "yLabel": "", "legend0": (0.18, 0.7), "legend1": (0.45, 0.9)}
+        kargs = {"yAxisMinMax": (-2.0, 2.0) if self.hcg else (0.0, 2.0),
+                 "yLabel": "", "legend0": (0.18, 0.7), "legend1": (0.45, 0.9)}
         if "phot" in self.lumi:
             otherVars.update({"var":"rhoPhotZ", "desc":"#rho_{#gammaZ}"})
             self.plot(otherVars = [otherVars], **kargs)
@@ -904,7 +911,7 @@ class validationPlotter(object) :
 
         self.canvas.Clear()
 
-        for i, d in enumerate(common.floatingVars(self.wspace)):
+        for i, d in enumerate(workspace.floatingVars(self.wspace)):
             if not (i%nLines) :
                 x += 0.5
                 y = y0
@@ -921,6 +928,8 @@ class validationPlotter(object) :
         if self.smOnly and "simple" in self.lumi : return
 
         name = "correlation_matrix"
+        if not self.results:
+            return
         h = self.results.correlationHist(name)
         h.SetStats(False)
         r.gStyle.SetPaintTextFormat("4.1f")
@@ -1172,8 +1181,8 @@ class validationPlotter(object) :
         for i in range(len(self.htBinLowerEdges)) :
             if wspaceMemberFunc :
                 iLabel = i if not systMap else self.inputData.systBins()[varName.replace("rho", "sigma")][i]
-                item1 = ni(varName, "", iLabel)
-                item2 = ni(varName, self.label, iLabel)
+                item1 = workspace.ni(varName, "", iLabel)
+                item2 = workspace.ni(varName, self.label, iLabel)
                 var = self.wspace.var(item1)
                 if not var : var = self.wspace.var(item2)
                 func = self.wspace.function(item1)
@@ -1200,7 +1209,7 @@ class validationPlotter(object) :
                     d["noErrors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
                     d["noErrors"].SetBinError(i+1, 0.0)
                 elif self.errorsFromToys :
-                    q = self.quantiles[ni(varName, self.label, i)]
+                    q = self.quantiles[workspace.ni(varName, self.label, i)]
                     d["errors"].SetBinContent(i+1, (q[2]+q[0])/2.0)
                     d["errors"].SetBinError(i+1, (q[2]-q[0])/2.0)
                     d["uncFromToys"].SetBinContent(i+1, d["errors"].GetBinError(i+1))
@@ -1209,8 +1218,8 @@ class validationPlotter(object) :
                     d["errorsLo"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)-d["errors"].GetBinError(i+1)) #used in ratioPlots
                     d["errorsHi"].SetBinContent(i+1, d["errors"].GetBinContent(i+1)+d["errors"].GetBinError(i+1)) #used in ratioPlots
                 elif errorsFrom :
-                    noI = ni(errorsFrom, self.label)
-                    errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(ni(errorsFrom, self.label, i))
+                    noI = workspace.ni(errorsFrom, self.label)
+                    errorsVar = self.wspace.var(noI) if self.wspace.var(noI) else self.wspace.var(workspace.ni(errorsFrom, self.label, i))
                     if errorsVar and errorsVar.getVal() :
                         d["value"].SetBinError(i+1, value*errorsVar.getError()/errorsVar.getVal())
                         d["errors"].SetBinContent(i+1, d["value"].GetBinContent(i+1))
@@ -1267,7 +1276,7 @@ class validationPlotter(object) :
         for i,t in enumerate(l) :
             var,label,iPar = t
             obj = self.wspace.var(var)
-            if not obj : obj = self.wspace.var(ni(var, self.label, iPar))
+            if not obj : obj = self.wspace.var(workspace.ni(var, self.label, iPar))
             if not obj : continue
             text.DrawLatex(x, y-i*s, label%(obj.getVal(), obj.getError()))
         return
@@ -1359,13 +1368,18 @@ class validationPlotter(object) :
 
         obsHisto.SetMarkerStyle(obs.get("markerStyle", 20))
         obsHisto.SetStats(False)
-        obsHisto.Draw(obs.get("goptions", "p"))
+        if obs["desc"]:
+            obsHisto.Draw(obs.get("goptions", "p"))
+            leg.AddEntry(obsHisto, obs["desc"], obs.get("legSpec", "lpe"))
+        else:
+            obsHisto.SetLineColor(r.kWhite)
+            obsHisto.SetMarkerColor(r.kWhite)
+            obsHisto.Draw("l")
 
         minimum,maximum = self.yAxisLogMinMax if logY else yAxisMinMax
         if minimum!=None : obsHisto.SetMinimum(minimum)
         if maximum!=None : obsHisto.SetMaximum(maximum)
 
-        if obs["desc"] : leg.AddEntry(obsHisto, obs["desc"], obs.get("legSpec", "lpe"))
         stuff += [obs]
 
         r.gPad.SetLogy(logY)
@@ -1386,7 +1400,8 @@ class validationPlotter(object) :
             stack.Draw(goptions = "histsame" if key[:4]!="NONE" else "same", reverse = False)
 
         obsHisto.Draw("sameaxis") #redraw axis
-        obsHisto.Draw("psame") #redraw data points
+        if obs["desc"]:
+            obsHisto.Draw("psame") #redraw data points
 
         for item in reversed(legEntries) if reverseLegend else legEntries :
             leg.AddEntry(*item)

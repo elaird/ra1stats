@@ -6,6 +6,12 @@ import optparse
 def opts():
     parser = optparse.OptionParser("usage: %prog [options]")
 
+    parser.add_option("--hcg",
+                      dest="hcg",
+                      default=False,
+                      action="store_true",
+                      help="use HCG ``combine'' tool for bestFit")
+
     parser.add_option("--ignoreHad",
                       dest="ignoreHad",
                       default=False,
@@ -208,12 +214,12 @@ def significances(whiteList=[], selName="", options=None):
         effs[iBin] = 0.5
         model.insert(selName, {"effHad": effs})
 
-        f = driver.driver(signalToTest=model,
-                          llkName=options.llk,
-                          whiteList=whiteList,
-                          ignoreHad=options.ignoreHad,
-                          separateSystObs=not options.genBands,
-                          )
+        f = drv(signalToTest=model,
+                llkName=options.llk,
+                whiteList=whiteList,
+                ignoreHad=options.ignoreHad,
+                separateSystObs=not options.genBands,
+                )
 
         nIterations, poi = f.expandPoiRange(allowNegative=True,
                                             nIterationsMax=10,
@@ -254,15 +260,15 @@ def go(selections=[], options=None, hMap=None):
                                            options=options)
             continue
 
-        f = driver.driver(llkName=options.llk,
-                          whiteList=whiteList,
-                          ignoreHad=options.ignoreHad,
-                          separateSystObs=not options.genBands,
-                          #trace=True
-                          #rhoSignalMin=0.1,
-                          #fIniFactor=0.1,
-                          **signalArgs(whiteList, options)
-                          )
+        f = drv(llkName=options.llk,
+                whiteList=whiteList,
+                ignoreHad=options.ignoreHad,
+                separateSystObs=not options.genBands,
+                #trace=True
+                #rhoSignalMin=0.1,
+                #fIniFactor=0.1,
+                **signalArgs(whiteList, options)
+                )
 
         if options.genBands:
             f.ensemble(nToys=options.nToys,
@@ -332,7 +338,11 @@ if __name__ == "__main__":
     # before other imports so that --help is not stolen by pyROOT
     options = opts()
 
-    import driver
+    if options.hcg:
+        from driver.hcg import driver as drv
+    else:
+        from driver.ra1 import driver as drv
+
     import likelihood
     import plotting
     from signals import t2, two, t2cc
