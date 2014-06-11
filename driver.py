@@ -253,7 +253,6 @@ class driver(object):
             if d["upperLimit"]>upperItCut*m :
                 s.first().setMax(m*itFactor)
                 s.first().setMin(m/itFactor)
-                s.first().setMin(0.0); print "HACK: setting min to zero"
             elif d["upperLimit"]<lowerItCut*m :
                 s.first().setMax(m/itFactor)
             else :
