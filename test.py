@@ -106,10 +106,10 @@ def printNlls(nlls={}):
         return
 
     n = max([len(c) for c in nlls.keys()])
-    header = "  ".join(["cat".ljust(n), "iBin", "nIter", " (fMin", "  fHat+=   Err", "  fMax)",
-                        "", "nll_fHat", "nll_f=0", " delta", "sqrt(2*delta)"])
-    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%6.2f", "%6.2f+-%6.2f", "%6.2f ",
-                     "", "  %6.2f", " %6.2f", "%6.2f", "%s"])
+    header = "  ".join(["cat".ljust(n), "iBin", "nIter", " (fMin", "  fHat +-   Err", "  fMax)",
+                        "", "nll_(f=fHat)", "nll_(f=0)", " delta", "sqrt(2*delta)"])
+    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%6.2f", "%6.2f +-%6.2f", "%6.2f ",
+                     "", "     %6.2f ", "  %6.2f ", "%6.2f", "%s"])
     print header
     print "-" * len(header)
 
@@ -123,8 +123,9 @@ def printNlls(nlls={}):
             delta = d["nllB"] - d["nllSb"]
             if 0.0 < delta:
                 sVal = (2.0*delta)**0.5
-                s = "-" if d["poiVal"] < 0.0 else " "
-                s += "%5.2f" % sVal
+                if d["poiVal"] < 0.0:
+                    sVal *= -1.0
+                s = " %5.2f" % sVal
             else:
                 sVal = 0.0
                 s = "  -  "
@@ -133,7 +134,7 @@ def printNlls(nlls={}):
                          d["nllSb"], d["nllB"], delta, s)
             nDof += 1
             chi2 += sVal**2
-            labelSig.append((iBin+1, -1*sVal if d["poiVal"]<0.0 else 1*sVal))
+            labelSig.append((iBin+1, sVal))
         pVal = r.TMath.Prob(chi2, nDof)
         print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, pVal)
 
