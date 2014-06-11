@@ -178,7 +178,9 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
     simpleExclHistos = {}
     relativeHistos = {}
 
-    items = [("ExpectedUpperLimit_m1_Sigma", 0.0),
+    items = [("ExpectedUpperLimit_m2_Sigma", 0.0),
+             ("ExpectedUpperLimit_p2_Sigma", 0.0),
+             ("ExpectedUpperLimit_m1_Sigma", 0.0),
              ("ExpectedUpperLimit_p1_Sigma", 0.0),
              ("ExpectedUpperLimit",          0.0),
              ]
@@ -247,7 +249,9 @@ def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=No
 
     items = [("ExpectedUpperLimit", "expected upper limit"),
              ("ExpectedUpperLimit_-1_Sigma", "title"),
-             ("ExpectedUpperLimit_+1_Sigma", "title")]
+             ("ExpectedUpperLimit_+1_Sigma", "title"),
+             ("ExpectedUpperLimit_-2_Sigma", "title"),
+             ("ExpectedUpperLimit_+2_Sigma", "title")]
 
     if not expectedMapsOnly:
         items = [("UpperLimit" if configuration.limit.method() == "CLs" else "upperLimit95", "upper limit")] + items
@@ -400,6 +404,10 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
                   {"name": "ExpectedUpperLimit_p1_Sigma", "label": "",
                    "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
+                  {"name": "ExpectedUpperLimit_m2_Sigma", "label": "Expected Limit #m2 #sigma exp.",
+                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
+                  {"name": "ExpectedUpperLimit_p2_Sigma", "label": "Expected Limit #p2 #sigma exp.",
+                   "lineStyle": 2, "lineWidth": 2, "color": r.kViolet},
                   ]
     if observedCurves:
         curveSpecs += [{"name": "UpperLimit",
@@ -522,6 +530,8 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
                     lineStyle = {"ExpectedUpperLimit": 7,
                                  "ExpectedUpperLimit_m1_Sigma": 2,
                                  "ExpectedUpperLimit_p1_Sigma": 2,
+                                 "ExpectedUpperLimit_m2_Sigma": 2,
+                                 "ExpectedUpperLimit_p2_Sigma": 2,
                                  "UpperLimit": 19,  # 9,#3,#1,#5,
                                  "UpperLimit_m1_Sigma": 19,
                                  "UpperLimit_p1_Sigma": 19
@@ -865,7 +875,7 @@ def drawBenchmarks(model=None):
 
 def printOneHisto(h2=None, name="", canvas=None, fileName="",
                   effRatioPlots=False, drawBenchmarkPoints=False,
-                  logZ=[], model=None, suppressed=[]):
+                  logZ=[], model=None, suppressed=[], alsoC=False):
     if "upper" in name:
         hp.printHoles(h2)
     h2.SetStats(False)
@@ -904,7 +914,8 @@ def printOneHisto(h2=None, name="", canvas=None, fileName="",
         h2.SetTitle(title)
 
     canvas.Print(fileName)
-
+    if alsoC:
+        canvas.Print(fileName.replace(".pdf","_%s.C"%name))
     #effMu/effHad
     if effRatioPlots:
         for name in names:

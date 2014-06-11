@@ -190,15 +190,23 @@ def sumWeightInHisto(model=None):
     return oneHisto(s["file"], s["beforeDir"], s["weightedHistName"])
 
 
+def effUncRelHisto(model=None, box="had", bJets="", jets=""):
+    s = configuration.signal.effUncRelHistoSpec(model=model,
+                                                box=box,
+                                                bJets=bJets,
+                                                jets=jets)
+    return oneHisto(s["file"], s["histDir"], s["effUncRelHistName"])
+
+
 def effHisto(model=None, box="",
              htLower=None, htUpper=None,
              bJets="", jets=""):
     spec = configuration.signal.effHistoSpec(model=model,
-                                    box=box,
-                                    htLower=htLower,
-                                    htUpper=htUpper,
-                                    bJets=bJets,
-                                    jets=jets)
+                                             box=box,
+                                             htLower=htLower,
+                                             htUpper=htUpper,
+                                             bJets=bJets,
+                                             jets=jets)
     if model.isSms:
         return smsEffHisto(spec=spec, model=model)
     else:
@@ -209,11 +217,11 @@ def meanWeightSigMc(model=None, box="",
                     htLower=None, htUpper=None,
                     bJets="", jets=""):
     spec = configuration.signal.effHistoSpec(model=model,
-                                    box=box,
-                                    htLower=htLower,
-                                    htUpper=htUpper,
-                                    bJets=bJets,
-                                    jets=jets)
+                                             box=box,
+                                             htLower=htLower,
+                                             htUpper=htUpper,
+                                             bJets=bJets,
+                                             jets=jets)
     assert model.isSms
     return ratio(spec["file"],
                  spec["afterDir"], spec["weightedHistName"],
@@ -224,11 +232,11 @@ def nEventsSigMc(model=None, box="",
                  htLower=None, htUpper=None,
                  bJets="", jets=""):
     spec = configuration.signal.effHistoSpec(model=model,
-                                    box=box,
-                                    htLower=htLower,
-                                    htUpper=htUpper,
-                                    bJets=bJets,
-                                    jets=jets)
+                                             box=box,
+                                             htLower=htLower,
+                                             htUpper=htUpper,
+                                             bJets=bJets,
+                                             jets=jets)
     assert model.isSms
     return oneHisto(spec["file"], spec["afterDir"], spec["unweightedHistName"])
 
@@ -284,6 +292,18 @@ def perSelHistos(model=None, htThresholds=None, jets="", bJets=""):
     return d
 
 
+def perSelHisto(model=None, jets="", bJets=""):
+    print "FIXME: Signal Unc. for muon"
+    for box in model.boxes():
+        assert box == "had", " %s signal systematic not yet implemented" % box
+        d = effUncRelHisto(model=model,
+                           box=box,
+                           bJets=bJets,
+                           jets=jets,
+                           )
+        return d
+
+
 def effHistos(model=None, allCategories=False):
     out = {}
     for sel in likelihood.spec(name=model.llk).selections():
@@ -295,6 +315,17 @@ def effHistos(model=None, allCategories=False):
                                      htThresholds=htThresholds,
                                      jets=sel.jets,
                                      bJets=sel.bJets)
+    return out
+
+
+def effUncRelHistos(model=None, allCategories=False):
+    out = {}
+    for sel in likelihood.spec(name=model.llk).selections():
+        if (not allCategories) and (sel.name not in model.whiteList):
+            continue
+        out[sel.name] = perSelHisto(model=model,
+                                    jets=sel.jets,
+                                    bJets=sel.bJets)
     return out
 
 

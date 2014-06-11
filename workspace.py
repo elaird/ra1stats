@@ -666,10 +666,12 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="",
             rho = ni("rhoSignal", label, iPar)
             delta = ni("deltaSignal", label, iPar)
             gaus = ni("signalGaus", label, iPar)
+            effUncRel = ni("effUncRel", label, iPar)
 
+            wimport(w, r.RooRealVar(effUncRel, effUncRel, signalToTest["effUncRel"]))
             wimport(w, r.RooRealVar(rho, rho, 1.0, rhoSignalMin, 2.0))
             systTerm(w, name=gaus, obsName=one, obsValue=1.0, muVar=w.var(rho),
-                     sigmaName=delta, sigmaValue=w.var("effUncRel").getVal())
+                     sigmaName=delta, sigmaValue=w.var(effUncRel).getVal())
 
             terms.append(gaus)
             systObs.append(one)
@@ -801,11 +803,10 @@ def setupLikelihood(w=None, selection=None, systematicsLabel=None, kQcdLabel=Non
     return out
 
 
-def startLikelihood(w=None, xs=None, sumWeightIn=None, effUncRel=None, fIniFactor=None, poi={}):
+def startLikelihood(w=None, xs=None, sumWeightIn=None, fIniFactor=None, poi={}):
     wimport(w, r.RooRealVar("xs", "xs", xs))
     assert sumWeightIn
     wimport(w, r.RooRealVar("invSumWeightIn", "invSumWeightIn", 1.0/sumWeightIn))
-    wimport(w, r.RooRealVar("effUncRel", "effUncRel", effUncRel))
     fIni, fMin, fMax = poi["f"]
     wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
 

@@ -232,7 +232,6 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
     canvas = utils.numberedCanvas()
     fileName = "%s/ensemble_%s.pdf"%(plotsDir, note)
     canvas.Print(fileName+"[")
-
     utils.cyclePlot(d = pHistos, f = histoLines, canvas = canvas, fileName = fileName,
                     args = {"bestDict":obs["parBestFit"], "bestColor":r.kGreen,
                             "quantileDict": pQuantiles, "quantileColor":r.kRed,
@@ -244,8 +243,8 @@ def ensemblePlotsAndTables(note = "", nToys = None, plotsDir = "", stdout = Fals
                             "errorColor":r.kGreen})
     utils.cyclePlot(d = oHistos, canvas = canvas, fileName = fileName)
     #utils.cyclePlot(d = pHistos2, canvas = canvas, fileName = fileName)
+    
     canvas.Print(fileName+"]")
-
     tfile.Close()
 
 def clsCustomPlots(obs = None, valuesDict = {}, note = "", plotsDir = "plots") :
@@ -372,9 +371,10 @@ class validationPlotter(object) :
 
         if not self.smOnly :
             iXs = self.signalToTest.label.find("(xs =")
-            xs = self.signalToTest.label[6+iXs:-1]
+            xs = self.signalToTest.label[6+iXs:12+iXs]
             mlF = "[#sigma_{ML} = (%3.1e #pm %3.1e) #times %s]"%(self.wspace.var("f").getVal(), self.wspace.var("f").getError(), xs)
-            self.signalDesc = "#lower[0.35]{#splitline{%s}{%s}}"%(self.signalToTest.label[:iXs], mlF)
+            tmp = self.signalToTest.label[self.signalToTest.label.find("m_"):-3]
+            self.signalDesc = "#lower[0.35]{#splitline{%s}{%s}}"%(tmp, mlF)
             self.signalDesc2 = ""
 
         self.width1 = 2

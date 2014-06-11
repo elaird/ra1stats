@@ -20,24 +20,26 @@ def histoList(histos={}):
             out.append(item)
     return out
 
-
 def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
                 xs=None, sumWeightIn=None, sigMcUnc=None):
 
     out = signals.point(xs=xs.GetBinContent(*point3),
                         label="%s_%d_%d_%d" % ((modelName,)+point3),
-                        effUncRel=effUncRel,
                         sumWeightIn=sumWeightIn.GetBinContent(*point3),
                         sigMcUnc=sigMcUnc,
                         x=xs.GetXaxis().GetBinLowEdge(point3[0]),
                         y=xs.GetYaxis().GetBinLowEdge(point3[1]),
                         )
-
     for selName, dct in eff.iteritems():
         d = {}
         for box, histos in dct.iteritems():
             if not all([hasattr(item, "GetBinContent") for item in histos]):
                 continue
+            if type(effUncRel) == float:
+                d["effUncRel"] = effUncRel
+            else:
+                d["effUncRel"] = configuration.signal.effUncRelModified(model=modelName,
+                                                   raw=effUncRel[selName].GetBinContent(*point3))
             d[box] = map(lambda x: x.GetBinContent(*point3), histos)
             if "eff" in box:
                 d[box+"Err"] = map(lambda x: x.GetBinError(*point3), histos)
@@ -48,18 +50,20 @@ def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
 
 def writeSignalFiles(points=[], outFilesAlso=False):
     args = {}
-    
+
     for model in configuration.signal.models():
         args[model.name] = {"eff": hp.effHistos(model),
                             "xs": hp.xsHisto(model),
                             "sumWeightIn": hp.sumWeightInHisto(model),
-                            "effUncRel": configuration.signal.effUncRel(model.name),
+                            "effUncRel": configuration.signal.effUncRel(model.name)
+                            if model.flatEffUncRel else hp.effUncRelHistos(model),
                             "sigMcUnc": model.sigMcUnc,
                             }
         toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
         toCheck += histoList(args[model.name]["eff"])
+        if not model.flatEffUncRel:
+            print "Warning: Check signal systematic histogram binning"
         rootToTxt.checkHistoBinning(toCheck)
-
     for point in points:
         name = point[0]
         signal = signalModel(modelName=name, point3=point[1:], **args[name])

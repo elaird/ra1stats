@@ -104,9 +104,12 @@ def printNlls(nlls={}):
     print header
     print "-" * len(header)
 
+    labelpVal = []
     for cat, nllDct in sorted(nlls.iteritems()):
         chi2 = 0.0
         nDof = 0
+        labelSig = []
+        canvas = r.TCanvas("canvas")
         for iBin, d in sorted(nllDct.iteritems()):
             delta = d["nllB"] - d["nllSb"]
             if 0.0 < delta:
@@ -121,8 +124,29 @@ def printNlls(nlls={}):
                          d["nllSb"], d["nllB"], delta, s)
             nDof += 1
             chi2 += sVal**2
-        print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, r.TMath.Prob(chi2, nDof))
+            labelSig.append((iBin+1, -1*sVal if d["poiVal"]<0.0 else 1*sVal))
+        pVal = r.TMath.Prob(chi2, nDof)
+        print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, pVal)
 
+        labelpVal.append((cat,pVal))
+        h = r.TH1D("sig","",len(labelSig),0,len(labelSig))
+        for sig in labelSig:
+            h.SetStats(0)
+            h.SetBinContent(sig[0], float(sig[1]))
+            h.SetTitle("significances (%s); HT Bin; Signficance (#sigma)" % cat)
+        h.Draw()
+        canvas.Print("significances_%s.pdf" % cat)
+
+    pHist = r.TH1D("pValues","",len(labelpVal),0,len(labelpVal))
+    for ip,p in enumerate(labelpVal):
+        pHist.GetXaxis().SetBinLabel(ip+1,p[0])
+        pHist.SetBinContent(ip+1,p[1])
+        pHist.SetStats(0)
+        pHist.SetTitle("p-values;category;chi2Prob")
+        pHist.SetMinimum(0.0)
+    c = r.TCanvas("c")
+    pHist.Draw()
+    c.Print("pValues.pdf")
 
 def signalArgs(whiteList=[], options=None):
     examples_paper = {("0b_le3j",): t2.a,

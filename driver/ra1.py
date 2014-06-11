@@ -51,7 +51,6 @@ class driver(object):
             workspace.startLikelihood(w=self.wspace,
                                       xs=self.signalToTest.xs,
                                       sumWeightIn=self.signalToTest.sumWeightIn,
-                                      effUncRel=self.signalToTest.effUncRel,
                                       fIniFactor=fIniFactor,
                                       poi=self.likelihoodSpec.poi())
 
@@ -253,7 +252,6 @@ class driver(object):
             if d["upperLimit"]>upperItCut*m :
                 s.first().setMax(m*itFactor)
                 s.first().setMin(m/itFactor)
-                s.first().setMin(0.0); print "HACK: setting min to zero"
             elif d["upperLimit"]<lowerItCut*m :
                 s.first().setMax(m/itFactor)
             else :
