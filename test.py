@@ -227,24 +227,7 @@ def significances(whiteList=[], selName="", options=None):
                 separateSystObs=not options.genBands,
                 )
 
-        nIterations, poi = f.expandPoiRange(allowNegative=True,
-                                            nIterationsMax=10,
-                                            msgThreshold=r.RooFit.WARNING,
-                                            )
-        out[iBin] = {"nIterations": nIterations,
-                     "poiVal": poi.getVal(),
-                     "poiErr": poi.getError(),
-                     "poiMin": poi.getMin(),
-                     "poiMax": poi.getMax(),
-                     }
-
-        out[iBin]["nllSb"] = f.rooFitResults().minNll()
-
-        # fix POI to zero
-        poi.setMin(0.0)
-        poi.setMax(0.0)
-        poi.setVal(0.0)
-        out[iBin]["nllB"] = f.rooFitResults().minNll()
+        out[iBin] = f.nlls()
 
     return out
 
