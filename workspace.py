@@ -1,8 +1,10 @@
 import ROOT as r
 
 
-def wimport(w, item):
+def wimport(w, item, protect=True):
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING)  # suppress info messages
+    if protect and (item.ClassName() == "RooPoisson"):
+        item.protectNegativeMean()
     getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG)  # re-enable all messages
 
