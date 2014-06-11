@@ -138,3 +138,7 @@ class base(object):
                      "initialValuesFromMuonSample",
                      "initialFZinvFromMc"]:
             assert getattr(self, "_"+item) in [False, True], item
+
+    def __str__(self):
+        sels = ",".join([x.name for x in self.selections()])
+        return "%s   %s" % (self._name, sels)

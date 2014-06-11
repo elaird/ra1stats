@@ -54,13 +54,20 @@ def opts():
                       action="store_true",
                       help="scan nll vs. likelihood/__init__.py:poi()")
 
+    parser.add_option("--significances",
+                      dest="significances",
+                      default=False,
+                      action="store_true",
+                      help="print nll(poi=0) for each HT bin")
+
     options, _ = parser.parse_args()
 
     options.nToys = int(options.nToys)
     if options.genBands:
         assert options.nToys
-    assert not (options.interval and options.genBands)
-    options.bestFit = not (options.interval or options.genBands)
+    exclusive = [options.interval, options.genBands, options.significances]
+    assert exclusive.count(True) <= 1, exclusive
+    options.bestFit = not any(exclusive)
     return options
 
 
@@ -81,6 +88,59 @@ def printReport(report={}):
             out.append(fmt % sValue)
         print " ".join(out)
 
+
+def printNlls(nlls={}):
+    n = max([len(c) for c in nlls.keys()])
+    header = "  ".join(["cat".ljust(n), "iBin", "nIter", " (fMin", "  fHat+=   Err", "  fMax)",
+                        "", "nll_fHat", "nll_f=0", " delta", "sqrt(2*delta)"])
+    fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%6.2f", "%6.2f+-%6.2f", "%6.2f ",
+                     "", "  %6.2f", " %6.2f", "%6.2f", "%s"])
+    print header
+    print "-" * len(header)
+
+    labelpVal = []
+    for cat, nllDct in sorted(nlls.iteritems()):
+        chi2 = 0.0
+        nDof = 0
+        labelSig = []
+        canvas = r.TCanvas("canvas")
+        for iBin, d in sorted(nllDct.iteritems()):
+            delta = d["nllB"] - d["nllSb"]
+            if 0.0 < delta:
+                sVal = (2.0*delta)**0.5
+                s = "-" if d["poiVal"] < 0.0 else " "
+                s += "%5.2f" % sVal
+            else:
+                sVal = 0.0
+                s = "  -  "
+            print fmt % (cat, iBin, d["nIterations"],
+                         d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
+                         d["nllSb"], d["nllB"], delta, s)
+            nDof += 1
+            chi2 += sVal**2
+            labelSig.append((iBin+1, -1*sVal if d["poiVal"]<0.0 else 1*sVal))
+        pVal = r.TMath.Prob(chi2, nDof)
+        print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, pVal)
+
+        labelpVal.append((cat,pVal))
+        h = r.TH1D("sig","",len(labelSig),0,len(labelSig))
+        for sig in labelSig:
+            h.SetStats(0)
+            h.SetBinContent(sig[0], float(sig[1]))
+            h.SetTitle("significances (%s); HT Bin; Signficance (#sigma)" % cat)
+        h.Draw()
+        canvas.Print("significances_%s.pdf" % cat)
+
+    pHist = r.TH1D("pValues","",len(labelpVal),0,len(labelpVal))
+    for ip,p in enumerate(labelpVal):
+        pHist.GetXaxis().SetBinLabel(ip+1,p[0])
+        pHist.SetBinContent(ip+1,p[1])
+        pHist.SetStats(0)
+        pHist.SetTitle("p-values;category;chi2Prob")
+        pHist.SetMinimum(0.0)
+    c = r.TCanvas("c")
+    pHist.Draw()
+    c.Print("pValues.pdf")
 
 def signalArgs(whiteList=[], options=None):
     examples_paper = {("0b_le3j",): t2.a,
@@ -128,14 +188,71 @@ def hMapInit(nBins=0):
     return out
 
 
-def go(selections=[], options=None, hMap=None, report=None):
+def significances(whiteList=[], selName="", options=None):
+    out = {}
+
+    assert len(whiteList) == 1, whiteList
+    ll = likelihood.spec(name=options.llk, whiteList=whiteList)
+    sel = ll.selections()[0]
+    nBins = len(sel.data.htBinLowerEdges())
+
+    for iBin in range(nBins):
+        # make xs fall vs. HT
+        xs1 = 0.1*r.TMath.Exp(-iBin)
+        xs2 = 1.0*(1+iBin)**-4.0
+        model = signals.point(xs=xs2,
+                              label="%s_ht%d" % (selName, iBin),
+                              sumWeightIn=1.0, x=0.0, y=0.0, effUncRel=0.01,  # dummy
+                              )
+        effs = [0.0] * nBins
+        effs[iBin] = 0.5
+        model.insert(selName, {"effHad": effs})
+
+        f = driver.driver(signalToTest=model,
+                          llkName=options.llk,
+                          whiteList=whiteList,
+                          ignoreHad=options.ignoreHad,
+                          separateSystObs=not options.genBands,
+                          )
+
+        nIterations, poi = f.expandPoiRange(allowNegative=True,
+                                            nIterationsMax=10,
+                                            )
+        out[iBin] = {"nIterations": nIterations,
+                     "poiVal": poi.getVal(),
+                     "poiErr": poi.getError(),
+                     "poiMin": poi.getMin(),
+                     "poiMax": poi.getMax(),
+                     }
+
+        out[iBin]["nllSb"] = f.rooFitResults().minNll()
+
+        # fix POI to zero
+        poi.setMin(0.0)
+        poi.setMax(0.0)
+        poi.setVal(0.0)
+        out[iBin]["nllB"] = f.rooFitResults().minNll()
+
+    return out
+
+
+def go(selections=[], options=None, hMap=None):
     nCategories = 0
+    report = {}
+    nlls = {}
+
     for iSel, sel in enumerate(selections):
         if options.category and sel.name != options.category:
             continue
         nCategories += 1
 
         whiteList = [sel.name] if sel.name else []
+
+        if options.significances and sel:
+            nlls[sel.name] = significances(whiteList=whiteList,
+                                           selName=sel.name,
+                                           options=options)
+            continue
 
         f = driver.driver(llkName=options.llk,
                           whiteList=whiteList,
@@ -208,7 +325,7 @@ def go(selections=[], options=None, hMap=None, report=None):
         #f.writeMlTable(fileName="mlTables_%s.tex" % "_".join(whiteList),
         #               categories=sorted([x.name for x in selections]))
         #
-    return nCategories
+    return nCategories, report, nlls
 
 
 if __name__ == "__main__":
@@ -219,21 +336,26 @@ if __name__ == "__main__":
     import likelihood
     import plotting
     from signals import t2, two, t2cc
+    import signals
     import ROOT as r
+    r.gROOT.SetBatch(True)
 
     if options.simultaneous:
         selections = [""]
     else:
         selections = likelihood.spec(name=options.llk).selections()
 
-    report = {}
     hMap = hMapInit(nBins=len(selections))
-    nCategories = go(selections=selections,
-                     options=options,
-                     hMap=hMap,
-                     report=report)
+    nCategories, report, nlls = go(selections=selections,
+                                   options=options,
+                                   hMap=hMap,
+                                   )
 
-    plotting.pValueCategoryPlots(hMap, )  # logYMinMax=(1.0e-4, 1.0e2))
-    printReport(report)
+    if not options.significances:
+        plotting.pValueCategoryPlots(hMap, )  # logYMinMax=(1.0e-4, 1.0e2))
+        printReport(report)
+    else:
+        printNlls(nlls)
+
     if not nCategories:
         print "WARNING: category %s not found." % options.category
