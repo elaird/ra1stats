@@ -229,6 +229,7 @@ class driver(object):
                 break
         return nIterations, poi
 
+
     def nlls(self):
         nIterations, poi = self.expandPoiRange(allowNegative=True,
                                                nIterationsMax=10,
@@ -247,6 +248,11 @@ class driver(object):
         poi.setMax(0.0)
         poi.setVal(0.0)
         out["nllB"] = self.rooFitResults().minNll()
+
+        out["deltaNll"] = max(0.0, out["nllB"] - out["nllSb"])
+        out["nSigma"] = (2.0*out["deltaNll"])**0.5
+        if out["poiVal"] < 0.0:
+            out["nSigma"] *= -1.0
         return out
 
 
