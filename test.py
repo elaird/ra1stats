@@ -109,7 +109,7 @@ def printNlls(nlls={}):
     header = "  ".join(["cat".ljust(n), "iBin", "nIter", "(fMin", "       fHat +-     Err", "   fMax)",
                         "", "nll_(f=fHat)", "nll_(f=0)", " delta", "sqrt(2*delta)"])
     fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%8.1e", "%8.1e +- %7.1e", "%7.1e",
-                     "", "      %6.2f ", "  %6.2f ", "%6.2f", "%s"])
+                     "", "      %6.2f ", "  %6.2f ", "%6.2f", " %5.2f"])
     print header
     print "-" * len(header)
 
@@ -120,16 +120,12 @@ def printNlls(nlls={}):
         labelSig = []
         canvas = r.TCanvas("canvas_%s" % cat)
         for iBin, d in sorted(nllDct.iteritems()):
-            delta = max(0.0, d["nllB"] - d["nllSb"])
-            sVal = (2.0*delta)**0.5
-            if d["poiVal"] < 0.0:
-                sVal *= -1.0
             print fmt % (cat, iBin, d["nIterations"],
                          d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
-                         d["nllSb"], d["nllB"], delta, " %5.2f" % sVal)
+                         d["nllSb"], d["nllB"], d["deltaNll"], d["nSigma"])
             nDof += 1
-            chi2 += sVal**2
-            labelSig.append((iBin+1, sVal))
+            chi2 += d["nSigma"]**2
+            labelSig.append((iBin+1, d["nSigma"]))
         pVal = r.TMath.Prob(chi2, nDof)
         print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, pVal)
 
