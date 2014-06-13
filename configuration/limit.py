@@ -21,10 +21,11 @@ def calculatorType():
 
 def method():
     return ["",
+            "nlls",
             "profileLikelihood",
             "feldmanCousins",
             "CLs",
-            "CLsCustom"][3]
+            "CLsCustom"][1]
 
 
 def binaryExclusion():
