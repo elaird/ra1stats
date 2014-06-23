@@ -119,6 +119,7 @@ def printNlls(nlls={}):
         nDof = 0
         labelSig = []
         canvas = r.TCanvas("canvas_%s" % cat)
+        canvas.SetTicks(0,1)
         for iBin, d in sorted(nllDct.iteritems()):
             delta = max(0.0, d["nllB"] - d["nllSb"])
             sVal = (2.0*delta)**0.5
@@ -139,7 +140,10 @@ def printNlls(nlls={}):
             h.SetStats(0)
             h.SetBinContent(sig[0], float(sig[1]))
             h.SetTitle("significances (%s); HT Bin; Signficance (#sigma)" % cat)
-        h.Draw()
+        h.SetMaximum(3.0)
+        h.SetMinimum(-3.0)
+        h.SetMarkerStyle(20)
+        h.Draw("P")
         canvas.Print("significances_%s.pdf" % cat)
 
     pHist = r.TH1D("pValues","",len(labelpVal),0,len(labelpVal))
@@ -149,8 +153,11 @@ def printNlls(nlls={}):
         pHist.SetStats(0)
         pHist.SetTitle("p-values;category;chi2Prob")
         pHist.SetMinimum(0.0)
+        pHist.SetMaximum(1.0)
+        pHist.SetMarkerStyle(20)
     c = r.TCanvas("c")
-    pHist.Draw()
+    c.SetTicks(True)
+    pHist.Draw("P")
     c.Print("pValues.pdf")
 
 def signalArgs(whiteList=[], options=None):
