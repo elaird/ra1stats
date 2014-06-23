@@ -50,21 +50,21 @@ class l2012dev(likelihood.base):
                 note += "; %s#%s"%(likelihood.nj, j)
                 note = note.replace("ge","geq ").replace("le","leq ")
 
-                if b in ["0","1"] :
-                    options = [{"had":True, "muon":True, "phot":False, "mumu":False}]
-                else :
-                    options = [{"had":True, "muon":True}]
+                if b in ["0", "1"]:
+                    boxes = ["had", "muon", "phot", "mumu"]
+                else:
+                    boxes = ["had", "muon"]
 
-                for samplesAndSignalEff in options :
-                    sel = likelihood.selection(name = name, note = note,
-                                    boxes = samplesAndSignalEff.keys(),
-                                    muonForFullEwk = len(samplesAndSignalEff)==2,
-                                    data = getattr(module, "data_%s"%name)(),
-                                    bJets = ("eq%sb"%b).replace("eqge","ge"),
-                                    jets = "%sj"%j,
-                                    fZinvIni = fZinvIni,
-                                    AQcdIni = 0.0,
-                                    #yAxisLogMinMax = yAxisLogMinMax,
-                                    )
-                    lst.append(sel)
+                sel = likelihood.selection(name=name,
+                                           note=note,
+                                           boxes=boxes,
+                                           muonForFullEwk=len(boxes) == 2,
+                                           data=getattr(module, "data_%s" % name)(),
+                                           bJets=("eq%sb" % b).replace("eqge", "ge"),
+                                           jets="%sj" % j,
+                                           fZinvIni=fZinvIni,
+                                           AQcdIni=0.0,
+                                           #yAxisLogMinMax=yAxisLogMinMax,
+                                           )
+                lst.append(sel)
         self.add(lst)

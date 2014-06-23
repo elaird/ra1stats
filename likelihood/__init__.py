@@ -220,10 +220,10 @@ class base(object):
                 print "FAIL muonForFullEwk: skipping", sel
                 continue
             if sel.universalSystematics:
-                print "Fail uinversalSystematics: skipping", sel
+                print "Fail universalSystematics: skipping", sel
                 continue
             if sel.universalKQcd:
-                print "Fail uinversalKQcd: skipping", sel
+                print "Fail universalKQcd: skipping", sel
                 continue
 
             lines = self.formattedSelection(*self.preparedSelection(sel),

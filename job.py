@@ -68,8 +68,11 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
                    fIniFactor=configuration.limit.fIniFactor(),
                    )
 
-    if "CLs" in configuration.limit.method():
-        if "Custom" in configuration.limit.method():
+    method = configuration.limit.method()
+    if method == "nlls":
+        return formattedClsResults(f.nlls(), cl, cl2)
+    elif "CLs" in method:
+        if "Custom" in method:
             results = f.clsCustom(nToys=configuration.limit.nToys(),
                                   testStatType=configuration.limit.testStatistic(),
                                   )
@@ -83,7 +86,7 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
         out.update(formattedClsResults(results, cl, cl2))
     else:
         results = f.interval(cl=cl,
-                             method=configuration.limit.method(),
+                             method=method,
                              nIterationsMax=10,
                              )
         for key, value in results.iteritems():
