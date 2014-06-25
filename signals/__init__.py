@@ -1,11 +1,12 @@
 class point(object):
     def __init__(self, xs=None, sumWeightIn=None, label="",
-                 sigMcUnc=False,
+                 sigMcUnc=False, binaryExclusion=False,
                  lineColor=907, lineStyle=2,
                  x=None, y=None,
                  ):
 
-        for item in ["xs", "sumWeightIn", "label", "sigMcUnc",
+        for item in ["xs", "sumWeightIn", "label",
+                     "sigMcUnc", "binaryExclusion",
                      "lineColor", "lineStyle", "x", "y"]:
             if item not in ["x", "y", "sumWeightIn"]:
                 assert eval(item) != None, item
@@ -34,6 +35,7 @@ class point(object):
         return False
 
     def __str__(self):
+        print "FIXME: mcUnc and binaryExclusion"
         out = []
         out.append("s = signals.point(xs=%g, sumWeightIn=%g, x=%s, y=%s)" %
                    (self.xs, self.sumWeightIn, self.x, self.y))
