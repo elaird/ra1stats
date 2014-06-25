@@ -20,6 +20,7 @@ class scan(object):
                  whiteList=[],
                  exampleKargs={},
                  sigMcUnc=False,
+                 binaryExclusion=False,
                  flatEffUncRel=True,
                  ):
 
@@ -30,7 +31,8 @@ class scan(object):
                      "xsVariation", "xsFactors", "aT", "extraVars",
                      "weightedHistName", "unweightedHistName",
                      "minSumWeightIn", "maxSumWeightIn",
-                     "llk", "whiteList", "exampleKargs", "sigMcUnc",
+                     "llk", "whiteList", "exampleKargs",
+                     "sigMcUnc", "binaryExclusion",
                      "flatEffUncRel",
                      ]+self._boxNames:
             setattr(self, "_"+item, eval(item))
@@ -95,6 +97,10 @@ class scan(object):
     @property
     def sigMcUnc(self):
         return self._sigMcUnc
+
+    @property
+    def binaryExclusion(self):
+        return self._binaryExclusion
 
     @property
     def flatEffUncRel(self):
