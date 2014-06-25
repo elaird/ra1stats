@@ -8,13 +8,12 @@ import ROOT as r
 
 
 class driver(ra1.driver):
-    def __init__(self, llkName="", rhoSignalMin=0.0, fIniFactor=1.0,
-                 whiteList=[], ignoreHad=False, separateSystObs=True,
+    def __init__(self, llkName="", whiteList=[],
+                 ignoreHad=False, separateSystObs=True,
                  signalToTest=None, signalExampleToStack=None, signalToInject=None,
                  trace=False):
 
-        for item in ["rhoSignalMin", "signalToTest",
-                     "signalExampleToStack", "signalToInject"]:
+        for item in ["signalToTest", "signalExampleToStack", "signalToInject"]:
             setattr(self, item, eval(item))
 
         self.likelihoodSpec = likelihood.spec(name=llkName,
