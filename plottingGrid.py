@@ -465,7 +465,7 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
     canvas = squareCanvas()
 
     if configuration.limit.method() == "CLs":
-        if configuration.limit.binaryExclusion():
+        if model.binaryExclusion:
             # FIXME: handle expected
             print "ERROR: handle expected"
             hName = "excluded_CLs_95"
