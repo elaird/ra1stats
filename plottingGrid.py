@@ -1079,6 +1079,7 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
                 if name("CLs%s" % s) not in histos:
                     break
                 x = histos[name("PoiValue%s" % s)].GetBinContent(iBinX, iBinY)
+                x *= histos[name("xs")].GetBinContent(iBinX, iBinY)
                 if not iPoint:
                     xMin = x
                 xMax = x
