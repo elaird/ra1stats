@@ -40,7 +40,10 @@ class base(object):
         return self._separateSystObs
 
     def poi(self):
+        print "FIXME: poi"
         #return {"var": (initialValue, min, max)}
+        #return {"f": (0.0, -1.0, 2.0)}
+        #return {"f": (0.0, 0.0, 1.0)}
         return {"f": (0.1, 0.0, 0.1)}
         #return {"fZinv_55_0b_7": (0.5, 0.0, 1.0)}
         #return {"qcd_0b_le3j_0": (0.0, 0.0, 1.0e3)}
