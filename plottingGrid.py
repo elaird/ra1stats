@@ -1090,14 +1090,18 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
             y = 1.0 - cl
             clLine = r.TLine(xMin-e, y, xMax+e, y)
             clLine.SetLineColor(r.kRed)
+            graphs[graphName] = [graph, clLine]
 
-            xLim = histos[name("UpperLimit")].GetBinContent(iBinX, iBinY)
-            limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
-            limLine.SetLineColor(r.kBlue)
-            graphs[graphName] = [graph, clLine, limLine]
+            ulhisto = histos.get(name("UpperLimit"))
+            if ulhisto:
+                xLim = ulhisto.GetBinContent(iBinX, iBinY)
+                limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
+                limLine.SetLineColor(r.kBlue)
+                graphs[graphName].append(limLine)
 
-            if not whiteList:
-                xLimPl = histos[name("PlUpperLimit")].GetBinContent(iBinX, iBinY)
+            plhisto = histos.get(name("PlUpperLimit"))
+            if plhisto and not whiteList:
+                xLimPl = plhisto.GetBinContent(iBinX, iBinY)
                 plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
                 plLimLine.SetLineColor(r.kGreen)
                 graphs[graphName].append(plLimLine)
