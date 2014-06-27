@@ -42,7 +42,7 @@ class driver(object):
 
         if not self.smOnly():
             args["sigMcUnc"] = self.signalToTest.sigMcUnc
-            args["rhoSignalMin"] = 0.0 if self.signalToTest.binaryExclusion else 0.1
+            args["rhoSignalMin"] = 0.0
             workspace.startLikelihood(w=self.wspace,
                                       xs=self.signalToTest.xs,
                                       sumWeightIn=self.signalToTest.sumWeightIn,
