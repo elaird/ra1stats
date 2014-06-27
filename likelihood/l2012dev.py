@@ -15,6 +15,7 @@ class l2012dev(likelihood.base):
         self._nFZinv = "All"
         self._legendTitle = "CMS Preliminary, 18.7 fb^{-1}, #sqrt{s} = 8 TeV"
         #from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff as module
+        #from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit as module
         from inputData.data2012dev import take13 as module
 
         #QCD test

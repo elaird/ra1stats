@@ -634,12 +634,13 @@ def storeSig(w=None, label="", key="", value=[], trigEffs=[], patch=False):
         wimport(w, r.RooRealVar(name, name, y*trigEffs[iBin]))
 
 
-def Boxes(keys=[]):
+def Boxes(keys=[], blackList=["UncRel"]):
     l = []
     for key in keys:
         for item in ["eff", "Sum", "Err", "SigMc", "meanWeight", "nEvents"]:
             key = key.replace(item, "")
-        l.append(key)
+        if key not in blackList:
+            l.append(key)
     return list(set(l))
 
 
@@ -685,6 +686,8 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="",
                 nEventsSigMc = ni("nEventsSigMc%s" % Box, label, i)
                 systObs.append(nEventsSigMc)
 
+                nValueVar = w.var(nEventsSigMc)
+                assert nValueVar, Box
                 nValue = w.var(nEventsSigMc).getVal()
                 mu = ni("muEventsSigMc%s" % Box, label, i)
                 wimport(w, r.RooRealVar(mu, mu, nValue, 0.0, 10.0*max(1, nValue)))
