@@ -42,7 +42,8 @@ class driver(object):
 
         if not self.smOnly():
             args["sigMcUnc"] = self.signalToTest.sigMcUnc
-            args["rhoSignalMin"] = 0.0
+            args["rhoSignalMin"] = 0.1
+            print "FIXME: rhoSignalMin"
             workspace.startLikelihood(w=self.wspace,
                                       xs=self.signalToTest.xs,
                                       sumWeightIn=self.signalToTest.sumWeightIn,
