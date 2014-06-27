@@ -35,10 +35,15 @@ class point(object):
         return False
 
     def __str__(self):
-        print "FIXME: mcUnc and binaryExclusion"
-        out = []
-        out.append("s = signals.point(xs=%g, sumWeightIn=%g, x=%s, y=%s)" %
-                   (self.xs, self.sumWeightIn, self.x, self.y))
+        args = ", ".join(["xs=%g" % self.xs,
+                          "sumWeightIn=%g" % self.sumWeightIn,
+                          "sigMcUnc=%s" % str(self.sigMcUnc),
+                          "binaryExclusion=%s" % str(self.binaryExclusion),
+                          "x=%s" % self.x,
+                          "y=%s" % self.y,
+                          ])
+
+        out = ["s = signals.point(%s)" % args]
         for sel, dct in sorted(self.__selEffs.iteritems()):
             out.append('s.insert("%s", {' % sel)
             nChar = max([len(k) for k in dct.keys()])
