@@ -8,6 +8,8 @@ class l2011(likelihood.base):
         self._qcdParameterIsYield = False
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._poiIniMinMax = (0.005, 0.0, 0.1)
+        self._rhoSignalMin = 0.1
         self._REwk = ""
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"

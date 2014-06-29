@@ -8,6 +8,8 @@ class simple(likelihood.base):
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = False
         self._initialFZinvFromMc = False
+        self._poiIniMinMax = (0.0, -1.0, 2.0)
+        self._rhoSignalMin = 0.0
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
