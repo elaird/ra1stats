@@ -42,12 +42,15 @@ class driver(object):
 
         if not self.smOnly():
             args["sigMcUnc"] = self.signalToTest.sigMcUnc
-            args["rhoSignalMin"] = 0.1
-            print "FIXME: rhoSignalMin"
+            if self.signalToTest.binaryExclusion:
+                ini, min, max = self.likelihoodSpec.poi()["f"]
+                assert min <= 1.0, min
+                assert 1.0 <= max, max
+
+            args["rhoSignalMin"] = self.likelihoodSpec.rhoSignalMin()
             workspace.startLikelihood(w=self.wspace,
                                       xs=self.signalToTest.xs,
                                       sumWeightIn=self.signalToTest.sumWeightIn,
-                                      fIniFactor=1.0 if self.signalToTest.binaryExclusion else 0.05,
                                       poi=self.likelihoodSpec.poi())
 
         total = {}
@@ -65,15 +68,15 @@ class driver(object):
                 total[key] += value
 
         workspace.finishLikelihood(w=self.wspace,
-                         smOnly=self.smOnly(),
-                         standard=self.likelihoodSpec.standardPoi(),
-                         poiDict=self.likelihoodSpec.poi(),
-                         **total)
+                                   smOnly=self.smOnly(),
+                                   standard=self.likelihoodSpec.standardPoi(),
+                                   poiDict=self.likelihoodSpec.poi(),
+                                   **total)
 
         self.data = workspace.dataset(workspace.obs(self.wspace))
         self.modelConfig = workspace.modelConfiguration(self.wspace)
 
-        if trace :
+        if trace:
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
             #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))
