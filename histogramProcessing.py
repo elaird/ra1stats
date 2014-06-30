@@ -330,13 +330,13 @@ def effUncRelHistos(model=None, allCategories=False):
 
 
 ##signal point selection
-def points(respectWhitelist=False):
+def points(respectWhiteList=False):
     out = []
     multiples = configuration.limit.multiplesInGeV()
 
     for model in configuration.signal.models():
         name = model.name
-        whiteList = configuration.signal.whiteListOfPoints(name, respect=respectWhitelist)
+        whiteList = configuration.signal.whiteListOfPoints(name, respect=respectWhiteList)
         h = sumWeightInHisto(model)
         bins = utils.bins(h, interBin=model.interBin)
         for iBinX, x, iBinY, y, iBinZ, z in bins:

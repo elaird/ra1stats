@@ -86,7 +86,7 @@ def contents(fileName):
     return out
 
 
-def mergePickledFiles(printExamples=False):
+def mergePickledFiles(printExamples=False, respectWhiteList=False):
     examples = {}
     histos = {}
     zTitles = {}
@@ -108,7 +108,7 @@ def mergePickledFiles(printExamples=False):
                                             "Get%saxis" % c)().GetXmax()),
                                 ])
 
-    for name, iX, iY, iZ in hp.points():
+    for name, iX, iY, iZ in hp.points(respectWhiteList=respectWhiteList):
         fileName = configuration.directories.pickledFileName(name, iX, iY, iZ)+".out"
         if not os.path.exists(fileName):
             print "skipping file", fileName
