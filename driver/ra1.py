@@ -252,6 +252,14 @@ class driver(object):
         out["nSigma_s0_sHat"] = (2.0*out["deltaNll_s0_sHat"])**0.5
         if out["poiVal"] < 0.0:
             out["nSigma_s0_sHat"] *= -1.0
+
+        if self.signalToTest.binaryExclusion:
+            poi.setMin(0.0)
+            poi.setMax(1.0)
+            poi.setVal(1.0)
+            out["poiNom"] = poi.getVal()
+            out["nll_sNom"] = self.rooFitResults().minNll()
+            out["deltaNll_s0_sNom"] = out["nll_s0"] - out["nll_sNom"]
         return out
 
 
