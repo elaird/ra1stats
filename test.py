@@ -123,10 +123,10 @@ def printNlls(nlls={}):
         for iBin, d in sorted(nllDct.iteritems()):
             print fmt % (cat, iBin, d["nIterations"],
                          d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
-                         d["nllSb"], d["nllB"], d["deltaNll"], d["nSigma"])
+                         d["nll_sHat"], d["nll_s0"], d["deltaNll_s0_sHat"], d["nSigma_s0_sHat"])
             nDof += 1
-            chi2 += d["nSigma"]**2
-            labelSig.append((iBin+1, d["nSigma"]))
+            chi2 += d["nSigma_s0_sHat"]**2
+            labelSig.append((iBin+1, d["nSigma_s0_sHat"]))
         pVal = r.TMath.Prob(chi2, nDof)
         print "%s: chi2=%g, nDof=%d, prob=%g" % (cat, chi2, nDof, pVal)
 

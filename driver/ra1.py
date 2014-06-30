@@ -240,18 +240,18 @@ class driver(object):
                "poiMin": poi.getMin(),
                "poiMax": poi.getMax(),
                }
-        out["nllSb"] = self.rooFitResults().minNll()
+        out["nll_sHat"] = self.rooFitResults().minNll()
 
         # fix POI to zero
         poi.setMin(0.0)
         poi.setMax(0.0)
         poi.setVal(0.0)
-        out["nllB"] = self.rooFitResults().minNll()
+        out["nll_s0"] = self.rooFitResults().minNll()
 
-        out["deltaNll"] = max(0.0, out["nllB"] - out["nllSb"])
-        out["nSigma"] = (2.0*out["deltaNll"])**0.5
+        out["deltaNll_s0_sHat"] = max(0.0, out["nll_s0"] - out["nll_sHat"])
+        out["nSigma_s0_sHat"] = (2.0*out["deltaNll_s0_sHat"])**0.5
         if out["poiVal"] < 0.0:
-            out["nSigma"] *= -1.0
+            out["nSigma_s0_sHat"] *= -1.0
         return out
 
 
