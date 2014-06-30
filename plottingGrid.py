@@ -1131,6 +1131,58 @@ def clsValidation(model=None, cl=None, filterKey="CLb", plotKey="",
         print "%s has been written." % fileName
 
 
+def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
+    def name(s=""):
+        return "%s_%s" % (model.name, s)
+
+    histos = allHistos(fileName=configuration.limit.mergedFile(model=model), collapse=True)
+    xs = histos.get(name("xs"))
+    assert xs, "xs not found.  Available keys: %s" % str(histos.keys())
+
+    graphs = {}
+    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(xs, interBin="LowEdge"):
+        if any([iBinZ != 1, not xs.GetBinContent(iBinX, iBinY)]):
+            continue
+
+        graphName = name("%d_%d" % (iBinX, iBinY))
+        zTitle = "%d_%d: (%g, %g)" % (iBinX, iBinY, x, y)
+        graph = r.TGraphErrors()
+        graph.SetName(graphName)
+        graph.SetTitle("%s;#sigma (pb);nll" % (zTitle if stampTitle else ""))
+        graph.SetMarkerStyle(20)
+        graph.SetMarkerSize(0.5)
+        graph.SetMinimum(0.0)
+        #graph.SetMaximum(20.0)
+
+        y0 = histos[name("nll_sHat")].GetBinContent(iBinX, iBinY)
+        values = []
+        values.append((0.0, histos[name("nll_s0")].GetBinContent(iBinX, iBinY)))
+        values.append((histos[name("poiVal")].GetBinContent(iBinX, iBinY), y0))
+        if name("nll_sNom") in histos:
+            values.append((histos[name("poiNom")].GetBinContent(iBinX, iBinY), histos[name("nll_sNom")].GetBinContent(iBinX, iBinY)))
+
+        for iPoint, (x, y) in enumerate(sorted(values)):
+            graph.SetPoint(iPoint, x * xs.GetBinContent(iBinX, iBinY), y - y0)
+
+        graphs[graphName] = graph
+
+    fileName = outFileName(model=model, tag="nllsValidation")["pdf"]
+
+    canvas = utils.numberedCanvas()
+    canvas.Print(fileName+"[")
+    text1 = printTimeStamp()
+    text2 = printLumis()
+    canvas.Print(fileName)
+    canvas.Clear()
+
+    canvas.SetRightMargin(0.15)
+    utils.cyclePlot(d=graphs, f=None, args={}, optStat=1110, canvas=canvas,
+                    fileName=fileName, divide=divide, goptions="alp")
+
+    canvas.Print(fileName+"]")
+    print "%s has been written." % fileName
+
+
 def makePlots(square=False):
     for model in configuration.signal.models():
         multiPlots(model=model,
@@ -1168,8 +1220,14 @@ def makePlots(square=False):
         #           modify=True,
         #           square=square)
 
-        if model.isSms and configuration.limit.method() == "CLs":
+        if not model.isSms:
+            return
+
+        method = configuration.limit.method()
+        if method == "CLs":
             for cl in configuration.limit.CL():
                 clsValidation(model=model, cl=cl, plotKey="CLs")
                 if model.binaryExclusion:
                     clsValidation(model=model, cl=cl, plotKey="CLb")
+        elif method == "nlls":
+            nllsValidation(model=model)
