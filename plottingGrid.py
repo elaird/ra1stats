@@ -1030,7 +1030,7 @@ def allHistos(fileName="", collapse=False):
     return out
 
 
-def clsValidation(model=None, cl=None, tag="", masterKey="",
+def clsValidation(model=None, cl=None, filterKey="CLb", plotKey="",
                   yMin=0.0, yMax=1.0, lineHeight=0.5,
                   divide=(4, 3), whiteList=[], stampTitle=True):
 
@@ -1038,77 +1038,76 @@ def clsValidation(model=None, cl=None, tag="", masterKey="",
         #return s
         return "%s_%s" % (model.name, s)
 
-    assert tag
-    assert masterKey
+    assert plotKey
+    assert filterKey
+    filterKey = name(filterKey)
     assert cl
     if whiteList:
         assert len(whiteList) == divide[0]*divide[1], "%d != %d" % (len(whiteList), divide[0]*divide[1])
 
     histos = allHistos(fileName=configuration.limit.mergedFile(model=model), collapse=True)
-    master = histos.get(name(masterKey))
-    assert master, "%s not found.  Available keys: %s" % (masterKey, str(histos.keys()))
+    xs = histos.get(name("xs"))
+    assert xs, "xs not found.  Available keys: %s" % str(histos.keys())
 
     graphs = {}
-    for iBinX in range(1, 1 + master.GetNbinsX()):
-        for iBinY in range(1, 1 + master.GetNbinsY()):
-            if whiteList and (iBinX, iBinY) not in whiteList:
-                continue
-            if not master.GetBinContent(iBinX, iBinY):
-                continue
+    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(xs, interBin="LowEdge"):
+        if any([iBinZ != 1,
+                whiteList and (iBinX, iBinY) not in whiteList,
+                not xs.GetBinContent(iBinX, iBinY),
+                not histos.get(filterKey),
+                ]) or not histos[filterKey].GetBinContent(iBinX, iBinY):
+            continue
 
-            specialKey = name("CLb")
-            if specialKey not in histos or not histos[specialKey]:
-                continue
-            if not histos[specialKey].GetBinContent(iBinX, iBinY):
-                continue
+        graphName = name("%s_%d_%d" % (plotKey, iBinX, iBinY))
+        zTitle = "%d_%d: (%g, %g)" % (iBinX, iBinY, x, y)
+        graph = r.TGraphErrors()
+        graph.SetName(graphName)
+        graph.SetTitle("%s;#sigma (pb);%s" % (zTitle if stampTitle else "", plotKey))
+        graph.SetMarkerStyle(20)
+        graph.SetMarkerSize(0.5)
+        graph.SetMinimum(yMin)
+        graph.SetMaximum(yMax)
+        iPoint = 0
 
-            binX = master.GetXaxis().GetBinLowEdge(iBinX)
-            binY = master.GetYaxis().GetBinLowEdge(iBinY)
-            graphName = name("CLs_%d_%d" % (iBinX, iBinY))
-            graphTitle = "%d_%d: (%g, %g)" % (iBinX, iBinY, binX, binY)
-            graph = r.TGraphErrors()
-            graph.SetName(graphName)
-            graph.SetTitle("%s;#sigma (pb);CL_{s}" % (graphTitle if stampTitle else ""))
-            graph.SetMarkerStyle(20)
-            graph.SetMarkerSize(0.5)
-            graph.SetMinimum(yMin)
-            graph.SetMaximum(yMax)
-            iPoint = 0
-            while True:
-                s = "" if not iPoint else "_%d" % iPoint
-                if name("CLs%s" % s) not in histos:
-                    break
-                x = histos[name("PoiValue%s" % s)].GetBinContent(iBinX, iBinY)
-                x *= histos[name("xs")].GetBinContent(iBinX, iBinY)
-                if not iPoint:
-                    xMin = x
-                xMax = x
-                graph.SetPoint(iPoint, x, histos[name("CLs%s" % s)].GetBinContent(iBinX, iBinY))
-                graph.SetPointError(iPoint, 0.0, histos[name("CLsError%s" % s)].GetBinContent(iBinX, iBinY))
-                iPoint += 1
+        while True:
+            s = "" if not iPoint else "_%d" % iPoint
+            key = name("%s%s" % (plotKey, s))
+            keyErr = key.replace(plotKey, plotKey+"Error")
+            if key not in histos:
+                break
+            x = histos[name("PoiValue%s" % s)].GetBinContent(iBinX, iBinY)
+            x *= xs.GetBinContent(iBinX, iBinY)
+            if not iPoint:
+                xMin = x
+            xMax = x
+            graph.SetPoint(iPoint, x, histos[key].GetBinContent(iBinX, iBinY))
+            if keyErr in histos:
+                graph.SetPointError(iPoint, 0.0, histos[keyErr].GetBinContent(iBinX, iBinY))
+            iPoint += 1
 
-            e = 0.1*(xMax-xMin)
-            y = 1.0 - cl
-            clLine = r.TLine(xMin-e, y, xMax+e, y)
-            clLine.SetLineColor(r.kRed)
-            graphs[graphName] = [graph, clLine]
+        e = 0.1*(xMax-xMin)
+        y = 1.0 - cl
+        clLine = r.TLine(xMin-e, y, xMax+e, y)
+        clLine.SetLineColor(r.kRed)
+        graphs[graphName] = [graph, clLine]
 
-            ulhisto = histos.get(name("UpperLimit"))
-            if ulhisto:
-                xLim = ulhisto.GetBinContent(iBinX, iBinY)
-                limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
-                limLine.SetLineColor(r.kBlue)
-                graphs[graphName].append(limLine)
+        ulhisto = histos.get(name("UpperLimit"))
+        if ulhisto:
+            xLim = ulhisto.GetBinContent(iBinX, iBinY)
+            limLine = r.TLine(xLim, yMin, xLim, yMax*lineHeight)
+            limLine.SetLineColor(r.kBlue)
+            graphs[graphName].append(limLine)
 
-            plhisto = histos.get(name("PlUpperLimit"))
-            if plhisto and not whiteList:
-                xLimPl = plhisto.GetBinContent(iBinX, iBinY)
-                plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
-                plLimLine.SetLineColor(r.kGreen)
-                graphs[graphName].append(plLimLine)
+        plhisto = histos.get(name("PlUpperLimit"))
+        if plhisto and not whiteList:
+            xLimPl = plhisto.GetBinContent(iBinX, iBinY)
+            plLimLine = r.TLine(xLimPl, yMin, xLimPl, yMax*lineHeight)
+            plLimLine.SetLineColor(r.kGreen)
+            graphs[graphName].append(plLimLine)
 
-    fileName = outFileName(model=model,
-                           tag=tag+"_"+str(cl).replace("0.", ""))["pdf"]
+    tag = "%sValidation_%s" % (plotKey, str(cl).replace("0.", ""))
+    fileName = outFileName(model=model, tag=tag)["pdf"]
+
     if whiteList:
         fileName = fileName.replace(".pdf", ".eps")
         canvas = r.TCanvas("canvas", "", 500*divide[0], 500*divide[1])
@@ -1171,7 +1170,6 @@ def makePlots(square=False):
 
         if model.isSms and configuration.limit.method() == "CLs":
             for cl in configuration.limit.CL():
-                clsValidation(model=model,
-                              tag="clsValidation",
-                              cl=cl,
-                              masterKey="xs")
+                clsValidation(model=model, cl=cl, plotKey="CLs")
+                if model.binaryExclusion:
+                    clsValidation(model=model, cl=cl, plotKey="CLb")
