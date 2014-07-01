@@ -9,22 +9,28 @@ import utils
 
 
 def oneHisto(hName="", label=""):
-    f = r.TFile("ra1r/scan/%s/CLs_asymptotic_T2cc_2012dev_%s.root" % (subDir, label))
+    f = r.TFile("ra1r/scan/%s/nlls_T2cc_2012dev_%s.root" % (subDir, label))
     if f.IsZombie():
         sys.exit()
     h = f.Get(hName)
-    assert h
-    h = h.Clone()
-    h.SetDirectory(0)
-    f.Close()
-    return h
+    if h:
+        h = h.Clone()
+        h.SetDirectory(0)
+        f.Close()
+        return h
+    else:
+        print "ERROR: histogram %s:%s not found." % (f.GetName(), hName)
+
 
 def contents(label=""):
     hVal = oneHisto(label=label,   hName="T2cc_poiVal")
     hErr = oneHisto(label=label,   hName="T2cc_poiErr")
-    hSigma = oneHisto(label=label, hName="T2cc_nSigma")
+    hSigma = oneHisto(label=label, hName="T2cc_nSigma_s0_sHat")
 
     out = []
+    if not all([hVal, hErr, hSigma]):
+        return out
+
     for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(hVal, interBin="LowEdge"):
         if iBinZ != 1:
             continue
@@ -124,11 +130,11 @@ def onePage(c, name="", label=""):
 
 
 def categories():
-    indiv = ["0b_le3j", "0b_ge4j", "1b_le3j", "1b_ge4j"]  # ugh: order matters
+    indiv = ["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"]  # ugh: order matters
     out = []
     out += indiv
     out += ["_".join(indiv[:2])]
-    out += ["_".join(indiv[:2]+indiv[-1:])]
+    out += ["_".join(indiv[:3])]
     out += ["_".join(indiv)]
     return out
 
@@ -152,8 +158,7 @@ if __name__ == "__main__":
     r.gStyle.SetOptStat("e")
 
     # global; used in oneHisto()
-    for subDir in ["non-universal-syst",
-                   "universal-syst-0b-le3j",
-                   "universal-syst-0b-ge4j",
-                   ]:
-        pdf(fileName="%s.pdf" % subDir)
+    #subdirs = ["non-universal-syst", "universal-syst-0b-le3j", "universal-syst-0b-ge4j"]
+    subdirs = ["."]
+    for subDir in subdirs:
+        pdf(fileName="%s.pdf" % (subDir if subDir != "." else "scan"))
