@@ -1148,23 +1148,34 @@ def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
         zTitle = "%d_%d: (%g, %g)" % (iBinX, iBinY, x, y)
         graph = r.TGraphErrors()
         graph.SetName(graphName)
-        graph.SetTitle("%s;#sigma (pb);nll" % (zTitle if stampTitle else ""))
+        graph.SetTitle("%s;#sigma (pb);delta NLL" % (zTitle if stampTitle else ""))
         graph.SetMarkerStyle(20)
         graph.SetMarkerSize(0.5)
         graph.SetMinimum(0.0)
         #graph.SetMaximum(20.0)
 
+        fHat = histos[name("poiVal")].GetBinContent(iBinX, iBinY)
+        fNom = histos[name("poiNom")].GetBinContent(iBinX, iBinY)
         y0 = histos[name("nll_sHat")].GetBinContent(iBinX, iBinY)
-        values = []
+        values = [(fHat, y0)]
         values.append((0.0, histos[name("nll_s0")].GetBinContent(iBinX, iBinY)))
-        values.append((histos[name("poiVal")].GetBinContent(iBinX, iBinY), y0))
+
         if name("nll_sNom") in histos:
-            values.append((histos[name("poiNom")].GetBinContent(iBinX, iBinY), histos[name("nll_sNom")].GetBinContent(iBinX, iBinY)))
+            values.append((fNom, histos[name("nll_sNom")].GetBinContent(iBinX, iBinY)))
 
+        for key in filter(lambda x: x.startswith(name("nll_sHat_")), histos.keys()):
+            x = float(key[-4:]) * fHat
+            y = histos[key].GetBinContent(iBinX, iBinY)
+            values.append((x, y))
+
+        xsVal = xs.GetBinContent(iBinX, iBinY)
         for iPoint, (x, y) in enumerate(sorted(values)):
-            graph.SetPoint(iPoint, x * xs.GetBinContent(iBinX, iBinY), y - y0)
+            graph.SetPoint(iPoint, x * xsVal, y - y0)
 
-        graphs[graphName] = graph
+        ys = [x[1]-y0 for x in values]
+        line = r.TLine(fNom * xsVal, min(ys), fNom * xsVal, max(ys))
+        line.SetLineColor(r.kCyan)
+        graphs[graphName] = [graph, line]
 
     fileName = outFileName(model=model, tag="nllsValidation")["pdf"]
 
