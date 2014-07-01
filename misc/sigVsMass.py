@@ -9,7 +9,12 @@ import utils
 
 
 def oneHisto(hName="", label=""):
-    f = r.TFile("ra1r/scan/%s/nlls_T2cc_2012dev_%s.root" % (subDir, label))
+    if mode == "bestFit":
+        stem = "nlls"
+    if mode == "CL":
+        stem = "CLs_asymptotic_binaryExcl"
+
+    f = r.TFile("ra1r/scan/%s/%s_T2cc_2012dev_%s.root" % (subDir, stem, label))
     if f.IsZombie():
         sys.exit()
     h = f.Get(hName)
@@ -22,7 +27,7 @@ def oneHisto(hName="", label=""):
         print "ERROR: histogram %s:%s not found." % (f.GetName(), hName)
 
 
-def contents(label=""):
+def bestFitContents(label=""):
     hVal = oneHisto(label=label,   hName="T2cc_poiVal")
     hErr = oneHisto(label=label,   hName="T2cc_poiErr")
     hSigma = oneHisto(label=label, hName="T2cc_nSigma_s0_sHat")
@@ -46,8 +51,8 @@ def contents(label=""):
     return out
 
 
-def oneD(label=""):
-    cont = contents(label)
+def bestFitPlots(label=""):
+    cont = bestFitContents(label)
     nBins = len(cont)
     poi = r.TH1D("poi", "%s;;best-fit xs value #pm unc (pb)" % label, nBins, 0, nBins)
     poiX = poi.GetXaxis()
@@ -92,9 +97,64 @@ def oneD(label=""):
     return poi, poiR, rel, nllSigma, xs
 
 
-def onePage(c, name="", label=""):
-    hs = oneD(label)
-    xs = hs[-1]
+def clbContents(label=""):
+    hClb = oneHisto(label=label,   hName="T2cc_CLb")
+    hCls = oneHisto(label=label,   hName="T2cc_CLs")
+    hClsb = oneHisto(label=label,  hName="T2cc_CLs+b")
+
+    out = []
+    if not all([hClb, hCls]):
+        return out
+
+    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(hClb, interBin="LowEdge"):
+        if iBinZ != 1:
+            continue
+
+        t = (iBinX, iBinY, iBinZ)
+        clb = hClb.GetBinContent(*t)
+        cls = hCls.GetBinContent(*t)
+        clsb = hClsb.GetBinContent(*t)
+        if clb == 0.0:
+            continue
+        label = "%3d %3d" % (x, y)
+        out.append((x, label, clb, cls, clsb))
+    return out
+
+
+def clPlots(label=""):
+    cont = clbContents(label)
+    nBins = len(cont)
+
+    oneMinusCLb = r.TH1D("1-CLb", "%s;;1 - CL_{b}" % label, nBins, 0, nBins)
+    oneMinusCLbX = oneMinusCLb.GetXaxis()
+
+    hCls = r.TH1D("CLs", "%s;;CL_{s}" % label, nBins, 0, nBins)
+    hClsX = hCls.GetXaxis()
+
+    hClsb = r.TH1D("CLsb", "%s;;CL_{s+b}" % label, nBins, 0, nBins)
+    hClsbX = hClsb.GetXaxis()
+
+    for i, (x, label, clb, cls, clsb) in enumerate(cont):
+        iBin = 1 + i
+        oneMinusCLb.SetBinContent(iBin, 1.0 - clb)
+        oneMinusCLbX.SetBinLabel(iBin, label)
+
+        hCls.SetBinContent(iBin, cls)
+        hClsX.SetBinLabel(iBin, label)
+
+        hClsb.SetBinContent(iBin, clsb)
+        hClsbX.SetBinLabel(iBin, label)
+
+    return [oneMinusCLb, hClsb, hCls]
+
+
+def onePage(c, name="", label="", mode=""):
+    if mode == "bestFit":
+        hs = bestFitPlots(label)
+    elif mode == "CL":
+        hs = clPlots(label)
+    else:
+        assert False
 
     k = []
     line = r.TLine()
@@ -114,12 +174,20 @@ def onePage(c, name="", label=""):
         h.GetYaxis().CenterTitle()
         h.SetStats(False)
 
-        if i:
+        if mode == "bestFit":
+            if i:
+                h.SetMinimum(0.0)
+            if i == 1:
+                h.SetMaximum(3.0)
+                k.append(line.DrawLine(h.GetXaxis().GetXmin(), 1.0, h.GetXaxis().GetXmax(), 1.0))
+        else:
             h.SetMinimum(0.0)
+            h.SetMaximum(1.0)
+            if i == 2:
+                l2 = line.DrawLine(h.GetXaxis().GetXmin(), 0.05, h.GetXaxis().GetXmax(), 0.05)
+                l2.SetLineColor(r.kRed)
+                k.append(l2)
 
-        if i == 1:
-            h.SetMaximum(3.0)
-            k.append(line.DrawLine(h.GetXaxis().GetXmin(), 1.0, h.GetXaxis().GetXmax(), 1.0))
         r.gPad.SetTopMargin(0.0)
         r.gPad.SetBottomMargin(0.17)
         r.gPad.SetTickx()
@@ -132,21 +200,24 @@ def onePage(c, name="", label=""):
 def categories():
     indiv = ["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"]  # ugh: order matters
     out = []
-    out += indiv
-    out += ["_".join(indiv[:2])]
+    #out += indiv
+    #out += ["_".join(indiv[:2])]
     out += ["_".join(indiv[:3])]
-    out += ["_".join(indiv)]
+    #out += ["_".join(indiv)]
     return out
 
 
-def pdf(fileName=""):
+def pdf(fileName="", mode=""):
     c = r.TCanvas()
-    c.Divide(1, 4)
+    if mode == "bestFit":
+        c.Divide(1, 4)
+    else:
+        c.Divide(1, 3)
 
     c.Print("%s[" % fileName)
 
     for cat in categories():
-        onePage(c, name=fileName, label=cat)
+        onePage(c, name=fileName, label=cat, mode=mode)
 
     c.Print("%s]" % fileName)
     os.system("cp -p %s ~/public_html/tmp/" % fileName)
@@ -157,8 +228,11 @@ if __name__ == "__main__":
     r.gErrorIgnoreLevel = 2000
     r.gStyle.SetOptStat("e")
 
-    # global; used in oneHisto()
+    # globals; used in oneHisto()
     #subdirs = ["non-universal-syst", "universal-syst-0b-le3j", "universal-syst-0b-ge4j"]
     subdirs = ["."]
+    mode = ["bestFit", "CL"][1]
+
     for subDir in subdirs:
-        pdf(fileName="%s.pdf" % (subDir if subDir != "." else "scan"))
+        pdf(mode=mode,
+            fileName="%s%s.pdf" % (mode, "_"+subDir if subDir != "." else ""))
