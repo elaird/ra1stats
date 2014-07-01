@@ -1154,14 +1154,19 @@ def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
         graph.SetMinimum(0.0)
         #graph.SetMaximum(20.0)
 
-        fHat = histos[name("poiVal")].GetBinContent(iBinX, iBinY)
-        fNom = histos[name("poiNom")].GetBinContent(iBinX, iBinY)
         y0 = histos[name("nll_sHat")].GetBinContent(iBinX, iBinY)
+        fHat = histos[name("poiVal")].GetBinContent(iBinX, iBinY)
         values = [(fHat, y0)]
         values.append((0.0, histos[name("nll_s0")].GetBinContent(iBinX, iBinY)))
 
         if name("nll_sNom") in histos:
+            fNom = histos[name("poiNom")].GetBinContent(iBinX, iBinY)
             values.append((fNom, histos[name("nll_sNom")].GetBinContent(iBinX, iBinY)))
+            ys = [x[1]-y0 for x in values]
+            line = r.TLine(fNom * xsVal, min(ys), fNom * xsVal, max(ys))
+            line.SetLineColor(r.kCyan)
+        else:
+            line = None
 
         for key in filter(lambda x: x.startswith(name("nll_sHat_")), histos.keys()):
             x = float(key[-4:]) * fHat
@@ -1172,10 +1177,7 @@ def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
         for iPoint, (x, y) in enumerate(sorted(values)):
             graph.SetPoint(iPoint, x * xsVal, y - y0)
 
-        ys = [x[1]-y0 for x in values]
-        line = r.TLine(fNom * xsVal, min(ys), fNom * xsVal, max(ys))
-        line.SetLineColor(r.kCyan)
-        graphs[graphName] = [graph, line]
+        graphs[graphName] = [graph, line] if line else graph
 
     fileName = outFileName(model=model, tag="nllsValidation")["pdf"]
 
@@ -1187,8 +1189,11 @@ def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
     canvas.Clear()
 
     canvas.SetRightMargin(0.15)
+    goptions = "ap"
+    if line:
+        goptions += "l"
     utils.cyclePlot(d=graphs, f=None, args={}, optStat=1110, canvas=canvas,
-                    fileName=fileName, divide=divide, goptions="alp")
+                    fileName=fileName, divide=divide, goptions=goptions)
 
     canvas.Print(fileName+"]")
     print "%s has been written." % fileName
