@@ -1,23 +1,20 @@
 import os
-
 import calc
 import ensemble
 import likelihood
 import plotting
 import workspace
 import utils
-
 import ROOT as r
 
 
 class driver(object):
-    def __init__(self, llkName="", rhoSignalMin=0.0, fIniFactor=1.0,
-                 whiteList=[], ignoreHad=False, separateSystObs=True,
+    def __init__(self, llkName="", whiteList=[],
+                 ignoreHad=False, separateSystObs=True,
                  signalToTest=None, signalExampleToStack=None, signalToInject=None,
                  trace=False):
 
-        for item in ["rhoSignalMin", "signalToTest",
-                     "signalExampleToStack", "signalToInject"]:
+        for item in ["signalToTest", "signalExampleToStack", "signalToInject"]:
             setattr(self, item, eval(item))
 
         self.likelihoodSpec = likelihood.spec(name=llkName,
@@ -43,15 +40,17 @@ class driver(object):
                      "initialValuesFromMuonSample", "initialFZinvFromMc"] :
             args[item] = getattr(self.likelihoodSpec, item)()
 
-        for item in ["rhoSignalMin"] :
-            args[item] = getattr(self, item)
-
         if not self.smOnly():
             args["sigMcUnc"] = self.signalToTest.sigMcUnc
+            if self.signalToTest.binaryExclusion:
+                ini, min, max = self.likelihoodSpec.poi()["f"]
+                assert min <= 1.0, min
+                assert 1.0 <= max, max
+
+            args["rhoSignalMin"] = self.likelihoodSpec.rhoSignalMin()
             workspace.startLikelihood(w=self.wspace,
                                       xs=self.signalToTest.xs,
                                       sumWeightIn=self.signalToTest.sumWeightIn,
-                                      fIniFactor=fIniFactor,
                                       poi=self.likelihoodSpec.poi())
 
         total = {}
@@ -69,15 +68,15 @@ class driver(object):
                 total[key] += value
 
         workspace.finishLikelihood(w=self.wspace,
-                         smOnly=self.smOnly(),
-                         standard=self.likelihoodSpec.standardPoi(),
-                         poiDict=self.likelihoodSpec.poi(),
-                         **total)
+                                   smOnly=self.smOnly(),
+                                   standard=self.likelihoodSpec.standardPoi(),
+                                   poiDict=self.likelihoodSpec.poi(),
+                                   **total)
 
         self.data = workspace.dataset(workspace.obs(self.wspace))
         self.modelConfig = workspace.modelConfiguration(self.wspace)
 
-        if trace :
+        if trace:
             #lots of info for debugging (from http://root.cern.ch/root/html/tutorials/roofit/rf506_msgservice.C.html)
             #r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing), r.RooFit.ClassName("RooGaussian"))
             r.RooMsgService.instance().addStream(r.RooFit.DEBUG, r.RooFit.Topic(r.RooFit.Tracing))

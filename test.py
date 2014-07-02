@@ -281,8 +281,6 @@ def go(selections=[], options=None, hMap=None):
                 ignoreHad=options.ignoreHad,
                 separateSystObs=not options.genBands,
                 #trace=True
-                #rhoSignalMin=0.1,
-                #fIniFactor=0.1,
                 **signalArgs(whiteList, options)
                 )
 

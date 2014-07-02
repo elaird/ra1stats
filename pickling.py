@@ -21,12 +21,13 @@ def histoList(histos={}):
     return out
 
 def signalModel(modelName="", point3=None, eff=None, effUncRel=None,
-                xs=None, sumWeightIn=None, sigMcUnc=None):
+                xs=None, sumWeightIn=None, sigMcUnc=None, binaryExclusion=None):
 
     out = signals.point(xs=xs.GetBinContent(*point3),
                         label="%s_%d_%d_%d" % ((modelName,)+point3),
                         sumWeightIn=sumWeightIn.GetBinContent(*point3),
                         sigMcUnc=sigMcUnc,
+                        binaryExclusion=binaryExclusion,
                         x=xs.GetXaxis().GetBinLowEdge(point3[0]),
                         y=xs.GetYaxis().GetBinLowEdge(point3[1]),
                         )
@@ -58,6 +59,7 @@ def writeSignalFiles(points=[], outFilesAlso=False):
                             "effUncRel": configuration.signal.effUncRel(model.name)
                             if model.flatEffUncRel else hp.effUncRelHistos(model),
                             "sigMcUnc": model.sigMcUnc,
+                            "binaryExclusion": model.binaryExclusion,
                             }
         toCheck = [args[model.name]["xs"], args[model.name]["sumWeightIn"]]
         toCheck += histoList(args[model.name]["eff"])

@@ -808,12 +808,12 @@ def setupLikelihood(w=None, selection=None, systematicsLabel=None, kQcdLabel=Non
     return out
 
 
-def startLikelihood(w=None, xs=None, sumWeightIn=None, fIniFactor=None, poi={}):
+def startLikelihood(w=None, xs=None, sumWeightIn=None, poi={}):
     wimport(w, r.RooRealVar("xs", "xs", xs))
     assert sumWeightIn
     wimport(w, r.RooRealVar("invSumWeightIn", "invSumWeightIn", 1.0/sumWeightIn))
     fIni, fMin, fMax = poi["f"]
-    wimport(w, r.RooRealVar("f", "f", fIniFactor*fIni, fMin, fMax))
+    wimport(w, r.RooRealVar("f", "f", fIni, fMin, fMax))
 
 
 def argSet(w=None, vars=[]):

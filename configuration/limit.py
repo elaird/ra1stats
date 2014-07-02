@@ -28,16 +28,12 @@ def method():
             "CLsCustom"][1]
 
 
-def binaryExclusion():
-    return False
-
-
 def multiplesInGeV():
     return None
 
 
-def plSeedParams():
-    if binaryExclusion():
+def plSeedParams(binaryExclusion):
+    if binaryExclusion:
         return {"usePlSeed": False}
     else:
         return {"usePlSeed": True,
@@ -51,21 +47,13 @@ def plSeedParams():
                 }
 
 
-def rhoSignalMin():
-    return 0.0 if binaryExclusion() else 0.1
-
-
-def fIniFactor():
-    return 1.0 if binaryExclusion() else 0.05
-
-
 def mergedFile(model=None):
     tags = [method()]
     if "CLs" in method():
         tags += [calculatorType(),
                 #"TS%d" % testStatistic()
                 ]
-    if binaryExclusion():
+    if model.binaryExclusion:
         tags.append("binaryExcl")
 
     return "".join([directories.mergedFile()+"/",

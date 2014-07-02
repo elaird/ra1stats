@@ -44,11 +44,12 @@ def resultsMultiCL(llkName=None, signal=None):
     return out
 
 
-def formattedClsResults(results={}, cl=None, cl2=None):
+def formattedClsResults(results={}, cl=None, cl2=None, usePlSeed=None):
+    assert type(usePlSeed) is bool, usePlSeed
     out = {}
     for key, value in results.iteritems():
         out[key] = (value, description(key))
-        if configuration.limit.plSeedParams()["usePlSeed"]:
+        if usePlSeed:
             continue
         if key == "CLs" or ("Median" in key):
             threshold = 1.0 - cl
@@ -64,13 +65,13 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
     f = ra1.driver(signalToTest=signal,
                    whiteList=signal.categories(),
                    llkName=llkName,
-                   rhoSignalMin=configuration.limit.rhoSignalMin(),
-                   fIniFactor=configuration.limit.fIniFactor(),
                    )
 
     method = configuration.limit.method()
+    plSeedParams = configuration.limit.plSeedParams(signal.binaryExclusion)
+    fArgs = (cl, cl2, plSeedParams["usePlSeed"])
     if method == "nlls":
-        return formattedClsResults(f.nlls(), cl, cl2)
+        return formattedClsResults(f.nlls(), *fArgs)
     elif "CLs" in method:
         if "Custom" in method:
             results = f.clsCustom(nToys=configuration.limit.nToys(),
@@ -81,9 +82,9 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
                             nToys=configuration.limit.nToys(),
                             testStatType=configuration.limit.testStatistic(),
                             calculatorType=configuration.limit.calculatorType(),
-                            plSeedParams=configuration.limit.plSeedParams()
+                            plSeedParams=plSeedParams,
                             )
-        out.update(formattedClsResults(results, cl, cl2))
+        out.update(formattedClsResults(results, *fArgs))
     else:
         results = f.interval(cl=cl,
                              method=method,

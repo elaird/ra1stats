@@ -10,6 +10,8 @@ class l2012dev(likelihood.base):
         self._qcdParameterIsYield = True
         self._initialValuesFromMuonSample = True
         self._initialFZinvFromMc = True
+        self._poiIniMinMax = (0.0, 0.0, 1.0)
+        self._rhoSignalMin = 0.1
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
