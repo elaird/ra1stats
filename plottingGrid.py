@@ -1159,11 +1159,13 @@ def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
         values = [(fHat, y0)]
         values.append((0.0, histos[name("nll_s0")].GetBinContent(iBinX, iBinY)))
 
+        xsVal = xs.GetBinContent(iBinX, iBinY)
         if name("nll_sNom") in histos:
             fNom = histos[name("poiNom")].GetBinContent(iBinX, iBinY)
             values.append((fNom, histos[name("nll_sNom")].GetBinContent(iBinX, iBinY)))
             ys = [x[1]-y0 for x in values]
-            line = r.TLine(fNom * xsVal, min(ys), fNom * xsVal, max(ys))
+            xLine = fNom * xsVal
+            line = r.TLine(xLine, min(ys), xLine, max(ys))
             line.SetLineColor(r.kCyan)
         else:
             line = None
@@ -1173,7 +1175,6 @@ def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
             y = histos[key].GetBinContent(iBinX, iBinY)
             values.append((x, y))
 
-        xsVal = xs.GetBinContent(iBinX, iBinY)
         for iPoint, (x, y) in enumerate(sorted(values)):
             graph.SetPoint(iPoint, x * xsVal, y - y0)
 
