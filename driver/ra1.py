@@ -256,7 +256,15 @@ class driver(object):
             poi.setConstant(True)
             out["poiNom"] = poi.getVal()
             out["nll_sNom"] = self.rooFitResults().minNll()
-            out["deltaNll_s0_sNom"] = out["nll_s0"] - out["nll_sNom"]
+            #out["deltaNll_s0_sNom"] = out["nll_s0"] - out["nll_sNom"]
+
+            out["deltaNll_sNom_sHat"] = max(0.0, out["nll_sNom"] - out["nll_sHat"])
+            out["nSigma_sNom_sHat"] = (2.0*out["deltaNll_sNom_sHat"])**0.5
+            if out["poiVal"] < 1.0:
+                out["nSigma_sNom_sHat"] *= -1.0
+                out["ts"] = -2.0*out["deltaNll_sNom_sHat"]
+            else:
+                out["ts"] = 0.0
 
             for m in [0.12, 0.25, 0.50, 0.75, 1.25, 1.50, 2.00, 3.00, 4.00]:
                 x = m * out["poiVal"]
