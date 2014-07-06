@@ -179,8 +179,10 @@ def signalArgs(whiteList=[], options=None):
                      ("ge4b_ge4j",): {},
                      }
 
-    examples = examples_paper
-    signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
+    #examples = examples_paper
+    #signal = examples[tuple(whiteList)] if tuple(whiteList) in examples else {}
+    from signals.t2cc_2012dev import dm10_250
+    signal = dm10_250
 
     kargs = {"signalToTest": None,
              "signalToInject": None,
