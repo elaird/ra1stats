@@ -180,6 +180,11 @@ class base(object):
         else:
             p.remove("standardPoi")
 
+        if self.rhoSignalMin():
+            sys.exit("must have rhoSignalMin=0")
+        else:
+            p.remove("rhoSignalMin")
+
         if self.REwk():
             sys.exit("REwk vs. HT not supported")
         else:
@@ -226,9 +231,6 @@ class base(object):
 
         fileNames = []
         for sel in self.selections():
-            if sel.muonForFullEwk:
-                print "FAIL muonForFullEwk: skipping", sel
-                continue
             if sel.universalSystematics:
                 print "Fail universalSystematics: skipping", sel
                 continue
@@ -264,11 +266,16 @@ class base(object):
         rhoMuonW = {}
 
         # processes to consider for each observed bin
-        procDct = {"had": ["s", "ttw", "zinv"],
-                   "muon": ["muon"],
-                   "phot": ["phot"],
-                   "mumu": ["mumu"],
-                   }
+        if sel.muonForFullEwk:
+            procDct = {"had": ["s", "had"],
+                       "muon": ["muon"],
+                       }
+        else:
+            procDct = {"had": ["s", "ttw", "zinv"],
+                       "muon": ["muon"],
+                       "phot": ["phot"],
+                       "mumu": ["mumu"],
+                       }
 
         obsDct = sel.data.observations()
         mcExp = sel.data.mcExpectations()
@@ -335,7 +342,7 @@ class base(object):
                             if proc in ["zinv", "phot", "mumu"]:
                                 normZinv[jBin].append(self._lnUMax)
                                 normTtw[jBin].append(None)
-                            elif proc in ["ttw", "muon"]:
+                            elif proc in ["had", "ttw", "muon"]:  # "had" used when sel.muonForFullEwk
                                 normZinv[jBin].append(None)
                                 normTtw[jBin].append(self._lnUMax)
                             else:
@@ -393,6 +400,8 @@ class base(object):
             dct = eval(stem)
             for iParam, lst in sorted(dct.iteritems()):
                 pName = "%s_%s_%d %s" % (stem, label, iParam, form)
+                if not any(lst):
+                    continue
                 lines += [pName.ljust(w1)   + "  ".join([(sFmt % x) if x else "-".rjust(w2) for x in lst])]
 
         return lines
