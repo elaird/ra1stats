@@ -342,7 +342,10 @@ class base(object):
                             if proc in ["zinv", "phot", "mumu"]:
                                 normZinv[jBin].append(self._lnUMax)
                                 normTtw[jBin].append(None)
-                            elif proc in ["had", "ttw", "muon"]:  # "had" used when sel.muonForFullEwk
+                            elif sel.muonForFullEwk and proc in ["had", "muon"]:
+                                normZinv[jBin].append(None)
+                                normTtw[jBin].append(self._lnUMax)
+                            elif (not sel.muonForFullEwk) and proc in ["ttw", "muon"]:
                                 normZinv[jBin].append(None)
                                 normTtw[jBin].append(self._lnUMax)
                             else:
@@ -363,13 +366,14 @@ class base(object):
                             else:
                                 dct[jSystBin].append(None)
 
-        return obs, processes, rates, lumiUncs, normZinv, normTtw, rhoPhotZ, rhoMumuZ, rhoMuonW
+        rename = sel.muonForFullEwk
+        return obs, processes, rates, lumiUncs, normZinv, normTtw, rhoPhotZ, rhoMumuZ, rhoMuonW, rename
 
 
     def formattedSelection(self, obs, processes, rates,
                            lumiUncs, normZinv, normTtw,
                            rhoPhotZ, rhoMumuZ, rhoMuonW,
-                           label=""):
+                           rename=None, label=""):
         w1 = 25
         w2 = 9
         iFmt = "%" + str(w2) + "d"
@@ -399,6 +403,8 @@ class base(object):
                            ]:
             dct = eval(stem)
             for iParam, lst in sorted(dct.iteritems()):
+                if rename:
+                    stem = stem.replace("normTtw", "normEwk")  # when sel.muonForFullEwk
                 pName = "%s_%s_%d %s" % (stem, label, iParam, form)
                 if not any(lst):
                     continue
