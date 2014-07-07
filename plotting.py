@@ -432,7 +432,7 @@ class validationPlotter(object) :
         if self.significance:
             self.significancePlots()
         self.rhoPlots()
-        #self.sigMcUncPlots()
+        self.sigMcUncPlots()
         self.printPars()
         self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
@@ -879,7 +879,9 @@ class validationPlotter(object) :
                                   "color":self.sig,
                                   "style":1,
                                   "width":self.width1,
-                                  "stack":"total"}],
+                                  "stack":"total",
+                                  "suppress": ["min","max"],
+                                  }],
                       logY=logY,
                       stampParams=True,
                       )
