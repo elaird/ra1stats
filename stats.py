@@ -15,6 +15,7 @@ def opts() :
     parser.add_option("--skip",       dest = "skip",       default = False, action  = "store_true", help = "skip jobs; merge input rather than output files")
     parser.add_option("--validation", dest = "validation", default = False, action  = "store_true", help = "make validation plots")
     parser.add_option("--output",     dest = "output",     default = False, action  = "store_true", help = "write stdout&stderr to disk rather than to /dev/null")
+    parser.add_option("--respect-whitelist", dest="respectWhiteList", default=False, action="store_true", help="use whiteList in configuration/signal.py")
     options,args = parser.parse_args()
     assert options.local==None or int(options.local)>0,"N must be greater than 0"
     if options.queue is not None :
@@ -25,7 +26,7 @@ def opts() :
 ############################################
 def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     pwd = os.environ["PWD"]
-    points = histogramProcessing.points()
+    points = pointList()
     if not offset : pickling.writeSignalFiles(points, outFilesAlso = skip)
     if not nSlices : nSlices = len(points)
     out = []
@@ -58,7 +59,7 @@ def pjobCmds(queue=None) :
 
     pwd = os.environ["PWD"]
 
-    points = histogramProcessing.points()
+    points = pointList()
     n_points = len(points)
 
     njm = configuration.batch.nJobsMax()
@@ -177,12 +178,16 @@ def mkdirs():
         dirName = getattr(module, name)()
         utils.mkdir(dirName)
 ############################################
+def pointList():
+    import histogramProcessing as hp
+    return hp.points(respectWhiteList=options.respectWhiteList)
+
+
 options = opts()
 
 import configuration.batch
 import configuration.directories
 import cpp
-import histogramProcessing
 import pickling
 import plottingGrid
 import utils
@@ -193,11 +198,11 @@ cpp.compile()
 
 if options.batch  : batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
 if options.local  : local(nWorkers = int(options.local), skip = options.skip)
-if options.merge  : pickling.mergePickledFiles()
+if options.merge  : pickling.mergePickledFiles(respectWhiteList=options.respectWhiteList)
 if options.pbatch : pbatch(options.queue)
 
 if options.merge or options.validation :
     plottingGrid.makePlots()
 
 if not any([getattr(options,item) for item in ["batch", "local", "merge", "validation"]]) :
-    print "nPoints = %s"%len(histogramProcessing.points())
+    print "nPoints = %s" % len(pointList())

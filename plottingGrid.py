@@ -1131,6 +1131,75 @@ def clsValidation(model=None, cl=None, filterKey="CLb", plotKey="",
         print "%s has been written." % fileName
 
 
+def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
+    def name(s=""):
+        return "%s_%s" % (model.name, s)
+
+    histos = allHistos(fileName=configuration.limit.mergedFile(model=model), collapse=True)
+    xs = histos.get(name("xs"))
+    assert xs, "xs not found.  Available keys: %s" % str(histos.keys())
+
+    graphs = {}
+    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(xs, interBin="LowEdge"):
+        if any([iBinZ != 1, not xs.GetBinContent(iBinX, iBinY)]):
+            continue
+
+        graphName = name("%d_%d" % (iBinX, iBinY))
+        zTitle = "%d_%d: (%g, %g)" % (iBinX, iBinY, x, y)
+        graph = r.TGraphErrors()
+        graph.SetName(graphName)
+        graph.SetTitle("%s;#sigma (pb);delta NLL" % (zTitle if stampTitle else ""))
+        graph.SetMarkerStyle(20)
+        graph.SetMarkerSize(0.5)
+        graph.SetMinimum(0.0)
+        #graph.SetMaximum(20.0)
+
+        y0 = histos[name("nll_sHat")].GetBinContent(iBinX, iBinY)
+        fHat = histos[name("poiVal")].GetBinContent(iBinX, iBinY)
+        values = [(fHat, y0)]
+        values.append((0.0, histos[name("nll_s0")].GetBinContent(iBinX, iBinY)))
+
+        xsVal = xs.GetBinContent(iBinX, iBinY)
+        if name("nll_sNom") in histos:
+            fNom = histos[name("poiNom")].GetBinContent(iBinX, iBinY)
+            values.append((fNom, histos[name("nll_sNom")].GetBinContent(iBinX, iBinY)))
+            ys = [x[1]-y0 for x in values]
+            xLine = fNom * xsVal
+            line = r.TLine(xLine, min(ys), xLine, max(ys))
+            line.SetLineColor(r.kCyan)
+        else:
+            line = None
+
+        for key in filter(lambda x: x.startswith(name("nll_sHat_")), histos.keys()):
+            x = float(key[-4:]) * fHat
+            y = histos[key].GetBinContent(iBinX, iBinY)
+            values.append((x, y))
+
+        for iPoint, (x, y) in enumerate(sorted(values)):
+            graph.SetPoint(iPoint, x * xsVal, y - y0)
+
+        graphs[graphName] = [graph, line] if line else graph
+
+    fileName = outFileName(model=model, tag="nllsValidation")["pdf"]
+
+    canvas = utils.numberedCanvas()
+    canvas.Print(fileName+"[")
+    text1 = printTimeStamp()
+    text2 = printLumis()
+    canvas.Print(fileName)
+    canvas.Clear()
+
+    canvas.SetRightMargin(0.15)
+    goptions = "ap"
+    if line:
+        goptions += "l"
+    utils.cyclePlot(d=graphs, f=None, args={}, optStat=1110, canvas=canvas,
+                    fileName=fileName, divide=divide, goptions=goptions)
+
+    canvas.Print(fileName+"]")
+    print "%s has been written." % fileName
+
+
 def makePlots(square=False):
     for model in configuration.signal.models():
         multiPlots(model=model,
@@ -1168,8 +1237,14 @@ def makePlots(square=False):
         #           modify=True,
         #           square=square)
 
-        if model.isSms and configuration.limit.method() == "CLs":
+        if not model.isSms:
+            return
+
+        method = configuration.limit.method()
+        if method == "CLs":
             for cl in configuration.limit.CL():
                 clsValidation(model=model, cl=cl, plotKey="CLs")
                 if model.binaryExclusion:
                     clsValidation(model=model, cl=cl, plotKey="CLb")
+        elif method == "nlls":
+            nllsValidation(model=model)

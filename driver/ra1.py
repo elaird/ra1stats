@@ -240,18 +240,37 @@ class driver(object):
                "poiMin": poi.getMin(),
                "poiMax": poi.getMax(),
                }
-        out["nllSb"] = self.rooFitResults().minNll()
+        out["nll_sHat"] = self.rooFitResults().minNll()
 
-        # fix POI to zero
-        poi.setMin(0.0)
-        poi.setMax(0.0)
         poi.setVal(0.0)
-        out["nllB"] = self.rooFitResults().minNll()
+        poi.setConstant(True)
+        out["nll_s0"] = self.rooFitResults().minNll()
 
-        out["deltaNll"] = max(0.0, out["nllB"] - out["nllSb"])
-        out["nSigma"] = (2.0*out["deltaNll"])**0.5
+        out["deltaNll_s0_sHat"] = max(0.0, out["nll_s0"] - out["nll_sHat"])
+        out["nSigma_s0_sHat"] = (2.0*out["deltaNll_s0_sHat"])**0.5
         if out["poiVal"] < 0.0:
-            out["nSigma"] *= -1.0
+            out["nSigma_s0_sHat"] *= -1.0
+
+        if self.signalToTest.binaryExclusion:
+            poi.setVal(1.0)
+            poi.setConstant(True)
+            out["poiNom"] = poi.getVal()
+            out["nll_sNom"] = self.rooFitResults().minNll()
+            #out["deltaNll_s0_sNom"] = out["nll_s0"] - out["nll_sNom"]
+
+            out["deltaNll_sNom_sHat"] = max(0.0, out["nll_sNom"] - out["nll_sHat"])
+            out["nSigma_sNom_sHat"] = (2.0*out["deltaNll_sNom_sHat"])**0.5
+            if out["poiVal"] < 1.0:
+                out["nSigma_sNom_sHat"] *= -1.0
+                out["ts"] = -2.0*out["deltaNll_sNom_sHat"]
+            else:
+                out["ts"] = 0.0
+
+            for m in [0.12, 0.25, 0.50, 0.75, 1.25, 1.50, 2.00, 3.00, 4.00]:
+                x = m * out["poiVal"]
+                poi.setRange(x, x)
+                poi.setVal(x)
+                out["nll_sHat_x%4.2f" % m] = self.rooFitResults().minNll()
         return out
 
 

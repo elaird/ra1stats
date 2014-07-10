@@ -11,13 +11,18 @@ class l2012dev(likelihood.base):
         self._initialValuesFromMuonSample = True
         self._initialFZinvFromMc = True
         self._poiIniMinMax = (0.0, 0.0, 1.0)
-        self._rhoSignalMin = 0.1
+        self._rhoSignalMin = 0.0
         self._REwk = ""
         self._RQcd = "Zero"
         self._nFZinv = "All"
         self._legendTitle = "CMS Preliminary, 18.7 fb^{-1}, #sqrt{s} = 8 TeV"
+
         #from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff as module
         #from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit as module
+
+        #from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff_withSignal as module
+        #from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit_withSignal as module
+
         from inputData.data2012dev import take13 as module
 
         #QCD test
