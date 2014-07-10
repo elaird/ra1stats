@@ -123,7 +123,7 @@ def printNlls(nlls={}):
         for iBin, d in sorted(nllDct.iteritems()):
             print fmt % (cat, iBin, d["nIterations"],
                          d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
-                         d["nll_sHat"], d["nll_s0"], d["deltaNll_s0_sHat"], d["nSigma_s0_sHat"])
+                         d["minNll_sHat"], d["minNll_s0"], d["deltaMinNll_s0_sHat"], d["nSigma_s0_sHat"])
             nDof += 1
             chi2 += d["nSigma_s0_sHat"]**2
             labelSig.append((iBin+1, d["nSigma_s0_sHat"]))
