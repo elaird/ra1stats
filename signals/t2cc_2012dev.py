@@ -5,7 +5,7 @@ from . import point
 
 
 
-dm10_250 = point(xs=5.57596, sumWeightIn=473154, x=250.0, y=240.0,
+dm10_250 = point(xs=5.57596, sumWeightIn=473154, x=250.0, y=240.0, # sigMcUnc=True,
                  label="#lower[0.25]{#splitline{%s}{%s}}"%("SM + "+pruned(processStamp("T2cc")["text"])  + "(xs = %s pb)"% (5.6*pb),
                                                                    "(m_{#tilde{t}}= 250 GeV, m_{#tilde{#chi}^{0}_{1}} = 240 GeV)"))
 dm10_250.insert("0b_ge4j", {
