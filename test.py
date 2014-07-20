@@ -192,6 +192,7 @@ def signalArgs(whiteList=[], options=None):
         kargs["signalToTest"] = signal
     elif options.bestFit or options.genBands:
         kargs["signalExampleToStack"] = None  # signal
+        # kargs["signalToTest"] = signal
     return kargs
 
 
