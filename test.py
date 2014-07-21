@@ -101,13 +101,16 @@ def printReport(report={}):
         print " ".join(out)
 
 
-def printNlls(nlls={}):
+def printNlls(nlls={}, scale=True):
     if not nlls:
         return
 
     n = max([len(c) for c in nlls.keys()])
     header = "  ".join(["cat".ljust(n), "iBin", "nIter", "(fMin", "       fHat +-     Err", "   fMax)",
                         "", "nll_(f=fHat)", "nll_(f=0)", " delta", "sqrt(2*delta)"])
+    if scale:
+        header = header.replace("f", "s")
+
     fmt = "  ".join(["%"+str(n)+"s", "  %2d", "   %2d", "%8.1e", "%8.1e +- %7.1e", "%7.1e",
                      "", "      %6.2f ", "  %6.2f ", "%6.2f", " %5.2f"])
     print header
@@ -121,9 +124,14 @@ def printNlls(nlls={}):
         canvas = r.TCanvas("canvas_%s" % cat)
         canvas.SetTicks(0,1)
         for iBin, d in sorted(nllDct.iteritems()):
-            print fmt % (cat, iBin, d["nIterations"],
-                         d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"],
-                         d["minNll_sHat"], d["minNll_s0"], d["deltaMinNll_s0_sHat"], d["nSigma_s0_sHat"])
+            values = [cat, iBin, d["nIterations"]]
+            pois = [d["poiMin"], d["poiVal"], d["poiErr"], d["poiMax"]]
+            if scale:
+                pois = [x*d["s_nom"] for x in pois]
+            values += pois
+            values += [d["minNll_sHat"], d["minNll_s0"], d["deltaMinNll_s0_sHat"], d["nSigma_s0_sHat"]]
+
+            print fmt % tuple(values)
             nDof += 1
             chi2 += d["nSigma_s0_sHat"]**2
             labelSig.append((iBin+1, d["nSigma_s0_sHat"]))
@@ -212,11 +220,14 @@ def significances(whiteList=[], selName="", options=None):
     ll = likelihood.spec(name=options.llk, whiteList=whiteList)
     sel = ll.selections()[0]
     nBins = len(sel.data.htBinLowerEdges())
+    lumi = sel.data.lumi()["had"]
+    trigEff = sel.data.triggerEfficiencies()["had"]
 
     for iBin in range(nBins):
         # make xs fall vs. HT
         xs1 = 0.1*r.TMath.Exp(-iBin)
         xs2 = 1.0*(2+iBin)**-4.0
+
         model = signals.point(xs=xs2,
                               label="%s_ht%d" % (selName, iBin),
                               sumWeightIn=1.0, x=0.0, y=0.0,
@@ -233,7 +244,9 @@ def significances(whiteList=[], selName="", options=None):
                 separateSystObs=not options.genBands,
                 )
 
-        out[iBin] = f.nlls()
+        dct = f.nlls()
+        dct["s_nom"] = effs[iBin] * model.xs * lumi * trigEff[iBin]
+        out[iBin] = dct
 
     return out
 
