@@ -690,7 +690,7 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="",
                 systObs.append(nEventsSigMc)
 
                 nValueVar = w.var(nEventsSigMc)
-                assert nValueVar, Box
+                assert nValueVar, "Box %s lacks %s." % (Box, nEventsSigMc)
                 nValue = w.var(nEventsSigMc).getVal()
                 mu = ni("muEventsSigMc%s" % Box, label, i)
                 wimport(w, r.RooRealVar(mu, mu, nValue, 0.0, 10.0*max(1, nValue)))

@@ -230,6 +230,10 @@ class driver(object):
 
 
     def nlls(self):
+        def store(res, suffix):
+            for attr in ["minNll", "status", "numInvalidNLL", "edm", "covQual"]:
+                out["%s_%s" % (attr, suffix)] = getattr(res, attr)()
+
         nIterations, poi = self.expandPoiRange(allowNegative=True,
                                                nIterationsMax=10,
                                                msgThreshold=r.RooFit.WARNING,
@@ -240,14 +244,14 @@ class driver(object):
                "poiMin": poi.getMin(),
                "poiMax": poi.getMax(),
                }
-        out["nll_sHat"] = self.rooFitResults().minNll()
+        store(self.rooFitResults(), "sHat")
 
         poi.setVal(0.0)
         poi.setConstant(True)
-        out["nll_s0"] = self.rooFitResults().minNll()
+        store(self.rooFitResults(), "s0")
 
-        out["deltaNll_s0_sHat"] = max(0.0, out["nll_s0"] - out["nll_sHat"])
-        out["nSigma_s0_sHat"] = (2.0*out["deltaNll_s0_sHat"])**0.5
+        out["deltaMinNll_s0_sHat"] = max(0.0, out["minNll_s0"] - out["minNll_sHat"])
+        out["nSigma_s0_sHat"] = (2.0*out["deltaMinNll_s0_sHat"])**0.5
         if out["poiVal"] < 0.0:
             out["nSigma_s0_sHat"] *= -1.0
 
@@ -255,14 +259,14 @@ class driver(object):
             poi.setVal(1.0)
             poi.setConstant(True)
             out["poiNom"] = poi.getVal()
-            out["nll_sNom"] = self.rooFitResults().minNll()
-            #out["deltaNll_s0_sNom"] = out["nll_s0"] - out["nll_sNom"]
+            store(self.rooFitResults(), "sNom")
+            out["deltaMinNll_s0_sNom"] = out["minNll_s0"] - out["minNll_sNom"]
 
-            out["deltaNll_sNom_sHat"] = max(0.0, out["nll_sNom"] - out["nll_sHat"])
-            out["nSigma_sNom_sHat"] = (2.0*out["deltaNll_sNom_sHat"])**0.5
+            out["deltaMinNll_sNom_sHat"] = max(0.0, out["minNll_sNom"] - out["minNll_sHat"])
+            out["nSigma_sNom_sHat"] = (2.0*out["deltaMinNll_sNom_sHat"])**0.5
             if out["poiVal"] < 1.0:
                 out["nSigma_sNom_sHat"] *= -1.0
-                out["ts"] = -2.0*out["deltaNll_sNom_sHat"]
+                out["ts"] = -2.0*out["deltaMinNll_sNom_sHat"]
             else:
                 out["ts"] = 0.0
 
@@ -270,7 +274,7 @@ class driver(object):
                 x = m * out["poiVal"]
                 poi.setRange(x, x)
                 poi.setVal(x)
-                out["nll_sHat_x%4.2f" % m] = self.rooFitResults().minNll()
+                store(self.rooFitResults(), "sHat_x%4.2f" % m)
         return out
 
 

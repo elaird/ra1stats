@@ -432,7 +432,7 @@ class validationPlotter(object) :
         if self.significance:
             self.significancePlots()
         self.rhoPlots()
-        #self.sigMcUncPlots()
+        self.sigMcUncPlots()
         self.printPars()
         self.correlationHist()
         #self.propagatedErrorsPlots(printResults = False)
@@ -879,16 +879,21 @@ class validationPlotter(object) :
                                   "color":self.sig,
                                   "style":1,
                                   "width":self.width1,
-                                  "stack":"total"}],
+                                  "stack":"total",
+                                  "suppress": ["min","max"],
+                                  }],
                       logY=logY,
                       stampParams=True,
                       )
 
 
-    def printPars(self) :
-        def ini(x, y) :
-            y = printText(x, y, "%20s:  %6s   +/- %6s   [ %4s   -  %4s  ]"%("par name", "value", "error", "min", "max"))
-            y = printText(x, y, "-"*64)
+    def printPars(self):
+        def ini(x, y, nName):
+            headers = "%" + str(nName) + "s"
+            headers = headers % "par name"
+            headers += ":  %6s   +/- %6s   [ %4s   -  %4s  ]" % ("value", "error", "min", "max")
+            y = printText(x, y, headers)
+            y = printText(x, y, "-" * len(headers))
             return y
 
         def printText(x, y, s, color = r.kBlack) :
@@ -903,7 +908,7 @@ class validationPlotter(object) :
         text = r.TText()
         text.SetNDC()
         text.SetTextFont(102)
-        text.SetTextSize(0.4*text.GetTextSize())
+        text.SetTextSize(0.35*text.GetTextSize())
         x = -0.5
         y = y0 = 0.95
         slope = 0.02
@@ -911,13 +916,17 @@ class validationPlotter(object) :
 
         self.canvas.Clear()
 
-        for i, d in enumerate(workspace.floatingVars(self.wspace)):
-            if not (i%nLines) :
+        pars = workspace.floatingVars(self.wspace)
+        nName = 1 + max([len(d["name"]) for d in pars])
+        for i, d in enumerate(pars):
+            if not (i % nLines):
                 x += 0.5
                 y = y0
-                y = ini(x, y)
+                y = ini(x, y, nName)
 
-            s = "%20s: %9.2e +/-%8.1e  [%7.1e - %7.1e]"%(d["name"], d["value"], d["error"], d["min"], d["max"])
+            s = "%" + str(nName) + "s"
+            s = s % d["name"]
+            s += ": %9.2e +/-%8.1e  [%7.1e - %7.1e]" % (d["value"], d["error"], d["min"], d["max"])
             y = printText(x, y, s, color = r.kRed if close(**d) else r.kBlack)
             i += 1
 

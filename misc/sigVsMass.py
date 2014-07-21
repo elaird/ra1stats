@@ -60,11 +60,11 @@ def bestFitPlots(label=""):
     cont = bestFitContents(label)
     nBins = len(cont)
     if mode == "bestFit":
-        word = "value"
+        words = "value #pm unc (pb)"
     if mode == "bestFit_binaryExcl":
-        word = "factor"
+        words = "factor #pm unc"
 
-    poi = r.TH1D("poi", "%s;;best-fit xs %s #pm unc (pb)" % (label, word), nBins, 0, nBins)
+    poi = r.TH1D("poi", "%s;;best-fit xs %s" % (label, words), nBins, 0, nBins)
     poiX = poi.GetXaxis()
 
     poiR = r.TH1D("poiR", "%s;;best-fit xs / model xs" % label, nBins, 0, nBins)

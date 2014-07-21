@@ -129,7 +129,7 @@ def printNlls(nlls={}, scale=True):
             if scale:
                 pois = [x*d["s_nom"] for x in pois]
             values += pois
-            values += [d["nll_sHat"], d["nll_s0"], d["deltaNll_s0_sHat"], d["nSigma_s0_sHat"]]
+            values += [d["minNll_sHat"], d["minNll_s0"], d["deltaMinNll_s0_sHat"], d["nSigma_s0_sHat"]]
 
             print fmt % tuple(values)
             nDof += 1
@@ -200,6 +200,7 @@ def signalArgs(whiteList=[], options=None):
         kargs["signalToTest"] = signal
     elif options.bestFit or options.genBands:
         kargs["signalExampleToStack"] = None  # signal
+        # kargs["signalToTest"] = signal
     return kargs
 
 
