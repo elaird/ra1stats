@@ -664,8 +664,17 @@ class validationPlotter(object) :
                       fileName = ["fZinv"], legend0 = (0.2, 0.8), legend1 = (0.55, 0.85), yAxisMinMax = (0.0,1.0), yLabel = "",
                       otherVars = [{"var":"fZinv", "type":"var", "color":r.kBlue, "style":1, "desc":"fit Z#rightarrow#nu#bar{#nu} / EWK", "stack":None}])
         else :
-            self.plot(note = "ewk scale factor (result of fit)", legend0 = (0.5, 0.8), yLabel = "",
-                      otherVars = [ {"var":"ewk", "type":("function" if self.REwk else "var"), "dens":["mcHad"], "denTypes":[None], "desc":"ML EWK / MC EWK",
+            ewkType = "function" if self.REwk else "var"
+            if self.hcg:
+                ewkType = "function"
+                dens = []
+                denTypes = []
+            else:
+                dens = ["mcHad"]
+                denTypes = [None]
+
+            self.plot(note = "ewk scale factor (result of fit)", legend0 = (0.5, 0.8), yLabel = "", yAxisMinMax = (0.0, 3.0),
+                      otherVars = [ {"var":"ewk", "type": ewkType, "dens": dens, "denTypes": denTypes, "desc":"ML EWK / MC EWK",
                                      "stack":None, "color":r.kRed, "suppress":["min","max"], "goptions": "hist"}])
 
     def mcFactorPlots(self) :
