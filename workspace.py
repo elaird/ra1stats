@@ -1,10 +1,13 @@
 import ROOT as r
 
 
-def wimport(w, item, protect=True):
+def wimport(w, item, protect=True, round=False):
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.WARNING)  # suppress info messages
-    if protect and (item.ClassName() == "RooPoisson"):
-        item.protectNegativeMean()
+    if item.ClassName() == "RooPoisson":
+        if protect:
+            item.protectNegativeMean()
+        if not round:
+            item.setNoRounding()
     getattr(w, "import")(item)
     r.RooMsgService.instance().setGlobalKillBelow(r.RooFit.DEBUG)  # re-enable all messages
 
@@ -687,7 +690,7 @@ def signalTerms(w=None, inputData=None, label="", systematicsLabel="",
                 systObs.append(nEventsSigMc)
 
                 nValueVar = w.var(nEventsSigMc)
-                assert nValueVar, Box
+                assert nValueVar, "Box %s lacks %s." % (Box, nEventsSigMc)
                 nValue = w.var(nEventsSigMc).getVal()
                 mu = ni("muEventsSigMc%s" % Box, label, i)
                 wimport(w, r.RooRealVar(mu, mu, nValue, 0.0, 10.0*max(1, nValue)))

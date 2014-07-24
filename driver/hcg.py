@@ -41,7 +41,7 @@ class driver(ra1.driver):
         while it.Next():
             n = it.GetName()
             self.translate_fZinv(ch, n)
-            self.translate_zinvTtw(ch, n)
+            self.translate_norms(ch, n)
             self.clone_nobs(it, ch, n)
             self.clone_exp(it, ch, n)
 
@@ -80,9 +80,10 @@ class driver(ra1.driver):
             workspace.wimport(self.wspace, fZinv)
 
 
-    def translate_zinvTtw(self, ch="", n=""):
+    def translate_norms(self, ch="", n=""):
         for varPrefix, funcPrefix in [("normTtw%s" % ch, "ttw%s" % ch),
                                       ("normZinv%s" % ch, "zInv%s" % ch),
+                                      ("normEwk%s" % ch, "ewk%s" % ch),  # when sel.muonForFullEwk
                                       ]:
             if n.startswith(varPrefix):
                 f = r.RooFormulaVar(n.replace(varPrefix, funcPrefix),
