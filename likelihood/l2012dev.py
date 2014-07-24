@@ -23,7 +23,10 @@ class l2012dev(likelihood.base):
         #from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff_withSignal as module
         #from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit_withSignal as module
 
-        from inputData.data2012dev import take13 as module
+        from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff_withT2ttSignal as module
+        #from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit_withT2ttSignal as module
+
+        #from inputData.data2012dev import take13 as module
 
         #QCD test
         if False :
