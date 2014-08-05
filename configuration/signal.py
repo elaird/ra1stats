@@ -6,7 +6,7 @@ models = modelList.models
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20,
-            "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736,
+            "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736, "T2_4body":0.25,
             }[model]
 
 
@@ -41,6 +41,7 @@ def whiteListOfPoints(model="", respect=False):
             #"T2": [(375.0, 50.0)],
             "T2cc": [(250.0, 240.0)],
             #"T2cc": [(175.0, 165.0)],
+            "T2_4body": [(250.0, 240.0)],
             }.get(model, [])
 
 
@@ -58,6 +59,7 @@ def xsHistoSpec(model=None, cmssmProcess=""):
          "T2tt":    {"histo": "stop_or_sbottom", "file": sms},
          "T2bb":    {"histo": "stop_or_sbottom", "file": sms},
          "T2cc":    {"histo": "stop_or_sbottom", "file": sms},
+         "T2_4body":{"histo": "stop_or_sbottom", "file": sms},
          "tanBeta10_7": {"histo": "%s_%s" % (cmssmProcess, model.xsVariation),
                          "file": "%s/v5/7TeV_cmssm.root" % base},
          }
@@ -154,6 +156,7 @@ def ranges(model):
          "T2tt": (100.0, 1000.0),
          "T2bb": (287.5, 900.0),
          "T2cc":   (87.5, 400.0),
+         "T2_4body":(87.5, 400.0),
          "T1bbbb": (287.5, 1400),
          "T1tttt": (387.5, 1400),
          "T1tttt_ichep": (375.0, 1200.0),
@@ -167,6 +170,7 @@ def ranges(model):
          "T2tt":    (0.0, 1000),
          "T2bb":    (0.0,  725),
          "T2cc":    (0.0,  400),
+         "T2_4body":(0.0,  400),
          "T1bbbb":  (0.0, 1225),
          "T1tttt":  (0.0, 1050),
          "T1tttt_ichep":  (50.0, 800.0),
@@ -181,6 +185,7 @@ def ranges(model):
                 "T2tt":   400.0,
                 "T2bb":   500.0,
                 "T2cc":   400.0,
+                "T2_4body":400.0,
                 "T1bbbb": 800.0,
                 "T1tttt": 700.0,
                 }
@@ -190,6 +195,7 @@ def ranges(model):
                   "T2": [10, 4, 0],
                   "T2bb": [10, 4, 0],
                   "T2cc": [10, 4, 0],
+                  "T2_4body": [10, 4, 0],
                   "T2tt": [10, 4, 0],
                   "T1bbbb": [10, 4, 0],
                   "T1tttt":  [8, 4, 0],
@@ -200,6 +206,7 @@ def ranges(model):
                   "T2": [10, 4, 0],
                   "T2bb": [10, 4, 0],
                   "T2cc": [10, 4, 0],
+                  "T2_4body": [10, 4, 0],
                   "T2tt": [12, 4, 0],
                   "T1bbbb": [10, 4, 0],
                   "T1tttt": [10, 4, 0],
@@ -253,6 +260,7 @@ def processStamp(model=""):
            'T2bb': {'text': sqProc("b"), 'xpos': 0.425},
            'T2tt': {'text': sqProc("t"), 'xpos': 0.41},
            'T2cc': {'text': sqProc("t", "c"), 'xpos': 0.425},
+           'T2_4body': {'text': sqProc("t", "b\ChiW"), 'xpos': 0.425},
            'T1': {'text': glProc("q"), 'xpos': 0.4325},
            'T1bbbb': {'text': glProc("b"), 'xpos': 0.43},
            'T1tttt': {'text': glProc("t"), 'xpos': 0.425},
@@ -266,6 +274,7 @@ def histoTitle(model=""):
          "T2": ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt": ";m_{stop} (GeV);m_{LSP} (GeV)",
          "T2cc": ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "T2_4body": ";m_{stop} (GeV);m_{LSP} (GeV)",
          "T2bb": ";m_{sbottom} (GeV);m_{LSP} (GeV)",
          "T2bw": ";m_{UKNOWN} (GeV);m_{UNKNOWN_2} (GeV)",
          "T5zz": ";m_{gluino} (GeV);m_{LSP} (GeV)",
