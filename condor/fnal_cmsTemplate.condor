@@ -7,7 +7,17 @@
 universe = vanilla
 
 Executable = JOBFLAG
+
+#initialdir =  JOBDIR
+
+#LL
+
 Requirements = target.OpSys == "LINUX"
+
+transfer_input_files = INFLAG
+transfer_output_files = OUTFLAG
+
+#LL
 
 Should_Transfer_Files = YES
 WhenToTransferOutput = ON_EXIT
