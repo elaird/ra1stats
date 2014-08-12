@@ -3,7 +3,7 @@ if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
     LOC=/vols/sl5_exp_software/cms
 
 elif [[ "$HOSTNAME" == *.fnal.gov ]]; then
-    echo "FIX ME"
+    LOC=/uscmst1/prod/sw/cms/ #LL
 else
     LOC=/afs/cern.ch/cms
 fi

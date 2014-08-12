@@ -1,4 +1,6 @@
 import os
+import configuration.directories
+
 def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobScriptFileName_format=None, doCopy=False) :
     if jobScriptFileName_format == None :
         jobScriptFileName_format = "%(base)s/%(tag)s/%(sample)s/job%(iSlice)d.sh"
@@ -20,7 +22,8 @@ def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobS
 
     if os.path.exists(condorTemplate) :
         condorFileName = jobScriptFileName.replace(".sh",".condor")
-        os.system("cat %s | sed s@JOBFLAG@%s@g > %s"%(condorTemplate, jobScriptFileName, condorFileName))
+        outdir = "./ra1stats/"+configuration.directories.job()
+        os.system("cat %s | sed s@JOBFLAG@%s@g | sed s@OUTFLAG@%s@g | sed s@INFLAG@%s@g > %s"%(condorTemplate, jobScriptFileName, outdir, os.environ["PWD"] , condorFileName))
         arg = condorFileName
     else :
         arg = jobScriptFileName
