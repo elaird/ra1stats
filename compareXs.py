@@ -6,7 +6,7 @@ import configuration.signal
 import histogramProcessing as hp
 import utils
 from signalScan import scan
-
+from collections import OrderedDict as odict
 import ROOT as r
 
 
@@ -16,10 +16,10 @@ def drawStamp(canvas, lspMass=None, lumiStamp="", processStamp="",
     tl = r.TLatex()
     tl.SetNDC()
     tl.SetTextAlign(12)
-    tl.SetTextSize(0.04)
+    tl.SetTextSize(0.035)
     #tl.DrawLatex(0.16,0.84,'CMS')
     #x = 0.42
-    x = 0.16
+    x = 0.15
     y = 0.3
     dy = 0.06
 
@@ -55,9 +55,9 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
     refHisto = refFile.Get(refHistoName).Clone()
     refHisto.SetDirectory(0)
     refFile.Close()
-    label = '#sigma^{{NLO+NLL}}({rn}) #pm th. unc.'.format(rn=refName)
+    label = 'Theory #pm 1#sigma'.format(rn=refName)
     histoD = {'refHisto': {'hist': refHisto,
-                           'LineWidth': 2,
+                           'LineWidth': 1,
                            'LineStyle': 1,
                            'LineColor': r.kBlack,
                            'FillColor': r.kGray+1,
@@ -70,49 +70,50 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
 
 
 def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, shift=(True, False)):
+    offset = 7
     limitHistoDict = {
         'T2cc_UpperLimit': {
-            'label': 'Observed Limit (95% CL)',
+            'label': 'Observed',
             'LineWidth': 3,
-            'LineColor': r.kBlue+2,
+            'LineColor': r.kBlack,
             },
         'T2cc_ExpectedUpperLimit': {
-            'label': 'Median Expected Limit #pm #sigma exp.',
-            'LineWidth': 2,
-            'LineColor': r.kOrange+7,
-            'LineStyle': 9,
+            'label': 'Expected',
+            'LineWidth': 1,
+            'LineColor': r.kBlack,
+            'LineStyle': 2,
             # for legend
-            'FillStyle': 1001,
-            'FillColor': r.kBlue-10,
-            },
-        'T2cc_ExpectedUpperLimit_+1_Sigma': {
-            'label': 'Expected Upper Limit (+1#sigma)',
-            'FillStyle': 1001,
-            'LineWidth': 2,
-            'LineColor': r.kOrange+7,
-            'FillColor': r.kBlue-10,
-            },
-        'T2cc_ExpectedUpperLimit_-1_Sigma': {
-            'label': 'Expected Upper Limit (-1#sigma)',
-            'LineColor': r.kOrange+7,
-            'LineWidth': 2,
-            'FillStyle': 1001,
-            'FillColor': 10,
+            'FillStyle': 0,
+            'FillColor': 0,
             },
         'T2cc_ExpectedUpperLimit_+2_Sigma': {
-            'label': 'Expected Upper Limit (+2#sigma)',
+            'label': 'Expected #pm 2#sigma',
+            'LineWidth': 0,
+            'LineColor': r.kYellow-offset,
             'FillStyle': 1001,
-            'LineWidth': 2,
-            'LineColor': r.kOrange+7,
-            'FillColor': r.kBlue-10,
+            'FillColor': r.kYellow-offset,
+            },
+        'T2cc_ExpectedUpperLimit_+1_Sigma': {
+            'label': 'Expected #pm 1#sigma',
+            'LineWidth': 0,
+            'LineColor': r.kGreen-offset,
+            'FillStyle': 1001,
+            'FillColor': r.kGreen-offset,
+            },
+        'T2cc_ExpectedUpperLimit_-1_Sigma': {
+            'label': 'None',
+            'LineWidth': 0,
+            'LineColor': r.kYellow-offset,
+            'FillStyle': 1001,
+            'FillColor': r.kYellow-offset,
             },
         'T2cc_ExpectedUpperLimit_-2_Sigma': {
-            'label': 'Expected Upper Limit (-2#sigma)',
-            'LineColor': r.kOrange+7,
-            'LineWidth': 2,
+            'label': 'None',
+            'LineWidth': 0,
+            'LineColor': 0,
             'FillStyle': 1001,
             'FillColor': 10,
-            }
+            },
         }
     efile = r.TFile(expectedLimitFile, 'READ')
     ofile = r.TFile(observedLimitFile, 'READ')
@@ -240,9 +241,8 @@ def oneD(h=None, yValue=None, dM=None):
         return dMhisto if cntr > 0 else None
     return proj
 
-
 def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
-              nSmooth=0, xMin=300, xMax=350, yMin=1e-3, yMax=1e+4,
+              nSmooth=0, xMin=300, xMax=350, yMin=1e-1, yMax=1e+3,
               showRatio=False, dumpRatio=False, preliminary=None,
               lumiStamp="", processStamp="", dM=None):
 
@@ -253,43 +253,46 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     else:
         pad = canvas.cd(0)
 
-    leg = r.TLegend(0.25, 0.65, 0.85, 0.85)
-    leg.SetFillStyle(0)
-    leg.SetBorderSize(0)
-
-    histo_range = None
+    legs = odict.fromkeys(['refHisto',
+                           'T2cc_UpperLimit',
+                           'T2cc_ExpectedUpperLimit',
+                           'T2cc_ExpectedUpperLimit_+1_Sigma',
+                           'T2cc_ExpectedUpperLimit_+2_Sigma'])
+    
     processed_histos = {}
-    histos = [#'T2cc_ExpectedUpperLimit_+2_Sigma',
+    histos = ['T2cc_ExpectedUpperLimit_+2_Sigma',
               'T2cc_ExpectedUpperLimit_+1_Sigma',
               'T2cc_ExpectedUpperLimit',
               'T2cc_ExpectedUpperLimit_-1_Sigma',
-              #'T2cc_ExpectedUpperLimit_-2_Sigma',
+              'T2cc_ExpectedUpperLimit_-2_Sigma',
               'refHisto',
               'T2cc_UpperLimit']
     for iHisto, hname in enumerate(histos):
         props = histoSpecs[hname]
-        if hname == 'T2cc_UpperLimit':
+        if hname == 'T2cc_UpperLimit': 
             his = props["hist"]
-            histo_range = (his.GetXaxis().GetBinCenter(his.FindFirstBinAbove(0.,1)),\
-                           his.GetXaxis().GetBinCenter(his.FindLastBinAbove(0.,1)),\
-                           his.GetYaxis().GetBinCenter(his.FindFirstBinAbove(0.,2)),\
-                           his.GetYaxis().GetBinCenter(his.FindLastBinAbove(0.,2)))
+#            if dM == 80 :
+#                r.gROOT.SetBatch(False)
+#                r.SetOwnership(his,False)
+#                c1 = r.TCanvas()
+#                his.Draw()
+#                raw_input("")
         if hname != 'refHisto':
             props["hist"] = oneD(props["hist"], yValue, dM)
-            gopts = 'HIST C'
+            gopts = 'hist'
         else:
             gopts = 'e3'
         h = props['hist']
         if h is None :
-            print "No histogram!"
+            #print "No histogram!"
             continue
         processed_histos[hname] = h
         h.SetStats(False)
         h.GetXaxis().SetRangeUser(xMin, xMax)
         h.SetMinimum(yMin)
         h.SetMaximum(yMax)
-        if nSmooth and (hname != 'refHisto'):
-            h.Smooth(nSmooth, 'R')
+#        if nSmooth and (hname != 'refHisto'):
+#            h.Smooth(nSmooth, 'R')
         h.Draw("%s%s" % (gopts, "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
             setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
@@ -298,10 +301,11 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
             if attr in props:
                 setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
                 setAttr(props.get(attr, 1))
-        if "Sigma" not in hname:
-#            if "Expected" in hname:
-#                props['label'] = props['label'].replace("#sig","%s#sig"%nSigma)
-            leg.AddEntry(h, props['label'], "lf")
+        # if "UpperLimit_-" not in hname:
+        if hname in legs.keys() : 
+            legs[hname] = (h,props['label'],"lf")
+#        else :
+#            print "TEST",hname,legs.keys()
         h.GetXaxis().SetTitle(xLabel)
         h.GetYaxis().SetTitle(yLabel)
         if hname == 'refHisto':
@@ -321,7 +325,16 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
             hUpper.SetLineColor(h.GetFillColor())
             for h2 in [hCentral, hUpper, hLower][:1]:
                 h2.Draw('lsame')
+
+    #print len(legs.keys()),legs
+    leg = r.TLegend(0.6, 0.6, 0.85, 0.85)
+    leg.SetFillStyle(0)
+    leg.SetBorderSize(0)
+    for key,val in legs.items() : 
+#        print "TEST",key,val
+        if val is not None : leg.AddEntry(val[0],val[1],val[2])
     leg.Draw()
+
     tl = drawStamp(canvas, lspMass=yValue , lumiStamp=lumiStamp,
                    processStamp=processStamp, preliminary=preliminary, dM=dM)
     pad.RedrawAxis()
@@ -360,7 +373,7 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     os.system("rm       "+epsiFile)
     os.system("rm       "+epsFile)
 
-    return histo_range,processed_histos
+    return processed_histos
 
 def setup():
     r.gROOT.SetBatch(True)
@@ -384,22 +397,25 @@ def transitions(input):
             if msusy < his.GetBinCenter(1) : continue
             #theory = ref.GetBinContent(bin+1)
             theory = ref.Interpolate(msusy)
-            fresult = fit.Eval(msusy)
-            hresult = his.Interpolate(msusy)
+            fxs = fit.Eval(msusy)
+            hxs = his.Interpolate(msusy)
             #theory = ref.Interpolate(ref.GetBinCenter(msusy))
-            #fresult = fit.Eval(ref.GetBinCenter(msusy))
-            #hresult = his.Interpolate(ref.GetBinCenter(msusy))
-            #print bin,msusy,theory,fresult,hresult
-            if fresult < theory and fstart < 0. : fstart = msusy
-            if fend < 0. and fresult > theory and fstart > 0. : fend = msusy
-            if hresult < theory and hstart < 0. : hstart = msusy
-            if hend < 0. and hresult > theory and hstart > 0. : hend = msusy
+            #fxs = fit.Eval(ref.GetBinCenter(msusy))
+            #hxs = his.Interpolate(ref.GetBinCenter(msusy))
+            #print bin,msusy,theory,fxs,hxs
+            if fxs < theory and fstart < 0. : fstart = msusy
+            if fend < 0. and fxs > theory and fstart > 0. : fend = msusy
+            if hxs < theory and hstart < 0. : hstart = msusy
+            if hend < 0. and hxs > theory and hstart > 0. : hend = msusy
         output[histo] = (fstart,fend),(hstart,hend)
     return output
 
 def points():
+    #print "TEMP",[ (x,100) for x in range(100,0,-10) ]
     out = []
-    for mlsp, xMin in [(90, 100), (20,100), (50, 300), (100, 300), (150, 350)][0:2]:
+    #for mlsp, xMin in [(90, 100), (20,100), (50, 300), (100, 300), (150, 350)][0:2]:
+    for mlsp, xMin in [ (x,100) for x in range(100,0,-10) ]:
+    #for mlsp, xMin in [ (90,100), (80,100), (70,100), (60,100), (40,100), (20,100), ]:
         for nSmooth in [0, 1, 2, 5][:1]:
             out.append({"yValue": mlsp,
                         "nSmooth": nSmooth,
@@ -415,6 +431,8 @@ def onePoint(model,
     (expFileName,obsFileName) = configuration.limit.mergedFiles(model=model,
                                                                 expFileNameSuffix=expFileNameSuffix,
                                                                 obsFileNameSuffix=obsFileNameSuffix)
+
+    #print "TEST",expFileName,obsFileName
     
     hSpec = configuration.signal.xsHistoSpec(model)
 
@@ -432,24 +450,25 @@ def onePoint(model,
         'xLabel': 'm_{#tilde{t}} (GeV)',
         'yLabel': '#sigma (pb)',
         'showRatio': False,
-        'lumiStamp': 'L = 18.7 fb^{-1}, #sqrt{s} = 8 TeV',
-        'preliminary': False,
+        'lumiStamp': 'L = 18.5 fb^{-1}, #sqrt{s} = 8 TeV',
+        'preliminary': True,
         'processStamp': configuration.signal.processStamp(model.name)['text'],
         'dM': dM,
         }
+    
+    processed_histos = compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin, **options)
 
-    histo_range,processed_histos = compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,
-                                             **options)
-
+    # Calculate where UL crossed XS
     return transitions(processed_histos)
 
 def main():
     setup()
     for model in configuration.signal.models():
         for dct in points():
+            #print "MLSP",dct["yValue"]
             onePoint(model,
                      expFileNameSuffix="_exp",
-                     obsFileNameSuffix="_exp",
+                     obsFileNameSuffix="_obs",
                      **dct)
 
 
