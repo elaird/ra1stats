@@ -8,7 +8,7 @@ import refXsProcessing as rxs
 import utils
 import compareXs as cxs
 import ROOT as r
-
+from array import array
 
 def setupRoot():
     #r.gROOT.SetStyle("Plain")
@@ -48,8 +48,9 @@ def printOnce(model=None, canvas=None, fileName="", alsoC=False, factor=0.6, ali
         latex.SetTextAlign(align)
         stamp = configuration.signal.processStamp(model.name)
         latex.SetTextSize(factor*latex.GetTextSize())
-        if stamp:
-            latex.DrawLatex(stamp['xpos'], stamp['ypos'], stamp['text'])
+# @@
+#        if stamp:
+#            latex.DrawLatex(stamp['xpos'], stamp['ypos'], stamp['text'])
 
     canvas.Print(fileName)
     utils.epsToPdf(fileName)
@@ -61,7 +62,8 @@ def stamp(text="#alpha_{T}, P.L., 1.1 fb^{-1}", x=0.25, y=0.55, factor=1.3):
     latex = r.TLatex()
     latex.SetTextSize(factor*latex.GetTextSize())
     latex.SetNDC()
-    latex.DrawLatex(x, y, text)
+# @@
+#    latex.DrawLatex(x, y, text)
     return latex
 
 
@@ -169,8 +171,14 @@ def factorString(xsFactor=None):
     return ("_xs%3.1f" % xsFactor).replace(".", "p")
 
 
-def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
-                    pruneYMin=False, debug=None, info=None):
+def exclusionGraphs(model=None, 
+                    expectedMapsOnly=None, 
+                    histos={}, 
+                    interBin="",
+                    pruneYMin=False, 
+                    debug=None, 
+                    info=None):
+
     cutFunc = patches.cutFunc()[model.name]
     curves = patches.curves().get(model.name)
 
@@ -277,8 +285,46 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
             relativeHistos[graphName] = relativeHisto
     return graphs, simpleExclHistos, relativeHistos
 
+def smooth(h) :
+    his = h.Clone(h.GetName()+"_clone")
+    
+    xlow = his.GetXaxis().GetBinCenter(1)
+    xhigh = his.GetXaxis().GetBinCenter(his.GetXaxis().GetNbins())
+    ylow = his.GetYaxis().GetBinCenter(1)
+    yhigh = his.GetYaxis().GetBinCenter(his.GetYaxis().GetNbins())
+    #print xlow,xhigh,ylow,yhigh
+    
+    hsmooth = r.TH2F(str(his.GetName()+"_smooth"),
+                     str(his.GetTitle()+"_smooth"),
+                     int(xhigh-xlow),xlow,xhigh,
+                     int(yhigh-ylow),ylow,yhigh)
+    
+    for xbin in range(hsmooth.GetXaxis().GetNbins()) :
+        for ybin in range(hsmooth.GetYaxis().GetNbins()) :
+            xval = hsmooth.GetXaxis().GetBinCenter(xbin+1)
+            yval = hsmooth.GetYaxis().GetBinCenter(ybin+1)
+            #print xbin,ybin,his.Interpolate(xval,yval)
+            #hsmooth.SetBinContent(xbin+1,ybin+1,xval,yval)
+    r.gROOT.SetBatch(False)
+    h.SetContour(1,array('d',[1.]))
+    #h.Smooth(1)
+    h.Draw("colz cont3")
+    raw_input("")
 
-def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=None, shiftY=None, info=None):
+    return hsmooth
+
+def upperLimitHistos(model=None, 
+                     expectedMapsOnly=None, 
+                     expFileNameSuffix=None,
+                     obsFileNameSuffix=None,
+                     shiftX=None, 
+                     shiftY=None, 
+                     info=None):
+    
+    (expFileName,obsFileName) = configuration.limit.mergedFiles(model=model,
+                                                                expFileNameSuffix=expFileNameSuffix,
+                                                                obsFileNameSuffix=obsFileNameSuffix)
+
     assert len(configuration.limit.CL()) == 1
     cl = configuration.limit.CL()[0]
 
@@ -293,6 +339,7 @@ def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=No
 
     histos = {}
     for name, pretty in items:
+        inFileName = expFileName if "Expected" in name else obsFileName
         nameReplace = []
         try:
             keyName = "%s_%s" % (model.name, name)
@@ -319,7 +366,7 @@ def upperLimitHistos(model=None, expectedMapsOnly=None, inFileName="", shiftX=No
         if info:
             hp.printHoles(h)
         rename(h, nameReplace=nameReplace)
-        histos[h.GetName()] = h
+        histos[h.GetName()] = h#smooth(h)
     return histos
 
 
@@ -356,8 +403,8 @@ def outFileName(model=None, tag="", simple=False):
             }
 
 def exclusionContours(model,
-                      expFileNameSuffix="_exp",
-                      obsFileNameSuffix="_obs") :
+                      expFileNameSuffix=None,
+                      obsFileNameSuffix=None) :
 
     def floor(x,y) : return int(x//y)*y
 
@@ -368,26 +415,57 @@ def exclusionContours(model,
 
     points = []
     for mlsp in range(yrange[0],yrange[1],yrange[2]):
+        #print "MLSP",mlsp
         if xMin <= mlsp : break
         dm = xMin-mlsp
         result = cxs.onePoint(model,
-                              expFileNameSuffix="_exp",
-                              obsFileNameSuffix="_obs",
+                              expFileNameSuffix=expFileNameSuffix,
+                              obsFileNameSuffix=obsFileNameSuffix,
                               xMin=xMin,
                               yValue=mlsp,
                               dM=dm,
                               nSmooth=0)
-        points.append((dm,result))
-        #for key,val in result.items() : print key.ljust(32),val
-
-    for point in points :
-        print "DM:",point[0]
+        points.append((mlsp,result))
+#        for key,val in result.items() : print key.ljust(32),val
+        
+    graphs = {}
+    for ipoint,point in enumerate(points) :
+        dm = xMin - point[0]
+#        print "ipoint,mlsp,dm:",ipoint,point[0],dm
         for key,val in point[1].items() :
-            print key.ljust(50),val
+            if key not in graphs.keys() : graphs[key] = {}
+            graphs[key][-1*point[0]] = (val[1][0],point[0]*1.)
+            graphs[key][+1*point[0]] = (val[1][1],val[1][1]-dm*1.)
+#            print key.ljust(50),val
+    for name,dct in graphs.items() :
+        graphs[name] = [ dct[key] for key in sorted(dct.keys()) ] + [ dct[sorted(dct.keys())[0]] ]
+        #graphs[name] += graphs[name][0]
+
+    output = {}
+    for key,val in graphs.items() :
+#        print key,val
+        out = r.TGraph()
+        name = key.replace("+","p").replace("-","m").strip(model._dataset+"_")
+        #out.SetName("{:s}_graph".format(name))
+        out.SetName(name)
+        for ipoint,point in enumerate(val):
+            out.SetPoint(ipoint,*point)
+        output[name] = out
+
+    return output
+        
+    #quit()
 
 
-def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simpleFileName="",
-                       relativeFileName="", interBinOut=None, pruneYMin=None,
+def makeLimitRootFiles(model=None, 
+                       expectedMapsOnly=None, 
+                       expFileNameSuffix=None,
+                       obsFileNameSuffix=None,
+                       limitFileName="", 
+                       simpleFileName="",
+                       relativeFileName="", 
+                       interBinOut=None, 
+                       pruneYMin=None,
                        debug=None, info=None):
     assert pruneYMin is not None
     assert interBinOut
@@ -398,16 +476,16 @@ def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simp
 
     histos = upperLimitHistos(model=model,
                               expectedMapsOnly=expectedMapsOnly,
-                              # @@ NEED TWO INPUTS: OBS AND EXP
-                              inFileName=input,
+                              expFileNameSuffix=expFileNameSuffix,
+                              obsFileNameSuffix=obsFileNameSuffix,
                               shiftX=shiftX,
                               shiftY=shiftY,
                               info=info)
 
-#    contours = exclusionContours(model,
-#                                 expFileNameSuffix="_exp",
-#                                 obsFileNameSuffix="_obs")
-
+    contours = exclusionContours(model,
+                                 expFileNameSuffix=expFileNameSuffix,
+                                 obsFileNameSuffix=obsFileNameSuffix)
+    
     graphs, simple, relative = exclusionGraphs(model=model,
                                                expectedMapsOnly=expectedMapsOnly,
                                                histos=histos,
@@ -416,7 +494,24 @@ def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simp
                                                debug=debug,
                                                info=info)
 
-    writeList(fileName=limitFileName, objects=histos.values()+graphs.values())
+#    # @@ DEBUG: PLOT GRAPHS
+#    for k,v in contours.items() : 
+#        print k
+#        r.gROOT.SetBatch(False)
+#        c1 = r.TCanvas()
+#        c1.Draw()
+#        v.Draw("apl")
+#        c1.Update()
+#        r.gROOT.SetBatch(True)
+#        raw_input("")
+
+    #print "contours",contours 
+    #for k,c in contours.items() : print c.GetName()
+
+    #print "graphs",graphs
+    #for k,g in graphs.items() : print g.GetName()
+
+    writeList(fileName=limitFileName, objects=histos.values()+contours.values())
     writeList(fileName=simpleFileName, objects=simple.values())
     writeList(fileName=relativeFileName, objects=relative.values())
 
@@ -446,12 +541,22 @@ def makeEfficiencyPlots(model=None, key="",
         makeEfficiencyPdfBinned(model=model, rootFileName=effFileName, key=key)
 
 
-def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
-                          mDeltaFuncs={}, diagonalLine=False, pruneYMin=False,
-                          expectedMapsOnly=False, observedCurves=True, debug=False, info=False):
+def makeXsUpperLimitPlots(model=None, 
+                          logZ=False, 
+                          curveGopts="", 
+                          interBinOut="",
+                          mDeltaFuncs={}, 
+                          diagonalLine=False, 
+                          pruneYMin=False,
+                          expectedMapsOnly=False, 
+                          expFileNameSuffix=None,
+                          obsFileNameSuffix=None,
+                          observedCurves=True, 
+                          debug=False, 
+                          info=False):
 
     if expectedMapsOnly:
-        assert not observedCuves
+        assert not observedCurves
 
     limitFileName = outFileName(model=model,
                                 tag="xsLimit")["root"]
@@ -462,6 +567,8 @@ def makeXsUpperLimitPlots(model=None, logZ=False, curveGopts="", interBinOut="",
 
     makeLimitRootFiles(model=model,
                        expectedMapsOnly=expectedMapsOnly,
+                       expFileNameSuffix=expFileNameSuffix,
+                       obsFileNameSuffix=obsFileNameSuffix,
                        limitFileName=limitFileName,
                        simpleFileName=simpleFileName,
                        relativeFileName=relativeFileName,
@@ -551,6 +658,7 @@ def makeLimitPdf(model=None, expectedMapsOnly=None,
         print "ERROR: handle expected"
         hName = "UpperLimit"  # 95 was removed in rename()
     h = f.Get("%s_%s" % (model.name, hName))
+    #print h
     h.Draw("colz")
 
     if logZ:
@@ -698,10 +806,11 @@ def drawGraphs(graphs, legendTitle="", gopts="", xMin=0.19, xMaxTop=0.69, xMaxBo
     for entry in reversed(entriesBot):
         legendBot.AddEntry(*entry)
 
-    if countTop:
-        legendTop.Draw("same")
-    if countBot:
-        legendBot.Draw("same")
+# @@
+#    if countTop:
+#        legendTop.Draw("same")
+#    if countBot:
+#        legendBot.Draw("same")
     return legendTop, legendBot, graphs
 
 
@@ -726,8 +835,8 @@ def makeHistoPdf(model=None, histoFileName="", graphFileName="",
                 #from array import array
                 #arr = array('d',[1.])
                 #h.SetContour(1,arr)
-                h.SetContour(1)
-            h.Draw("colz cont3")
+                h.SetContour(nContour)
+            h.Draw("colz")
             h.SetMinimum(min)
             h.SetMaximum(max)
             h.SetTitle(name)
