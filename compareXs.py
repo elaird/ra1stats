@@ -5,6 +5,7 @@ import os
 import configuration.signal
 import histogramProcessing as hp
 import utils
+from signalScan import scan
 
 import ROOT as r
 
@@ -215,6 +216,7 @@ def oneD(h=None, yValue=None, dM=None):
     yBin = h.GetYaxis().FindBin(yValue)
     proj = h.ProjectionX(h.GetName()+"_", yBin, yBin)
     if dM:
+        cntr = 0
         dMhisto = r.TH1D(h.GetName()+"_%i" % dM,"", 11, 87.5, 362.5)
         #proj.Reset()
         xBin = h.GetXaxis().FindBin(yValue + dM)
@@ -224,8 +226,9 @@ def oneD(h=None, yValue=None, dM=None):
             xVal = h.GetXaxis().GetBinCenter(ixBin)
             val = h.GetBinContent(ixBin,yBin)
             err = h.GetBinError(ixBin,yBin)
+            if val > 0. : cntr += 1
             if val == 0.0 :
-                print "HACK! SO that curve doesnt connect empty bin, don't publish like this"
+                #print "HACK! SO that curve doesnt connect empty bin, don't publish like this"
                 yBin = h.GetYaxis().FindBin(yVal)
                 yValHigh = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin-1)-dM))
                 yBinHigh = h.GetYaxis().FindBin(yValHigh)
@@ -234,14 +237,14 @@ def oneD(h=None, yValue=None, dM=None):
                 val = (h.GetBinContent(ixBin-1,yBinHigh)+h.GetBinContent(ixBin+1,yBinLow))/2.
             dMhisto.SetBinContent(dMhisto.FindBin(h.GetBinCenter(ixBin)),val)
             dMhisto.SetBinError(dMhisto.FindBin(h.GetBinCenter(ixBin)),err)
-        return dMhisto
+        return dMhisto if cntr > 0 else None
     return proj
 
 
 def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
               nSmooth=0, xMin=300, xMax=350, yMin=1e-3, yMax=1e+4,
               showRatio=False, dumpRatio=False, preliminary=None,
-              lumiStamp="", processStamp="", dM=None, nSigma=1):
+              lumiStamp="", processStamp="", dM=None):
 
     canvas = r.TCanvas('c1', 'c1', 700, 600)
     utils.divideCanvas(canvas)
@@ -254,20 +257,33 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
 
-    for iHisto, hname in enumerate(['T2cc_ExpectedUpperLimit_+%s_Sigma' % nSigma,
-                                    'T2cc_ExpectedUpperLimit',
-                                    'T2cc_ExpectedUpperLimit_-%s_Sigma' % nSigma,
-                                    'refHisto',
-                                    'T2cc_UpperLimit',
-                                    ]):
+    histo_range = None
+    processed_histos = {}
+    histos = [#'T2cc_ExpectedUpperLimit_+2_Sigma',
+              'T2cc_ExpectedUpperLimit_+1_Sigma',
+              'T2cc_ExpectedUpperLimit',
+              'T2cc_ExpectedUpperLimit_-1_Sigma',
+              #'T2cc_ExpectedUpperLimit_-2_Sigma',
+              'refHisto',
+              'T2cc_UpperLimit']
+    for iHisto, hname in enumerate(histos):
         props = histoSpecs[hname]
+        if hname == 'T2cc_UpperLimit':
+            his = props["hist"]
+            histo_range = (his.GetXaxis().GetBinCenter(his.FindFirstBinAbove(0.,1)),\
+                           his.GetXaxis().GetBinCenter(his.FindLastBinAbove(0.,1)),\
+                           his.GetYaxis().GetBinCenter(his.FindFirstBinAbove(0.,2)),\
+                           his.GetYaxis().GetBinCenter(his.FindLastBinAbove(0.,2)))
         if hname != 'refHisto':
             props["hist"] = oneD(props["hist"], yValue, dM)
             gopts = 'HIST C'
-
         else:
             gopts = 'e3'
         h = props['hist']
+        if h is None :
+            print "No histogram!"
+            continue
+        processed_histos[hname] = h
         h.SetStats(False)
         h.GetXaxis().SetRangeUser(xMin, xMax)
         h.SetMinimum(yMin)
@@ -283,8 +299,8 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
                 setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
                 setAttr(props.get(attr, 1))
         if "Sigma" not in hname:
-            if "Expected" in hname:
-                props['label'] = props['label'].replace("#sig","%s#sig"%nSigma)
+#            if "Expected" in hname:
+#                props['label'] = props['label'].replace("#sig","%s#sig"%nSigma)
             leg.AddEntry(h, props['label'], "lf")
         h.GetXaxis().SetTitle(xLabel)
         h.GetYaxis().SetTitle(yLabel)
@@ -330,7 +346,7 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
                "smooth%d" % nSmooth,
                ]
 
-    epsFile = "plots/" + "_".join((strName + ["dM%d" % int(dM)]) if dM else strname)+"_%ssigma"%nSigma+".eps"
+    epsFile = "plots/" + "_".join((strName + ["dM%d" % int(dM)]) if dM else strName)+".eps"#+"_%ssigma"%nSigma+".eps"
 
     if preliminary:
         epsFile = epsFile.replace(".eps", "_prelim.eps")
@@ -344,28 +360,62 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     os.system("rm       "+epsiFile)
     os.system("rm       "+epsFile)
 
+    return histo_range,processed_histos
 
 def setup():
     r.gROOT.SetBatch(True)
     r.gErrorIgnoreLevel = 2000
     r.gStyle.SetHatchesSpacing(1.4*r.gStyle.GetHatchesSpacing())
 
+def transitions(input):
+    output = {}
+    try : ref = input["refHisto"]
+    except: return output
+    for histo in input.keys():
+        if "refHisto" in histo : continue
+        fit = r.TF1("","expo(0)+expo(2)")
+        his = input[histo]
+        his.Fit(fit,"Q0")
+        nbins = ref.GetXaxis().GetNbins()
+        (fstart,fend) = (-1.,-1.)
+        (hstart,hend) = (-1.,-1.)
+        for bin in range(1000):#nbins) :
+            msusy = bin*1.#ref.GetBinCenter(bin+1)
+            if msusy < his.GetBinCenter(1) : continue
+            #theory = ref.GetBinContent(bin+1)
+            theory = ref.Interpolate(msusy)
+            fresult = fit.Eval(msusy)
+            hresult = his.Interpolate(msusy)
+            #theory = ref.Interpolate(ref.GetBinCenter(msusy))
+            #fresult = fit.Eval(ref.GetBinCenter(msusy))
+            #hresult = his.Interpolate(ref.GetBinCenter(msusy))
+            #print bin,msusy,theory,fresult,hresult
+            if fresult < theory and fstart < 0. : fstart = msusy
+            if fend < 0. and fresult > theory and fstart > 0. : fend = msusy
+            if hresult < theory and hstart < 0. : hstart = msusy
+            if hend < 0. and hresult > theory and hstart > 0. : hend = msusy
+        output[histo] = (fstart,fend),(hstart,hend)
+    return output
 
 def points():
     out = []
     for mlsp, xMin in [(90, 100), (20,100), (50, 300), (100, 300), (150, 350)][0:2]:
         for nSmooth in [0, 1, 2, 5][:1]:
-            for nSig in [1,2]:
-                out.append({"yValue": mlsp,
-                            "nSmooth": nSmooth,
-                            "xMin": xMin,
-                            "dM" : xMin-mlsp,
-                            "nSigma": nSig})
+            out.append({"yValue": mlsp,
+                        "nSmooth": nSmooth,
+                        "xMin": xMin,
+                        "dM" : xMin-mlsp})
     return out
 
+def onePoint(model,
+             expFileNameSuffix=None,
+             obsFileNameSuffix=None,
+             yValue=None, nSmooth=None, xMin=None, dM=None):
 
-def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None, nSigma=None):
-    model = configuration.signal.scan(dataset='T2cc', com=8)  # FIXME: use interBin
+    (expFileName,obsFileName) = configuration.limit.mergedFiles(model=model,
+                                                                expFileNameSuffix=expFileNameSuffix,
+                                                                obsFileNameSuffix=obsFileNameSuffix)
+    
     hSpec = configuration.signal.xsHistoSpec(model)
 
     refHisto = referenceXsHisto(refHistoName=hSpec['histo'],
@@ -373,11 +423,8 @@ def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None, nSigma=None):
                                 xsFileName=hSpec['file'],
                                 )
 
-    expectedFileName = 'CLs_frequentist_T2cc_2012dev_0b_le3j_0b_ge4j_1b_ge4j_semi-blind.root'
-    observedFileName = 'CLs_frequentist_T2cc_2012dev_0b_le3j_0b_ge4j_1b_ge4j_not_blind.root'
-
-    exclHistos = exclusionHistos(expectedLimitFile='ra1r/scan/%s' % expectedFileName,
-                                 observedLimitFile='ra1r/scan/%s' % observedFileName,
+    exclHistos = exclusionHistos(expectedLimitFile=expFileName,
+                                 observedLimitFile=obsFileName,
                                  model=model)
 
     options = {
@@ -389,17 +436,21 @@ def onePoint(yValue=None, nSmooth=None, xMin=None, dM=None, nSigma=None):
         'preliminary': False,
         'processStamp': configuration.signal.processStamp(model.name)['text'],
         'dM': dM,
-        'nSigma': nSigma
         }
 
-    compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,
-              **options)
+    histo_range,processed_histos = compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin,
+                                             **options)
 
+    return transitions(processed_histos)
 
 def main():
     setup()
-    for dct in points():
-        onePoint(**dct)
+    for model in configuration.signal.models():
+        for dct in points():
+            onePoint(model,
+                     expFileNameSuffix="_exp",
+                     obsFileNameSuffix="_exp",
+                     **dct)
 
 
 if __name__ == "__main__":

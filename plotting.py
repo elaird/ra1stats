@@ -950,11 +950,12 @@ class validationPlotter(object) :
             return
         h = self.results.correlationHist(name)
         h.SetStats(False)
+        h.GetXaxis().LabelsOption("v")
         r.gStyle.SetPaintTextFormat("4.1f")
         h.Draw("colz")
 
-        for side in ["Right", "Left", "Top", "Bottom"] :
-            getattr(r.gPad,"Set%sMargin"%side)(0.15)
+        for side,offset in zip(["Right", "Left", "Top", "Bottom"],[0.1,0.2,0.1,0.25]) :
+            getattr(r.gPad,"Set%sMargin"%side)(offset)
 
         if self.printPages and name :
             h.SetTitle("")

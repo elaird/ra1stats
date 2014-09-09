@@ -6,7 +6,7 @@ import likelihood
 import patches
 import refXsProcessing as rxs
 import utils
-
+import compareXs as cxs
 import ROOT as r
 
 
@@ -215,11 +215,47 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
                                       whiteList=configuration.signal.whiteListOfPoints(model.name),
                                       **kargs)
 
+            # @@ PLOT GRAPHS
+            #r.gROOT.SetBatch(False)
+            #c1 = r.TCanvas()
+            #c1.Draw()
+            #graph.Draw("apl")
+            #c1.Update()
+            #r.gROOT.SetBatch(True)
+            #raw_input("")
+
             simpleHisto = rxs.exclHisto(h,
                                         tag="_excludedHistoSimple",
                                         zTitle="bin excluded or not",
                                         func=lambda xsLimit, xs: 2*(xsLimit < xs)-1,
                                         **kargs)
+
+#            his = h.Clone(h.GetName()+"_clone")
+#
+#            xlow = his.GetXaxis().GetBinCenter(1)
+#            xhigh = his.GetXaxis().GetBinCenter(his.GetXaxis().GetNbins())
+#            ylow = his.GetYaxis().GetBinCenter(1)
+#            yhigh = his.GetYaxis().GetBinCenter(his.GetYaxis().GetNbins())
+#            print xlow,xhigh,ylow,yhigh
+#
+#            hsmooth = r.TH2F(str(his.GetName()+"_smooth"),
+#                             str(his.GetTitle()+"_smooth"),
+#                             int(xhigh-xlow),xlow,xhigh,
+#                             int(yhigh-ylow),ylow,yhigh)
+#
+#            for xbin in range(hsmooth.GetXaxis().GetNbins()) :
+#                for ybin in range(hsmooth.GetYaxis().GetNbins()) :
+#                    xval = hsmooth.GetXaxis().GetBinCenter(xbin+1)
+#                    yval = hsmooth.GetYaxis().GetBinCenter(xbin+1)
+#                    #print xbin,ybin,his.Interpolate(xval,yval)
+#                    hsmooth.SetBinContent(xbin+1,ybin+1,his.Interpolate(xval,yval))
+#
+#            relativeHisto = rxs.exclHisto(hsmooth,
+#                                          tag="_relative",
+#                                          zTitle="xs upper limit / nominal xs",
+#                                          func=lambda xsLimit, xs: xsLimit/xs,
+#                                          **kargs)
+
             relativeHisto = rxs.exclHisto(h,
                                           tag="_relative",
                                           zTitle="xs upper limit / nominal xs",
@@ -231,7 +267,6 @@ def exclusionGraphs(model=None, expectedMapsOnly=None, histos={}, interBin="",
             graph.SetName(graphName)
             simpleHisto.SetName(graphName+"_simpleExcl")
             relativeHisto.SetName(graphName+"_relative")
-
             dct = getattr(patches, patchesFunc)(model.name+factorString(xsFactor))
             pruneGraph(graph, debug=debug, breakLink=pruneYMin,
                        lst=dct["blackList"]+(pointsAtYMin(graph) if pruneYMin else []))
@@ -320,6 +355,36 @@ def outFileName(model=None, tag="", simple=False):
             "pdf": root.replace(".root", ".pdf"),
             }
 
+def exclusionContours(model,
+                      expFileNameSuffix="_exp",
+                      obsFileNameSuffix="_obs") :
+
+    def floor(x,y) : return int(x//y)*y
+
+    ranges = configuration.signal.ranges(model._dataset)
+    xrange = ranges["xBinning"]
+    yrange = ranges["yBinning"]
+    xMin = xrange[0]
+
+    points = []
+    for mlsp in range(yrange[0],yrange[1],yrange[2]):
+        if xMin <= mlsp : break
+        dm = xMin-mlsp
+        result = cxs.onePoint(model,
+                              expFileNameSuffix="_exp",
+                              obsFileNameSuffix="_obs",
+                              xMin=xMin,
+                              yValue=mlsp,
+                              dM=dm,
+                              nSmooth=0)
+        points.append((dm,result))
+        #for key,val in result.items() : print key.ljust(32),val
+
+    for point in points :
+        print "DM:",point[0]
+        for key,val in point[1].items() :
+            print key.ljust(50),val
+
 
 def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simpleFileName="",
                        relativeFileName="", interBinOut=None, pruneYMin=None,
@@ -329,12 +394,20 @@ def makeLimitRootFiles(model=None, expectedMapsOnly=None, limitFileName="", simp
 
     shiftX = shiftY = (model.interBin == "LowEdge" and interBinOut == "Center")
 
+    input = configuration.limit.mergedFile(model=model)
+
     histos = upperLimitHistos(model=model,
                               expectedMapsOnly=expectedMapsOnly,
-                              inFileName=configuration.limit.mergedFile(model=model),
+                              # @@ NEED TWO INPUTS: OBS AND EXP
+                              inFileName=input,
                               shiftX=shiftX,
                               shiftY=shiftY,
                               info=info)
+
+#    contours = exclusionContours(model,
+#                                 expFileNameSuffix="_exp",
+#                                 obsFileNameSuffix="_obs")
+
     graphs, simple, relative = exclusionGraphs(model=model,
                                                expectedMapsOnly=expectedMapsOnly,
                                                histos=histos,
@@ -650,8 +723,11 @@ def makeHistoPdf(model=None, histoFileName="", graphFileName="",
             if not h:
                 continue
             if nContour:
-                h.SetContour(nContour)
-            h.Draw("colz")
+                #from array import array
+                #arr = array('d',[1.])
+                #h.SetContour(1,arr)
+                h.SetContour(1)
+            h.Draw("colz cont3")
             h.SetMinimum(min)
             h.SetMaximum(max)
             h.SetTitle(name)

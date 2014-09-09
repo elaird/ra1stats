@@ -148,6 +148,10 @@ def effUncRelHistoSpec(model=None, box=None,
 
 
 def ranges(model):
+
+    xBinning = {"T2cc":(100,350,25)} # (min,max,width)
+    yBinning = {"T2cc":(20,340,10)}
+
     x = {"T1":   (287.5, 1400),  # (min, max)
          "T2":   (287.5, 1000),
          #"T2tt": (300.0, 800.0),
@@ -207,6 +211,9 @@ def ranges(model):
                   }
 
     d = {}
+    d["xBinning"] = xBinning.get(model, (0,1500,50))
+    d["yBinning"] = yBinning.get(model, (0,1500,50))
+
     d["xRange"] = x.get(model, (50.0, 1499.9))
     d["yRange"] = y.get(model, (50.0, 1224.9))
 

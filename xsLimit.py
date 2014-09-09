@@ -8,7 +8,7 @@ for model in configuration.signal.models():
     pg.makeXsUpperLimitPlots(model=model,
                              logZ=True,
                              pruneYMin=True,
-                             curveGopts="c",
+                             curveGopts="pl", #@@ "c"
                              interBinOut=interBinOut,
                              #mDeltaFuncs={"mDeltaMin": 0.0,
                              #             "mDeltaMax": 400.0,

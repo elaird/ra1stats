@@ -60,3 +60,13 @@ def mergedFile(model=None):
                     "_".join(tags + model.tags()),
                     ".root"
                     ])
+
+def mergedFiles(model=None,
+                expFileNameSuffix=None,
+                obsFileNameSuffix=None):
+    expFileName = mergedFile(model=model)
+    obsFileName = expFileName
+    if expFileNameSuffix is not None : expFileName = expFileName.replace('.root',expFileNameSuffix+'.root')
+    if obsFileNameSuffix is not None : obsFileName = obsFileName.replace('.root',obsFileNameSuffix+'.root')
+    return (expFileName,obsFileName)
+    
