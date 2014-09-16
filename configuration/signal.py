@@ -29,6 +29,8 @@ def whiteListOfPoints(model="", respect=False):
             "T2_4body":
             [(150.+x*50.+12.5,90.+(y+x*5)*10.+5.) for x in range(3) for y in range(8) ] + \
             [(175.+x*50.+12.5,110.+(y+x*5)*10.+5.) for x in range(2) for y in range(8) ],
+            #[(150.+x*50.,90.+(y+x*5)*10.) for x in range(3) for y in range(8) ] + \
+            #[(175.+x*50.,110.+(y+x*5)*10.) for x in range(2) for y in range(8) ], # with offset or not?!
             #"T2tt": [(550.0,  20.0)],
             #"T2tt": [(400.0,   0.0)],
             #"T2tt": [(410.0,  20.0)],
