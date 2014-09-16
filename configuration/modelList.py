@@ -29,16 +29,14 @@ def dev():
               aT={200: "0.65", 275: "0.6", 325: "0.55"},
               whiteList=["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"],
               extraVars=["SITV"],
-              **new
-              ),],
+              **new)],
         [scan(dataset="T2_4body",
               had="v5", # v6 is with boost "reweighted to T2cc
               muon="v5",
               aT={200: "0.65", 275: "0.6", 325: "0.55"},
               whiteList=["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"],
               extraVars=["SITV"],
-              **new
-              ),]
+              **new)],
         [scan(dataset="T2tt",
               had="v7",
               muon="v7",
@@ -46,7 +44,7 @@ def dev():
               whiteList=[["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"], # Low, near
                          ["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # Low, far
                          ["1b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # High, near
-                         ["2b_le3j","1b_ge4j","2b_ge4j","3b_ge4j"]][0] # High, far
+                         ["2b_le3j","1b_ge4j","2b_ge4j","3b_ge4j"]][0], # High, far
               extraVars=["SITV"],
               **new)],
         [scan(dataset="T2b2_0p25",
@@ -55,14 +53,14 @@ def dev():
               aT={200:"0.65",275:"0.6",325:"0.55"},
               whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:4],
               extraVars=["SITV"],
-              **new),]
+              **new)],
         [scan(dataset="T2b2_0p75",
               had="v4",
               muon="v4",
               aT={200:"0.65",275:"0.6",325:"0.55"},
               whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:4],
               extraVars=["SITV"],
-              **new),]
+              **new)],
         ][0] # select model here
 
 
