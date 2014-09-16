@@ -16,7 +16,7 @@ def testStatistic():
 def calculatorType():
     return ["frequentist",
             "asymptotic",
-            "asymptoticNom"][1]
+            "asymptoticNom"][0]
 
 
 def method():
@@ -25,7 +25,7 @@ def method():
             "profileLikelihood",
             "feldmanCousins",
             "CLs",
-            "CLsCustom"][1]
+            "CLsCustom"][4]
 
 
 def multiplesInGeV():
