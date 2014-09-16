@@ -23,11 +23,19 @@ def t2ccCut(iX, x, iY, y, iZ, z) :
     fail = any([x > 370.0, y > x + 12.5, y < x - 100.0])
     return not fail
 
+def region(x,y,n=None) :
+    if   n == 0 : return x < 349.9 and (x-y) < 149.9
+    elif n == 1 : return x < 349.9 and (x-y) > 149.9
+    elif n == 2 : return x > 349.9 and (x-y) < 149.9
+    elif n == 3 : return x > 349.9 and (x-y) > 149.9
+    else : return True
+
 def cutFunc() :
     return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             #"T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<900.0),
-            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0),
+            #"T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0), #@@ orig
+            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0 and region(x,y,None) ),
             "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             "T2cc":t2ccCut,
             "T2_4body":t2ccCut,
