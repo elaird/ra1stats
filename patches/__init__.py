@@ -30,6 +30,7 @@ def cutFunc() :
             "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0),
             "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             "T2cc":t2ccCut,
+            "T2_4body":t2ccCut,
             "T2bw":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
@@ -182,7 +183,7 @@ def overwriteOutput() :
 
 
 def compat(funcName="", model=""):
-    if model in ["T1", "T2", "T2bb", "T2tt", "T1bbbb", "T1tttt", "T1tttt_ichep", "T2cc"]:
+    if model in ["T1", "T2", "T2bb", "T2tt", "T1bbbb", "T1tttt", "T1tttt_ichep", "T2cc", "T2_4body"]:
         funcName = funcName.replace("m1", "-1").replace("p1", "+1")
         funcName = funcName.replace("m2", "-2").replace("p2", "+2")
         return {"replace": sms8.graphReplacePoints()[funcName].get(model, {}),
