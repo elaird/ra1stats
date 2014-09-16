@@ -25,7 +25,10 @@ def whiteListOfPoints(model="", respect=False):
     return {"T1": [(700.0, 300.0)],
             "T1bbbb": [(900.0, 500.0)],
             "T1tttt": [(850.0, 250.0)],
-            "T2tt": [(387.5, 12.5)],
+            "T2tt": [ (112.5+(x+y)*25.,12.5+y*25.) for y in range(10) for x in range(10-y) ][1:-3],
+            "T2_4body":
+            [(150.+x*50.+12.5,90.+(y+x*5)*10.+5.) for x in range(3) for y in range(8) ] + \
+            [(175.+x*50.+12.5,110.+(y+x*5)*10.+5.) for x in range(2) for y in range(8) ],
             #"T2tt": [(550.0,  20.0)],
             #"T2tt": [(400.0,   0.0)],
             #"T2tt": [(410.0,  20.0)],
@@ -102,6 +105,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(bJets)
     if jets:
         tags.append(jets)
+    #if box != "had" : tags.append("NoAlphaT") #@@ HACK!!!
     if model.extraVars:
         tags.append(" ".join(model.extraVars))
     if box == "had":
@@ -114,6 +118,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             tags.append("AlphaT55")
     else:
         tags.append("NoAlphaT")
+        #pass #@@ HACK
 
     if htLower:
         tags.append("%d" % htLower)
