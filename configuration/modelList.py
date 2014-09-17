@@ -53,14 +53,20 @@ def dev():
               had="v3",
               muon="v3",
               aT={200:"0.65",275:"0.6",325:"0.55"},
-              whiteList=[],
+              whiteList=[["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # Low, near 0b_ge4j
+                         ["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # Low, far 3b_ge4j","0b_ge4j
+                         ["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # High, near 3b_ge4j
+                         ["2b_le3j","1b_ge4j","2b_ge4j","3b_ge4j"]][0], # High, far 1b_le3j
               extraVars=["SITV"],
               **new)],
         [scan(dataset="T2b2_0p75",
               had="v4",
               muon="v4",
               aT={200:"0.65",275:"0.6",325:"0.55"},
-              whiteList=[],
+              whiteList=[["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"], # 2b_ge4j
+                         ["1b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # 0b_le3j, 3b_ge4j
+                         ["0b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # 1b_le3j
+                         ["0b_ge4j","1b_ge4j","2b_ge4j","3b_ge4j"]][0], # 1b_le3j, 2b_le3j
               extraVars=["SITV"],
               **new)],
         ][0] # select model here
