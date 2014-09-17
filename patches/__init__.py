@@ -24,10 +24,10 @@ def t2ccCut(iX, x, iY, y, iZ, z) :
     return not fail
 
 def region(x,y,n=None) :
-    if   n == 0 : return x < 349.9 and (x-y) < 149.9
-    elif n == 1 : return x < 349.9 and (x-y) > 149.9
-    elif n == 2 : return x > 349.9 and (x-y) < 149.9
-    elif n == 3 : return x > 349.9 and (x-y) > 149.9
+    if   n == 0 : return x < 349.9 and (x-y) < 149.9 and y < 200.1
+    elif n == 1 : return x < 349.9 and (x-y) > 149.9 and y < 200.1
+    elif n == 2 : return x > 349.9 and (x-y) < 149.9 and y < 200.1
+    elif n == 3 : return x > 349.9 and (x-y) > 149.9 and y < 200.1
     else : return True
 
 def cutFunc() :
