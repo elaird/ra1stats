@@ -41,8 +41,10 @@ def dev():
               had="v7",
               muon="v7",
               aT={200:"0.65",275:"0.6",325:"0.55"},
-              whiteList=[["0b_le3j","1b_le3j","2b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # Low, near
-                         ["1b_le3j","2b_le3j","0b_ge4j","1b_ge4j","2b_ge4j","3b_ge4j"], # Low, far
+              whiteList=[["0b_le3j","1b_le3j","2b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # Low, near (6 cats)
+                         ["1b_le3j","2b_le3j","0b_ge4j","1b_ge4j","2b_ge4j","3b_ge4j"], # Low, far (6 cats)
+                         ["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"], # Low, near
+                         ["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # Low, far
                          ["1b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # High, near
                          ["2b_le3j","1b_ge4j","2b_ge4j","3b_ge4j"]][0], # High, far
               extraVars=["SITV"],
