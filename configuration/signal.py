@@ -6,6 +6,7 @@ models = modelList.models
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20, "T2_4body": 0.20,
+            "T2bw_0p25": 0.20, "T2bw_0p75": 0.20, 
             "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736,
             }[model]
 
@@ -26,6 +27,8 @@ def whiteListOfPoints(model="", respect=False):
             "T1bbbb": [(900.0, 500.0)],
             "T1tttt": [(850.0, 250.0)],
             "T2tt": [ (112.5+(x+y)*25.,12.5+y*25.) for y in range(10) for x in range(10-y) ][1:-3],
+            "T2bw_0p25": [],
+            "T2bw_0p75": [],
             "T2_4body":
             [(150.+x*50.+12.5,90.+(y+x*5)*10.+5.) for x in range(3) for y in range(8) ] + \
             [(175.+x*50.+12.5,110.+(y+x*5)*10.+5.) for x in range(2) for y in range(8) ],
@@ -62,6 +65,8 @@ def xsHistoSpec(model=None, cmssmProcess=""):
 
     d = {"T2":      {"histo": "squark", "file": sms},
          "T2tt":    {"histo": "stop_or_sbottom", "file": sms},
+         "T2bw_0p25":    {"histo": "stop_or_sbottom", "file": sms},
+         "T2bw_0p75":    {"histo": "stop_or_sbottom", "file": sms},
          "T2bb":    {"histo": "stop_or_sbottom", "file": sms},
          "T2cc":    {"histo": "stop_or_sbottom", "file": sms},
          "T2_4body":    {"histo": "stop_or_sbottom", "file": sms},
@@ -171,6 +176,8 @@ def ranges(model):
          "T2":   (287.5, 1000),
          #"T2tt": (300.0, 800.0),
          "T2tt": (100.0, 1000.0),
+         "T2bw_0p25": (100.0, 1000.0),
+         "T2bw_0p75": (100.0, 1000.0),
          "T2bb": (287.5, 900.0),
          "T2cc":   (87.5, 400.0),
          "T2_4body":   (87.5, 400.0),
@@ -185,6 +192,8 @@ def ranges(model):
          "T2":      (0.0,  825),
          #"T2tt":    (0.0,  600),
          "T2tt":    (0.0, 1000),
+         "T2bw_0p25":    (0.0, 1000),
+         "T2bw_0p75":    (0.0, 1000),
          "T2bb":    (0.0,  725),
          "T2cc":    (0.0,  400),
          "T2_4body":    (0.0,  400),
@@ -201,6 +210,8 @@ def ranges(model):
     xMaxDiag = {"T1":     800.0,
                 "T2":     550.0,
                 "T2tt":   400.0,
+                "T2bw_0p25":   400.0,
+                "T2bw_0p75":   400.0,
                 "T2bb":   500.0,
                 "T2cc":   400.0,
                 "T2_4body":   400.0,
@@ -215,6 +226,8 @@ def ranges(model):
                   "T2cc": [10, 4, 0],
                   "T2_4body": [10, 4, 0],
                   "T2tt": [10, 4, 0],
+                  "T2bw_0p25": [10, 4, 0],
+                  "T2bw_0p75": [10, 4, 0],
                   "T1bbbb": [10, 4, 0],
                   "T1tttt":  [8, 4, 0],
                   "T1tttt_2012": [8, 4, 0],
@@ -226,6 +239,8 @@ def ranges(model):
                   "T2cc": [10, 4, 0],
                   "T2_4body": [10, 4, 0],
                   "T2tt": [12, 4, 0],
+                  "T2bw_0p25": [12, 4, 0],
+                  "T2bw_0p75": [12, 4, 0],
                   "T1bbbb": [10, 4, 0],
                   "T1tttt": [10, 4, 0],
                   "T1tttt_2012": [8, 4, 0]
@@ -280,6 +295,8 @@ def processStamp(model=""):
     out = {'T2': {'text': sqProc("q"), 'xpos': 0.4250},
            'T2bb': {'text': sqProc("b"), 'xpos': 0.425},
            'T2tt': {'text': sqProc("t"), 'xpos': 0.41},
+           'T2bw_0p25': {'text': sqProc("bW"), 'xpos': 0.41},
+           'T2bw_0p75': {'text': sqProc("bW"), 'xpos': 0.41},
            'T2cc': {'text': sqProc("t", "c"), 'xpos': 0.425},
            'T2_4body': {'text': sqProc("t", "bf#bar{f}"), 'xpos': 0.425},
            'T1': {'text': glProc("q"), 'xpos': 0.4325},
@@ -294,6 +311,8 @@ def histoTitle(model=""):
     d = {"T1": ";m_{gluino} (GeV);m_{LSP} (GeV)",
          "T2": ";m_{squark} (GeV);m_{LSP} (GeV)",
          "T2tt": ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "T2bw_0p25": ";m_{stop} (GeV);m_{LSP} (GeV)",
+         "T2bw_0p75": ";m_{stop} (GeV);m_{LSP} (GeV)",
          "T2cc": ";m_{stop} (GeV);m_{LSP} (GeV)",
          "T2_4body": ";m_{stop} (GeV);m_{LSP} (GeV)",
          "T2bb": ";m_{sbottom} (GeV);m_{LSP} (GeV)",
@@ -354,7 +373,7 @@ def processes():
 
 def checkModels():
     # check for duplicates
-    names = [model.name for model in models()]
+    names = [(model.name,model.region) for model in models()]
     assert len(names) == len(set(names)), names
 
 
