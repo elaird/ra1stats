@@ -23,23 +23,16 @@ def t2ccCut(iX, x, iY, y, iZ, z) :
     fail = any([x > 370.0, y > x + 12.5, y < x - 100.0])
     return not fail
 
-def region(x,y,n=None) :
-    if   n == 0 : return x < 349.9 and (x-y) < 149.9 and y < 200.1
-    elif n == 1 : return x < 349.9 and (x-y) > 149.9 and y < 200.1
-    elif n == 2 : return x > 349.9 and (x-y) < 149.9 and y < 200.1
-    elif n == 3 : return x > 349.9 and (x-y) > 149.9 and y < 200.1
-    else : return True
-
 def cutFunc() :
     return {"T1":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             #"T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<900.0),
-            #"T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0), #@@ orig
-            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0 and region(x,y,None) ),
+            "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0),
             "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             "T2cc":t2ccCut,
-            "T2_4body":t2ccCut,
             "T2bw":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
+            "T2bw_0p25":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.1 and x<800.1),
+            "T2bw_0p75":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.1 and x<800.1),
             "T5zz":lambda iX,x,iY,y,iZ,z:(y<(x-200.1) and iZ==1 and x>399.9),
             "T1bbbb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
             "T1tttt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4),
@@ -191,7 +184,7 @@ def overwriteOutput() :
 
 
 def compat(funcName="", model=""):
-    if model in ["T1", "T2", "T2bb", "T2tt", "T1bbbb", "T1tttt", "T1tttt_ichep", "T2cc", "T2_4body"]:
+    if model in ["T1", "T2", "T2bb", "T2tt", "T1bbbb", "T1tttt", "T1tttt_ichep", "T2cc", "T2_4body", "T2bw_0p25", "T2bw_0p75"]:
         funcName = funcName.replace("m1", "-1").replace("p1", "+1")
         funcName = funcName.replace("m2", "-2").replace("p2", "+2")
         return {"replace": sms8.graphReplacePoints()[funcName].get(model, {}),
