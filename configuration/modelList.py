@@ -1,5 +1,32 @@
 from signalScan import scan
 
+def region(name) :
+    # dict[region] = (cutFunc)
+    return {
+        "low_near"  : lambda iX,x,iY,y,iZ,z : x < 349.9 and (x-y) < 149.9 and y < 200.1,
+        "low_far"   : lambda iX,x,iY,y,iZ,z : x < 349.9 and (x-y) > 149.9 and y < 200.1,
+        "high_near" : lambda iX,x,iY,y,iZ,z : x > 349.9 and (x-y) < 149.9 and y < 200.1,
+        "high_far"  : lambda iX,x,iY,y,iZ,z : x > 349.9 and (x-y) > 149.9 and y < 200.1
+        }.get( name,  lambda iX,x,iY,y,iZ,z : True )
+
+def regions() :
+    # dict[model][region] = (cutFunc,whiteList)
+    return {
+        "T2tt"      : { 0 : ( region("low_near"),  ["1b_ge4j","0b_ge4j","1b_le3j","0b_le3j","2b_ge4j","2b_le3j"] ),
+                        1 : ( region("low_far"),   ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","3b_ge4j","0b_ge4j"] ),
+                        2 : ( region("high_near"), ["0b_ge4j","1b_ge4j","2b_ge4j","1b_le3j","0b_le3j","2b_le3j"] ),
+                        3 : ( region("high_far"),  ["1b_ge4j","2b_ge4j","3b_ge4j","2b_le3j","1b_le3j","0b_ge4j"] ), },
+        "T2bw_0p25" : { 0 : ( region("low_near"),  ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","0b_ge4j","0b_le3j"] ),
+                        1 : ( region("low_far"),   ["2b_le3j","2b_ge4j","1b_ge4j","1b_le3j","3b_ge4j","0b_ge4j"] ),
+                        2 : ( region("high_near"), ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","0b_ge4j","0b_ge4j"] ),
+                        3 : ( region("high_far"),  ["2b_le3j","2b_ge4j","1b_ge4j","3b_ge4j","1b_le3j","0b_ge4j"] ), },
+        "T2bw_0p75" : { 0 : ( region("low_near"),  ["0b_ge4j","1b_ge4j","1b_le3j","0b_le3j","2b_ge4j","2b_le3j"] ),
+                        1 : ( region("low_far"),   ["1b_ge4j","2b_ge4j","0b_ge4j","1b_le3j","2b_le3j","3b_ge4j"] ),
+                        2 : ( region("high_near"), ["1b_ge4j","0b_ge4j","2b_ge4j","0b_le3j","1b_le3j","2b_le3j"] ),
+                        3 : ( region("high_far"),  ["1b_ge4j","2b_ge4j","0b_ge4j","3b_ge4j","1b_le3j","2b_le3j"] ), },
+        "T2cc"      : { 0 : ( region("low_near"),  ["0b_ge4j","1b_ge4j","0b_le3j","1b_le3j","2b_ge4j","2b_le3j"] ), },
+        "T2_4body"  : { 0 : ( region("low_near"),  ["1b_le3j","1b_ge4j","0b_le3j","0b_ge4j","2b_le3j","2b_ge4j"] ), },
+        }
 
 def exampleArgs(more=True):
     out = {"box": "had", "htLower": 375, "htUpper": 475}
@@ -22,54 +49,50 @@ def dev():
            "com": 8,
            "llk": "2012dev",
            }
-    return [
-        [scan(dataset="T2cc",
-              had="v18",
-              muon="v18",
-              aT={200: "0.65", 275: "0.6", 325: "0.55"},
-              whiteList=["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"],
-              extraVars=["SITV"],
-              **new)],
-        [scan(dataset="T2_4body",
-              had="v5", # v6 is with boost "reweighted to T2cc
-              muon="v5",
-              aT={200: "0.65", 275: "0.6", 325: "0.55"},
-              whiteList=["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"],
-              extraVars=["SITV"],
-              **new)],
-        [scan(dataset="T2tt",
-              had="v7",
-              muon="v7",
-              aT={200:"0.65",275:"0.6",325:"0.55"},
-              whiteList=[["0b_le3j","1b_le3j","2b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # Low, near (6 cats)
-                         ["1b_le3j","2b_le3j","0b_ge4j","1b_ge4j","2b_ge4j","3b_ge4j"], # Low, far (6 cats)
-                         ["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"], # Low, near
-                         ["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # Low, far
-                         ["1b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # High, near
-                         ["2b_le3j","1b_ge4j","2b_ge4j","3b_ge4j"]][0], # High, far
-              extraVars=["SITV"],
-              **new)],
-        [scan(dataset="T2b2_0p25",
-              had="v3",
-              muon="v3",
-              aT={200:"0.65",275:"0.6",325:"0.55"},
-              whiteList=[["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # Low, near 0b_ge4j
-                         ["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # Low, far 3b_ge4j","0b_ge4j
-                         ["1b_le3j","2b_le3j","1b_ge4j","2b_ge4j"], # High, near 3b_ge4j
-                         ["2b_le3j","1b_ge4j","2b_ge4j","3b_ge4j"]][0], # High, far 1b_le3j
-              extraVars=["SITV"],
-              **new)],
-        [scan(dataset="T2b2_0p75",
-              had="v4",
-              muon="v4",
-              aT={200:"0.65",275:"0.6",325:"0.55"},
-              whiteList=[["0b_le3j","1b_le3j","0b_ge4j","1b_ge4j"], # 2b_ge4j
-                         ["1b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # 0b_le3j, 3b_ge4j
-                         ["0b_le3j","0b_ge4j","1b_ge4j","2b_ge4j"], # 1b_le3j
-                         ["0b_ge4j","1b_ge4j","2b_ge4j","3b_ge4j"]][0], # 1b_le3j, 2b_le3j
-              extraVars=["SITV"],
-              **new)],
-        ][0] # select model here
+    ncats = 4
+    models = {
+        "T2cc" : [scan(dataset="T2cc",
+                       had="v18",
+                       muon="v18",
+                       aT={200: "0.65", 275: "0.6", 325: "0.55"},
+                       region=regions().get("T2cc").get(0)[0],
+                       whiteList=regions().get("T2cc").get(0)[1][:ncats],
+                       extraVars=["SITV"],
+                       **new)],
+        "T2_4body" : [scan(dataset="T2_4body",
+                           had="v5", # v6 is with boost distr reweighted to T2cc
+                           muon="v5", # v6 is with boost distr reweighted to T2cc
+                           aT={200: "0.65", 275: "0.6", 325: "0.55"},
+                           region=regions().get("T2_4body").get(0)[0],
+                           whiteList=regions().get("T2_4body").get(0)[1][:ncats],
+                           extraVars=["SITV"],
+                           **new)],
+        "T2tt" : [scan(dataset="T2tt",
+                       had="v7",
+                       muon="v7",
+                       aT={200:"0.65",275:"0.6",325:"0.55"},
+                       region=y[0],
+                       whiteList=y[1][:ncats],
+                       extraVars=["SITV"],
+                       **new) for x,y in regions().get("T2tt").items() ],
+        "T2bw_0p25" : [scan(dataset="T2bw_0p25",
+                            had="v3",
+                            muon="v3",
+                            aT={200:"0.65",275:"0.6",325:"0.55"},
+                            region=y[0],
+                            whiteList=y[1][:ncats],
+                            extraVars=["SITV"],
+                            **new) for x,y in regions().get("T2bw_0p25").items() ],
+        "T2bw_0p75" : [scan(dataset="T2bw_0p75",
+                            had="v4",
+                            muon="v4",
+                            aT={200:"0.65",275:"0.6",325:"0.55"},
+                            region=y[0],
+                            whiteList=y[1][:ncats],
+                            extraVars=["SITV"],
+                            **new) for x,y in regions().get("T2bw_0p75").items() ],
+        }
+    return models.get("",[]) # select model here
 
 
 def hcp():
