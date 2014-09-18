@@ -74,9 +74,7 @@ def modifiedHisto(h3=None,
                       shiftErrors=shiftErrors,
                       info=info)
     fillPoints(h, points=patches.overwriteOutput().get(model.name, []), info=info)
-    killPoints(h,
-               cutFunc=patches.cutFunc().get(model.name, None),
-               interBin=model.interBin)
+    killPoints(h, model)
 
     if range:
         setRange("xRange", model, h, "X")
@@ -131,9 +129,12 @@ def fillPoints(h, points=[], info=True):
                 print out
 
 
-def killPoints(h, cutFunc=None, interBin=""):
+def killPoints(h,model=None) :
+    cutFunc=patches.cutFunc().get(model.name, None)
+    interBin=model.interBin
     for iBinX, x, iBinY, y, iBinZ, z in utils.bins(h, interBin=interBin):
-        if cutFunc and not cutFunc(iBinX, x, iBinY, y, iBinZ, z):
+        if cutFunc and not cutFunc(iBinX, x, iBinY, y, iBinZ, z) and \
+               model.region and not model.region(iBinX, x, iBinY, y, iBinZ, z):
             h.SetBinContent(iBinX, iBinY, iBinZ, 0.0)
     return h
 
@@ -144,8 +145,7 @@ def xsHisto(model=None):
         cmssmProcess = "" if model.isSms else "total"
         return xsHistoPhysical(model=model, cmssmProcess=cmssmProcess)
     else:
-        return xsHistoAllOne(model=model,
-                             cutFunc=patches.cutFunc()[model.name])
+        return xsHistoAllOne(model=model)
 
 
 def xsHistoPhysical(model=None, cmssmProcess=""):
@@ -174,12 +174,14 @@ def xsHistoPhysical(model=None, cmssmProcess=""):
     return out
 
 
-def xsHistoAllOne(model=None, cutFunc=None):
+def xsHistoAllOne(model=None):
+    cutFunc=patches.cutFunc().get(model.name,None)
     spec = configuration.signal.effHistoSpec(model=model, **model.exampleKargs)
     h = smsEffHisto(spec=spec, model=model)
     for iX, x, iY, y, iZ, z in utils.bins(h, interBin=model.interBin):
         content = 1.0
-        if cutFunc and not cutFunc(iX, x, iY, y, iZ, z):
+        if cutFunc and not cutFunc(iX, x, iY, y, iZ, z) and \
+               model.region and not model.region(iX, x, iY, y, iZ, z):
             content = 0.0
         h.SetBinContent(iX, iY, iZ, content)
     return h
@@ -347,7 +349,9 @@ def points(respectWhiteList=False):
                 continue
             if multiples and ((x/multiples) % 1 != 0.0):
                 continue
-            if patches.cutFunc()[name](iBinX, x, iBinY, y, iBinZ, z):
+            cutFunc = patches.cutFunc().get(model.name,None)
+            if cutFunc and cutFunc(iBinX, x, iBinY, y, iBinZ, z) and \
+                   model.region and model.region(iBinX, x, iBinY, y, iBinZ, z):
                 out.append((name, iBinX, iBinY, iBinZ))
     return out
 
