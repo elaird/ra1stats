@@ -112,7 +112,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(bJets)
     if jets:
         tags.append(jets)
-    if box != "had" : tags.append("NoAlphaT") #@@ HACK!!!
+    #if box != "had" : tags.append("NoAlphaT") #@@ HACK!!!
     if model.extraVars:
         tags.append(" ".join(model.extraVars))
     if box == "had":
@@ -124,8 +124,8 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         else:
             tags.append("AlphaT55")
     else:
-        #tags.append("NoAlphaT")
-        pass #@@ HACK
+        tags.append("NoAlphaT")
+        #pass #@@ HACK
 
     if htLower:
         tags.append("%d" % htLower)
