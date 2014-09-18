@@ -17,6 +17,7 @@ class scan(object):
                  minSumWeightIn=1,
                  maxSumWeightIn=None,
                  llk=None,
+                 region=None,
                  whiteList=[],
                  exampleKargs={},
                  sigMcUnc=False,
@@ -31,7 +32,7 @@ class scan(object):
                      "xsVariation", "xsFactors", "aT", "extraVars",
                      "weightedHistName", "unweightedHistName",
                      "minSumWeightIn", "maxSumWeightIn",
-                     "llk", "whiteList", "exampleKargs",
+                     "llk", "region", "whiteList", "exampleKargs",
                      "sigMcUnc", "binaryExclusion",
                      "flatEffUncRel",
                      ]+self._boxNames:
@@ -85,6 +86,10 @@ class scan(object):
     @property
     def llk(self):
         return self._llk
+
+    @property
+    def region(self):
+        return self._region
 
     @property
     def whiteList(self):
