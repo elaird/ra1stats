@@ -3,10 +3,10 @@ from signalScan import scan
 def region(name) :
     # dict[region] = (cutFunc)
     return {
-        "low_near"  : lambda iX,x,iY,y,iZ,z : x < 349.9 and (x-y) < 149.9 and y < 200.1,
-        "low_far"   : lambda iX,x,iY,y,iZ,z : x < 349.9 and (x-y) > 149.9 and y < 200.1,
-        "high_near" : lambda iX,x,iY,y,iZ,z : x > 349.9 and (x-y) < 149.9 and y < 200.1,
-        "high_far"  : lambda iX,x,iY,y,iZ,z : x > 349.9 and (x-y) > 149.9 and y < 200.1
+        "low_near"  : lambda iX,x,iY,y,iZ,z : x < 349.9 and (x-y) < 149.9,
+        "low_far"   : lambda iX,x,iY,y,iZ,z : x < 349.9 and (x-y) > 149.9,
+        "high_near" : lambda iX,x,iY,y,iZ,z : x > 349.9 and (x-y) < 149.9,
+        "high_far"  : lambda iX,x,iY,y,iZ,z : x > 349.9 and (x-y) > 149.9,
         }.get( name,  lambda iX,x,iY,y,iZ,z : True )
 
 def regions() :
