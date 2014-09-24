@@ -72,12 +72,12 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
 def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, shift=(True, False)):
     offset = 7
     limitHistoDict = {
-        'T2cc_UpperLimit': {
+        model.name+'_UpperLimit': {
             'label': 'Observed',
             'LineWidth': 3,
             'LineColor': r.kBlack,
             },
-        'T2cc_ExpectedUpperLimit': {
+        model.name+'_ExpectedUpperLimit': {
             'label': 'Expected',
             'LineWidth': 1,
             'LineColor': r.kBlack,
@@ -86,28 +86,28 @@ def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, sh
             'FillStyle': 0,
             'FillColor': 0,
             },
-        'T2cc_ExpectedUpperLimit_+2_Sigma': {
+        model.name+'_ExpectedUpperLimit_+2_Sigma': {
             'label': 'Expected #pm 2#sigma',
             'LineWidth': 0,
             'LineColor': r.kYellow-offset,
             'FillStyle': 1001,
             'FillColor': r.kYellow-offset,
             },
-        'T2cc_ExpectedUpperLimit_+1_Sigma': {
+        model.name+'_ExpectedUpperLimit_+1_Sigma': {
             'label': 'Expected #pm 1#sigma',
             'LineWidth': 0,
             'LineColor': r.kGreen-offset,
             'FillStyle': 1001,
             'FillColor': r.kGreen-offset,
             },
-        'T2cc_ExpectedUpperLimit_-1_Sigma': {
+        model.name+'_ExpectedUpperLimit_-1_Sigma': {
             'label': 'None',
             'LineWidth': 0,
             'LineColor': r.kYellow-offset,
             'FillStyle': 1001,
             'FillColor': r.kYellow-offset,
             },
-        'T2cc_ExpectedUpperLimit_-2_Sigma': {
+        model.name+'_ExpectedUpperLimit_-2_Sigma': {
             'label': 'None',
             'LineWidth': 0,
             'LineColor': 0,
@@ -254,22 +254,22 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
         pad = canvas.cd(0)
 
     legs = odict.fromkeys(['refHisto',
-                           'T2cc_UpperLimit',
-                           'T2cc_ExpectedUpperLimit',
-                           'T2cc_ExpectedUpperLimit_+1_Sigma',
-                           'T2cc_ExpectedUpperLimit_+2_Sigma'])
+                           model.name+'_UpperLimit',
+                           model.name+'_ExpectedUpperLimit',
+                           model.name+'_ExpectedUpperLimit_+1_Sigma',
+                           model.name+'_ExpectedUpperLimit_+2_Sigma'])
     
     processed_histos = {}
-    histos = ['T2cc_ExpectedUpperLimit_+2_Sigma',
-              'T2cc_ExpectedUpperLimit_+1_Sigma',
-              'T2cc_ExpectedUpperLimit',
-              'T2cc_ExpectedUpperLimit_-1_Sigma',
-              'T2cc_ExpectedUpperLimit_-2_Sigma',
+    histos = [model.name+'_ExpectedUpperLimit_+2_Sigma',
+              model.name+'_ExpectedUpperLimit_+1_Sigma',
+              model.name+'_ExpectedUpperLimit',
+              model.name+'_ExpectedUpperLimit_-1_Sigma',
+              model.name+'_ExpectedUpperLimit_-2_Sigma',
               'refHisto',
-              'T2cc_UpperLimit']
+              model.name+'_UpperLimit']
     for iHisto, hname in enumerate(histos):
         props = histoSpecs[hname]
-        if hname == 'T2cc_UpperLimit': 
+        if hname == model.name+'_UpperLimit': 
             his = props["hist"]
 #            if dM == 80 :
 #                r.gROOT.SetBatch(False)
@@ -343,7 +343,7 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
     pad.SetTicky()
 
     ref = histoSpecs['refHisto']
-    obs = histoSpecs['T2cc_UpperLimit']
+    obs = histoSpecs[model.name+'_UpperLimit']
 
     if dumpRatio:
         #printRatio(obs, ref)
