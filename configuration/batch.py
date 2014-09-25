@@ -26,7 +26,7 @@ def envScript():
 
 
 def nJobsMax():
-    return {"IC": 2000, "FNAL": 100}[batchHost]
+    return {"IC": 2000, "FNAL": 1000}[batchHost]
 
 
 def subCmd(icQueue="medium"):

@@ -126,11 +126,11 @@ def pbatch(queue=None, debug=False) :
     n_jobs_max = configuration.batch.nJobsMax()
 
     subCmds = []
+
     for q_name, details in queue_job_details.iteritems():
         for i, args in enumerate(details["args"]):
             #print "{q} => {a}".format( q=q_name, a=args )
             #continue
-
             start = i*n_jobs_max + 1
             end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
 
