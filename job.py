@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import sys
-
+import os
 import configuration.directories
 import configuration.limit
 import configuration.signal
 from driver import ra1
 import utils
+import configuration.batch
 
 
 def points():
@@ -101,6 +102,10 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
 def compare(item, threshold):
     return 2.0*(item < threshold)-1.0
 
+def pickledoutFileName(name, xBin, yBin, zBin):
+    if configuration.batch.batchHost == "FNAL":
+      scratchdir = os.environ['_CONDOR_SCRATCH_DIR']
+    return {"IC": "%s/%s_%d_%d_%d.pickled" % ("jobIO", name, xBin, yBin, zBin), "FNAL": "%s/%s_%d_%d_%d.pickled" % (scratchdir, name, xBin, yBin, zBin)}[configuration.batch.batchHost]
 
 def go():
     llk = {}
@@ -109,7 +114,7 @@ def go():
 
     for point in points():
         name = point[0]
-        fileName = configuration.directories.pickledFileName(*point)+".out"
+        fileName = pickledoutFileName(*point)+".out"
         utils.writeNumbers(fileName,
                            onePoint(llkName=llk[name],
                                     point=point),

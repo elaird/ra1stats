@@ -36,4 +36,5 @@ def subCmd(icQueue="medium"):
             }[batchHost]
 
 def workingDir():
-    return {"IC": pwd, "FNAL": "${_CONDOR_JOB_IWD}/ra1stats"}[batchHost]
+    # return {"IC": pwd, "FNAL": "${_CONDOR_JOB_IWD}/ra1stats"}[batchHost]
+    return {"IC": pwd, "FNAL": pwd}[batchHost]
