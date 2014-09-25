@@ -17,6 +17,9 @@ def floatingVars(w):
     vars = w.allVars()
     it = vars.createIterator()
     while it.Next():
+        if not hasattr(it, "getMax"):
+            print "WARNING: iterator", it, "has no att getMax"
+            continue
         if it.getMax() == r.RooNumber.infinity():
             continue
         if it.getMin() == -r.RooNumber.infinity():
