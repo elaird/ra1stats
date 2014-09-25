@@ -11,7 +11,9 @@ def compile(dir="cpp",
     root = "`root-config --cflags --libs`"
     flags = " -W".join(["", "all", "extra"])
     incPaths = " -I".join(["", "${ROOFITSYS}/include"]) if os.environ.get("ROOFITSYS") else ""
-    libList = ["", "RooFitCore", "RooFit", "RooStats"]
+    libList = [""]
+    if "CMSSW_VERSION" in os.environ:
+        libList += ["RooFitCore", "RooFit", "RooStats"]
 
     # https://sft.its.cern.ch/jira/browse/ROOT-4362
     if "5.32" in r.gROOT.GetVersion():
