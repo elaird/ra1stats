@@ -48,6 +48,7 @@ def dev():
            "exampleKargs": exampleArgs(),
            "com": 8,
            "llk": "2012dev",
+           "interBin": "Center",
            }
     ncats = 4
     models = {
