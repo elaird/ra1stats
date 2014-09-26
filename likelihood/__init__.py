@@ -342,11 +342,10 @@ class base(object):
                         if signal:
                             pointEff = signal.effs(sel.name)['effHad'][iBin]
                             pointXs = signal.xs
-                            lumi = 1.
                             rate = pointEff * pointXs * lumiDct['had']
                             lumiUncs.append(1.0 + sigmaLumiLike)
                         else:
-                            rate = 0.
+                            rate = 1. # set to 1, because 0 crashes it
                             lumiUncs.append(1.0 + sigmaLumiLike)
                         # rate = 1.23456789
                          # add point uncertainty here
