@@ -252,6 +252,181 @@ class base(object):
         
 
 
+#    def preparedSelection(self, sel, signal={}):
+#        if not self._lnUMax:
+#            self._lnUMax = 3.0
+#            print "WARNING: lnUMax not set.  Using %g." % self._lnUMax
+#
+#        obs = []
+#        processes = []
+#        rates = []
+#        lumiUncs = []
+#        normZinv = {}
+#        normTtw = {}
+#        rhoPhotZ = {}
+#        rhoMumuZ = {}
+#        rhoMuonW = {}
+#
+#        # processes to consider for each observed bin
+#        if sel.muonForFullEwk:
+#            procDct = {"had": ["s", "had"],
+#                       "muon": ["muon"],
+#                       }
+#        else:
+#            procDct = {"had": ["s", "ttw", "zinv"],
+#                       "muon": ["muon"],
+#                       "phot": ["phot"],
+#                       "mumu": ["mumu"],
+#                       }
+#            # procDct['had'] = ['ttw', 'zinv']
+#
+#        obsDct = sel.data.observations()
+#        mcExp = sel.data.mcExpectations()
+#        lumiDct = sel.data.lumi()
+#        systBins = sel.data.systBins()
+#        fixedPs = sel.data.fixedParameters()
+#        # sigmaLumiLike = fixedPs.get("sigmaLumiLike")
+#        sigmaLumiLike = signal.effs(sel.name)['effUncRel']
+#
+#        if not sigmaLumiLike:
+#            sigmaLumiLike = 0.10
+#            print "WARNING: using fake sigmaLumiLike for %s: %g" % (sel.name, sigmaLumiLike)
+#
+#        for box in ["had", "muon", "phot", "mumu"]:
+#            if box not in sel.boxes:
+#                continue
+#
+#            bins = []
+#            for i, n in enumerate(obsDct["n%s" % box.capitalize()]):
+#                bins.append(("%s%d" % (box, i), n))
+#
+#                # initialize list for each background syst. parameter
+#                if box == "had":
+#                    # one per bin
+#                    normZinv[i] = []
+#                    normTtw[i] = []
+#
+#                    # one per syst. region
+#                    pz = systBins.get("sigmaPhotZ")
+#                    if pz:
+#                        rhoPhotZ[pz[i]] = []
+#
+#                    mz = systBins.get("sigmaMumuZ")
+#                    if mz:
+#                        rhoMumuZ[mz[i]] = []
+#
+#                    mw = systBins.get("sigmaMuonW")
+#                    if mw:
+#                        rhoMuonW[mw[i]] = []
+#
+#            obs += filter(lambda x: x[1] is not None, bins)  # FIXME
+#
+#            minProc = len(processes)
+#            processes += procDct[box]  # FIXME
+#
+#            for iProc, proc in enumerate(processes):
+#                if iProc < minProc:
+#                    continue
+#
+#                for iBin, (name, n) in enumerate(bins):
+#                    if n is None:
+#                        continue
+#
+#                    if iProc:
+#                        mcKey = "mc%s" % proc.capitalize()
+#                        rate = mcExp[mcKey][iBin] * lumiDct[box] / lumiDct[mcKey]
+#                        lumiUncs.append(None)
+#                    else:
+#                        # get signal rate here
+#                        if signal:
+#                            pointEff = signal.effs(sel.name)['effHad'][iBin]
+#                            pointXs = signal.xs
+#                            lumi = 1.
+#                            rate = pointEff * pointXs * lumiDct['had']
+#                            lumiUncs.append(1.0 + sigmaLumiLike)
+#                        else:
+#                            rate = 0.
+#                            lumiUncs.append(1.0 + sigmaLumiLike)
+#                        # rate = 1.23456789
+#                         # add point uncertainty here
+#
+#                    rates.append((name, iProc, proc, rate))
+#
+#                    # background normalizations
+#                    for jBin in normZinv.keys():
+#                        if jBin == iBin:
+#                            if proc in ["zinv", "phot", "mumu"]:
+#                                normZinv[jBin].append(self._lnUMax)
+#                                normTtw[jBin].append(None)
+#                            elif sel.muonForFullEwk and proc in ["had", "muon"]:
+#                                normZinv[jBin].append(None)
+#                                normTtw[jBin].append(self._lnUMax)
+#                            elif (not sel.muonForFullEwk) and proc in ["ttw", "muon"]:
+#                                normZinv[jBin].append(None)
+#                                normTtw[jBin].append(self._lnUMax)
+#                            else:
+#                                normZinv[jBin].append(None)
+#                                normTtw[jBin].append(None)
+#                        else:
+#                            normZinv[jBin].append(None)
+#                            normTtw[jBin].append(None)
+#
+#                    # translation syst.
+#                    for (dct, systKey, theProc) in [(rhoPhotZ, "sigmaPhotZ", "phot"),
+#                                                    (rhoMumuZ, "sigmaMumuZ", "mumu"),
+#                                                    (rhoMuonW, "sigmaMuonW", "muon"),
+#                                                    ]:
+#                        for jSystBin in dct.keys():
+#                            if proc == theProc and systBins[systKey][iBin] == jSystBin:
+#                                dct[jSystBin].append(1.0 + fixedPs[systKey][jSystBin])
+#                            else:
+#                                dct[jSystBin].append(None)
+#
+#        rename = sel.muonForFullEwk
+#        return obs, processes, rates, lumiUncs, normZinv, normTtw, rhoPhotZ, rhoMumuZ, rhoMuonW, rename
+#
+#
+    #def formattedSelection(self, obs, processes, rates,
+    #                       lumiUncs, normZinv, normTtw,
+    #                       rhoPhotZ, rhoMumuZ, rhoMuonW,
+    #                       rename=None, label=""):
+    #    w1 = 25
+    #    w2 = 9
+    #    iFmt = "%" + str(w2) + "d"
+    #    rFmt = "%" + str(w2) + ".3e"
+    #    sFmt = "%" + str(w2) + ".2f"
+    #    hyphens = "-" * 79
+    #    lines = ["   ".join(["imax", "%3d" % len(obs), "number of categories"]),
+    #             "   ".join(["jmax", "%3d" % (len(processes) - 1), "number of samples minus one"]),
+    #             "   ".join(["kmax", "  *", "number of nuisance parameters"]),
+    #             hyphens,
+    #             "bin".ljust(w1)         + "  ".join([x[0].rjust(w2) for x in obs]),
+    #             "observation".ljust(w1) + "  ".join([iFmt % x[1]    for x in obs]),
+    #             hyphens,
+    #             "bin".ljust(w1)         + "  ".join([x[0].rjust(w2) for x in rates]),
+    #             "process".ljust(w1)     + "  ".join([x[2].rjust(w2) for x in rates]),
+    #             "process".ljust(w1)     + "  ".join([iFmt % x[1]    for x in rates]),
+    #             "rate".ljust(w1)        + "  ".join([rFmt % x[3]    for x in rates]),
+    #             hyphens,
+    #             "lumi lnN".ljust(w1)    + "  ".join([(sFmt % x) if x else "-".rjust(w2) for x in lumiUncs]),
+    #             ]
+
+    #    for stem, form in [("normTtw",  "lnU"),
+    #                       ("normZinv", "lnU"),
+    #                       ("rhoPhotZ", "lnN"),
+    #                       ("rhoMumuZ", "lnN"),
+    #                       ("rhoMuonW", "lnN"),
+    #                       ]:
+    #        dct = eval(stem)
+    #        for iParam, lst in sorted(dct.iteritems()):
+    #            if rename:
+    #                stem = stem.replace("normTtw", "normEwk")  # when sel.muonForFullEwk
+    #            pName = "%s_%s_%d %s" % (stem, label, iParam, form)
+    #            if not any(lst):
+    #                continue
+    #            lines += [pName.ljust(w1)   + "  ".join([(sFmt % x) if x else "-".rjust(w2) for x in lst])]
+
+    #    return lines
     def preparedSelection(self, sel, signal={}):
         if not self._lnUMax:
             self._lnUMax = 3.0
@@ -384,7 +559,6 @@ class base(object):
 
         rename = sel.muonForFullEwk
         return obs, processes, rates, lumiUncs, normZinv, normTtw, rhoPhotZ, rhoMumuZ, rhoMuonW, rename
-
 
     def formattedSelection(self, obs, processes, rates,
                            lumiUncs, normZinv, normTtw,

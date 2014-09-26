@@ -1,0 +1,15 @@
+max    1     number of categories
+jmax    1     number of samples minus one
+kmax    *     number of nuisance parameters
+-------------------------------------------------------------------------------
+shapes * * input_8TeV.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+shapes Zinv * input_8TeV.root $CHANNEL/$PROCESS$MASS $CHANNEL/$PROCESS$MASS_$SYSTEMATIC
+-------------------------------------------------------------------------------
+bin                                            data_0b_ge4j
+observation                                    2156.233300
+-------------------------------------------------------------------------------
+bin                                            data_0b_ge4j data_0b_ge4j    
+process                                        0            1        
+process                                        Zinv         Ttw                 
+rate                                           1030.32    1125.86601
+-------------------------------------------------------------------------------
