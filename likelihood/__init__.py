@@ -231,7 +231,6 @@ class base(object):
 
         fileNames = []
         for sel in self.selections():
-            print sel
             if sel.universalSystematics:
                 print "Fail universalSystematics: skipping", sel
                 continue
@@ -239,7 +238,7 @@ class base(object):
                 print "Fail universalKQcd: skipping", sel
                 continue
 
-            lines = self.formattedSelection(*self.preparedSelection(sel),
+            lines = self.formattedSelection(*self.preparedSelection(sel, signal),
                                             label=sel.name)
 
             fileName = "%s/%s.txt" % (dirName, sel.name)
@@ -253,7 +252,7 @@ class base(object):
         
 
 
-    def preparedSelection(self, sel):
+    def preparedSelection(self, sel, signal={}):
         if not self._lnUMax:
             self._lnUMax = 3.0
             print "WARNING: lnUMax not set.  Using %g." % self._lnUMax
@@ -279,13 +278,16 @@ class base(object):
                        "phot": ["phot"],
                        "mumu": ["mumu"],
                        }
+            # procDct['had'] = ['ttw', 'zinv']
 
         obsDct = sel.data.observations()
         mcExp = sel.data.mcExpectations()
         lumiDct = sel.data.lumi()
         systBins = sel.data.systBins()
         fixedPs = sel.data.fixedParameters()
-        sigmaLumiLike = fixedPs.get("sigmaLumiLike")
+        # sigmaLumiLike = fixedPs.get("sigmaLumiLike")
+        sigmaLumiLike = signal.effs(sel.name)['effUncRel']
+
         if not sigmaLumiLike:
             sigmaLumiLike = 0.10
             print "WARNING: using fake sigmaLumiLike for %s: %g" % (sel.name, sigmaLumiLike)
@@ -335,8 +337,19 @@ class base(object):
                         rate = mcExp[mcKey][iBin] * lumiDct[box] / lumiDct[mcKey]
                         lumiUncs.append(None)
                     else:
-                        rate = 1.23456789
-                        lumiUncs.append(1.0 + sigmaLumiLike)
+                        # get signal rate here
+                        if signal:
+                            pointEff = signal.effs(sel.name)['effHad'][iBin]
+                            pointXs = signal.xs
+                            lumi = 1.
+                            rate = pointEff * pointXs * lumiDct['had']
+                            lumiUncs.append(1.0 + sigmaLumiLike)
+                        else:
+                            rate = 0.
+                            lumiUncs.append(1.0 + sigmaLumiLike)
+                        # rate = 1.23456789
+                         # add point uncertainty here
+
                     rates.append((name, iProc, proc, rate))
 
                     # background normalizations
