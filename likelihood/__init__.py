@@ -285,8 +285,9 @@ class base(object):
         lumiDct = sel.data.lumi()
         systBins = sel.data.systBins()
         fixedPs = sel.data.fixedParameters()
-        # sigmaLumiLike = fixedPs.get("sigmaLumiLike")
-        sigmaLumiLike = signal.effs(sel.name)['effUncRel']
+
+        sigmaLumiLike = signal.effs(sel.name)['effUncRel'] if signal else None
+
 
         if not sigmaLumiLike:
             sigmaLumiLike = 0.10
