@@ -4,6 +4,7 @@ import sys
 import configuration.directories
 import configuration.limit
 import configuration.signal
+# from driver import ra1
 from driver import driver
 import utils
 
@@ -27,7 +28,7 @@ def description(key, cl=None):
 def onePoint(llkName=None, point=None):
     fileName = configuration.directories.pickledFileName(*point)+".in"
     signal = utils.readNumbers(fileName=fileName)
-    print signal
+
     if configuration.limit.method() and signal.anyEffHad():
         return signal, resultsMultiCL(llkName=llkName,
                                       signal=signal,
@@ -63,9 +64,14 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
     f = driver(signalToTest=signal,
-               whiteList=signal.categories(),
-               llkName=llkName,
-               )
+                   whiteList=signal.categories(),
+                   llkName=llkName,
+                   )
+
+    # pass signal model to dumpHcgCards to get correct rates
+    f.likelihoodSpec.dumpHcgCards(signal)
+
+    exit()
 
     method = configuration.limit.method()
     plSeedParams = configuration.limit.plSeedParams(signal.binaryExclusion)

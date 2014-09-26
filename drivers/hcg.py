@@ -33,54 +33,54 @@ class driver(object):
 
         #UNCOMMENTED HERE DON'T REALLY KNOW WHAT IT DOES
 
-        #self.wspace = r.RooWorkspace("Workspace")
+        # self.wspace = r.RooWorkspace("Workspace")
 
-        #args = {}
-        #args["w"] = self.wspace
-        #args["smOnly"] = self.smOnly()
-        #args["injectSignal"] = self.injectSignal()
+        # args = {}
+        # args["w"] = self.wspace
+        # args["smOnly"] = self.smOnly()
+        # args["injectSignal"] = self.injectSignal()
 
-        #for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
-        #             "constrainQcdSlope", "qcdParameterIsYield",
-        #             "initialValuesFromMuonSample", "initialFZinvFromMc"] :
-        #    args[item] = getattr(self.likelihoodSpec, item)()
+        # for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
+        #              "constrainQcdSlope", "qcdParameterIsYield",
+        #              "initialValuesFromMuonSample", "initialFZinvFromMc"] :
+        #     args[item] = getattr(self.likelihoodSpec, item)()
 
-        #if not self.smOnly():
-        #    args["sigMcUnc"] = self.signalToTest.sigMcUnc
-        #    if self.signalToTest.binaryExclusion:
-        #        ini, min, max = self.likelihoodSpec.poi()["f"]
-        #        assert min <= 1.0, min
-        #        assert 1.0 <= max, max
+        # if not self.smOnly():
+        #     args["sigMcUnc"] = self.signalToTest.sigMcUnc
+        #     if self.signalToTest.binaryExclusion:
+        #         ini, min, max = self.likelihoodSpec.poi()["f"]
+        #         assert min <= 1.0, min
+        #         assert 1.0 <= max, max
 
-        #    args["rhoSignalMin"] = self.likelihoodSpec.rhoSignalMin()
-        #    workspace.startLikelihood(w=self.wspace,
-        #                              xs=self.signalToTest.xs,
-        #                              sumWeightIn=self.signalToTest.sumWeightIn,
-        #                              poi=self.likelihoodSpec.poi())
+        #     args["rhoSignalMin"] = self.likelihoodSpec.rhoSignalMin()
+        #     workspace.startLikelihood(w=self.wspace,
+        #                               xs=self.signalToTest.xs,
+        #                               sumWeightIn=self.signalToTest.sumWeightIn,
+        #                               poi=self.likelihoodSpec.poi())
 
-        #total = {}
-        #for sel in self.likelihoodSpec.selections():
-        #    args["selection"] = sel
-        #    args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
-        #    args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
-        #    args["systematicsLabel"] = self.systematicsLabel(sel.name)
-        #    args["kQcdLabel"] = self.kQcdLabel(sel.name)
+        # total = {}
+        # for sel in self.likelihoodSpec.selections():
+        #     args["selection"] = sel
+        #     args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
+        #     args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
+        #     args["systematicsLabel"] = self.systematicsLabel(sel.name)
+        #     args["kQcdLabel"] = self.kQcdLabel(sel.name)
 
-        #    d = workspace.setupLikelihood(**args)
-        #    for key, value in d.iteritems():
-        #        if key not in total:
-        #            total[key] = []
-        #        total[key] += value
+        #     d = workspace.setupLikelihood(**args)
+        #     for key, value in d.iteritems():
+        #         if key not in total:
+        #             total[key] = []
+        #         total[key] += value
 
-        #workspace.finishLikelihood(w=self.wspace,
-        #                           smOnly=self.smOnly(),
-        #                           standard=self.likelihoodSpec.standardPoi(),
-        #                           poiDict=self.likelihoodSpec.poi(),
-        #                           **total)
+        # workspace.finishLikelihood(w=self.wspace,
+        #                            smOnly=self.smOnly(),
+        #                            standard=self.likelihoodSpec.standardPoi(),
+        #                            poiDict=self.likelihoodSpec.poi(),
+        #                            **total)
 
 
-        #self.data = workspace.dataset(workspace.obs(self.wspace))
-        #self.modelConfig = workspace.modelConfiguration(self.wspace)
+        # self.data = workspace.dataset(workspace.obs(self.wspace))
+        # self.modelConfig = workspace.modelConfiguration(self.wspace)
 
 
     def compute(self, attr="", ch="", verbose=False):
@@ -177,6 +177,37 @@ class driver(object):
         f1.Close()
         return results
 
+    def cls(self, cardName="card.txt"):
+        #faff here.
+        # map this from the old cls and make sure
+
+        cmd = ["combineCards.py"]
+        for iFileName, fileName in enumerate(self.likelihoodSpec.dumpHcgCards()):
+            cat = fileName[1 + fileName.find("/"):fileName.find(".txt")]
+            cmd.append("_%s=%s" % (cat, fileName))  # note leading underscore
+        cmd.append("> %s" % cardName)
+        os.system(" ".join(cmd))
+        
+        #exit(cmd)
+
+        fit = ["combine",
+               "-M MaxLikelihoodFit",
+               "--saveWorkspace",
+               #"--saveNLL",
+               #"--plots",
+               "--rMin 0.0",
+               "--rMax 1.0e-6",
+               "--preFitValue 0.0",
+               #"-v -1",
+               cardName,
+               #"| grep -v 'has no signal processes contributing to it'",
+               ]
+        os.system(" ".join(fit))
+
+        f1 = r.TFile("mlfit.root")
+        results = f1.Get("fit_b")
+        f1.Close()
+        return results
 
     def setWspace(self):
         results = self.rooFitResults()
@@ -233,25 +264,25 @@ class driver(object):
     def checkInputs(self):
         pass
 
-    def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1, plSeedParams = {}) :
-        args = {}
-        out = {}
-        if plSeedParams["usePlSeed"] :
-            plUpperLimit = self.interval(cl = cl, nIterationsMax = plSeedParams["plNIterationsMax"])["upperLimit"]
-            out["PlUpperLimit"] = plUpperLimit
-            args["nPoints"] = plSeedParams["nPoints"]
-            args["poiMin"] = plUpperLimit*plSeedParams["minFactor"]
-            args["poiMax"] = plUpperLimit*plSeedParams["maxFactor"]
+    # def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1, plSeedParams = {}) :
+    #     args = {}
+    #     out = {}
+    #     if plSeedParams["usePlSeed"] :
+    #         plUpperLimit = self.interval(cl = cl, nIterationsMax = plSeedParams["plNIterationsMax"])["upperLimit"]
+    #         out["PlUpperLimit"] = plUpperLimit
+    #         args["nPoints"] = plSeedParams["nPoints"]
+    #         args["poiMin"] = plUpperLimit*plSeedParams["minFactor"]
+    #         args["poiMax"] = plUpperLimit*plSeedParams["maxFactor"]
 
-            s = self.wspace.set("poi"); assert s.getSize()==1
-            if s.first().getMin() : s.first().setMin(0.0)
-            if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
+    #         s = self.wspace.set("poi"); assert s.getSize()==1
+    #         if s.first().getMin() : s.first().setMin(0.0)
+    #         if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
 
-        out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
-                        cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
-                        plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
-        out.update(out2)
-        return out
+    #     out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
+    #                     cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
+    #                     plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
+    #     out.update(out2)
+    #     return out
 
     def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
                  nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
