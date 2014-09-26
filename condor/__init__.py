@@ -23,7 +23,8 @@ def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobS
     if os.path.exists(condorTemplate) :
         condorFileName = jobScriptFileName.replace(".sh",".condor")
         outdir = "./ra1stats/"+configuration.directories.job()
-        os.system("cat %s | sed s@JOBFLAG@%s@g | sed s@OUTFLAG@%s@g | sed s@INFLAG@%s@g > %s"%(condorTemplate, jobScriptFileName, outdir, os.environ["PWD"] , condorFileName))
+        os.system("cat %s | sed s@JOBFLAG@%s@g > %s"%(condorTemplate, jobScriptFileName, condorFileName))
+        # os.system("cat %s | sed s@JOBFLAG@%s@g | sed s@OUTFLAG@%s@g | sed s@INFLAG@%s@g > %s"%(condorTemplate, jobScriptFileName, outdir, os.environ["PWD"] , condorFileName))
         arg = condorFileName
     else :
         arg = jobScriptFileName
