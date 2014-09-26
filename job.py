@@ -69,9 +69,9 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
                    )
 
     # pass signal model to dumpHcgCards to get correct rates
-    f.likelihoodSpec.dumpHcgCards(signal)
+    #f.likelihoodSpec.dumpHcgCards(signal)
 
-    exit()
+    #exit()
 
     method = configuration.limit.method()
     plSeedParams = configuration.limit.plSeedParams(signal.binaryExclusion)
@@ -84,11 +84,11 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
                                   testStatType=configuration.limit.testStatistic(),
                                   )
         else:
-            results = f.cls(cl=cl,
-                            nToys=configuration.limit.nToys(),
-                            testStatType=configuration.limit.testStatistic(),
-                            calculatorType=configuration.limit.calculatorType(),
-                            plSeedParams=plSeedParams,
+            results = f.cls(#cl=cl,
+                            #nToys=configuration.limit.nToys(),
+                            #testStatType=configuration.limit.testStatistic(),
+                            #calculatorType=configuration.limit.calculatorType(),
+                            #plSeedParams=plSeedParams,
                             )
         out.update(formattedClsResults(results, *fArgs))
     else:

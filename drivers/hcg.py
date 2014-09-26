@@ -182,7 +182,7 @@ class driver(object):
         # map this from the old cls and make sure
 
         cmd = ["combineCards.py"]
-        for iFileName, fileName in enumerate(self.likelihoodSpec.dumpHcgCards()):
+        for iFileName, fileName in enumerate(self.likelihoodSpec.dumpHcgCards(self.signalToTest)):
             cat = fileName[1 + fileName.find("/"):fileName.find(".txt")]
             cmd.append("_%s=%s" % (cat, fileName))  # note leading underscore
         cmd.append("> %s" % cardName)
@@ -191,13 +191,13 @@ class driver(object):
         #exit(cmd)
 
         fit = ["combine",
-               "-M MaxLikelihoodFit",
-               "--saveWorkspace",
+               "-M Asymptotic",
+               #"--saveWorkspace",
                #"--saveNLL",
                #"--plots",
-               "--rMin 0.0",
-               "--rMax 1.0e-6",
-               "--preFitValue 0.0",
+               #"--rMin 0.0",
+               #"--rMax 1.0e-6",
+               #"--preFitValue 0.0",
                #"-v -1",
                cardName,
                #"| grep -v 'has no signal processes contributing to it'",
