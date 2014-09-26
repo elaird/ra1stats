@@ -4,7 +4,7 @@ import sys
 import configuration.directories
 import configuration.limit
 import configuration.signal
-from driver import ra1
+from driver import driver
 import utils
 
 
@@ -62,10 +62,10 @@ def formattedClsResults(results={}, cl=None, cl2=None, usePlSeed=None):
 def resultsOneCL(llkName=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
-    f = ra1.driver(signalToTest=signal,
-                   whiteList=signal.categories(),
-                   llkName=llkName,
-                   )
+    f = driver(signalToTest=signal,
+               whiteList=signal.categories(),
+               llkName=llkName,
+               )
 
     method = configuration.limit.method()
     plSeedParams = configuration.limit.plSeedParams(signal.binaryExclusion)

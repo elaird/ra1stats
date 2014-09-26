@@ -222,7 +222,7 @@ class base(object):
         """
 
         self.checkHcgImpl()
-        assert not signal
+        #assert not signal
         print "Implement signal (including muon contamination)!"
 
         dirName = "l"+self._name
@@ -231,6 +231,7 @@ class base(object):
 
         fileNames = []
         for sel in self.selections():
+            print sel
             if sel.universalSystematics:
                 print "Fail universalSystematics: skipping", sel
                 continue
@@ -247,7 +248,9 @@ class base(object):
             f.close()
             fileNames.append(fileName)
 
+        print fileNames
         return fileNames
+        
 
 
     def preparedSelection(self, sel):
@@ -388,8 +391,8 @@ class base(object):
                  "observation".ljust(w1) + "  ".join([iFmt % x[1]    for x in obs]),
                  hyphens,
                  "bin".ljust(w1)         + "  ".join([x[0].rjust(w2) for x in rates]),
-                 "process".ljust(w1)     + "  ".join([iFmt % x[1]    for x in rates]),
                  "process".ljust(w1)     + "  ".join([x[2].rjust(w2) for x in rates]),
+                 "process".ljust(w1)     + "  ".join([iFmt % x[1]    for x in rates]),
                  "rate".ljust(w1)        + "  ".join([rFmt % x[3]    for x in rates]),
                  hyphens,
                  "lumi lnN".ljust(w1)    + "  ".join([(sFmt % x) if x else "-".rjust(w2) for x in lumiUncs]),

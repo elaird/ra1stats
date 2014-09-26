@@ -6,12 +6,6 @@ import optparse
 def opts():
     parser = optparse.OptionParser("usage: %prog [options]")
 
-    parser.add_option("--hcg",
-                      dest="hcg",
-                      default=False,
-                      action="store_true",
-                      help="use HCG ``combine'' tool for bestFit")
-
     parser.add_option("--ignoreHad",
                       dest="ignoreHad",
                       default=False,
@@ -237,7 +231,7 @@ def significances(whiteList=[], selName="", options=None):
         model.insert(selName, {"effHad": effs,
                                "effUncRel":0.01}) # dummy}
 
-        f = drv(signalToTest=model,
+        f = driver(signalToTest=model,
                 llkName=options.llk,
                 whiteList=whiteList,
                 ignoreHad=options.ignoreHad,
@@ -270,7 +264,7 @@ def go(selections=[], options=None, hMap=None):
                 if item in ["system", "bestFit"]:
                     continue
 
-                if item in ["genBands", "hcg", "ignoreHad", "interval", "plotBands", "significances", "simultaneous"]:
+                if item in ["genBands", "ignoreHad", "interval", "plotBands", "significances", "simultaneous"]:
                     if getattr(options, item):
                         cmd.append("--%s" % item)
                 elif item == "category":
@@ -292,7 +286,7 @@ def go(selections=[], options=None, hMap=None):
                                            options=options)
             continue
 
-        f = drv(llkName=options.llk,
+        f = driver(llkName=options.llk,
                 whiteList=whiteList,
                 ignoreHad=options.ignoreHad,
                 separateSystObs=not options.genBands,
@@ -368,10 +362,7 @@ if __name__ == "__main__":
     # before other imports so that --help is not stolen by pyROOT
     options = opts()
 
-    if options.hcg:
-        from driver.hcg import driver as drv
-    else:
-        from driver.ra1 import driver as drv
+    from driver import driver
 
     import os
     import likelihood
