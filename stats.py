@@ -142,33 +142,13 @@ def pbatch(queue=None, debug=False) :
                                                               args=args)
                 subCmds.append(cmd)
             elif configuration.batch.batchHost == "FNAL" :
-                star = False
-                dstar = True
-                from condor import submitBatchJob
-                qFunc = submitBatchJob
-                pwd = configuration.batch.workingDir()
-                f = open(pointfile, 'r')
-                ipoint=0
-                for line in f: #Looping over mass points, which is read from pointfile
-                    jc = pwd+" "+configuration.batch.envScript()+" "+"/dev/null "+line.strip('\n')
-                    point=line.strip('\n')
-                    cmd = {
-                        "jobCmd": "./job.sh %s" % (jc),
-                        "indexDict": { "dir": "condor_batch", "ind": ipoint },
-                        "subScript": configuration.batch.subCmd(),
-                        "jobScript": "job.sh",
-                        "condorTemplate": "condor/fnal_cmsTemplate.condor",
-                        "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh"
-                        }
-                    ipoint=ipoint+1
-                    subCmds.append(cmd)
+                print "pbatch option not availabe at LPC, try --batch=0"
+
     if debug:
         for cmd in subCmds:
             print cmd
-    if configuration.batch.batchHost == "IC" :
+    if configuration.batch.batchHost != "FNAL" :
         utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
-    elif configuration.batch.batchHost == "FNAL" :
-        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
 
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
@@ -180,6 +160,7 @@ def batch(nSlices = None, offset = None, skip = False) :
     if configuration.batch.batchHost == "IC" :
         subCmds = ["%s %s"%(configuration.batch.subCmd(), jobCmd) for jobCmd in jcs]
         qFunc = os.system
+        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
     elif configuration.batch.batchHost == "FNAL" :
         dstar = True
         # replaces os.system in the below example
@@ -191,9 +172,9 @@ def batch(nSlices = None, offset = None, skip = False) :
                         "subScript": configuration.batch.subCmd(),
                         "jobScript": "job.sh",
                         "condorTemplate": "condor/fnal_cmsTemplate.condor",
-                        "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh"
+                        "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
                     } for i,jc in enumerate(jcs) ]
-    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
+        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
     if warning : print warning
 ############################################
 def local(nWorkers = None, skip = False) :

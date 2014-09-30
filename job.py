@@ -102,10 +102,6 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
 def compare(item, threshold):
     return 2.0*(item < threshold)-1.0
 
-def pickledoutFileName(name, xBin, yBin, zBin):
-    if configuration.batch.batchHost == "FNAL":
-      scratchdir = os.environ['_CONDOR_SCRATCH_DIR']
-    return {"IC": "%s/%s_%d_%d_%d.pickled" % ("jobIO", name, xBin, yBin, zBin), "FNAL": "%s/%s_%d_%d_%d.pickled" % (scratchdir, name, xBin, yBin, zBin)}[configuration.batch.batchHost]
 
 def go():
     llk = {}
@@ -114,7 +110,10 @@ def go():
 
     for point in points():
         name = point[0]
-        fileName = pickledoutFileName(*point)+".out"
+        if configuration.batch.batchHost == "FNAL":
+          fileName = configuration.directories.FNALpickledFileName(*point)+".out"
+        elif configuration.batch.batchHost == "IC":
+          fileName = configuration.directories.pickledFileName(*point)+".out"
         utils.writeNumbers(fileName,
                            onePoint(llkName=llk[name],
                                     point=point),

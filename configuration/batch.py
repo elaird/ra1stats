@@ -2,7 +2,12 @@ import os
 
 pwd = os.environ["PWD"]
 
-batchHost = ["FNAL", "IC"][0]
+hostname = os.environ["HOSTNAME"]
+if "fnal.gov" in hostname:
+    batchHost = "FNAL"
+else:
+    if "hep.ph.ic.ac.uk" in hostname:
+        batchHost = "IC"
 
 icQueues = {"short":  {"ncores": 336, "factor":  1.},
             "medium": {"ncores": 116, "factor":  6.},
