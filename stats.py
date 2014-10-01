@@ -201,15 +201,15 @@ if options.batch:
     if configuration.batch.batchHost:
         batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
     else:
-        sys.exit("Check configuration.batch.batchHost")
+        sys.exit("ERROR: add configuration for this site in configuration.batch")
 
 if options.local  : local(nWorkers = int(options.local), skip = options.skip)
 if options.merge  : pickling.mergePickledFiles(respectWhiteList=options.respectWhiteList)
 if options.pbatch:
     if configuration.batch.batchHost == "IC":
         pbatch(options.queue)
-    elif configuration.batch.batchHost == "FNAL":
-        sys.exit("pbatch option not available at LPC, try --batch=0")
+    else:
+        sys.exit("ERROR: option --pbatch not available at this site: try --batch=0")
 
 
 if options.merge or options.validation :
