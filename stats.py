@@ -132,14 +132,11 @@ def pbatch(queue=None, debug=False) :
             #continue
             start = i*n_jobs_max + 1
             end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
-
             base_cmd = configuration.batch.subCmdFormat() % q_name
-            qFunc=os.system
             cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
                                                               start=start, end=end,
                                                               args=args)
             subCmds.append(cmd)
-
     if debug:
         for cmd in subCmds:
             print cmd
