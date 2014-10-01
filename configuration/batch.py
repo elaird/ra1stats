@@ -32,8 +32,9 @@ def nJobsMax():
     return {"IC": 2000, "FNAL": 1000}.get(batchHost, 1)
 
 
-def subCmd(icQueue="medium"):
-    assert icQueue in icQueues, icQueue
-    return {"IC": "qsub -o /dev/null -e /dev/null -q hep%s.q" % icQueue,
-            "FNAL": "condor_submit",
-            }[batchHost]
+def subCmd():
+    if batchHost == "IC":
+        icQueue = "short"
+        return "qsub -o /dev/null -e /dev/null -q hep%s.q" % icQueue
+    elif batchHost == "FNAL":
+        return "condor_submit"
