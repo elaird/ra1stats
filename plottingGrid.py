@@ -1,3 +1,4 @@
+import configuration.batch
 import configuration.directories
 import configuration.limit
 import configuration.signal
@@ -53,7 +54,7 @@ def printOnce(model=None, canvas=None, fileName="", alsoC=False, factor=0.6, ali
 
     canvas.Print(fileName)
     
-    if configuration.directories.batchHost == "FNAL":
+    if configuration.batch.batchHost == "FNAL":
         utils.ps2pdf(fileName, True, True) #option at LPC
     else:
         utils.epsToPdf(fileName)
