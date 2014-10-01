@@ -25,7 +25,6 @@ def opts() :
     return options
 ############################################
 def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
-    import configuration.batch 
     points = pointList()
     if not offset : pickling.writeSignalFiles(points, outFilesAlso = skip)
     if not nSlices : nSlices = len(points)
