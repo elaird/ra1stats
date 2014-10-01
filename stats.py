@@ -2,6 +2,7 @@
 
 from optparse import OptionParser
 import os
+import sys
 
 
 def opts() :
@@ -91,7 +92,7 @@ def pjobCmds(queue=None) :
                        3:"/dev/null" }
             args = [argDict[key] for key in sorted(argDict.keys())]
             out[q_name]["args"].append("%s %s" %(" ".join(args),filename))
-    return out, n_points, filename
+    return out, n_points
 
 def pointsToFile( filename, points ) :
     file = open( filename, 'w')
@@ -121,11 +122,10 @@ def getQueueRanges( npoints, queue=None ) :
 
 ############################################
 def pbatch(queue=None, debug=False) :
-    queue_job_details, n_points, pointfile = pjobCmds(queue)
+    queue_job_details, n_points = pjobCmds(queue)
     n_jobs_max = configuration.batch.nJobsMax()
 
     subCmds = []
-
     for q_name, details in queue_job_details.iteritems():
         for i, args in enumerate(details["args"]):
             #print "{q} => {a}".format( q=q_name, a=args )
@@ -134,20 +134,16 @@ def pbatch(queue=None, debug=False) :
             end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
 
             base_cmd = configuration.batch.subCmdFormat() % q_name
-            if configuration.batch.batchHost == "IC" : 
-                qFunc=os.system
-                cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
+            qFunc=os.system
+            cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
                                                               start=start, end=end,
                                                               args=args)
-                subCmds.append(cmd)
-            elif configuration.batch.batchHost == "FNAL" :
-                print "pbatch option not availabe at LPC, try --batch=0"
+            subCmds.append(cmd)
 
     if debug:
         for cmd in subCmds:
             print cmd
-    if configuration.batch.batchHost != "FNAL" :
-        utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
@@ -208,7 +204,12 @@ cpp.compile()
 if options.batch  : batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
 if options.local  : local(nWorkers = int(options.local), skip = options.skip)
 if options.merge  : pickling.mergePickledFiles(respectWhiteList=options.respectWhiteList)
-if options.pbatch : pbatch(options.queue)
+if options.pbatch:
+    if configuration.batch.batchHost == "IC":
+        pbatch(options.queue)
+    elif configuration.batch.batchHost == "FNAL":
+        sys.exit("pbatch option not available at LPC, try --batch=0")
+
 
 if options.merge or options.validation :
     plottingGrid.makePlots()
