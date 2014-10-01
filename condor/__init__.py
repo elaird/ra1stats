@@ -1,5 +1,7 @@
 import os
-def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobScriptFileName_format=None, doCopy=False) :
+import configuration.directories
+
+def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate, jobScriptFileName_format=None, doCopy=False) :
     if jobScriptFileName_format == None :
         jobScriptFileName_format = "%(base)s/%(tag)s/%(sample)s/job%(iSlice)d.sh"
     jobScriptFileName = jobScriptFileName_format%indexDict
@@ -9,6 +11,8 @@ def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobS
         os.system("cp -p "+jobScript+" "+jobScriptFileName)
         os.system("chmod +x "+jobScriptFileName)
     mode = "a" if doCopy else "w"
+    jobScriptFileName="%s/%s"%(os.environ["PWD"],jobScriptFileName)
+    print jobScriptFileName
     with open(jobScriptFileName, mode) as file :
         print >>file
         for item in ["PYTHONPATH", "LD_LIBRARY_PATH"] :
@@ -21,8 +25,13 @@ def submitBatchJob(jobCmd, indexDict, subScript, jobScript, condorTemplate ,jobS
     if os.path.exists(condorTemplate) :
         condorFileName = jobScriptFileName.replace(".sh",".condor")
         os.system("cat %s | sed s@JOBFLAG@%s@g > %s"%(condorTemplate, jobScriptFileName, condorFileName))
+        # outdir = "./ra1stats/"+configuration.directories.job()
+        # os.system("cat %s | sed s@JOBFLAG@%s@g | sed s@OUTFLAG@%s@g | sed s@INFLAG@%s@g > %s"%(condorTemplate, jobScriptFileName, outdir, os.environ["PWD"] , condorFileName)) ###this comment is kept because it is a slower method in LPC LL
         arg = condorFileName
     else :
         arg = jobScriptFileName
-    subCmd = "%s %s"%(subScript, arg)
+    subCmd = "%s %s"%(subScript,arg)
+    print subCmd
+    os.chdir(os.environ["PWD"]+"/"+configuration.directories.job())
     os.system(subCmd)
+    os.chdir(os.environ["PWD"])

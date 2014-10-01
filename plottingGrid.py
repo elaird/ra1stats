@@ -52,7 +52,12 @@ def printOnce(model=None, canvas=None, fileName="", alsoC=False, factor=0.6, ali
             latex.DrawLatex(stamp['xpos'], stamp['ypos'], stamp['text'])
 
     canvas.Print(fileName)
-    utils.epsToPdf(fileName)
+    
+    if configuration.directories.batchHost == "FNAL":
+        utils.ps2pdf(fileName, True, True) #option at LPC
+    else:
+        utils.epsToPdf(fileName)
+    
     if alsoC:
         canvas.Print(fileName.replace(".eps", ".C"))
 

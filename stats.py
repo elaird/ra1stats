@@ -25,7 +25,7 @@ def opts() :
     return options
 ############################################
 def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
-    pwd = os.environ["PWD"]
+    import configuration.batch 
     points = pointList()
     if not offset : pickling.writeSignalFiles(points, outFilesAlso = skip)
     if not nSlices : nSlices = len(points)
@@ -44,6 +44,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     if (iFinish!=nSlices) and iFinish!=0 :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
     #assert iStart<iFinish,warning
+    pwd = configuration.batch.workingDir()
     for iSlice in range(iStart, iFinish) :
         argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:configuration.batch.envScript(),
                    3:"%s/%s/job_%d.log"%(pwd, logDir, iSlice) if options.output else "/dev/null"}
@@ -91,7 +92,7 @@ def pjobCmds(queue=None) :
                        3:"/dev/null" }
             args = [argDict[key] for key in sorted(argDict.keys())]
             out[q_name]["args"].append("%s %s" %(" ".join(args),filename))
-    return out, n_points
+    return out, n_points, filename
 
 def pointsToFile( filename, points ) :
     file = open( filename, 'w')
@@ -121,37 +122,46 @@ def getQueueRanges( npoints, queue=None ) :
 
 ############################################
 def pbatch(queue=None, debug=False) :
-    queue_job_details, n_points = pjobCmds(queue)
+    queue_job_details, n_points, pointfile = pjobCmds(queue)
     n_jobs_max = configuration.batch.nJobsMax()
 
     subCmds = []
+
     for q_name, details in queue_job_details.iteritems():
         for i, args in enumerate(details["args"]):
             #print "{q} => {a}".format( q=q_name, a=args )
             #continue
             start = i*n_jobs_max + 1
             end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
+
             base_cmd = configuration.batch.subCmdFormat() % q_name
-            cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
+            if configuration.batch.batchHost == "IC" : 
+                qFunc=os.system
+                cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
                                                               start=start, end=end,
                                                               args=args)
-            subCmds.append(cmd)
+                subCmds.append(cmd)
+            elif configuration.batch.batchHost == "FNAL" :
+                print "pbatch option not availabe at LPC, try --batch=0"
+
     if debug:
         for cmd in subCmds:
             print cmd
-    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    if configuration.batch.batchHost != "FNAL" :
+        utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip,
-            ignoreScript = (configuration.batchHost=="FNAL"))
+            ignoreScript = (configuration.batch.batchHost=="FNAL"))
     subCmds = []
     star = False
     dstar = False
-    if configuration.batchHost == "IC" :
+    if configuration.batch.batchHost == "IC" :
         subCmds = ["%s %s"%(configuration.batch.subCmd(), jobCmd) for jobCmd in jcs]
         qFunc = os.system
-    elif configuration.batchHost == "FNAL" :
+        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
+    elif configuration.batch.batchHost == "FNAL" :
         dstar = True
         # replaces os.system in the below example
         from condor import submitBatchJob
@@ -159,12 +169,12 @@ def batch(nSlices = None, offset = None, skip = False) :
         subCmds = [ {
                         "jobCmd": "./job.sh %s" % (jc),
                         "indexDict": { "dir": "condor_batch", "ind": i },
-                        "subScript": conf.getSubCmds(),  # FIXME
+                        "subScript": configuration.batch.subCmd(),
                         "jobScript": "job.sh",
                         "condorTemplate": "condor/fnal_cmsTemplate.condor",
                         "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
                     } for i,jc in enumerate(jcs) ]
-    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
+        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
     if warning : print warning
 ############################################
 def local(nWorkers = None, skip = False) :

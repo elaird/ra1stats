@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import sys
-
+import os
 import configuration.directories
 import configuration.limit
 import configuration.signal
 from driver import ra1
 import utils
+import configuration.batch
 
 
 def points():
@@ -109,7 +110,10 @@ def go():
 
     for point in points():
         name = point[0]
-        fileName = configuration.directories.pickledFileName(*point)+".out"
+        if configuration.batch.batchHost == "FNAL":
+          fileName = configuration.directories.FNALpickledFileName(*point)+".out"
+        elif configuration.batch.batchHost == "IC":
+          fileName = configuration.directories.pickledFileName(*point)+".out"
         utils.writeNumbers(fileName,
                            onePoint(llkName=llk[name],
                                     point=point),

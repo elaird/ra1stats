@@ -8,7 +8,8 @@ if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
     BASEDIR=/vols/cms02/elaird1/18_root_from_afs/lcg/
     ROOTVER="5.32.01"
 elif [[ "$HOSTNAME" == *.fnal.gov ]]; then
-    BASEDIR=/uscms_data/d1/samr/18_root_from_afs/lcg/
+    # BASEDIR=/uscms_data/d1/samr/18_root_from_afs/lcg/
+    BASEDIR=./532env_fnal/
     ROOTVER="5.32.01"
 else
     BASEDIR=/afs/cern.ch/sw/lcg/
@@ -16,12 +17,15 @@ else
 fi
 
 if [[ "$BASEDIR" ]]; then
-    source ${BASEDIR}/contrib/gcc/${GCCVER}/${TAG}/setup.sh ${BASEDIR}/contrib
-    source ${BASEDIR}/app/releases/ROOT/${ROOTVER}/root/bin/thisroot.sh
+    if [[ "$HOSTNAME" != *.fnal.gov ]]; then
+        source ${BASEDIR}/contrib/gcc/${GCCVER}/${TAG}/setup.sh ${BASEDIR}/contrib
+        source ${BASEDIR}/app/releases/ROOT/${ROOTVER}/root/bin/thisroot.sh
 
-    export PATH=${BASEDIR}/contrib/gcc/${GCCVER}/${TAG}/bin:${PATH}
-    export LD_LIBRARY_PATH=${BASEDIR}/contrib/gcc/${GCCVER}/${TAG}/lib64:${LD_LIBRARY_PATH}
+        export PATH=${BASEDIR}/contrib/gcc/${GCCVER}/${TAG}/bin:${PATH}
+        export LD_LIBRARY_PATH=${BASEDIR}/contrib/gcc/${GCCVER}/${TAG}/lib64:${LD_LIBRARY_PATH}
 
-    export PATH=${BASEDIR}/external/Python/${PYVER}/${TAG}/bin:${PATH}
-    export LD_LIBRARY_PATH=${BASEDIR}/external/Python/${PYVER}/${TAG}/lib:${LD_LIBRARY_PATH}
+        export PATH=${BASEDIR}/external/Python/${PYVER}/${TAG}/bin:${PATH}
+        export LD_LIBRARY_PATH=${BASEDIR}/external/Python/${PYVER}/${TAG}/lib:${LD_LIBRARY_PATH}
+    elif [[ "$HOSTNAME" == *.fnal.gov ]]; then
+        source ${BASEDIR}/setup.sh
 fi
