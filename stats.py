@@ -147,15 +147,12 @@ def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip,
             ignoreScript = (configuration.batch.batchHost=="FNAL"))
     subCmds = []
-    star = False
-    dstar = False
     if configuration.batch.batchHost == "IC" :
+        dstar = False
         subCmds = ["%s %s"%(configuration.batch.subCmd(), jobCmd) for jobCmd in jcs]
         qFunc = os.system
-        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
     elif configuration.batch.batchHost == "FNAL" :
         dstar = True
-        # replaces os.system in the below example
         from condor import submitBatchJob
         qFunc = submitBatchJob
         subCmds = [ {
@@ -166,8 +163,10 @@ def batch(nSlices = None, offset = None, skip = False) :
                         "condorTemplate": "condor/fnal_cmsTemplate.condor",
                         "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
                     } for i,jc in enumerate(jcs) ]
-        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
-    if warning : print warning
+
+    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star=False, dstar=dstar), subCmds)
+    if warning:
+        print warning
 ############################################
 def local(nWorkers = None, skip = False) :
     jcs,warning = jobCmds(skip = skip)
@@ -198,7 +197,12 @@ import utils
 mkdirs()
 cpp.compile()
 
-if options.batch  : batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
+if options.batch:
+    if configuration.batch.batchHost:
+        batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
+    else:
+        sys.exit("Check configuration.batch.batchHost")
+
 if options.local  : local(nWorkers = int(options.local), skip = options.skip)
 if options.merge  : pickling.mergePickledFiles(respectWhiteList=options.respectWhiteList)
 if options.pbatch:
