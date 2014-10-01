@@ -1,8 +1,8 @@
 if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
     . /vols/cms/grid/setup.sh
     LOC=/vols/sl5_exp_software/cms
-
 elif [[ "$HOSTNAME" == *.fnal.gov ]]; then
+    source /uscmst1/prod/sw/cms/shrc prod
     LOC=/uscmst1/prod/sw/cms/ #LL
 else
     LOC=/afs/cern.ch/cms
