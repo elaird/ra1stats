@@ -44,7 +44,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     if (iFinish!=nSlices) and iFinish!=0 :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
     #assert iStart<iFinish,warning
-    pwd = configuration.batch.workingDir()
+    pwd = os.environ["PWD"]
     for iSlice in range(iStart, iFinish) :
         argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:configuration.batch.envScript(),
                    3:"%s/%s/job_%d.log"%(pwd, logDir, iSlice) if options.output else "/dev/null"}

@@ -37,7 +37,3 @@ def subCmd(icQueue="medium"):
     return {"IC": "qsub -o /dev/null -e /dev/null -q hep%s.q" % icQueue,
             "FNAL": "condor_submit",
             }[batchHost]
-
-
-def workingDir():
-    return os.environ["PWD"]
