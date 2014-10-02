@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import sys
 
+import sys
 import configuration.directories
 import configuration.limit
 import configuration.signal
-# from driver import ra1
 from driver import driver
 import utils
 
@@ -64,14 +63,9 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
     f = driver(signalToTest=signal,
-                   whiteList=signal.categories(),
-                   llkName=llkName,
-                   )
-
-    # pass signal model to dumpHcgCards to get correct rates
-    #f.likelihoodSpec.dumpHcgCards(signal)
-
-    #exit()
+               whiteList=signal.categories(),
+               llkName=llkName,
+               )
 
     method = configuration.limit.method()
     plSeedParams = configuration.limit.plSeedParams(signal.binaryExclusion)
