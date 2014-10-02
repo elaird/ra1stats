@@ -199,7 +199,7 @@ cpp.compile()
 
 if options.batch:
     if configuration.batch.batchHost:
-        if configuration.batch.batchHost == "FNAL" and os.getcwd().startswith("/uscms/home/"):
+        if configuration.batch.batchHost == "FNAL" and os.environ["PWD"].startswith("/uscms/home/"):
             sys.exit("\n".join(["ERROR: at FNAL, batch jobs cannot be submitted from /uscms/home/",
                                 "Try, e.g., from /uscms_data/d2/${USER}",
                                 ]))
