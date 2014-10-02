@@ -77,12 +77,14 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
             results = f.clsCustom(nToys=configuration.limit.nToys(),
                                   testStatType=configuration.limit.testStatistic(),
                                   )
+        elif "hcg"in f.note():
+            results = f.cls()
         else:
-            results = f.cls(#cl=cl,
-                            #nToys=configuration.limit.nToys(),
-                            #testStatType=configuration.limit.testStatistic(),
-                            #calculatorType=configuration.limit.calculatorType(),
-                            #plSeedParams=plSeedParams,
+            results = f.cls(cl=cl,
+                            nToys=configuration.limit.nToys(),
+                            testStatType=configuration.limit.testStatistic(),
+                            calculatorType=configuration.limit.calculatorType(),
+                            plSeedParams=plSeedParams,
                             )
         out.update(formattedClsResults(results, *fArgs))
     else:
