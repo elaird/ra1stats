@@ -29,6 +29,11 @@ def xs():
     return "xs"
 
 
-def pickledFileName(name, xBin, yBin, zBin):
-    d = os.environ.get("_CONDOR_SCRATCH_DIR", job())  # for FNAL worker nodes
-    return "%s/%s_%d_%d_%d.pickled" % (d, name, xBin, yBin, zBin)
+def pickledFileName(name, xBin, yBin, zBin, out=False):
+    stem = "%s_%d_%d_%d.pickled" % (name, xBin, yBin, zBin)
+    if out:
+        d = os.environ.get("_CONDOR_SCRATCH_DIR", job())  # for FNAL worker nodes
+        return "%s/%s.out" % (d, stem)
+    else:
+        return "%s/%s.in" % (job(), stem)
+
