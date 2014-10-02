@@ -54,11 +54,7 @@ def printOnce(model=None, canvas=None, fileName="", alsoC=False, factor=0.6, ali
 
     canvas.Print(fileName)
     
-    if configuration.batch.batchHost == "FNAL":
-        utils.ps2pdf(fileName, True, True) #option at LPC
-    else:
-        utils.epsToPdf(fileName)
-    
+    utils.epsToPdf(fileName, tight=(configuration.batch.batchHost != "FNAL"))
     if alsoC:
         canvas.Print(fileName.replace(".eps", ".C"))
 
