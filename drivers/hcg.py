@@ -209,64 +209,9 @@ class driver(object):
             plotter = plotting.validationPlotter(args)
             plotter.go()
 
+
     def checkInputs(self):
         pass
-
-    # def cls(self, cl = 0.95, nToys = 300, calculatorType = "", testStatType = 3, plusMinus = {}, makePlots = False, nWorkers = 1, plSeedParams = {}) :
-    #     args = {}
-    #     out = {}
-    #     if plSeedParams["usePlSeed"] :
-    #         plUpperLimit = self.interval(cl = cl, nIterationsMax = plSeedParams["plNIterationsMax"])["upperLimit"]
-    #         out["PlUpperLimit"] = plUpperLimit
-    #         args["nPoints"] = plSeedParams["nPoints"]
-    #         args["poiMin"] = plUpperLimit*plSeedParams["minFactor"]
-    #         args["poiMax"] = plUpperLimit*plSeedParams["maxFactor"]
-
-    #         s = self.wspace.set("poi"); assert s.getSize()==1
-    #         if s.first().getMin() : s.first().setMin(0.0)
-    #         if args["poiMax"]>s.first().getMax() : s.first().setMax(args["poiMax"])
-
-    #     out2 = calc.cls(dataset = self.data, modelconfig = self.modelConfig, wspace = self.wspace, smOnly = self.smOnly(),
-    #                     cl = cl, nToys = nToys, calculatorType = calculatorType, testStatType = testStatType,
-    #                     plusMinus = plusMinus, nWorkers = nWorkers, note = self.note(), makePlots = makePlots, **args)
-    #     out.update(out2)
-    #     return out
-
-    def interval(self, cl = 0.95, method = "profileLikelihood", makePlots = False,
-                 nIterationsMax = 1, lowerItCut = 0.1, upperItCut = 0.9, itFactor = 3.0) :
-
-        hack = False
-        if hack :
-            print "HACK!"
-            d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
-            d["nIterations"] = 1
-            s = self.wspace.set("poi"); assert s.getSize()==1
-            s.first().setMax(40.0)
-            s.first().setMin(0.0)
-            return d
-
-        for i in range(nIterationsMax) :
-            d = self.intervalSimple(cl = cl, method = method, makePlots = makePlots)
-            d["nIterations"] = i+1
-            if nIterationsMax==1 : return d
-
-            s = self.wspace.set("poi"); assert s.getSize()==1
-            m = s.first().getMax()
-            if d["upperLimit"]>upperItCut*m :
-                s.first().setMax(m*itFactor)
-                s.first().setMin(m/itFactor)
-            elif d["upperLimit"]<lowerItCut*m :
-                s.first().setMax(m/itFactor)
-            else :
-                break
-        return d
-
-    def intervalSimple(self, cl = None, method = "", makePlots = None) :
-        if method=="profileLikelihood" :
-            return calc.plInterval(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(),
-                                   cl = cl, poiList = self.likelihoodSpec.poiList(), makePlots = makePlots)
-        elif method=="feldmanCousins" :
-            return fcExcl(self.data, self.modelConfig, self.wspace, self.note(), self.smOnly(), cl = cl, makePlots = makePlots)
 
 
     def smOnly(self) :
