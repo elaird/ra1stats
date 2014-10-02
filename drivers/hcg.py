@@ -1,5 +1,4 @@
 import os
-import calc
 import likelihood
 import plotting
 import workspace
@@ -104,8 +103,6 @@ class driver(object):
         cmd.append("> %s" % cardName)
         os.system(" ".join(cmd))
         
-        #exit(cmd)
-
         fit = ["combine",
                "-M MaxLikelihoodFit",
                "--saveWorkspace",
