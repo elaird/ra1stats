@@ -222,7 +222,6 @@ class base(object):
         """
 
         self.checkHcgImpl()
-        #assert not signal
         print "Implement signal (including muon contamination)!"
 
         dirName = "l"+self._name
@@ -247,9 +246,7 @@ class base(object):
             f.close()
             fileNames.append(fileName)
 
-        print fileNames
         return fileNames
-        
 
 
     def preparedSelection(self, sel, signal={}):
@@ -278,7 +275,6 @@ class base(object):
                        "phot": ["phot"],
                        "mumu": ["mumu"],
                        }
-            # procDct['had'] = ['ttw', 'zinv']
 
         obsDct = sel.data.observations()
         mcExp = sel.data.mcExpectations()
