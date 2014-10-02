@@ -7,7 +7,6 @@
 universe = vanilla
 
 Executable = JOBFLAG
-
 Requirements = target.OpSys == "LINUX"
 
 Should_Transfer_Files = YES

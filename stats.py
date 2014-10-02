@@ -2,6 +2,7 @@
 
 from optparse import OptionParser
 import os
+import sys
 
 
 def opts() :
@@ -25,7 +26,6 @@ def opts() :
     return options
 ############################################
 def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
-    import configuration.batch 
     points = pointList()
     if not offset : pickling.writeSignalFiles(points, outFilesAlso = skip)
     if not nSlices : nSlices = len(points)
@@ -44,7 +44,7 @@ def jobCmds(nSlices = None, offset = 0, skip = False, ignoreScript=False) :
     if (iFinish!=nSlices) and iFinish!=0 :
         warning += "  Re-run with --offset=%d when your jobs have completed."%(1+offset)
     #assert iStart<iFinish,warning
-    pwd = configuration.batch.workingDir()
+    pwd = os.environ["PWD"]
     for iSlice in range(iStart, iFinish) :
         argDict = {0:"%s/job.sh"%pwd, 1:pwd, 2:configuration.batch.envScript(),
                    3:"%s/%s/job_%d.log"%(pwd, logDir, iSlice) if options.output else "/dev/null"}
@@ -92,7 +92,7 @@ def pjobCmds(queue=None) :
                        3:"/dev/null" }
             args = [argDict[key] for key in sorted(argDict.keys())]
             out[q_name]["args"].append("%s %s" %(" ".join(args),filename))
-    return out, n_points, filename
+    return out, n_points
 
 def pointsToFile( filename, points ) :
     file = open( filename, 'w')
@@ -122,48 +122,37 @@ def getQueueRanges( npoints, queue=None ) :
 
 ############################################
 def pbatch(queue=None, debug=False) :
-    queue_job_details, n_points, pointfile = pjobCmds(queue)
+    queue_job_details, n_points = pjobCmds(queue)
     n_jobs_max = configuration.batch.nJobsMax()
 
     subCmds = []
-
     for q_name, details in queue_job_details.iteritems():
         for i, args in enumerate(details["args"]):
             #print "{q} => {a}".format( q=q_name, a=args )
             #continue
             start = i*n_jobs_max + 1
             end   = min(i*n_jobs_max + n_jobs_max, details["n_points"])
-
             base_cmd = configuration.batch.subCmdFormat() % q_name
-            if configuration.batch.batchHost == "IC" : 
-                qFunc=os.system
-                cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
+            cmd = "{subcmd} -t {start}-{end}:1 {args}".format(subcmd=base_cmd,
                                                               start=start, end=end,
                                                               args=args)
-                subCmds.append(cmd)
-            elif configuration.batch.batchHost == "FNAL" :
-                print "pbatch option not availabe at LPC, try --batch=0"
-
+            subCmds.append(cmd)
     if debug:
         for cmd in subCmds:
             print cmd
-    if configuration.batch.batchHost != "FNAL" :
-        utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
+    utils.operateOnListUsingQueue(4, utils.qWorker(os.system, star = False), subCmds)
 
 ############################################
 def batch(nSlices = None, offset = None, skip = False) :
     jcs,warning = jobCmds(nSlices = nSlices, offset = offset, skip = skip,
             ignoreScript = (configuration.batch.batchHost=="FNAL"))
     subCmds = []
-    star = False
-    dstar = False
     if configuration.batch.batchHost == "IC" :
+        dstar = False
         subCmds = ["%s %s"%(configuration.batch.subCmd(), jobCmd) for jobCmd in jcs]
         qFunc = os.system
-        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
     elif configuration.batch.batchHost == "FNAL" :
         dstar = True
-        # replaces os.system in the below example
         from condor import submitBatchJob
         qFunc = submitBatchJob
         subCmds = [ {
@@ -174,8 +163,10 @@ def batch(nSlices = None, offset = None, skip = False) :
                         "condorTemplate": "condor/fnal_cmsTemplate.condor",
                         "jobScriptFileName_format": "%(dir)s/job_%(ind)d.sh",
                     } for i,jc in enumerate(jcs) ]
-        utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star = star, dstar = dstar), subCmds)
-    if warning : print warning
+
+    utils.operateOnListUsingQueue(4, utils.qWorker(qFunc, star=False, dstar=dstar), subCmds)
+    if warning:
+        print warning
 ############################################
 def local(nWorkers = None, skip = False) :
     jcs,warning = jobCmds(skip = skip)
@@ -206,10 +197,25 @@ import utils
 mkdirs()
 cpp.compile()
 
-if options.batch  : batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
+if options.batch:
+    if configuration.batch.batchHost:
+        if configuration.batch.batchHost == "FNAL" and os.environ["PWD"].startswith("/uscms/home/"):
+            sys.exit("\n".join(["ERROR: at FNAL, batch jobs cannot be submitted from /uscms/home/",
+                                "Try, e.g., from /uscms_data/d2/${USER}",
+                                ]))
+        else:
+            batch(nSlices=int(options.batch), offset=int(options.offset), skip=options.skip)
+    else:
+        sys.exit("ERROR: add configuration for this site in configuration.batch")
+
 if options.local  : local(nWorkers = int(options.local), skip = options.skip)
 if options.merge  : pickling.mergePickledFiles(respectWhiteList=options.respectWhiteList)
-if options.pbatch : pbatch(options.queue)
+if options.pbatch:
+    if configuration.batch.batchHost == "IC":
+        pbatch(options.queue)
+    else:
+        sys.exit("ERROR: option --pbatch not available at this site: try --batch=0")
+
 
 if options.merge or options.validation :
     plottingGrid.makePlots()
