@@ -31,58 +31,6 @@ class driver(object):
         print "FIXME: rewrite __init__"
 
 
-        #UNCOMMENTED HERE DON'T REALLY KNOW WHAT IT DOES
-
-        # self.wspace = r.RooWorkspace("Workspace")
-
-        # args = {}
-        # args["w"] = self.wspace
-        # args["smOnly"] = self.smOnly()
-        # args["injectSignal"] = self.injectSignal()
-
-        # for item in ["separateSystObs", "poi", "REwk", "RQcd", "nFZinv",
-        #              "constrainQcdSlope", "qcdParameterIsYield",
-        #              "initialValuesFromMuonSample", "initialFZinvFromMc"] :
-        #     args[item] = getattr(self.likelihoodSpec, item)()
-
-        # if not self.smOnly():
-        #     args["sigMcUnc"] = self.signalToTest.sigMcUnc
-        #     if self.signalToTest.binaryExclusion:
-        #         ini, min, max = self.likelihoodSpec.poi()["f"]
-        #         assert min <= 1.0, min
-        #         assert 1.0 <= max, max
-
-        #     args["rhoSignalMin"] = self.likelihoodSpec.rhoSignalMin()
-        #     workspace.startLikelihood(w=self.wspace,
-        #                               xs=self.signalToTest.xs,
-        #                               sumWeightIn=self.signalToTest.sumWeightIn,
-        #                               poi=self.likelihoodSpec.poi())
-
-        # total = {}
-        # for sel in self.likelihoodSpec.selections():
-        #     args["selection"] = sel
-        #     args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
-        #     args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
-        #     args["systematicsLabel"] = self.systematicsLabel(sel.name)
-        #     args["kQcdLabel"] = self.kQcdLabel(sel.name)
-
-        #     d = workspace.setupLikelihood(**args)
-        #     for key, value in d.iteritems():
-        #         if key not in total:
-        #             total[key] = []
-        #         total[key] += value
-
-        # workspace.finishLikelihood(w=self.wspace,
-        #                            smOnly=self.smOnly(),
-        #                            standard=self.likelihoodSpec.standardPoi(),
-        #                            poiDict=self.likelihoodSpec.poi(),
-        #                            **total)
-
-
-        # self.data = workspace.dataset(workspace.obs(self.wspace))
-        # self.modelConfig = workspace.modelConfiguration(self.wspace)
-
-
     def compute(self, attr="", ch="", verbose=False):
         allX = getattr(self.wspace, attr)()
         it = allX.createIterator()
