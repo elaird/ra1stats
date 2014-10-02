@@ -109,7 +109,7 @@ def mergePickledFiles(printExamples=False, respectWhiteList=False):
                                 ])
 
     for name, iX, iY, iZ in hp.points(respectWhiteList=respectWhiteList):
-        fileName = configuration.directories.pickledFileName(name, iX, iY, iZ)+".out"
+        fileName = configuration.directories.pickledFileName(name, iX, iY, iZ, out=True)
         if not os.path.exists(fileName):
             print "skipping file", fileName
             continue
