@@ -210,10 +210,13 @@ def divideCanvas( canvas, ratioCanvas = True, dimension = 1, nhistos = 0 ) :
             else :      my+=1
         canvas.Divide(mx,my)
 #####################################
+
 def ps2pdf(psFileName, removePs = True, sameDir = False) :
     cmd = ("ps2pdf %s"%psFileName) if not sameDir else ("ps2pdf %s %s"%(psFileName, psFileName.replace(".ps", ".pdf")))
     os.system(cmd)
     if removePs : os.remove(psFileName)
+    print "INFO: %s has been written."%psFileName.replace(".ps",".pdf")
+
 #####################################
 def epsToPdf(fileName, tight = True, alsoPng = False) :
     pdfFileName = fileName.replace(".eps", ".pdf")

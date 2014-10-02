@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import sys
 
+import sys
 import configuration.directories
 import configuration.limit
 import configuration.signal
@@ -25,7 +25,7 @@ def description(key, cl=None):
 
 
 def onePoint(llkName=None, point=None):
-    fileName = configuration.directories.pickledFileName(*point)+".in"
+    fileName = configuration.directories.pickledFileName(*point)
     signal = utils.readNumbers(fileName=fileName)
     print signal
     if configuration.limit.method() and signal.anyEffHad():
@@ -109,7 +109,7 @@ def go():
 
     for point in points():
         name = point[0]
-        fileName = configuration.directories.pickledFileName(*point)+".out"
+        fileName = configuration.directories.pickledFileName(*point, out=True)
         utils.writeNumbers(fileName,
                            onePoint(llkName=llk[name],
                                     point=point),

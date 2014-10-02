@@ -25,7 +25,7 @@ def method():
             "profileLikelihood",
             "feldmanCousins",
             "CLs",
-            "CLsCustom"][1]
+            "CLsCustom"][4]
 
 
 def multiplesInGeV():
