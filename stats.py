@@ -199,7 +199,12 @@ cpp.compile()
 
 if options.batch:
     if configuration.batch.batchHost:
-        batch(nSlices = int(options.batch), offset = int(options.offset), skip = options.skip)
+        if configuration.batch.batchHost == "FNAL" and os.getcwd().startswith("/uscms/home/"):
+            sys.exit("\n".join(["ERROR: at FNAL, batch jobs cannot be submitted from /uscms/home/",
+                                "Try, e.g., from /uscms_data/d2/${USER}",
+                                ]))
+        else:
+            batch(nSlices=int(options.batch), offset=int(options.offset), skip=options.skip)
     else:
         sys.exit("ERROR: add configuration for this site in configuration.batch")
 
