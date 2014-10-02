@@ -28,7 +28,7 @@ def description(key, cl=None):
 def onePoint(llkName=None, point=None):
     fileName = configuration.directories.pickledFileName(*point)+".in"
     signal = utils.readNumbers(fileName=fileName)
-
+    print signal  # useful for copy-paste from stdout
     if configuration.limit.method() and signal.anyEffHad():
         return signal, resultsMultiCL(llkName=llkName,
                                       signal=signal,
