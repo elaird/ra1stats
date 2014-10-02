@@ -177,7 +177,7 @@ class driver(object):
 
         results = self.setWspace()
 
-        note = self.note() + "_hcg"
+        note = self.note()
         if self.injectSignal():
             note += "_SIGNALINJECTED"
 
@@ -231,8 +231,11 @@ class driver(object):
         if any(k) : assert not k.index(True)
         return name if sum(k)!=1 else selections[k.index(True)].name
 
-    def note(self) :
-        return self.likelihoodSpec.note()+("_signal" if not self.smOnly() else "")
+    def note(self):
+        out = self.likelihoodSpec.note()
+        if not self.smOnly():
+            out += "_signal"
+        return out + "_hcg"  # 'hcg' used in job.py
 
     def plotterArgs(self, selection) :
         def activeBins(selection) :
