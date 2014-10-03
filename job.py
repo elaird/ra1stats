@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import sys
 
+import sys
 import configuration.directories
 import configuration.limit
 import configuration.signal
-# from driver import ra1
 from driver import driver
 import utils
 
@@ -28,7 +27,7 @@ def description(key, cl=None):
 def onePoint(llkName=None, point=None):
     fileName = configuration.directories.pickledFileName(*point)+".in"
     signal = utils.readNumbers(fileName=fileName)
-
+    print signal  # useful for copy-paste from stdout
     if configuration.limit.method() and signal.anyEffHad():
         return signal, resultsMultiCL(llkName=llkName,
                                       signal=signal,
@@ -64,14 +63,9 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
     out = {}
     cl2 = 100*cl
     f = driver(signalToTest=signal,
-                   whiteList=signal.categories(),
-                   llkName=llkName,
-                   )
-
-    # pass signal model to dumpHcgCards to get correct rates
-    #f.likelihoodSpec.dumpHcgCards(signal)
-
-    #exit()
+               whiteList=signal.categories(),
+               llkName=llkName,
+               )
 
     method = configuration.limit.method()
     plSeedParams = configuration.limit.plSeedParams(signal.binaryExclusion)
@@ -83,12 +77,14 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
             results = f.clsCustom(nToys=configuration.limit.nToys(),
                                   testStatType=configuration.limit.testStatistic(),
                                   )
+        elif "hcg"in f.note():
+            results = f.cls()
         else:
-            results = f.cls(#cl=cl,
-                            #nToys=configuration.limit.nToys(),
-                            #testStatType=configuration.limit.testStatistic(),
-                            #calculatorType=configuration.limit.calculatorType(),
-                            #plSeedParams=plSeedParams,
+            results = f.cls(cl=cl,
+                            nToys=configuration.limit.nToys(),
+                            testStatType=configuration.limit.testStatistic(),
+                            calculatorType=configuration.limit.calculatorType(),
+                            plSeedParams=plSeedParams,
                             )
         out.update(formattedClsResults(results, *fArgs))
     else:

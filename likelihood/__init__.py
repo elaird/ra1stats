@@ -222,8 +222,11 @@ class base(object):
         """
 
         self.checkHcgImpl()
-        #assert not signal
-        print "Implement signal (including muon contamination)!"
+        print "\n".join(["Implement signal, including:",
+                         "- trigger efficiency",
+                         "- muon contamination",
+                         "- point-by-point uncertainties",
+                         ])
 
         dirName = "l"+self._name
         if not os.path.exists(dirName):
@@ -247,9 +250,7 @@ class base(object):
             f.close()
             fileNames.append(fileName)
 
-        print fileNames
         return fileNames
-        
 
 
     def preparedSelection(self, sel, signal={}):
@@ -278,7 +279,6 @@ class base(object):
                        "phot": ["phot"],
                        "mumu": ["mumu"],
                        }
-            # procDct['had'] = ['ttw', 'zinv']
 
         obsDct = sel.data.observations()
         mcExp = sel.data.mcExpectations()
@@ -286,9 +286,8 @@ class base(object):
         systBins = sel.data.systBins()
         fixedPs = sel.data.fixedParameters()
 
-        sigmaLumiLike = signal.effs(sel.name)['effUncRel'] if signal else None
-
-
+        #  FIXME: improve sigmaLumiLike
+        sigmaLumiLike = signal.effs(sel.name)['effUncRel'] if signal else fixedPs.get("sigmaLumiLike")
         if not sigmaLumiLike:
             sigmaLumiLike = 0.10
             print "WARNING: using fake sigmaLumiLike for %s: %g" % (sel.name, sigmaLumiLike)
@@ -342,13 +341,13 @@ class base(object):
                         if signal:
                             pointEff = signal.effs(sel.name)['effHad'][iBin]
                             pointXs = signal.xs
+                            # FIXME: add trigger efficiency here
                             rate = pointEff * pointXs * lumiDct['had']
                             lumiUncs.append(1.0 + sigmaLumiLike)
                         else:
                             rate = 1e-6 # set to 1e-6, because 0 crashes it
                             lumiUncs.append(1.0 + sigmaLumiLike)
-                        # rate = 1.23456789
-                         # add point uncertainty here
+                        # add point uncertainty here
 
                     rates.append((name, iProc, proc, rate))
 

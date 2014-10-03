@@ -140,9 +140,7 @@ def killPoints(h, cutFunc=None, interBin=""):
 
 ##signal-related histograms
 def xsHisto(model=None):
-    # if model.binaryExclusion:
-    if True:
-        print "!!!HACK-A-PALOOZA!!!"
+    if model.binaryExclusion:
         cmssmProcess = "" if model.isSms else "total"
         return xsHistoPhysical(model=model, cmssmProcess=cmssmProcess)
     else:
