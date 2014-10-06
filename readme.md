@@ -4,19 +4,23 @@
 [GPLv3](http://www.gnu.org/licenses/gpl.html)
 
 ## Quick Start
-1. Clone the repository:
+####Clone the repository
 ```bash
 git clone https://github.com/elaird/ra1stats.git
 cd ra1stats
 git submodule update --init
 ```
 
-2. If needed, set up the environment:
+####Choose an environment
 ```bash
-source env.sh
+source env-ra1.sh
+```
+#####or
+```bash
+source env-hcg.sh
 ```
 
-3. Run it:
+####Run it
 ```bash
 ./stats.py --help
 ./test.py --help
