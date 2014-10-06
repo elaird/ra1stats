@@ -17,7 +17,7 @@ def dev():
            "unweightedHistName": "m0_m12_mChi_noweight",
            "sigMcUnc": False,
            "binaryExclusion": False,
-           "flatEffUncRel": True,
+           "flatEffUncRel": False,
            "exampleKargs": exampleArgs(),
            "com": 8,
            "llk": "2012dev",
