@@ -10,8 +10,12 @@ elif [[ "$HOSTNAME" == *.cern.ch ]]; then
     cd /afs/cern.ch/cms/${ETC}
 fi
 
-rm -rf driver
-rm -f driver.py
+
+if [ -d "driver" ]; then
+   echo "ERROR: please remove the directory 'driver'."
+fi
+
+rm -f driver.py driver.pyc
 ln -s drivers/ra1.py driver.py
 
 rm -f env.sh
