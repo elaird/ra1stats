@@ -1,6 +1,6 @@
 import math
 from configuration.signal import pruned, processStamp
-from inputData import pb
+from ra1i import pb
 from . import point
 
 m400_25 = point(xs=0.35683, sumWeightIn=98755.7, sigMcUnc=False, binaryExclusion=False, x=387.5, y=12.5)

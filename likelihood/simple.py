@@ -14,7 +14,7 @@ class simple(likelihood.base):
         self._RQcd = "Zero"
         self._nFZinv = "All"
         self._legendTitle = "SIMPLE TEST"
-        from inputData.dataMisc import simpleOneBin as module
+        from ra1i.dataMisc import simpleOneBin as module
         self.add([
                 likelihood.selection(name="test",
                                      boxes=["simple"],

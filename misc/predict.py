@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from inputData import data2011
+from ra1i import data2011
 import math,array
 import ROOT as r
 

@@ -17,7 +17,7 @@ class l2012hcp(likelihood.base):
         self._legendTitle = "11.7 fb^{-1}, #sqrt{s} = 8 TeV"
         if cms:
             self._legendTitle = "CMS, " + self._legendTitle
-        exec "from inputData.data2012hcp import %s as module"%moduleName
+        exec "from ra1i.data2012hcp import %s as module"%moduleName
 
         #QCD test
         if False :
@@ -25,7 +25,7 @@ class l2012hcp(likelihood.base):
             self._constrainQcdSlope = False
             self._initialValuesFromMuonSample = True
             self._legendTitle += "[NO MHT/MET CUT]"
-            from inputData.data2012hcp import take15a as module
+            from ra1i.data2012hcp import take15a as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :

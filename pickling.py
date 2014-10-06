@@ -5,7 +5,7 @@ import configuration.directories
 import configuration.limit
 import configuration.signal
 import histogramProcessing as hp
-from inputData import rootToTxt
+from ra1i import rootToTxt
 import signals
 
 import ROOT as r
