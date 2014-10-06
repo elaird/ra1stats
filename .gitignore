@@ -1,3 +1,6 @@
+driver.py
+env.sh
+
 *~
 *.pyc
 plots*
