@@ -77,7 +77,7 @@ def resultsOneCL(llkName=None, signal=None, cl=None):
             results = f.clsCustom(nToys=configuration.limit.nToys(),
                                   testStatType=configuration.limit.testStatistic(),
                                   )
-        elif "hcg"in f.note():
+        elif "hcg" in f.note():
             results = f.cls()
         else:
             results = f.cls(cl=cl,
