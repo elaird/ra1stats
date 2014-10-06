@@ -11,5 +11,8 @@ elif [[ "$HOSTNAME" == *.cern.ch ]]; then
 fi
 
 rm -rf driver
-rm driver.py
+rm -f driver.py
 ln -s drivers/ra1.py driver.py
+
+rm -f env.sh
+ln -s env-ra1.sh env.sh
