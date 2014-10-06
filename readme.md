@@ -25,16 +25,16 @@ source env-hcg.sh
 ```
 
 ## Brief Description
-* The likelihood function is built in workspace.py.  To fit a set of
+* The likelihood function is built in `workspace.py`.  To fit a set of
 data or test a signal model, one uses an instance of the class
 driver.driver.
 
-* test.py shows how to use an instance of driver, and will produce a
+* `test.py` shows how to use an instance of driver, and will produce a
 pdf file in the subdirectory plots.  The observations, MC yields,
 etc. are stored in inputData/.  The switches selecting options for the
 likelihood are in likelihood/.
 
-* stats.py allows one to run on many signal models in parallel, using
+* `stats.py` allows one to run on many signal models in parallel, using
 either one computer (`--local`) or a farm (`--batch`).  The results
 are merged into a root file using `--merge`.
 
