@@ -25,7 +25,7 @@ def description(key, cl=None):
 
 
 def onePoint(llkName=None, point=None):
-    fileName = configuration.directories.pickledFileName(*point)+".in"
+    fileName = configuration.directories.pickledFileName(*point)
     signal = utils.readNumbers(fileName=fileName)
     print signal  # useful for copy-paste from stdout
     if configuration.limit.method() and signal.anyEffHad():
@@ -111,7 +111,7 @@ def go():
 
     for point in points():
         name = point[0]
-        fileName = configuration.directories.pickledFileName(*point)+".out"
+        fileName = configuration.directories.pickledFileName(*point, out=True)
         utils.writeNumbers(fileName,
                            onePoint(llkName=llk[name],
                                     point=point),
