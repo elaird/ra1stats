@@ -15,7 +15,7 @@ git submodule update --init
 ```bash
 source env-ra1.sh
 ```
-#####or
+######or
 ```bash
 source env-hcg.sh
 ```
