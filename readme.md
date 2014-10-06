@@ -1,5 +1,3 @@
-# RA1STATS
-
 ## License
 [GPLv3](http://www.gnu.org/licenses/gpl.html)
 
