@@ -87,6 +87,8 @@ def printReport(report={}):
                         "nDof",
                         "  chi2",
                         " prob",
+                        "  satc",
+                        " satp",
                     ])
     print header
     print "-" * len(header)
@@ -98,6 +100,8 @@ def printReport(report={}):
                          "%4d"% dct["nDof"],
                          "%6.1f" % dct["chi2Simple"],
                          "%5.3f" % dct["chi2ProbSimple"],
+                         "%6.1f" % dct["chi2Sat"],
+                         "%5.3f" % dct["chi2ProbSat"],
                         ])
 
 
