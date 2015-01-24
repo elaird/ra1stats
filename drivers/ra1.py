@@ -463,10 +463,6 @@ class driver(object):
                                   ),
                    )
 
-        # key change
-        out["chi2ProbSimple"] = out["prob"]
-        del out["prob"]
-
         if errorsFromToys:
             pvalues = plotting.ensembleResults(note=self.note(),
                                                nToys=errorsFromToys)
