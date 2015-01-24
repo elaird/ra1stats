@@ -472,6 +472,14 @@ def poisPull(n = None, mu = None) :
     out["median"] = poisMedian(mu)
     out["mode"] = poisMode(mu)
 
+    # log(Pois(n|mu) / Pois(n|n))
+    if n == 0 and mu == 0:
+        out["llr"] = 0.0
+    elif mu != 0:
+        out["llr"] = n * r.TMath.Log(mu) - mu
+        if n != 0:
+            out["llr"] -= n * r.TMath.Log(n) - n
+
     if mu :
         out["simple"] = (n-mu)/math.sqrt(mu)
     else :
@@ -541,7 +549,10 @@ def pullsRaw(pdf = None) :
         assert m0>0.0,m0
         assert k>1.0,k
         out[("Logn", pdfName)] = {"kMinusOne": (r.TMath.Log(x)-r.TMath.Log(m0))/(k-1),
-                                  "logk": (r.TMath.Log(x)-r.TMath.Log(m0))/r.TMath.Log(k)}
+                                  "logk": (r.TMath.Log(x)-r.TMath.Log(m0))/r.TMath.Log(k),
+                                  # log(Logn(x|mu,k) / Logn(x|x,k))
+                                  "llr": -0.5 * r.TMath.Log(x/m0)**2 / r.TMath.Log(k)**2,
+                                 }
     else :
         assert False,className
     return out
@@ -623,6 +634,19 @@ def pullStats(pulls = {}, nParams = None) :
     out["nDof"] = nDof
     out["chi2ProbSimple"] = r.TMath.Prob(chi2, nDof)
     return out
+
+def pullStats2(pulls={}, nDof=None):
+    assert nDof is not None
+    chi2 = 0
+
+    for key, value in pulls.iteritems():
+        chi2 += value
+
+    chi2 *= -2.0
+    return {"chi2Sat": chi2,
+            "chi2ProbSat": r.TMath.Prob(chi2, nDof),
+           }
+
 
 def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "",
               title = "", onlyPois = False) :
