@@ -78,21 +78,27 @@ def opts():
 
 
 def printReport(report={}):
-    header = None
+    n = max([len(cat) for cat in report.keys()])
+    fmtCat = "%" + str(n) + "s"
+    header = "  ".join([fmtCat % "cat",
+                        "nBadEval",
+                        "nTerms",
+                        "nParams",
+                        "nDof",
+                        "  chi2",
+                        " prob",
+                    ])
+    print header
+    print "-" * len(header)
     for cat, dct in sorted(report.iteritems()):
-        if not header:
-            keys = sorted(dct.keys())
-            l = max([len(key) for key in keys])
-            fmt = "%"+str(l)+"s"
-            header = " ".join([fmt % "cat"] + [fmt % key for key in keys])
-            print header
-            print "-"*len(header)
-        out = [fmt % cat]
-        for key in keys:
-            value = dct[key]
-            sValue = str(value) if type(value) is int else "%6.4f" % value
-            out.append(fmt % sValue)
-        print " ".join(out)
+        print "  ".join([fmtCat % cat,
+                         "%8d" % dct["numInvalidNll"],
+                         "%6d" % dct["nTerms"],
+                         "%7d"% dct["nParams"],
+                         "%4d"% dct["nDof"],
+                         "%6.1f" % dct["chi2Simple"],
+                         "%5.3f" % dct["chi2ProbSimple"],
+                        ])
 
 
 def printNlls(nlls={}, scale=True):
@@ -383,11 +389,11 @@ if __name__ == "__main__":
                                    hMap=hMap,
                                    )
 
-    if not options.significances:
+    if options.significances:
+        printNlls(nlls)
+    else:
         plotting.pValueCategoryPlots(hMap, )  # logYMinMax=(1.0e-4, 1.0e2))
         printReport(report)
-    else:
-        printNlls(nlls)
 
     if (not options.system) and (not nCategories):
         print "WARNING: category %s not found." % options.category
