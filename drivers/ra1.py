@@ -428,6 +428,9 @@ class driver(object):
         pulls = calc.pulls(pdf=workspace.pdf(self.wspace),
                            poisKey=poisKey,
                            lognKey=lognKey)
+        pulls_sat = calc.pulls(pdf=workspace.pdf(self.wspace),
+                               poisKey="llr",
+                               lognKey="llr")
 
         title = "_".join([x.name for x in self.likelihoodSpec.selections()])
         calc.pullPlots(pulls=pulls,
@@ -462,6 +465,8 @@ class driver(object):
                                   nParams=len(workspace.floatingVars(self.wspace)),
                                   ),
                    )
+        out.update(calc.pullStats2(pulls=pulls_sat, nDof=out["nDof"]))
+
 
         if errorsFromToys:
             pvalues = plotting.ensembleResults(note=self.note(),
