@@ -617,11 +617,11 @@ def pullStats(pulls = {}, nParams = None) :
 
     out = {}
     nDof = nTerms - nParams
-    out["chi2"]    = chi2
-    out["nTerms"]  = nTerms
+    out["chi2Simple"] = chi2
+    out["nTerms"] = nTerms
     out["nParams"] = nParams
-    out["nDof"]    = nDof
-    out["prob"]    = r.TMath.Prob(chi2, nDof)
+    out["nDof"] = nDof
+    out["chi2ProbSimple"] = r.TMath.Prob(chi2, nDof)
     return out
 
 def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "",

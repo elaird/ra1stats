@@ -11,7 +11,7 @@ def collect(wspace, results, extraStructure = False) :
     out["lMax"] = -results.minNll()
     out["chi2Prob"] = calc.pullStats(pulls = calc.pulls(pdf = common.pdf(wspace), poisKey = "simple", lognKey = "kMinusOne"),
                                      nParams = len(common.floatingVars(wspace))
-                                     )["prob"]
+                                     )["chi2ProbSimple"]
 
     funcBestFit,funcLinPropError = utils.funcCollect(wspace)
     parBestFit,parError,parMin,parMax = utils.parCollect(wspace)
