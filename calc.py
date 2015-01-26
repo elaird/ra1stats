@@ -539,7 +539,10 @@ def pullsRaw(pdf = None) :
         mu = g.mean.arg().getVal()
         sigma = g.sigma.arg().getVal()
         assert sigma,sigma
-        out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma}
+        out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma,
+                                  # log(Gaus(x|mu,s) / Gaus(x|x,s))
+                                  "llr": -0.5 * (x - mu)**2 / sigma**2,
+                                  }
     elif className=="RooLognormal" :
         l = r.Lognormal(pdf)
         x = l.x.arg().getVal()

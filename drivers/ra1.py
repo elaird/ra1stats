@@ -430,6 +430,7 @@ class driver(object):
                            lognKey=lognKey)
         pulls_sat = calc.pulls(pdf=workspace.pdf(self.wspace),
                                poisKey="llr",
+                               gausKey="llr",
                                lognKey="llr")
 
         title = "_".join([x.name for x in self.likelihoodSpec.selections()])
