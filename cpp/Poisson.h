@@ -10,12 +10,8 @@ public:
   Poisson(const RooPoisson& other, const char* name=0) ;
   inline virtual ~Poisson() { }
 
-  RooRealProxy x ;
-  RooRealProxy mean ;
-
-protected:
-  Bool_t  _noRounding ;
-  Bool_t  _protectNegative ;
+  double xVal() {return x.arg().getVal();}
+  double meanVal() {return mean.arg().getVal();}
 
 private:
   ClassDef(Poisson,3)
