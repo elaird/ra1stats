@@ -1,6 +1,7 @@
-import os
+import socket
 
-hostname = os.environ["HOSTNAME"]
+
+hostname = socket.getfqdn()
 if "fnal.gov" in hostname:
     batchHost = "FNAL"
 elif "hep.ph.ic.ac.uk" in hostname:
