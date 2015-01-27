@@ -33,7 +33,7 @@ def compile(dir="cpp",
     for f in files:
         r.gSystem.CompileMacro("%s/%s" % (dir, f), "kc")
 
-    os.system("cd %s; make -s" % dir)
+    os.system("cd %s; make -s drive" % dir)
 
 
 def load(dir="cpp"):
