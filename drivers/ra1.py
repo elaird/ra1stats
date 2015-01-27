@@ -428,6 +428,8 @@ class driver(object):
         pulls = calc.pulls(pdf=workspace.pdf(self.wspace),
                            poisKey=poisKey,
                            lognKey=lognKey)
+
+        # http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf
         pulls_sat = calc.pulls(pdf=workspace.pdf(self.wspace),
                                poisKey="llr",
                                gausKey="llr",
