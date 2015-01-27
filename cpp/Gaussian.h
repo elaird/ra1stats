@@ -10,9 +10,9 @@ public:
   Gaussian(const RooGaussian& other, const char* name=0) ;
   inline virtual ~Gaussian() { }
 
-  RooRealProxy x ;
-  RooRealProxy mean ;
-  RooRealProxy sigma ;
+  double xVal() {return x.arg().getVal();}
+  double meanVal() {return mean.arg().getVal();}
+  double sigmaVal() {return sigma.arg().getVal();}
 
 private:
   ClassDef(Gaussian,1)
