@@ -480,9 +480,11 @@ def poisPull(n = None, mu = None) :
         if n != 0:
             out["llr"] -= n * r.TMath.Log(n) - n
 
-    if mu :
+    if mu:
         out["simple"] = (n-mu)/math.sqrt(mu)
-    else :
+    elif n == 0:
+        out["simple"] = 0.0
+    else:
         out["simple"] = 1000.0
 
     if float(int(n)) == n:
@@ -530,8 +532,8 @@ def pullsRaw(pdf = None) :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
         mu = p.mean.arg().getVal()
-        if not mu :
-            print "ERROR: mu=0.0 for",pdfName
+        if x and (not mu):
+            print "ERROR: mu=%g but x=%g for %s" % (mu, x, pdfName)
         out[("Pois", pdfName)] = poisPull(x, mu)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
