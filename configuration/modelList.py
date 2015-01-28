@@ -50,7 +50,8 @@ def dev():
            "llk": "2012dev",
            "interBin": "Center",
            }
-    ncats = 4
+    nregions = 1
+    ncats = 1
     models = {
         "T2cc" : [scan(dataset="T2cc",
                        had="v18",
@@ -93,7 +94,7 @@ def dev():
                             extraVars=["SITV"],
                             **new) for cut_func,cats in regions().get("T2bw_0p75") ],
         }
-    return models.get("",[]) # select model here
+    return models.get("T2cc",[])[:nregions] # select model here (was T2bw_0p25)
 
 
 def hcp():
