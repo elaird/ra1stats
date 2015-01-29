@@ -16,8 +16,8 @@ for model in configuration.signal.models():
                              #             "mGMax": 1250.,
                              #             },
                              #diagonalLine=True,
-                             expectedMapsOnly=False,
-                             observedCurves=True,
+                             expectedMapsOnly=True,
+                             observedCurves=False,
                              debug=False,
                              info=False,
                              )

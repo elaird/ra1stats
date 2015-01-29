@@ -47,7 +47,7 @@ def dev():
            "flatEffUncRel": False,
            "exampleKargs": exampleArgs(),
            "com": 8,
-           "llk": "2012dev",
+           "llk": "2015ea",
            "interBin": "Center",
            }
     nregions = 1

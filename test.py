@@ -51,8 +51,8 @@ def opts():
 
     parser.add_option("--llk",
                       dest="llk",
-                      default="2012dev",
-                      help="likelihood (defaults to 2012dev)")
+                      default="2015ea",
+                      help="likelihood (defaults to 2015ea)")
 
     parser.add_option("--interval",
                       dest="interval",
