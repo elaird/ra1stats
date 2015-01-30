@@ -25,7 +25,7 @@ def whiteListOfPoints(model="", respect=False):
     # in GeV
     return {"T1": [(700.0, 300.0)],
             "T1bbbb": [(900.0, 500.0)],
-            "T1tttt": [(850.0, 250.0)],
+            "T1tttt": [(1500.0, 100.0)],
             "T2tt": [ (112.5+(x+y)*25.,12.5+y*25.) for y in range(10) for x in range(10-y) ][1:-3],
             "T2bw_0p25": [],
             "T2bw_0p75": [],

@@ -36,8 +36,33 @@ def exampleArgs(more=True):
 
 
 def models():
-    return dev()
+    return dev2015ea()
 
+
+def dev2015ea():
+    new = {"weightedHistName": "m0_m12_mChi_weight",
+           "unweightedHistName": "m0_m12_mChi_noweight",
+           "sigMcUnc": False,
+           "binaryExclusion": False,
+           "flatEffUncRel": False,
+           "exampleKargs": exampleArgs(),
+           "com": 13,
+           "llk": "2015ea",
+           "interBin": "Center",
+           }
+    nregions = 1
+    ncats = 1
+    models = {
+        "T1tttt" : [scan(dataset="T1tttt",
+                       had="v1",
+                       #muon="v7",
+                       aT={200:"0.65",275:"0.6",325:"0.55"},
+                       region=region(""),
+                       whiteList=["3b_ge4j","2b_ge4j"],
+                       extraVars=["SITV"],
+                       **new) ],
+        }
+    return models.get("T1tttt",[]) # select model here (was T2bw_0p25)
 
 def dev():
     new = {"weightedHistName": "m0_m12_mChi_weight",

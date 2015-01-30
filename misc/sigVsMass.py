@@ -14,7 +14,7 @@ def oneHisto(hName="", label=""):
     if mode == "CL":
         stem = "CLs_asymptotic_binaryExcl"
 
-    f = r.TFile("ra1r/scan/%s/%s_T2cc_2015ea_%s.root" % (subDir, stem, label))
+    f = r.TFile("ra1r/scan/%s/%s_T2cc_2012dev_%s.root" % (subDir, stem, label))
     if f.IsZombie():
         sys.exit()
     h = f.Get(hName)
