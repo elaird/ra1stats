@@ -4,7 +4,7 @@ models = modelList.models
 
 
 def effUncRel(model=""):
-    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
+    return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.20,
             "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20, "T2_4body": 0.20,
             "T2bw_0p25": 0.20, "T2bw_0p75": 0.20, 
             "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736,
@@ -60,7 +60,7 @@ def xsHistoSpec(model=None, cmssmProcess=""):
         assert False, error
 
     base = directories.xs()
-    assert model.com in [7, 8], model.com
+    assert model.com in [7, 8, 13], model.com
     sms = "%s/v5/%dTeV.root" % (base, model.com)
 
     d = {"T2":      {"histo": "squark", "file": sms},
@@ -140,7 +140,6 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
             "weightedHistName": model.weightedHistName,
             "unweightedHistName": model.unweightedHistName}
 
-
 def effUncRelHistoSpec(model=None, box=None,
                        bJets=None, jets=None):
     assert box in ["had", "muon"], box
@@ -181,7 +180,7 @@ def ranges(model):
          "T2cc":   (87.5, 400.0),
          "T2_4body":   (87.5, 400.0),
          "T1bbbb": (287.5, 1400),
-         "T1tttt": (387.5, 1400),
+         "T1tttt": (387.5, 2000),
          "T1tttt_ichep": (375.0, 1200.0),
          "tanBeta10_7": (0.0, 4000.0),
          }
@@ -197,7 +196,7 @@ def ranges(model):
          "T2cc":    (0.0,  400),
          "T2_4body":    (0.0,  400),
          "T1bbbb":  (0.0, 1225),
-         "T1tttt":  (0.0, 1050),
+         "T1tttt":  (0.0, 2000),
          "T1tttt_ichep":  (50.0, 800.0),
          "tanBeta10_7": (0.0, 4000.0),
          }

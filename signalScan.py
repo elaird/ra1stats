@@ -43,8 +43,8 @@ class scan(object):
         out = self._dataset
         if self._tag:
             out += "_"+self._tag
-        if self._com != 8:
-            out += "_%d" % self._com
+#        if self._com != 8:
+#            out += "_%d" % self._com
         return out
 
     @property

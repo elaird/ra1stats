@@ -44,11 +44,11 @@ def dev2015ea():
            "unweightedHistName": "m0_m12_mChi_noweight",
            "sigMcUnc": False,
            "binaryExclusion": False,
-           "flatEffUncRel": False,
+           "flatEffUncRel": True,
            "exampleKargs": exampleArgs(),
            "com": 13,
            "llk": "2015ea",
-           "interBin": "Center",
+           "interBin": "LowEdge",
            }
     nregions = 1
     ncats = 1
@@ -72,7 +72,7 @@ def dev():
            "flatEffUncRel": False,
            "exampleKargs": exampleArgs(),
            "com": 8,
-           "llk": "2015ea",
+           "llk": "2012dev",
            "interBin": "Center",
            }
     nregions = 1
