@@ -472,20 +472,18 @@ def poisPull(n = None, mu = None) :
     out["median"] = poisMedian(mu)
     out["mode"] = poisMode(mu)
 
-    # log(Pois(n|mu) / Pois(n|n))
-    if n == 0 and mu == 0:
-        out["llr"] = 0.0
-    elif mu != 0:
+    if mu:
+        out["simple"] = (n-mu)/math.sqrt(mu)
+        # llr = log(Pois(n|mu) / Pois(n|n))
         out["llr"] = n * r.TMath.Log(mu) - mu
         if n != 0:
             out["llr"] -= n * r.TMath.Log(n) - n
-
-    if mu:
-        out["simple"] = (n-mu)/math.sqrt(mu)
     elif n == 0:
         out["simple"] = 0.0
+        out["llr"] = 0.0
     else:
         out["simple"] = 1000.0
+        out["llr"] = -1000.0
 
     if float(int(n)) == n:
         out["quantile"] = r.Math.poisson_cdf(int(n), mu)
