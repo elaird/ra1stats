@@ -78,7 +78,7 @@ def opts():
 
 
 def printReport(report={}):
-    n = max([len(cat) for cat in report.keys()])
+    n = max([len(cat) for cat in ["cat"] + report.keys()])
     fmtCat = "%" + str(n) + "s"
     header = "  ".join([fmtCat % "cat",
                         "nBadEval",
