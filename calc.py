@@ -472,10 +472,18 @@ def poisPull(n = None, mu = None) :
     out["median"] = poisMedian(mu)
     out["mode"] = poisMode(mu)
 
-    if mu :
+    if mu:
         out["simple"] = (n-mu)/math.sqrt(mu)
-    else :
+        # llr = log(Pois(n|mu) / Pois(n|n))
+        out["llr"] = n * r.TMath.Log(mu) - mu
+        if n != 0:
+            out["llr"] -= n * r.TMath.Log(n) - n
+    elif n == 0:
+        out["simple"] = 0.0
+        out["llr"] = 0.0
+    else:
         out["simple"] = 1000.0
+        out["llr"] = -1000.0
 
     if float(int(n)) == n:
         out["quantile"] = r.Math.poisson_cdf(int(n), mu)
@@ -522,8 +530,8 @@ def pullsRaw(pdf = None) :
         p = r.Poisson(pdf)
         x = p.x.arg().getVal()
         mu = p.mean.arg().getVal()
-        if not mu :
-            print "ERROR: mu=0.0 for",pdfName
+        if x and (not mu):
+            print "ERROR: mu=%g but x=%g for %s" % (mu, x, pdfName)
         out[("Pois", pdfName)] = poisPull(x, mu)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
@@ -531,7 +539,10 @@ def pullsRaw(pdf = None) :
         mu = g.mean.arg().getVal()
         sigma = g.sigma.arg().getVal()
         assert sigma,sigma
-        out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma}
+        out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma,
+                                  # log(Gaus(x|mu,s) / Gaus(x|x,s))
+                                  "llr": -0.5 * (x - mu)**2 / sigma**2,
+                                  }
     elif className=="RooLognormal" :
         l = r.Lognormal(pdf)
         x = l.x.arg().getVal()
@@ -541,7 +552,10 @@ def pullsRaw(pdf = None) :
         assert m0>0.0,m0
         assert k>1.0,k
         out[("Logn", pdfName)] = {"kMinusOne": (r.TMath.Log(x)-r.TMath.Log(m0))/(k-1),
-                                  "logk": (r.TMath.Log(x)-r.TMath.Log(m0))/r.TMath.Log(k)}
+                                  "logk": (r.TMath.Log(x)-r.TMath.Log(m0))/r.TMath.Log(k),
+                                  # log(Logn(x|mu,k) / Logn(x|x,k))
+                                  "llr": -0.5 * r.TMath.Log(x/m0)**2 / r.TMath.Log(k)**2,
+                                 }
     else :
         assert False,className
     return out
@@ -617,12 +631,25 @@ def pullStats(pulls = {}, nParams = None) :
 
     out = {}
     nDof = nTerms - nParams
-    out["chi2"]    = chi2
-    out["nTerms"]  = nTerms
+    out["chi2Simple"] = chi2
+    out["nTerms"] = nTerms
     out["nParams"] = nParams
-    out["nDof"]    = nDof
-    out["prob"]    = r.TMath.Prob(chi2, nDof)
+    out["nDof"] = nDof
+    out["chi2ProbSimple"] = r.TMath.Prob(chi2, nDof)
     return out
+
+def pullStats2(pulls={}, nDof=None):
+    assert nDof is not None
+    chi2 = 0
+
+    for key, value in pulls.iteritems():
+        chi2 += value
+
+    chi2 *= -2.0
+    return {"chi2Sat": chi2,
+            "chi2ProbSat": r.TMath.Prob(chi2, nDof),
+           }
+
 
 def pullPlots(pulls = {}, poisKey = "", gausKey = "simple", lognKey = "", threshold = 2.0, yMax = 3.5, note = "", plotsDir = "",
               title = "", onlyPois = False) :
