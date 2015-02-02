@@ -2,6 +2,9 @@ CC=g++
 CFLAGS=-Wall -Wextra
 ROOT=`root-config --cflags --libs` -lRooFitCore -lRooFit -lRooStats -I${ROOFITSYS}/include  -L${ROOFITSYS}/lib
 SO=-shared -fPIC
+PDF=PDFs.cpp
+HS=Poisson.h Gaussian.h Lognormal.h
+CXXS=Poisson.cxx Gaussian.cxx Lognormal.cxx
 
 all: drive StandardHypoTestInvDemo_cxx.so PDFs.so
 
@@ -11,13 +14,9 @@ drive: drive.cxx
 StandardHypoTestInvDemo_cxx.so: StandardHypoTestInvDemo.cxx
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $< -o $@
 
-PDFs.so: Poisson.h Poisson.cxx Gaussian.h Gaussian.cxx Lognormal.h Lognormal.cxx
-	rootcling PDFs.cpp Poisson.h Gaussian.h Lognormal.h LinkDef.h
-	$(CC) $(CFLAGS) $(SO) $(ROOT) Poisson.cxx Gaussian.cxx Lognormal.cxx PDFs.cpp -o $@
+PDFs.so: $(HS) $(CXXS)
+	rootcling $(PDF) $(HS) LinkDef.h
+	$(CC) $(CFLAGS) $(SO) $(ROOT) $(CXXS) $(PDF) -o $@
 
 clean:
-	rm -f drive
-	rm -f PDFs.cpp
-	rm -f *.pcm
-	rm -f *.d
-	rm -f *.so
+	rm -f drive $(PDF) *.pcm *.d *.so
