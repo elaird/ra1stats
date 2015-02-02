@@ -2,7 +2,7 @@ import ROOT as r
 import os
 
 
-def compile(dir="cpp",
+def compile_old(dir="cpp",
             files=["StandardHypoTestInvDemo.cxx",
                    #"NckwWorkspace.cxx", "RooLognormal2.cxx",
                    "Poisson.cxx", "Gaussian.cxx", "Lognormal.cxx",
@@ -34,6 +34,10 @@ def compile(dir="cpp",
         r.gSystem.CompileMacro("%s/%s" % (dir, f), "kc")
 
     os.system("cd %s; make -s drive" % dir)
+
+
+def compile(dir="cpp"):
+    os.system("cd %s; make -s" % dir)
 
 
 def load(dir="cpp"):
