@@ -9,12 +9,15 @@ drive: drive.cxx
 	$(CC) $(CFLAGS) $(ROOT) $< -o $@
 
 Poisson_cxx.so: Poisson.h Poisson.cxx
+	genreflex Poisson.h -s classes.xml
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $< -o $@
 
 Gaussian_cxx.so: Gaussian.h Gaussian.cxx
+	genreflex Gaussian.h -s classes.xml
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $< -o $@
 
 Lognormal_cxx.so: Lognormal.h Lognormal.cxx
+	genreflex Lognormal.h -s classes.xml
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $< -o $@
 
 StandardHypoTestInvDemo_cxx.so: StandardHypoTestInvDemo.cxx
@@ -22,7 +25,7 @@ StandardHypoTestInvDemo_cxx.so: StandardHypoTestInvDemo.cxx
 
 clean:
 	rm -f drive
-	rm -f Poisson_cxx.so
-	rm -f Gaussian_cxx.so
-	rm -f Lognormal_cxx.so
-	rm -f StandardHypoTestInvDemo_cxx.so
+	rm -f *.cpp
+	rm -f *.pcm
+	rm -f *.d
+	rm -f *.so
