@@ -11,7 +11,7 @@ import utils
 import ROOT as r
 
 
-cpp.load()
+cpp.load_and_test()
 
 def plInterval(dataset, modelconfig, wspace, note, smOnly, cl = None, makePlots = True, poiList = []) :
     assert poiList
@@ -528,16 +528,16 @@ def pullsRaw(pdf = None) :
             out.update(pullsRaw(pdfList[i]))
     elif className=="RooPoisson" :
         p = r.Poisson(pdf)
-        x = p.x.arg().getVal()
-        mu = p.mean.arg().getVal()
+        x = p.xVal()
+        mu = p.meanVal()
         if x and (not mu):
             print "ERROR: mu=%g but x=%g for %s" % (mu, x, pdfName)
         out[("Pois", pdfName)] = poisPull(x, mu)
     elif className=="RooGaussian" :
         g = r.Gaussian(pdf)
-        x = g.x.arg().getVal()
-        mu = g.mean.arg().getVal()
-        sigma = g.sigma.arg().getVal()
+        x = g.xVal()
+        mu = g.meanVal()
+        sigma = g.sigmaVal()
         assert sigma,sigma
         out[("Gaus", pdfName)] = {"simple": (x-mu)/sigma,
                                   # log(Gaus(x|mu,s) / Gaus(x|x,s))
@@ -545,9 +545,9 @@ def pullsRaw(pdf = None) :
                                   }
     elif className=="RooLognormal" :
         l = r.Lognormal(pdf)
-        x = l.x.arg().getVal()
-        m0 = l.m0.arg().getVal()
-        k = l.k.arg().getVal()
+        x = l.xVal()
+        m0 = l.m0Val()
+        k = l.kVal()
         assert x>0.0,x
         assert m0>0.0,m0
         assert k>1.0,k
