@@ -429,6 +429,12 @@ class driver(object):
                            poisKey=poisKey,
                            lognKey=lognKey)
 
+        # http://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf
+        pulls_sat = calc.pulls(pdf=workspace.pdf(self.wspace),
+                               poisKey="llr",
+                               gausKey="llr",
+                               lognKey="llr")
+
         title = "_".join([x.name for x in self.likelihoodSpec.selections()])
         calc.pullPlots(pulls=pulls,
                        poisKey=poisKey,
@@ -462,10 +468,8 @@ class driver(object):
                                   nParams=len(workspace.floatingVars(self.wspace)),
                                   ),
                    )
+        out.update(calc.pullStats2(pulls=pulls_sat, nDof=out["nDof"]))
 
-        # key change
-        out["chi2ProbSimple"] = out["prob"]
-        del out["prob"]
 
         if errorsFromToys:
             pvalues = plotting.ensembleResults(note=self.note(),
