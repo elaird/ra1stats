@@ -13,11 +13,11 @@ StandardHypoTestInvDemo_cxx.so: StandardHypoTestInvDemo.cxx
 
 PDFs.so: Poisson.h Poisson.cxx Gaussian.h Gaussian.cxx Lognormal.h Lognormal.cxx
 	rootcling PDFs.cpp Poisson.h Gaussian.h Lognormal.h LinkDef.h
-	$(CC) $(CFLAGS) $(SO) $(ROOT) Poisson.cxx Gaussian.cxx Lognormal.cxx PDFs.cpp $< -o $@
+	$(CC) $(CFLAGS) $(SO) $(ROOT) Poisson.cxx Gaussian.cxx Lognormal.cxx PDFs.cpp -o $@
 
 clean:
 	rm -f drive
-	rm -f *.cpp
+	rm -f PDFs.cpp
 	rm -f *.pcm
 	rm -f *.d
 	rm -f *.so
