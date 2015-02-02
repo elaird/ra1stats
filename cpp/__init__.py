@@ -45,8 +45,7 @@ def compile_make(dir="cpp"):
 
 def compile():
     if __root6:
-        #compile_make()
-        compile_aclic()
+        compile_make()
     else:
         compile_aclic()
 
@@ -54,7 +53,10 @@ def compile():
 def load(dir="cpp"):
     r.gSystem.AddDynamicPath(dir)
     libs = ["StandardHypoTestInvDemo_cxx"]
-    libs += ["Gaussian_cxx", "Lognormal_cxx", "Poisson_cxx"]
+    if __root6:
+        libs.append("PDFs")
+    else:
+        libs += ["Gaussian_cxx", "Lognormal_cxx", "Poisson_cxx"]
     for name in libs:
         r.gSystem.Load("%s.so" % name)
 
