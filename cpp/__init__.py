@@ -2,9 +2,6 @@ import ROOT as r
 import os
 
 
-__root6 = r.gROOT.GetVersion().startswith("6.")
-
-
 def compile_aclic(dir="cpp",
                   files=["StandardHypoTestInvDemo.cxx",
                          #"NckwWorkspace.cxx", "RooLognormal2.cxx",
@@ -39,25 +36,13 @@ def compile_aclic(dir="cpp",
     os.system("cd %s; make -s drive" % dir)
 
 
-def compile_make(dir="cpp"):
-    os.system("cd %s; make -s" % dir)
-
-
-def compile():
-    if __root6:
-        compile_make()
-    else:
-        compile_aclic()
+def compile(dir="cpp", target="all"):
+    os.system("cd %s; make -s %s" % (dir, target))
 
 
 def load(dir="cpp"):
     r.gSystem.AddDynamicPath(dir)
-    libs = ["StandardHypoTestInvDemo_cxx"]
-    if __root6:
-        libs.append("PDFs")
-    else:
-        libs += ["Gaussian_cxx", "Lognormal_cxx", "Poisson_cxx"]
-    for name in libs:
+    for name in ["StandardHypoTestInvDemo_cxx", "PDFs"]:
         r.gSystem.Load("%s.so" % name)
 
 
