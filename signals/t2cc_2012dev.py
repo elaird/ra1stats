@@ -1,6 +1,6 @@
 import math
 from configuration.signal import pruned, processStamp
-from inputData import pb
+from ra1i import pb
 from . import point
 
 

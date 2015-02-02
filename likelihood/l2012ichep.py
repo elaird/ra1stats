@@ -13,7 +13,7 @@ class l2012ichep(likelihood.base):
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS Preliminary, 3.9 fb^{-1}, #sqrt{s} = 8 TeV"
-        from inputData.data2012hcp import take5_unweighted as module
+        from ra1i.data2012hcp import take5_unweighted as module
 
         self.add([
                 likelihood.selection(name = "55_0b",

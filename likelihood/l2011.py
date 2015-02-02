@@ -15,9 +15,9 @@ class l2011(likelihood.base):
         self._nFZinv = "Two"
         self._legendTitle = "CMS, L = 4.98 fb^{-1}, #sqrt{s} = 7 TeV"
         if updated :
-            from inputData.data2011reorg import take3 as module
+            from ra1i.data2011reorg import take3 as module
         else :
-            from inputData.data2011reorg import take1 as module
+            from ra1i.data2011reorg import take1 as module
 
         self.add([likelihood.selection(name = "55_0b",
                                        note = "%s= 0"%likelihood.nb,

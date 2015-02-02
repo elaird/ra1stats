@@ -17,23 +17,23 @@ class l2012dev(likelihood.base):
         self._nFZinv = "All"
         self._legendTitle = "CMS Preliminary, 18.7 fb^{-1}, #sqrt{s} = 8 TeV"
 
-        #from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff as module
-        from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit as module
+        #from ra1i.data2012dev import take13_blind_nHadFromFitWithTrigEff as module
+        from ra1i.data2012dev import take13_semiBlind_nHadFromBlueFit as module
 
-        #from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff_withSignal as module
-        #from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit_withSignal as module
+        #from ra1i.data2012dev import take13_blind_nHadFromFitWithTrigEff_withSignal as module
+        #from ra1i.data2012dev import take13_semiBlind_nHadFromBlueFit_withSignal as module
 
-        #from inputData.data2012dev import take13_blind_nHadFromFitWithTrigEff_withT2ttSignal as module
-        #from inputData.data2012dev import take13_semiBlind_nHadFromBlueFit_withT2ttSignal as module
+        #from ra1i.data2012dev import take13_blind_nHadFromFitWithTrigEff_withT2ttSignal as module
+        #from ra1i.data2012dev import take13_semiBlind_nHadFromBlueFit_withT2ttSignal as module
 
-        #from inputData.data2012dev import take13 as module
+        #from ra1i.data2012dev import take13 as module
 
         #QCD test
         if False :
             print "WARNING: QCD test"
             self._constrainQcdSlope = False
             self._legendTitle += "[NO MHT/MET CUT]"
-            from inputData.data2012hcp import take15a as module
+            from ra1i.data2012hcp import take15a as module
 
         lst = []
         for b in ["0", "1", "2", "3", "ge4"] :

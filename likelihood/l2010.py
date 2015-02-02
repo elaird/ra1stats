@@ -14,7 +14,7 @@ class l2010(likelihood.base):
         self._RQcd = "FallingExp"
         self._nFZinv = "Two"
         self._legendTitle = "CMS (re-analyzed), L = 35 pb^{-1}, #sqrt{s} = 7 TeV"
-        from inputData.dataMisc import orig as module
+        from ra1i.dataMisc import orig as module
 
         self.add([likelihood.selection(name="55",
                                        boxes={"had":True, "muon":True, "phot":False}.keys(),
