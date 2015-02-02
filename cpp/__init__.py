@@ -2,12 +2,15 @@ import ROOT as r
 import os
 
 
-def compile(dir="cpp",
-            files=["StandardHypoTestInvDemo.cxx",
-                   #"NckwWorkspace.cxx", "RooLognormal2.cxx",
-                   "Poisson.cxx", "Gaussian.cxx", "Lognormal.cxx",
-                   ],
-            ):
+__root6 = r.gROOT.GetVersion().startswith("6.")
+
+
+def compile_aclic(dir="cpp",
+                  files=["StandardHypoTestInvDemo.cxx",
+                         #"NckwWorkspace.cxx", "RooLognormal2.cxx",
+                         "Poisson.cxx", "Gaussian.cxx", "Lognormal.cxx",
+                         ],
+                  ):
     root = "`root-config --cflags --libs`"
     flags = " -W".join(["", "all", "extra"])
     incPaths = " -I".join(["", "${ROOFITSYS}/include"]) if os.environ.get("ROOFITSYS") else ""
@@ -36,7 +39,28 @@ def compile(dir="cpp",
     os.system("cd %s; make -s drive" % dir)
 
 
+def compile_make(dir="cpp"):
+    os.system("cd %s; make -s" % dir)
+
+
+def compile():
+    if __root6:
+        #compile_make()
+        compile_aclic()
+    else:
+        compile_aclic()
+
+
 def load(dir="cpp"):
     r.gSystem.AddDynamicPath(dir)
-    for name in ["Gaussian", "Lognormal", "Poisson", "StandardHypoTestInvDemo"]:
-        r.gSystem.Load("%s_cxx.so" % name)
+    libs = ["StandardHypoTestInvDemo_cxx"]
+    libs += ["Gaussian_cxx", "Lognormal_cxx", "Poisson_cxx"]
+    for name in libs:
+        r.gSystem.Load("%s.so" % name)
+
+
+def load_and_test():
+    load()
+    x = r.Poisson
+    x = r.Gaussian
+    x = r.Lognormal
