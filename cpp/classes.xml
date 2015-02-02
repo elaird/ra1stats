@@ -1,0 +1,5 @@
+<lcgdict>
+ <class name="Poisson"/>
+ <class name="Gaussian"/>
+ <class name="Lognormal"/>
+</lcgdict>
