@@ -8,7 +8,7 @@ CXXS=Poisson.cxx Gaussian.cxx Lognormal.cxx
 
 RV=$(shell root-config --version | cut -c 1)
 ifeq ($(RV), 6)
-	RC=rootcling $(PDF) $(HS) LinkDef.h
+	RC=rootcling -f $(PDF) $(HS) LinkDef.h
 endif
 ifeq ($(RV), 5)
 	RC=rootcint -f $(PDF) -c -I${ROOFITSYS}/include $(HS) LinkDef.h
@@ -27,4 +27,4 @@ PDFs.so: $(HS) $(CXXS)
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $(CXXS) $(PDF) -o $@
 
 clean:
-	rm -f drive $(PDF) *.pcm *.d *.so
+	rm -f drive PDFs.h $(PDF) *.pcm *.d *.so
