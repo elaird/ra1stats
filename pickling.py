@@ -69,11 +69,11 @@ def writeSignalFiles(points=[], outFilesAlso=False):
     for point in points:
         name = point[0]
         signal = signalModel(modelName=name, point3=point[1:], **args[name])
-        stem = configuration.directories.pickledFileName(*point)
-        utils.writeNumbers(fileName=stem+".in", d=signal)
-        if not outFilesAlso:
-            continue
-        utils.writeNumbers(fileName=stem+".out", d=signal)
+        inFile = configuration.directories.pickledFileName(*point)
+        utils.writeNumbers(fileName=inFile, d=signal)
+        if outFilesAlso:
+            outFile = configuration.directories.pickledFileName(*point, out=True)
+            utils.writeNumbers(fileName=outFile, d=signal)
 
 
 def contents(fileName):
@@ -109,7 +109,7 @@ def mergePickledFiles(printExamples=False, respectWhiteList=False):
                                 ])
 
     for name, iX, iY, iZ in hp.points(respectWhiteList=respectWhiteList):
-        fileName = configuration.directories.pickledFileName(name, iX, iY, iZ)+".out"
+        fileName = configuration.directories.pickledFileName(name, iX, iY, iZ, out=True)
         if not os.path.exists(fileName):
             print "skipping file", fileName
             continue

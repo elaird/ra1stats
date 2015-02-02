@@ -6,12 +6,6 @@ import optparse
 def opts():
     parser = optparse.OptionParser("usage: %prog [options]")
 
-    parser.add_option("--hcg",
-                      dest="hcg",
-                      default=False,
-                      action="store_true",
-                      help="use HCG ``combine'' tool for bestFit")
-
     parser.add_option("--ignoreHad",
                       dest="ignoreHad",
                       default=False,
@@ -84,21 +78,31 @@ def opts():
 
 
 def printReport(report={}):
-    header = None
+    n = max([len(cat) for cat in ["cat"] + report.keys()])
+    fmtCat = "%" + str(n) + "s"
+    header = "  ".join([fmtCat % "cat",
+                        "nBadEval",
+                        "nTerms",
+                        "nParams",
+                        "nDof",
+                        "  chi2",
+                        " prob",
+                        "  satc",
+                        " satp",
+                    ])
+    print header
+    print "-" * len(header)
     for cat, dct in sorted(report.iteritems()):
-        if not header:
-            keys = sorted(dct.keys())
-            l = max([len(key) for key in keys])
-            fmt = "%"+str(l)+"s"
-            header = " ".join([fmt % "cat"] + [fmt % key for key in keys])
-            print header
-            print "-"*len(header)
-        out = [fmt % cat]
-        for key in keys:
-            value = dct[key]
-            sValue = str(value) if type(value) is int else "%6.4f" % value
-            out.append(fmt % sValue)
-        print " ".join(out)
+        print "  ".join([fmtCat % cat,
+                         "%8d" % dct["numInvalidNll"],
+                         "%6d" % dct["nTerms"],
+                         "%7d"% dct["nParams"],
+                         "%4d"% dct["nDof"],
+                         "%6.1f" % dct["chi2Simple"],
+                         "%5.3f" % dct["chi2ProbSimple"],
+                         "%6.1f" % dct["chi2Sat"],
+                         "%5.3f" % dct["chi2ProbSat"],
+                        ])
 
 
 def printNlls(nlls={}, scale=True):
@@ -237,7 +241,7 @@ def significances(whiteList=[], selName="", options=None):
         model.insert(selName, {"effHad": effs,
                                "effUncRel":0.01}) # dummy}
 
-        f = drv(signalToTest=model,
+        f = driver(signalToTest=model,
                 llkName=options.llk,
                 whiteList=whiteList,
                 ignoreHad=options.ignoreHad,
@@ -270,7 +274,7 @@ def go(selections=[], options=None, hMap=None):
                 if item in ["system", "bestFit"]:
                     continue
 
-                if item in ["genBands", "hcg", "ignoreHad", "interval", "plotBands", "significances", "simultaneous"]:
+                if item in ["genBands", "ignoreHad", "interval", "plotBands", "significances", "simultaneous"]:
                     if getattr(options, item):
                         cmd.append("--%s" % item)
                 elif item == "category":
@@ -292,7 +296,7 @@ def go(selections=[], options=None, hMap=None):
                                            options=options)
             continue
 
-        f = drv(llkName=options.llk,
+        f = driver(llkName=options.llk,
                 whiteList=whiteList,
                 ignoreHad=options.ignoreHad,
                 separateSystObs=not options.genBands,
@@ -368,10 +372,7 @@ if __name__ == "__main__":
     # before other imports so that --help is not stolen by pyROOT
     options = opts()
 
-    if options.hcg:
-        from driver.hcg import driver as drv
-    else:
-        from driver.ra1 import driver as drv
+    from driver import driver
 
     import os
     import likelihood
@@ -392,11 +393,11 @@ if __name__ == "__main__":
                                    hMap=hMap,
                                    )
 
-    if not options.significances:
+    if options.significances:
+        printNlls(nlls)
+    else:
         plotting.pValueCategoryPlots(hMap, )  # logYMinMax=(1.0e-4, 1.0e2))
         printReport(report)
-    else:
-        printNlls(nlls)
 
     if (not options.system) and (not nCategories):
         print "WARNING: category %s not found." % options.category
