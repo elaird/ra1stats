@@ -3,20 +3,20 @@ CFLAGS=-Wall -Wextra
 ROOT=`root-config --cflags --libs` -lRooFitCore -lRooFit -lRooStats -I${ROOFITSYS}/include  -L${ROOFITSYS}/lib
 SO=-shared -fPIC
 
-all: drive Poisson_cxx.so Gaussian_cxx.so Lognormal_cxx.so StandardHypoTestInvDemo_cxx.so
+all: drive StandardHypoTestInvDemo_cxx.so Poisson_cxx.so Gaussian_cxx.so Lognormal_cxx.so
 
 drive: drive.cxx
 	$(CC) $(CFLAGS) $(ROOT) $< -o $@
 
-Poisson_cxx.so: Poisson.h Poisson.cxx
+Poisson_cxx.so: Poisson.cxx Poisson.h
 	genreflex Poisson.h -s classes.xml
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $< -o $@
 
-Gaussian_cxx.so: Gaussian.h Gaussian.cxx
+Gaussian_cxx.so: Gaussian.cxx Gaussian.h
 	genreflex Gaussian.h -s classes.xml
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $< -o $@
 
-Lognormal_cxx.so: Lognormal.h Lognormal.cxx
+Lognormal_cxx.so: Lognormal.cxx Lognormal.h
 	genreflex Lognormal.h -s classes.xml
 	$(CC) $(CFLAGS) $(SO) $(ROOT) $< -o $@
 
