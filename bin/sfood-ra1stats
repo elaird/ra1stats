@@ -1,0 +1,1 @@
+sfood -I inputData -I aux -I misc . | sfood-graph | dot -Tps > sfood_graph.ps
