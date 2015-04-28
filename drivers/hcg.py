@@ -1,5 +1,4 @@
 import os
-import ra1
 import likelihood
 import plotting
 import workspace
@@ -7,7 +6,7 @@ import workspace
 import ROOT as r
 
 
-class driver(ra1.driver):
+class driver(object):
     def __init__(self, llkName="", whiteList=[],
                  ignoreHad=False, separateSystObs=True,
                  signalToTest=None, signalExampleToStack=None, signalToInject=None,
@@ -29,10 +28,6 @@ class driver(ra1.driver):
 
         r.gSystem.Load("libHiggsAnalysisCombinedLimit.so")
         print "FIXME: rewrite __init__"
-
-        # self.wspace = r.RooWorkspace("Workspace")
-        # self.data = workspace.dataset(workspace.obs(self.wspace))
-        # self.modelConfig = workspace.modelConfiguration(self.wspace)
 
 
     def compute(self, attr="", ch="", verbose=False):
@@ -107,7 +102,7 @@ class driver(ra1.driver):
             cmd.append("_%s=%s" % (cat, fileName))  # note leading underscore
         cmd.append("> %s" % cardName)
         os.system(" ".join(cmd))
-
+        
         fit = ["combine",
                "-M MaxLikelihoodFit",
                "--saveWorkspace",
@@ -127,6 +122,37 @@ class driver(ra1.driver):
         f1.Close()
         return results
 
+    def cls(self, cardName="card.txt"):
+        #faff here.
+        # map this from the old cls and make sure
+
+        cmd = ["combineCards.py"]
+        for iFileName, fileName in enumerate(self.likelihoodSpec.dumpHcgCards(self.signalToTest)):
+            cat = fileName[1 + fileName.find("/"):fileName.find(".txt")]
+            cmd.append("_%s=%s" % (cat, fileName))  # note leading underscore
+        cmd.append("> %s" % cardName)
+        os.system(" ".join(cmd))
+        
+        #exit(cmd)
+
+        fit = ["combine",
+               "-M Asymptotic",
+               #"--saveWorkspace",
+               #"--saveNLL",
+               #"--plots",
+               #"--rMin 0.0",
+               #"--rMax 1.0e-6",
+               #"--preFitValue 0.0",
+               #"-v -1",
+               cardName,
+               #"| grep -v 'has no signal processes contributing to it'",
+               ]
+        os.system(" ".join(fit))
+
+        f1 = r.TFile("mlfit.root")
+        results = f1.Get("fit_b")
+        f1.Close()
+        return results
 
     def setWspace(self):
         results = self.rooFitResults()
@@ -151,7 +177,7 @@ class driver(ra1.driver):
 
         results = self.setWspace()
 
-        note = self.note() + "_hcg"
+        note = self.note()
         if self.injectSignal():
             note += "_SIGNALINJECTED"
 
@@ -180,4 +206,63 @@ class driver(ra1.driver):
             plotter = plotting.validationPlotter(args)
             plotter.go()
 
+
+    def checkInputs(self):
+        pass
+
+
+    def smOnly(self) :
+        return not self.signalToTest
+
+    def injectSignal(self) :
+        return bool(self.signalToInject)
+
+    def systematicsLabel(self, name) :
+        selections = self.likelihoodSpec.selections()
+        syst = [s.universalSystematics for s in selections]
+        assert sum(syst)<2
+        if any(syst) : assert not syst.index(True)
+        return name if sum(syst)!=1 else selections[syst.index(True)].name
+
+    def kQcdLabel(self, name) :
+        selections = self.likelihoodSpec.selections()
+        k = [s.universalKQcd for s in selections]
+        assert sum(k)<2
+        if any(k) : assert not k.index(True)
+        return name if sum(k)!=1 else selections[k.index(True)].name
+
+    def note(self):
+        out = self.likelihoodSpec.note()
+        if not self.smOnly():
+            out += "_signal"
+        return out + "_hcg"  # 'hcg' used in job.py
+
+    def plotterArgs(self, selection) :
+        def activeBins(selection) :
+            out = {}
+            for key,value in selection.data.observations().iteritems() :
+                out[key] = map(lambda x:x!=None, value)
+            return out
+
+        args = {}
+        args["activeBins"] = activeBins(selection)
+        args["systematicsLabel"] = self.systematicsLabel(selection.name)
+
+        for item in ["smOnly", "note"] :
+            args[item] = getattr(self, item)()
+
+        for item in ["wspace", "signalExampleToStack", "signalToTest"] :
+            args[item] = getattr(self, item)
+
+        for arg,member in {"selNote": "note", "label":"name", "inputData":"data",
+                           "muonForFullEwk":"muonForFullEwk", "yAxisLogMinMax":"yAxisLogMinMax"}.iteritems() :
+            args[arg] = getattr(selection, member)
+
+        for item in ["lumi", "htBinLowerEdges", "htMaxForPlot"] :
+            args[item] = getattr(selection.data, item)()
+
+        for item in ["REwk", "RQcd", "legendTitle", "ignoreHad"] :
+            args[item] = getattr(self.likelihoodSpec, item)()
+
+        return args
 

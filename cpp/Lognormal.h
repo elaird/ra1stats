@@ -10,9 +10,9 @@ public:
   Lognormal(const RooLognormal& other, const char* name=0) ;
   inline virtual ~Lognormal() { }
 
-  RooRealProxy x;
-  RooRealProxy m0;
-  RooRealProxy k;
+  double xVal() {return x.arg().getVal();}
+  double m0Val() {return m0.arg().getVal();}
+  double kVal() {return k.arg().getVal();}
 
 private:
   ClassDef(Lognormal,1)

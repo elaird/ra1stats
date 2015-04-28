@@ -1,3 +1,4 @@
+import configuration.batch
 import configuration.directories
 import configuration.limit
 import configuration.signal
@@ -52,7 +53,8 @@ def printOnce(model=None, canvas=None, fileName="", alsoC=False, factor=0.6, ali
             latex.DrawLatex(stamp['xpos'], stamp['ypos'], stamp['text'])
 
     canvas.Print(fileName)
-    utils.epsToPdf(fileName)
+    
+    utils.epsToPdf(fileName, tight=(configuration.batch.batchHost != "FNAL"))
     if alsoC:
         canvas.Print(fileName.replace(".eps", ".C"))
 

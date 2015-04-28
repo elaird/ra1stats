@@ -17,6 +17,9 @@ def floatingVars(w):
     vars = w.allVars()
     it = vars.createIterator()
     while it.Next():
+        if not hasattr(it, "getMax"):
+            print "WARNING: iterator", it, "has no att getMax"
+            continue
         if it.getMax() == r.RooNumber.infinity():
             continue
         if it.getMin() == -r.RooNumber.infinity():
@@ -262,7 +265,7 @@ def hadTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel=""
     for item in ["w", "RQcd", "label", "kQcdLabel", "poi", "zeroQcd", "qcdParameterIsYield"]:
         qcdArgs[item] = eval(item)
 
-    if qcdParameterIsYield:
+    if qcdParameterIsYield and obs["nHad"][0] is not None:
         qcdArgs["normIniMinMax"] = (0.0, 0.0, max(1, obs["nHad"][0]/2.))
     else:
         qcdArgs["normIniMinMax"] = (AQcdIni, 0.0, AQcdMax)
@@ -281,7 +284,7 @@ def hadTerms(w=None, inputData=None, label="", systematicsLabel="", kQcdLabel=""
     iFirst = None
     iLast = len(htMeans)-1
     for i, nHadValue in enumerate(obs["nHad"]):
-        if nHadValue is None:
+        if nHadValue is None or inputData.observations()["nMuon"][i] is None:
             continue
         if iFirst is None:
             iFirst = i

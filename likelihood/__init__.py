@@ -219,11 +219,15 @@ class base(object):
         """
         https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideHiggsAnalysisCombinedLimit
         https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideCMSDataAnalysisSchool2014HiggsCombPropertiesExercise
+        https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideCMSDataAnalysisSchool2013HiggsPropertiesExercise
         """
 
         self.checkHcgImpl()
-        assert not signal
-        print "Implement signal (including muon contamination)!"
+        print "\n".join(["Implement signal, including:",
+                         "- trigger efficiency",
+                         "- muon contamination",
+                         "- point-by-point uncertainties",
+                         ])
 
         dirName = "l"+self._name
         if not os.path.exists(dirName):
@@ -238,7 +242,7 @@ class base(object):
                 print "Fail universalKQcd: skipping", sel
                 continue
 
-            lines = self.formattedSelection(*self.preparedSelection(sel),
+            lines = self.formattedSelection(*self.preparedSelection(sel, signal),
                                             label=sel.name)
 
             fileName = "%s/%s.txt" % (dirName, sel.name)
@@ -250,7 +254,7 @@ class base(object):
         return fileNames
 
 
-    def preparedSelection(self, sel):
+    def preparedSelection(self, sel, signal={}):
         if not self._lnUMax:
             self._lnUMax = 3.0
             print "WARNING: lnUMax not set.  Using %g." % self._lnUMax
@@ -282,7 +286,9 @@ class base(object):
         lumiDct = sel.data.lumi()
         systBins = sel.data.systBins()
         fixedPs = sel.data.fixedParameters()
-        sigmaLumiLike = fixedPs.get("sigmaLumiLike")
+
+        #  FIXME: improve sigmaLumiLike
+        sigmaLumiLike = signal.effs(sel.name)['effUncRel'] if signal else fixedPs.get("sigmaLumiLike")
         if not sigmaLumiLike:
             sigmaLumiLike = 0.10
             print "WARNING: using fake sigmaLumiLike for %s: %g" % (sel.name, sigmaLumiLike)
@@ -332,8 +338,18 @@ class base(object):
                         rate = mcExp[mcKey][iBin] * lumiDct[box] / lumiDct[mcKey]
                         lumiUncs.append(None)
                     else:
-                        rate = 1.23456789
-                        lumiUncs.append(1.0 + sigmaLumiLike)
+                        # get signal rate here
+                        if signal:
+                            pointEff = signal.effs(sel.name)['effHad'][iBin]
+                            pointXs = signal.xs
+                            # FIXME: add trigger efficiency here
+                            rate = pointEff * pointXs * lumiDct['had']
+                            lumiUncs.append(1.0 + sigmaLumiLike)
+                        else:
+                            rate = 1e-6 # set to 1e-6, because 0 crashes it
+                            lumiUncs.append(1.0 + sigmaLumiLike)
+                        # add point uncertainty here
+
                     rates.append((name, iProc, proc, rate))
 
                     # background normalizations
@@ -388,8 +404,8 @@ class base(object):
                  "observation".ljust(w1) + "  ".join([iFmt % x[1]    for x in obs]),
                  hyphens,
                  "bin".ljust(w1)         + "  ".join([x[0].rjust(w2) for x in rates]),
-                 "process".ljust(w1)     + "  ".join([iFmt % x[1]    for x in rates]),
                  "process".ljust(w1)     + "  ".join([x[2].rjust(w2) for x in rates]),
+                 "process".ljust(w1)     + "  ".join([iFmt % x[1]    for x in rates]),
                  "rate".ljust(w1)        + "  ".join([rFmt % x[3]    for x in rates]),
                  hyphens,
                  "lumi lnN".ljust(w1)    + "  ".join([(sFmt % x) if x else "-".rjust(w2) for x in lumiUncs]),

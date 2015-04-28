@@ -1,12 +1,20 @@
-batchHost = ["FNAL", "IC"][1]
+import socket
 
-icQueues = {"short":  {"ncores": 336, "factor":  1.},
-            "medium": {"ncores": 116, "factor":  6.},
-            "long":   {"ncores":  52, "factor": 72.},
-            }
+
+hostname = socket.getfqdn()
+if "fnal.gov" in hostname:
+    batchHost = "FNAL"
+elif "hep.ph.ic.ac.uk" in hostname:
+    batchHost = "IC"
+else:
+    batchHost = ""
 
 
 def qData(selection=["short", "medium", "long"][0:1]):
+    icQueues = {"short":  {"ncores": 336, "factor":  1.},
+                "medium": {"ncores": 116, "factor":  6.},
+                "long":   {"ncores":  52, "factor": 72.},
+                }
     out = {}
     for name in selection:
         out[name] = icQueues[name]
@@ -22,11 +30,12 @@ def envScript():
 
 
 def nJobsMax():
-    return {"IC": 2000, "FNAL": 0}[batchHost]
+    return {"IC": 2000, "FNAL": 1000}.get(batchHost, 1)
 
 
-def subCmd(icQueue="medium"):
-    assert icQueue in icQueues, icQueue
-    return {"IC": "qsub -o /dev/null -e /dev/null -q hep%s.q" % icQueue,
-            "FNAL": "condor_submit",
-            }[batchHost]
+def subCmd():
+    if batchHost == "IC":
+        icQueue = "short"
+        return "qsub -o /dev/null -e /dev/null -q hep%s.q" % icQueue
+    elif batchHost == "FNAL":
+        return "condor_submit"

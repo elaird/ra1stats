@@ -2,7 +2,7 @@
 
 import array
 import utils
-from inputData import data2011
+from ra1i import data2011
 import ROOT as r
 
 def setupRoot() :
