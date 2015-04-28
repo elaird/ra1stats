@@ -28,6 +28,8 @@ def cutFunc() :
             "T2":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             #"T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<900.0),
             "T2tt":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0),
+            "T2bw_0p25":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0),
+            "T2bw_0p75":lambda iX,x,iY,y,iZ,z:(y<(x-75.1) and iZ==1 and x>100.0 and x<1000.0),
             "T2bb":lambda iX,x,iY,y,iZ,z:(y<(x-150.1) and iZ==1 and x>287.4 and x<1300.0),
             "T2cc":t2ccCut,
             "T2_4body":t2ccCut,

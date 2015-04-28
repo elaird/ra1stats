@@ -38,8 +38,17 @@ def dev():
         #scan(dataset="T2cc", had="v11", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v12", aT={"200":"0.6", "275":"0.58", "325":"0.55"}, whiteList=["0b_le3j","1b_le3j","0b_ge4j"], extraVars=["SITV"], **new),
         #scan(dataset="T2cc", had="v13", aT={"200":"0.65", "275":"0.6", "325":"0.55"}, whiteList=["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"][:3], extraVars=["SITV"], **new),
-        scan(dataset="T2cc", had="v14", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"][:3], extraVars=["SITV"], **new),
-        ]
+        #scan(dataset="T2cc", had="v14", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"][:3], extraVars=["SITV"], **new),
+        #scan(dataset="T2cc", had="v18", muon="v18", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"], extraVars=["SITV"], **new),
+        # scan(dataset="T2cc", had="v19", muon="v18", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"], extraVars=["SITV"], **new),
+        # scan(dataset="T2cc", had="v20", muon="v18", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"], extraVars=["SITV"], **new),
+        #scan(dataset="T2cc", had="v21", muon="v21", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"], extraVars=["SITV"], **new),
+        # scan(dataset="T2_4body", had="v4", muon="v4", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"][3:], extraVars=["SITV"], **new),
+        #scan(dataset="T2_4body", had="v19", muon="v19", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"], extraVars=["SITV"], **new),
+      	scan(dataset="T2_4body", had="v23", muon="v23", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["0b_le3j", "0b_ge4j", "1b_ge4j", "1b_le3j"], extraVars=["SITV"], **new),
+	# scan(dataset="T2tt", had="v7", muon="v7", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["3b_le3j"], extraVars=["SITV"], **new),
+        # scan(dataset="T2bw_0p75", had="v4", muon="v4", aT={200: "0.65", 275: "0.6", 325: "0.55"}, whiteList=["3b_ge4j"], extraVars=["SITV"], **new),
+	]
 
 
 def hcp():
