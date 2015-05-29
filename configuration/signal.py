@@ -5,7 +5,7 @@ models = modelList.models
 
 def effUncRel(model=""):
     return {"T1": 0.140, "T1bbbb": 0.160, "T1tttt": 0.230,
-            "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.20, "T2_4body": 0.20,
+            "T2": 0.134, "T2bb": 0.131, "T2tt": 0.139, "T2cc": 0.25, "T2_4body": 0.30,
             "T2bw_0p25": 0.20, "T2bw_0p75": 0.20, 
             "T1tttt_ichep": 0.230, "tanBeta10_7": 0.1736,
             }[model]
@@ -35,7 +35,7 @@ def whiteListOfPoints(model="", respect=False):
             #[(150.+x*50.,90.+(y+x*5)*10.) for x in range(3) for y in range(8) ] + \
             #[(175.+x*50.,110.+(y+x*5)*10.) for x in range(2) for y in range(8) ], # with offset or not?!
             #"T2tt": [(550.0,  20.0)],
-            #"T2tt": [(400.0,   0.0)],
+            "T2tt": [(400.0,   0.0)],
             #"T2tt": [(410.0,  20.0)],
             #"T2tt": [(420.0,  20.0)],
             #"T2tt": [(400.0, 25.0)],
@@ -112,7 +112,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         tags.append(bJets)
     if jets:
         tags.append(jets)
-    if model.name == "T2tt" and box != "had" : tags.append("NoAlphaT") #@@ HACK!!!
+    if model.name_no_tag == "T2tt" and box != "had" : tags.append("NoAlphaT") #@@ HACK!!!
     if model.extraVars:
         tags.append(" ".join(model.extraVars))
     if box == "had":
@@ -124,7 +124,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
         else:
             tags.append("AlphaT55")
     else:
-        if model.name != "T2tt" : tags.append("NoAlphaT") #@@ HACK
+        if model.name_no_tag != "T2tt" : tags.append("NoAlphaT") #@@ HACK
 
     if htLower:
         tags.append("%d" % htLower)
@@ -133,7 +133,7 @@ def effHistoSpec(model=None, box=None, htLower=None, htUpper=None,
     if not model.isSms:
         tags.append("scale1")
 
-    fileFields = [model.name, box, getattr(model, "_"+box), fileName]
+    fileFields = [model.name_no_tag, box, getattr(model, "_"+box), fileName]
     return {"beforeDir": beforeDir,
             "afterDir": "_".join(tags),
             "file": "/".join(subDirs + fileFields),
@@ -148,13 +148,13 @@ def effUncRelHistoSpec(model=None, box=None,
     if model.isSms:
         subDirs = [directories.eff(), "sms_%d" % model.com]
     fileName = "syst.root"
-    tags = ["total", model.name]
+    tags = ["total", model.name_no_tag]
     if bJets:
         tags.append(bJets)
     if jets:
         tags.append(jets)
 
-    fileFields = [model.name, box, getattr(model, "_"+box), fileName]
+    fileFields = [model.name_no_tag, box, getattr(model, "_"+box), fileName]
     return {"histDir": "",
             "file": "/".join(subDirs + fileFields),
             "effUncRelHistName": ("_").join(tags+["incl"])}
