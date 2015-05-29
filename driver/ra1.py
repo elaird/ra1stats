@@ -13,7 +13,6 @@ class driver(object):
                  ignoreHad=False, separateSystObs=True,
                  signalToTest=None, signalExampleToStack=None, signalToInject=None,
                  trace=False):
-
         for item in ["signalToTest", "signalExampleToStack", "signalToInject"]:
             setattr(self, item, eval(item))
 
@@ -56,8 +55,10 @@ class driver(object):
         total = {}
         for sel in self.likelihoodSpec.selections():
             args["selection"] = sel
-            args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
-            args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
+            #args["signalToTest"] = self.signalToTest.effs(sel.name) if self.signalToTest else {}
+            #args["signalToInject"] = self.signalToInject.effs(sel.name) if self.signalToInject else {}
+            args["signalToTest"] = self.signalToTest if self.signalToTest else None
+            args["signalToInject"] = self.signalToInject if self.signalToInject else None
             args["systematicsLabel"] = self.systematicsLabel(sel.name)
             args["kQcdLabel"] = self.kQcdLabel(sel.name)
 
