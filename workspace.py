@@ -744,43 +744,43 @@ def dataset(obsSet):
     #out.Print("v")
     return out
 
-def inject(selection,signalToInject,injectSignal):
-
-    obs_h = selection.data.observations()["nHad"]
-    eff_h = signalToInject.effs(selection.name)["effHad"]
-    trig_h = selection.data.triggerEfficiencies()["had"]
-    lumi_h = selection.data.lumi()["had"]
-
-    obs_m = selection.data.observations()["nMuon"]
-    muon_effs = True
-    eff_m = []
-    try:
-        eff_m = signalToInject.effs(selection.name)["effMuon"]
-    except KeyError:
-        muon_effs = False
-    trig_m = selection.data.triggerEfficiencies()["muon"]
-    lumi_m = selection.data.lumi()["muon"]
-    
-    xs = signalToInject.xs
-
-    inputs = [obs_h,obs_m,trig_h,trig_m,eff_h,eff_m]
-    if not muon_effs : inputs = inputs[:-1]
-    assert all(len(x) == len(inputs[0]) for x in inputs)," ".join([str(len(x)) for x in inputs])
-
-    factor = 1.
-
-    sig_h = [ factor*x*y*xs*lumi_h for x,y in zip(eff_h,trig_h) ]
-    if muon_effs :
-        sig_m = [ factor*x*y*xs*lumi_m for x,y in zip(eff_m,trig_m) ]
-
-    obs_h = [ x+y for x,y in zip(obs_h,sig_h) ]
-    if muon_effs :
-        obs_m = [ x+y for x,y in zip(obs_m,sig_m) ]
-
-    if injectSignal :
-        selection.data.observations()["nHad"] = obs_h
-        if muon_effs :
-            selection.data.observations()["nMuon"] = obs_m
+#def inject(selection,signalToInject,injectSignal):
+#
+#    obs_h = selection.data.observations()["nHad"]
+#    eff_h = signalToInject.effs(selection.name)["effHad"]
+#    trig_h = selection.data.triggerEfficiencies()["had"]
+#    lumi_h = selection.data.lumi()["had"]
+#
+#    obs_m = selection.data.observations()["nMuon"]
+#    muon_effs = True
+#    eff_m = []
+#    try:
+#        eff_m = signalToInject.effs(selection.name)["effMuon"]
+#    except KeyError:
+#        muon_effs = False
+#    trig_m = selection.data.triggerEfficiencies()["muon"]
+#    lumi_m = selection.data.lumi()["muon"]
+#    
+#    xs = signalToInject.xs
+#
+#    inputs = [obs_h,obs_m,trig_h,trig_m,eff_h,eff_m]
+#    if not muon_effs : inputs = inputs[:-1]
+#    assert all(len(x) == len(inputs[0]) for x in inputs)," ".join([str(len(x)) for x in inputs])
+#
+#    factor = 1.
+#
+#    sig_h = [ factor*x*y*xs*lumi_h for x,y in zip(eff_h,trig_h) ]
+#    if muon_effs :
+#        sig_m = [ factor*x*y*xs*lumi_m for x,y in zip(eff_m,trig_m) ]
+#
+#    obs_h = [ x+y for x,y in zip(obs_h,sig_h) ]
+#    if muon_effs :
+#        obs_m = [ x+y for x,y in zip(obs_m,sig_m) ]
+#
+#    if injectSignal :
+#        selection.data.observations()["nHad"] = obs_h
+#        if muon_effs :
+#            selection.data.observations()["nMuon"] = obs_m
 
 #    print "HAD"
 #    print obs_h
@@ -799,10 +799,11 @@ def inject(selection,signalToInject,injectSignal):
 #    print "XS"
 #    print xs
     
-    return signalToInject.effs(selection.name)
+#    return signalToInject.effs(selection.name)
 
 def setupLikelihood(w=None, selection=None, systematicsLabel=None, kQcdLabel=None, smOnly=None, injectSignal=None,
-                    rhoSignalMin=0.0, signalToTest=None, signalToInject=None,
+                    rhoSignalMin=0.0, signalToTest={}, signalToInject={},
+                    #rhoSignalMin=0.0, signalToTest=None, signalToInject=None,
                     REwk=None, RQcd=None, nFZinv=None, poi={}, separateSystObs=None,
                     constrainQcdSlope=None, qcdParameterIsYield=None,
                     initialValuesFromMuonSample=None, initialFZinvFromMc=None, sigMcUnc=None):
@@ -835,7 +836,7 @@ def setupLikelihood(w=None, selection=None, systematicsLabel=None, kQcdLabel=Non
 #    print "AFTER"
 #    print selection.data.observations()["nHad"]
 #    print selection.data.observations()["nMuon"]
-    
+
     moreArgs = {}
     moreArgs["had"] = {}
     for item in ["zeroQcd", "fZinvIni", "fZinvRange", "AQcdIni", "AQcdMax"]:
@@ -874,7 +875,7 @@ def setupLikelihood(w=None, selection=None, systematicsLabel=None, kQcdLabel=Non
     out["obs"] += multi(w, variables["multiBinObs"], selection.data)
     out["systObs" if separateSystObs else "obs"] += variables["systObs"]
 
-    print out
+    #print out
     return out
 
 
