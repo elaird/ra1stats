@@ -99,7 +99,7 @@ def shifted(h=None, shift=(False, False), shiftErrors=True, info=True):
     out = histoConstructor( hname+"_shifted", h.GetTitle(), *args)
     out.SetDirectory(0)
 
-    for iBinX,x,iBinY,y,iBinZ,z in bins(h, interBin="LowEdge"):
+    for iBinX,x,iBinY,y,iBinZ,z in bins(h, interBin="Center"):#"LowEdge"):
         out.SetBinContent(iBinX, iBinY, iBinZ, h.GetBinContent(iBinX, iBinY, iBinZ))
         if shiftErrors:
             out.SetBinError(iBinX, iBinY, iBinZ, h.GetBinError(iBinX, iBinY, iBinZ))
