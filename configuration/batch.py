@@ -6,7 +6,7 @@ icQueues = {"short":  {"ncores": 336, "factor":  1.},
             }
 
 
-def qData(selection=["short", "medium", "long"][0:1]):
+def qData(selection=["short", "medium", "long"][1:2]):
     out = {}
     for name in selection:
         out[name] = icQueues[name]
