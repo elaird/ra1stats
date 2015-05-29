@@ -16,7 +16,7 @@ def testStatistic():
 def calculatorType():
     return ["frequentist",
             "asymptotic",
-            "asymptoticNom"][0]
+            "asymptoticNom"][1]
 
 
 def method():
