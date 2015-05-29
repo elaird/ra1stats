@@ -1,5 +1,5 @@
 if [[ "$HOSTNAME" == *hep.ph.ic.ac.uk ]]; then
-    . /vols/cms/grid/setup.sh
+    . /vols/cms/grid/setup_sl5.sh
     LOC=/vols/sl5_exp_software/cms
 
 elif [[ "$HOSTNAME" == *.fnal.gov ]]; then
