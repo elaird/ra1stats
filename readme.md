@@ -1,5 +1,9 @@
 # RA1STATS
 
+## DO NOT MERGE WITH MASTER!
+
+Hacky as shit, use at your own risk!
+
 ## License
 [GPLv3](http://www.gnu.org/licenses/gpl.html)
 
