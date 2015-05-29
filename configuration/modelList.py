@@ -10,22 +10,24 @@ def region(name) :
         }.get( name,  lambda iX,x,iY,y,iZ,z : True )
 
 def regions() :
-    # dict[model][region] = (cutFunc,whiteList)
+    # dict[model] = [(cutFunc,whiteList)][region]
     return {
-        "T2tt"      : { 0 : ( region("low_near"),  ["1b_ge4j","0b_ge4j","1b_le3j","0b_le3j","2b_ge4j","2b_le3j"] ),
-                        1 : ( region("low_far"),   ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","3b_ge4j","0b_ge4j"] ),
-                        2 : ( region("high_near"), ["0b_ge4j","1b_ge4j","2b_ge4j","1b_le3j","0b_le3j","2b_le3j"] ),
-                        3 : ( region("high_far"),  ["1b_ge4j","2b_ge4j","3b_ge4j","2b_le3j","1b_le3j","0b_ge4j"] ), },
-        "T2bw_0p25" : { 0 : ( region("low_near"),  ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","0b_ge4j","0b_le3j"] ),
-                        1 : ( region("low_far"),   ["2b_le3j","2b_ge4j","1b_ge4j","1b_le3j","3b_ge4j","0b_ge4j"] ),
-                        2 : ( region("high_near"), ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","0b_ge4j","0b_ge4j"] ),
-                        3 : ( region("high_far"),  ["2b_le3j","2b_ge4j","1b_ge4j","3b_ge4j","1b_le3j","0b_ge4j"] ), },
-        "T2bw_0p75" : { 0 : ( region("low_near"),  ["0b_ge4j","1b_ge4j","1b_le3j","0b_le3j","2b_ge4j","2b_le3j"] ),
-                        1 : ( region("low_far"),   ["1b_ge4j","2b_ge4j","0b_ge4j","1b_le3j","2b_le3j","3b_ge4j"] ),
-                        2 : ( region("high_near"), ["1b_ge4j","0b_ge4j","2b_ge4j","0b_le3j","1b_le3j","2b_le3j"] ),
-                        3 : ( region("high_far"),  ["1b_ge4j","2b_ge4j","0b_ge4j","3b_ge4j","1b_le3j","2b_le3j"] ), },
-        "T2cc"      : { 0 : ( region("low_near"),  ["0b_ge4j","1b_ge4j","0b_le3j","1b_le3j","2b_ge4j","2b_le3j"] ), },
-        "T2_4body"  : { 0 : ( region("low_near"),  ["1b_le3j","1b_ge4j","0b_le3j","0b_ge4j","2b_le3j","2b_ge4j"] ), },
+        "T2tt"      : [ ( region("low_near"),  ["1b_ge4j","0b_ge4j","1b_le3j","0b_le3j","2b_ge4j","2b_le3j","3b_ge4j"] ),
+                        ( region("low_far"),   ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","3b_ge4j","0b_ge4j","0b_le3j"] ),
+                        ( region("high_near"), ["0b_ge4j","1b_ge4j","2b_ge4j","1b_le3j","0b_le3j","2b_le3j","3b_ge4j"] ),
+                        ( region("high_far"),  ["1b_ge4j","2b_ge4j","3b_ge4j","2b_le3j","1b_le3j","0b_ge4j","0b_le3j"] ), ],
+        "T2bw_0p25" : [ ( region("low_near"),  ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","0b_ge4j","0b_le3j"] ),
+                        ( region("low_far"),   ["2b_le3j","2b_ge4j","1b_ge4j","1b_le3j","3b_ge4j","0b_ge4j"] ),
+                        ( region("high_near"), ["1b_ge4j","2b_ge4j","2b_le3j","1b_le3j","0b_ge4j","0b_ge4j"] ),
+                        ( region("high_far"),  ["2b_le3j","2b_ge4j","1b_ge4j","3b_ge4j","1b_le3j","0b_ge4j"] ), ],
+        "T2bw_0p75" : [ ( region("low_near"),  ["0b_ge4j","1b_ge4j","1b_le3j","0b_le3j","2b_ge4j","2b_le3j"] ),
+                        ( region("low_far"),   ["1b_ge4j","2b_ge4j","0b_ge4j","1b_le3j","2b_le3j","3b_ge4j"] ),
+                        ( region("high_near"), ["1b_ge4j","0b_ge4j","2b_ge4j","0b_le3j","1b_le3j","2b_le3j"] ),
+                        ( region("high_far"),  ["1b_ge4j","2b_ge4j","0b_ge4j","3b_ge4j","1b_le3j","2b_le3j"] ), ],
+        "T2cc"      : [ ( region(""),          ["0b_ge4j","1b_ge4j","0b_le3j","1b_le3j","2b_ge4j","2b_le3j"] ), ],
+        #"T2cc"     : [ ( region(""),          ["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"] ), ], # CHRIS ORDER
+        "T2_4body"  : [ ( region(""),          ["1b_le3j","1b_ge4j","0b_le3j","0b_ge4j","2b_le3j","2b_ge4j"] ), ],
+        #"T2_4body" : [ ( region(""),          ["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j","2b_le3j","2b_ge4j"] ), ], # CHRIS ORDER
         }
 
 def exampleArgs(more=True):
@@ -50,51 +52,51 @@ def dev():
            "llk": "2012dev",
            "interBin": "Center",
            }
+    nregions = 1
     ncats = 4
     models = {
         "T2cc" : [scan(dataset="T2cc",
-                       had="v18",
-                       muon="v18",
+                       had="v21",
+                       muon="v21",
                        aT={200: "0.65", 275: "0.6", 325: "0.55"},
-                       region=regions().get("T2cc").get(0)[0],
-                       whiteList=regions().get("T2cc").get(0)[1][:ncats],
+                       region=cut_func,
+                       whiteList=cats[:ncats],
                        extraVars=["SITV"],
-                       **new)],
+                       **new) for cut_func,cats in regions().get("T2cc") ],
         "T2_4body" : [scan(dataset="T2_4body",
-                           had="v5", # v6 is with boost distr reweighted to T2cc
-                           muon="v5", # v6 is with boost distr reweighted to T2cc
+                           had="v19",
+                           muon="v19",
                            aT={200: "0.65", 275: "0.6", 325: "0.55"},
-                           region=regions().get("T2_4body").get(0)[0],
-                           whiteList=regions().get("T2_4body").get(0)[1][:ncats],
+                           region=cut_func,
+                           whiteList=cats[:ncats],
                            extraVars=["SITV"],
-                           **new)],
+                           **new) for cut_func,cats in regions().get("T2_4body") ],
         "T2tt" : [scan(dataset="T2tt",
                        had="v7",
                        muon="v7",
                        aT={200:"0.65",275:"0.6",325:"0.55"},
-                       region=y[0],
-                       whiteList=y[1][:ncats],
+                       region=cut_func,
+                       whiteList=cats[:ncats],
                        extraVars=["SITV"],
-                       **new) for x,y in regions().get("T2tt").items() ],
-        "T2bw_0p25" : [scan(dataset="T2bw_0p25",
-                            had="v3",
-                            muon="v3",
-                            aT={200:"0.65",275:"0.6",325:"0.55"},
-                            region=y[0],
-                            whiteList=y[1][:ncats],
-                            extraVars=["SITV"],
-                            **new) for x,y in regions().get("T2bw_0p25").items() ],
-        "T2bw_0p75" : [scan(dataset="T2bw_0p75",
-                            had="v4",
-                            muon="v4",
-                            aT={200:"0.65",275:"0.6",325:"0.55"},
-                            region=y[0],
-                            whiteList=y[1][:ncats],
-                            extraVars=["SITV"],
-                            **new) for x,y in regions().get("T2bw_0p75").items() ],
+                       **new) for cut_func,cats in regions().get("T2tt") ],
+#        "T2bw_0p25" : [scan(dataset="T2bw_0p25",
+#                            had="v3",
+#                            muon="v3",
+#                            aT={200:"0.65",275:"0.6",325:"0.55"},
+#                            region=region(tag),
+#                            whiteList=cats[:ncats],
+#                            extraVars=["SITV"],
+#                            **new) for tag,cats in regions().get("T2bw_0p25").items() ],
+#        "T2bw_0p75" : [scan(dataset="T2bw_0p75",
+#                            had="v4",
+#                            muon="v4",
+#                            aT={200:"0.65",275:"0.6",325:"0.55"},
+#                            region=region(tag),
+#                            whiteList=cats[:ncats],
+#                            extr<aVars=["SITV"],
+#                            **new) for tag,cats in regions().get("T2bw_0p75").items() ],
         }
-    return models.get("",[]) # select model here
-
+    return models.get("T2cc",[])[:nregions] # select model here
 
 def hcp():
     kargs = {"weightedHistName": "m0_m12_mChi_noweight",
