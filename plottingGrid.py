@@ -317,8 +317,8 @@ def upperLimitHistos(model=None,
                      expectedMapsOnly=None, 
                      expFileNameSuffix=None,
                      obsFileNameSuffix=None,
-                     shiftX=None, 
-                     shiftY=None, 
+                     shiftX=False,#None, 
+                     shiftY=False,#None, 
                      info=None):
     
     (expFileName,obsFileName) = configuration.limit.mergedFiles(model=model,
@@ -355,8 +355,8 @@ def upperLimitHistos(model=None,
 
         h = hp.modifiedHisto(h3=h3,
                              model=model,
-                             shiftX=shiftX,
-                             shiftY=shiftY,
+                             shiftX=False,#shiftX,
+                             shiftY=False,#shiftY,
                              range=True,
                              info=info)
 
@@ -414,10 +414,13 @@ def exclusionContours(model,
     xMin = xrange[0]
 
     points = []
+
+    #@@
+    #print "TEST",yrange[0],yrange[1],yrange[2]
     for mlsp in range(yrange[0],yrange[1],yrange[2]):
-        #print "MLSP",mlsp
         if xMin <= mlsp : break
         dm = xMin-mlsp
+        #print xMin,mlsp,dm
         result = cxs.onePoint(model,
                               expFileNameSuffix=expFileNameSuffix,
                               obsFileNameSuffix=obsFileNameSuffix,
@@ -426,24 +429,25 @@ def exclusionContours(model,
                               dM=dm,
                               nSmooth=0)
         points.append((mlsp,result))
-#        for key,val in result.items() : print key.ljust(32),val
+        #print "TESTTEST",dm
+        #for key,val in result.items() : print key.ljust(32),val
         
     graphs = {}
     for ipoint,point in enumerate(points) :
         dm = xMin - point[0]
-#        print "ipoint,mlsp,dm:",ipoint,point[0],dm
+        print "ipoint,mlsp,dm:",ipoint,point[0],dm
         for key,val in point[1].items() :
             if key not in graphs.keys() : graphs[key] = {}
             graphs[key][-1*point[0]] = (val[1][0],point[0]*1.)
             graphs[key][+1*point[0]] = (val[1][1],val[1][1]-dm*1.)
-#            print key.ljust(50),val
+            #print key.ljust(50),val
     for name,dct in graphs.items() :
         graphs[name] = [ dct[key] for key in sorted(dct.keys()) ] + [ dct[sorted(dct.keys())[0]] ]
         #graphs[name] += graphs[name][0]
 
     output = {}
     for key,val in graphs.items() :
-#        print key,val
+        #print key,val
         out = r.TGraph()
         name = key.replace("+","p").replace("-","m").strip(model._dataset+"_")
         #out.SetName("{:s}_graph".format(name))
@@ -453,8 +457,6 @@ def exclusionContours(model,
         output[name] = out
 
     return output
-        
-    #quit()
 
 
 def makeLimitRootFiles(model=None, 
@@ -470,16 +472,16 @@ def makeLimitRootFiles(model=None,
     assert pruneYMin is not None
     assert interBinOut
 
-    shiftX = shiftY = (model.interBin == "LowEdge" and interBinOut == "Center")
-
+    shiftX = shiftY = False#(model.interBin == "LowEdge" and interBinOut == "Center")
+    
     input = configuration.limit.mergedFile(model=model)
 
     histos = upperLimitHistos(model=model,
                               expectedMapsOnly=expectedMapsOnly,
                               expFileNameSuffix=expFileNameSuffix,
                               obsFileNameSuffix=obsFileNameSuffix,
-                              shiftX=shiftX,
-                              shiftY=shiftY,
+                              shiftX=False,#shiftX,
+                              shiftY=False,#shiftY,
                               info=info)
 
     contours = exclusionContours(model,
@@ -526,7 +528,7 @@ def makeEfficiencyPlots(model=None, key="",
     assert interBinOut
     effHistos = efficiencyHistos(model=model,
                                  key=key,
-                                 shift=(model.interBin == "LowEdge" and interBinOut == "Center"),
+                                 shift=False,#(model.interBin == "LowEdge" and interBinOut == "Center"),
                                  separateCategories=separateCategories,
                                  includeNonUsedCategories=includeNonUsedCategories,
                                  info=info,
@@ -865,7 +867,7 @@ def makeHistoPdf(model=None, histoFileName="", graphFileName="",
 
 def efficiencyHistos(model=None,
                      key="",
-                     shift=None,
+                     shift=False,#None,
                      separateCategories=None,
                      includeNonUsedCategories=None,
                      info=True,
@@ -900,8 +902,8 @@ def efficiencyHistos(model=None,
     for key, h3 in out.iteritems():
         h = hp.modifiedHisto(h3=h3,
                              model=model,
-                             shiftX=shift,
-                             shiftY=shift,
+                             shiftX=False,#shift,
+                             shiftY=False,#shift,
                              range=True,
                              info=info,
                              )
@@ -1235,7 +1237,7 @@ def clsValidation(model=None, cl=None, filterKey="CLb", plotKey="",
     assert xs, "xs not found.  Available keys: %s" % str(histos.keys())
 
     graphs = {}
-    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(xs, interBin="LowEdge"):
+    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(xs, interBin="Center"):#"LowEdge"):
         if any([iBinZ != 1,
                 whiteList and (iBinX, iBinY) not in whiteList,
                 not xs.GetBinContent(iBinX, iBinY),
@@ -1325,7 +1327,7 @@ def nllsValidation(model=None, divide=(4, 3), stampTitle=True):
     assert xs, "xs not found.  Available keys: %s" % str(histos.keys())
 
     graphs = {}
-    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(xs, interBin="LowEdge"):
+    for (iBinX, x, iBinY, y, iBinZ, z) in utils.bins(xs, interBin="Center"):#"LowEdge"):
         if any([iBinZ != 1, not xs.GetBinContent(iBinX, iBinY)]):
             continue
 
