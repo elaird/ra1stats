@@ -4,7 +4,7 @@ import configuration.signal
 import plottingGrid as pg
 
 for model in configuration.signal.models():
-    interBinOut = "LowEdge"
+    interBinOut = "Center"
     pg.makeXsUpperLimitPlots(model=model,
                              logZ=True,
                              pruneYMin=True,
@@ -16,8 +16,10 @@ for model in configuration.signal.models():
                              #             "mGMax": 1250.,
                              #             },
                              #diagonalLine=True,
-                             expectedMapsOnly=False,
-                             observedCurves=True,
+                             expectedMapsOnly=False,observedCurves=True,
+                             #expectedMapsOnly=True,observedCurves=False,
+                             expFileNameSuffix="_exp",
+                             obsFileNameSuffix="_obs",
                              debug=False,
                              info=False,
                              )
