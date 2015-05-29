@@ -9,7 +9,7 @@ class scan(object):
                  muon="",
                  phot="",
                  mumu="",
-                 interBin="LowEdge",
+                 interBin="Center",#"LowEdge",
                  aT={},
                  extraVars=[],
                  weightedHistName="",
@@ -17,7 +17,7 @@ class scan(object):
                  minSumWeightIn=1,
                  maxSumWeightIn=None,
                  llk=None,
-                 region=None,
+                 region=lambda iX,x,iY,y,iZ,z : True,
                  whiteList=[],
                  exampleKargs={},
                  sigMcUnc=False,
@@ -41,11 +41,19 @@ class scan(object):
     @property
     def name(self):
         out = self._dataset
-        if self._tag:
-            out += "_"+self._tag
+#        if self._tag:
+#            out += "_"+self._tag
         if self._com != 8:
             out += "_%d" % self._com
         return out
+
+    @property # use this only for (what??)
+    def name_no_tag(self):
+        return self.name#.replace("_"+self._tag,"")
+
+    @property
+    def tag(self):
+        return self._tag
 
     @property
     def isSms(self):
@@ -115,7 +123,8 @@ class scan(object):
         out = [self.name]
         if not self.isSms:
             out.append(self.xsVariation)
-        out += [self.llk] + self.whiteList
+        if self.tag == "" : out += [self.llk] + self.whiteList
+        else : out += [self.llk] + [self.tag] + self.whiteList
         return out
 
     def sumWeightInRange(self, sumWeightIn):
