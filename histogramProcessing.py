@@ -59,8 +59,8 @@ def setRange(var, model, histo, axisString):
 
 def modifiedHisto(h3=None,
                   model=None,
-                  shiftX=None,
-                  shiftY=None,
+                  shiftX=False,#None,
+                  shiftY=False,#None,
                   shiftErrors=True,
                   range=None,
                   info=True,
@@ -337,8 +337,7 @@ def points(respectWhiteList=False):
     multiples = configuration.limit.multiplesInGeV()
 
     for model in configuration.signal.models():
-        name = model.name
-        whiteList = configuration.signal.whiteListOfPoints(name, respect=respectWhiteList)
+        whiteList = configuration.signal.whiteListOfPoints(model.name, respect=respectWhiteList)
         h = sumWeightInHisto(model)
         bins = utils.bins(h, interBin=model.interBin)
         for iBinX, x, iBinY, y, iBinZ, z in bins:
@@ -352,7 +351,7 @@ def points(respectWhiteList=False):
             cutFunc = patches.cutFunc().get(model.name,None)
             if cutFunc and cutFunc(iBinX, x, iBinY, y, iBinZ, z) and \
                    model.region and model.region(iBinX, x, iBinY, y, iBinZ, z):
-                out.append((name, iBinX, iBinY, iBinZ))
+                out.append((model.name, iBinX, iBinY, iBinZ))
     return out
 
 
