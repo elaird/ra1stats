@@ -130,3 +130,11 @@ def mergePickledFiles(printExamples=False, respectWhiteList=False):
             histo.GetZaxis().SetTitle(zTitles[model.name][key])
             histo.Write()
         f.Close()
+
+def haddRootFiles():
+    filenames = []
+    for model in configuration.signal.models():
+        filename = configuration.limit.mergedFile(model=model)
+        print filename
+        #tags = model.tags()
+        #filename = filename.replace
