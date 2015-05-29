@@ -53,7 +53,7 @@ def dev():
            "interBin": "Center",
            }
     nregions = 1
-    ncats = 1
+    ncats = 4
     models = {
         "T2cc" : [scan(dataset="T2cc",
                        had="v21",
