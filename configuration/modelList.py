@@ -52,7 +52,7 @@ def dev():
            "llk": "2012dev",
            "interBin": "Center",
            }
-    nregions = 1
+    nregions = 4
     ncats = 4
     models = {
         "T2cc" : [scan(dataset="T2cc",
@@ -96,7 +96,7 @@ def dev():
 #                            extr<aVars=["SITV"],
 #                            **new) for tag,cats in regions().get("T2bw_0p75").items() ],
         }
-    return models.get("T2cc",[])[:nregions] # select model here
+    return models.get("T2tt",[])[:nregions] # select model here
 
 def hcp():
     kargs = {"weightedHistName": "m0_m12_mChi_noweight",
