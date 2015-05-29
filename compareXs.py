@@ -69,7 +69,7 @@ def referenceXsHisto(refHistoName="", refName="", xsFileName=""):
     return histoD
 
 
-def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, shift=(True, False)):
+def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, shift=(False,False)):#(True, False)):
     offset = 7
     limitHistoDict = {
         model.name+'_UpperLimit': {
@@ -121,15 +121,15 @@ def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, sh
         if limitHistoName == "T2cc_UpperLimit":
             opts['hist'] = hp.modifiedHisto(h3=ofile.Get(limitHistoName),
                                             model=model,
-                                            shiftX=True,
-                                            shiftY=True,
+                                            shiftX=False,#True,
+                                            shiftY=False,#True,
                                             shiftErrors=False,
                                             range=False,)
         else:
             opts['hist'] = hp.modifiedHisto(h3=efile.Get(limitHistoName),
                                             model=model,
-                                            shiftX=True,
-                                            shiftY=True,
+                                            shiftX=False,#True,
+                                            shiftY=False,#True,
                                             shiftErrors=False,
                                             range=False,
                                             info=False)
@@ -216,6 +216,7 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
 def oneD(h=None, yValue=None, dM=None):
     yBin = h.GetYaxis().FindBin(yValue)
     proj = h.ProjectionX(h.GetName()+"_", yBin, yBin)
+    #print h,yValue,dM,proj
     if dM:
         cntr = 0
         dMhisto = r.TH1D(h.GetName()+"_%i" % dM,"", 11, 87.5, 362.5)
@@ -227,6 +228,7 @@ def oneD(h=None, yValue=None, dM=None):
             xVal = h.GetXaxis().GetBinCenter(ixBin)
             val = h.GetBinContent(ixBin,yBin)
             err = h.GetBinError(ixBin,yBin)
+            #print xBin,yBin,xVal,yVal,val,err
             if val > 0. : cntr += 1
             if val == 0.0 :
                 #print "HACK! SO that curve doesnt connect empty bin, don't publish like this"
@@ -238,6 +240,7 @@ def oneD(h=None, yValue=None, dM=None):
                 val = (h.GetBinContent(ixBin-1,yBinHigh)+h.GetBinContent(ixBin+1,yBinLow))/2.
             dMhisto.SetBinContent(dMhisto.FindBin(h.GetBinCenter(ixBin)),val)
             dMhisto.SetBinError(dMhisto.FindBin(h.GetBinCenter(ixBin)),err)
+        #print "HERE",cntr
         return dMhisto if cntr > 0 else None
     return proj
 
@@ -269,6 +272,7 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
               model.name+'_UpperLimit']
     for iHisto, hname in enumerate(histos):
         props = histoSpecs[hname]
+        #print hname,props
         if hname == model.name+'_UpperLimit': 
             his = props["hist"]
 #            if dM == 80 :
@@ -278,7 +282,9 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
 #                his.Draw()
 #                raw_input("")
         if hname != 'refHisto':
+            #print "TEST1",props["hist"].Print()
             props["hist"] = oneD(props["hist"], yValue, dM)
+            #print "TEST1",props["hist"].Print()
             gopts = 'hist'
         else:
             gopts = 'e3'
@@ -455,6 +461,8 @@ def onePoint(model,
         'processStamp': configuration.signal.processStamp(model.name)['text'],
         'dM': dM,
         }
+
+    #for key,val in options.items() : print key,val
     
     processed_histos = compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin, **options)
 
