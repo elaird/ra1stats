@@ -24,10 +24,10 @@ def regions() :
                         ( region("low_far"),   ["1b_ge4j","2b_ge4j","0b_ge4j","1b_le3j","2b_le3j","3b_ge4j"] ),
                         ( region("high_near"), ["1b_ge4j","0b_ge4j","2b_ge4j","0b_le3j","1b_le3j","2b_le3j"] ),
                         ( region("high_far"),  ["1b_ge4j","2b_ge4j","0b_ge4j","3b_ge4j","1b_le3j","2b_le3j"] ), ],
-        "T2cc"      : [ ( region(""),          ["0b_ge4j","1b_ge4j","0b_le3j","1b_le3j","2b_ge4j","2b_le3j"] ), ],
-        #"T2cc"     : [ ( region(""),          ["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"] ), ], # CHRIS ORDER
-        "T2_4body"  : [ ( region(""),          ["1b_le3j","1b_ge4j","0b_le3j","0b_ge4j","2b_le3j","2b_ge4j"] ), ],
-        #"T2_4body" : [ ( region(""),          ["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j","2b_le3j","2b_ge4j"] ), ], # CHRIS ORDER
+        #"T2cc"      : [ ( region(""),          ["0b_ge4j","1b_ge4j","0b_le3j","1b_le3j","2b_ge4j","2b_le3j"] ), ],
+        "T2cc"     : [ ( region(""),          ["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j"] ), ], # CHRIS ORDER
+        #"T2_4body"  : [ ( region(""),          ["1b_le3j","1b_ge4j","0b_le3j","0b_ge4j","2b_le3j","2b_ge4j"] ), ],
+        "T2_4body" : [ ( region(""),          ["0b_le3j","0b_ge4j","1b_ge4j","1b_le3j","2b_le3j","2b_ge4j"] ), ], # CHRIS ORDER
         }
 
 def exampleArgs(more=True):
@@ -48,7 +48,6 @@ def dev():
            "binaryExclusion": False,
            "flatEffUncRel": False,
            "exampleKargs": exampleArgs(),
-           "interBin":"Center",
            "com": 8,
            "llk": "2012dev",
            "interBin": "Center",
@@ -97,7 +96,7 @@ def dev():
 #                            extr<aVars=["SITV"],
 #                            **new) for tag,cats in regions().get("T2bw_0p75").items() ],
         }
-    return models.get("T2tt",[])[:nregions] # select model here
+    return models.get("T2cc",[])[:nregions] # select model here
 
 def hcp():
     kargs = {"weightedHistName": "m0_m12_mChi_noweight",
