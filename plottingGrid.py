@@ -174,7 +174,7 @@ def factorString(xsFactor=None):
 def exclusionGraphs(model=None, 
                     expectedMapsOnly=None, 
                     histos={}, 
-                    interBin="",
+                    interBin="Center",
                     pruneYMin=False, 
                     debug=None, 
                     info=None):
@@ -218,20 +218,12 @@ def exclusionGraphs(model=None,
                      "model": model,
                      "interBin": interBin}
 
+            #graph = rxs.excludedGraphNew(h,
             graph = rxs.excludedGraph(h,
                                       info=info,
                                       whiteList=configuration.signal.whiteListOfPoints(model.name),
                                       **kargs)
-
-            # @@ PLOT GRAPHS
-            #r.gROOT.SetBatch(False)
-            #c1 = r.TCanvas()
-            #c1.Draw()
-            #graph.Draw("apl")
-            #c1.Update()
-            #r.gROOT.SetBatch(True)
-            #raw_input("")
-
+            
             simpleHisto = rxs.exclHisto(h,
                                         tag="_excludedHistoSimple",
                                         zTitle="bin excluded or not",
@@ -432,15 +424,23 @@ def exclusionContours(model,
         #print "TESTTEST",dm
         #for key,val in result.items() : print key.ljust(32),val
         
+    index = 1 #@@ was 1
     graphs = {}
     for ipoint,point in enumerate(points) :
         dm = xMin - point[0]
         print "ipoint,mlsp,dm:",ipoint,point[0],dm
         for key,val in point[1].items() :
             if key not in graphs.keys() : graphs[key] = {}
-            graphs[key][-1*point[0]] = (val[1][0],point[0]*1.)
-            graphs[key][+1*point[0]] = (val[1][1],val[1][1]-dm*1.)
-            #print key.ljust(50),val
+            #graphs[key][-1*point[0]] = (val[1][0],point[0]*1.)
+            #graphs[key][+1*point[0]] = (val[1][1],val[1][1]-dm*1.)
+            temp0 = val[index][0] if val[index][0] > 0. else val[1][0]
+            temp1 = val[index][1] if abs(val[index][1]-val[1][1]) < 50. and val[index][1] > 0. else val[1][1]
+            point0 = (temp0,temp0-dm*1.)
+            point1 = (temp1,temp1-dm*1.)
+            if point0[0] > 0. and point0[1] > 0. and point1[0] > 0. and point1[1] > 0. :
+                graphs[key][-1*point[0]] = point0
+                graphs[key][+1*point[0]] = point1
+                #print key.ljust(40),val," "*3,(graphs[key][-1*point[0]],graphs[key][+1*point[0]])
     for name,dct in graphs.items() :
         graphs[name] = [ dct[key] for key in sorted(dct.keys()) ] + [ dct[sorted(dct.keys())[0]] ]
         #graphs[name] += graphs[name][0]
@@ -454,10 +454,10 @@ def exclusionContours(model,
         out.SetName(name)
         for ipoint,point in enumerate(val):
             out.SetPoint(ipoint,*point)
+        # smooth?
         output[name] = out
 
     return output
-
 
 def makeLimitRootFiles(model=None, 
                        expectedMapsOnly=None, 
@@ -466,14 +466,14 @@ def makeLimitRootFiles(model=None,
                        limitFileName="", 
                        simpleFileName="",
                        relativeFileName="", 
-                       interBinOut=None, 
+                       interBinOut="Center", 
                        pruneYMin=None,
                        debug=None, info=None):
     assert pruneYMin is not None
     assert interBinOut
 
     shiftX = shiftY = False#(model.interBin == "LowEdge" and interBinOut == "Center")
-    
+
     input = configuration.limit.mergedFile(model=model)
 
     histos = upperLimitHistos(model=model,
@@ -487,7 +487,7 @@ def makeLimitRootFiles(model=None,
     contours = exclusionContours(model,
                                  expFileNameSuffix=expFileNameSuffix,
                                  obsFileNameSuffix=obsFileNameSuffix)
-    
+
     graphs, simple, relative = exclusionGraphs(model=model,
                                                expectedMapsOnly=expectedMapsOnly,
                                                histos=histos,
@@ -495,7 +495,7 @@ def makeLimitRootFiles(model=None,
                                                pruneYMin=pruneYMin,
                                                debug=debug,
                                                info=info)
-
+    
 #    # @@ DEBUG: PLOT GRAPHS
 #    for k,v in contours.items() : 
 #        print k

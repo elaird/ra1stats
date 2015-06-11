@@ -1,3 +1,4 @@
+from array import array
 import configuration.signal
 import ROOT as r
 
@@ -54,6 +55,80 @@ def content(h=None, coords=(0.0,), variation=0.0, factor=1.0):
     bin = h.FindBin(*args)
     return factor*(h.GetBinContent(bin) + variation*h.GetBinError(bin))
 
+
+def excludedGraphNew(h, xsFactor=None, variation=0.0, model=None,
+                     interBin="", prune=False, info=None, whiteList=[]):
+    assert interBin in ["Center", "LowEdge"], interBin
+
+    def fail(xs, xsLimit):
+        return (xs <= xsLimit) or not xsLimit
+
+    refHisto = refXsHisto(model)
+
+    (xmin,xmax,xstep) = configuration.signal.ranges(model)["xBinning"]
+    (ymin,ymax,ystep) = configuration.signal.ranges(model)["yBinning"]
+    xrange = (h.GetXaxis().GetXmin(),h.GetXaxis().GetXmax())
+    yrange = (h.GetYaxis().GetXmin(),h.GetYaxis().GetXmax())
+
+    his = r.TH2D(h.GetName()+"_interpolate",
+                 h.GetTitle()+"_interpolate",
+                 int(xrange[1]-xrange[0]),
+                 xrange[0],
+                 xrange[1],
+                 int(yrange[1]-yrange[0]),
+                 yrange[0],
+                 yrange[1])
+
+    for iBinX in range(1,1+his.GetNbinsX()):
+        x = getattr(his.GetXaxis(), "GetBin%s" % interBin)(iBinX)
+        for iBinY in range(1,1+his.GetNbinsY()):
+            y = getattr(his.GetYaxis(), "GetBin%s" % interBin)(iBinY)
+            bin1 = h.FindBin(x,y)
+            binx = r.Int(0)
+            biny = r.Int(0)
+            binz = r.Int(0)
+            h.GetBinXYZ(bin1,binx,biny,binz)
+            bin2 = h.FindBin(binx+1,biny+1)
+            (x1,y1) = (getattr(h,"GetBin%s"%interBin)(bin1),
+                       getattr(h,"GetBin%s"%interBin)(bin1))
+            (x2,y2) = (getattr(h,"GetBin%s"%interBin)(bin2),
+                       getattr(h,"GetBin%s"%interBin)(bin2))
+            print iBinX,iBinY,x,y,bin1,bin2,(x1,y1),(x2,y2)
+
+            xsLimit = h.Interpolate(x,y)
+            xs = refHisto.Interpolate(x)
+            err = refHisto.GetBinError(refHisto.FindBin(x,y))
+            xs = xs+err if variation > 0.5 else xs-err if variation < 0.5 else xs
+            his.SetBinContent(iBinX,iBinY,xsLimit)#/xs if xs > 0. else 1000.)
+            #print iBinX,iBinY,x,y,xsLimit,xs,xsLimit/xs if xs > 0. else 1000.
+
+            
+    # @@ PLOT GRAPHS
+    r.gROOT.SetBatch(False)
+    c1 = r.TCanvas()
+    c1.Draw()
+    c1.SetLogz()
+    his.Draw("colz")
+    #graph.Draw("apl")
+    c1.Update()
+    r.gROOT.SetBatch(True)
+    raw_input("")
+
+    print "get here 1"
+    tg2dExp = r.TGraph2D(his)
+    contours = [1.0]
+    contour = 0
+    print "get here 2"
+    tg2dExp.GetHistogram().SetContour(1,array('d',contours))
+    print "get here 3"
+    #tg2dExp.Draw("cont list")
+    contLevel = tg2dExp.GetContourList(1.0)
+    contour = None
+    print "get here 4"
+    if contLevel.GetSize() > 0 : contour = contLevel.First()
+    contour.SetName(his.GetName()+"r1Contour")
+    print "get here 5"
+    return contour
 
 def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
                   interBin="", prune=False, info=None, whiteList=[]):
@@ -118,8 +193,7 @@ def excludedGraph(h, xsFactor=None, variation=0.0, model=None,
 
     return out
 
-
-def exclHisto(h, xsFactor=None, model=None, interBin="", variation=0.0,
+def exclHisto(h, xsFactor=None, model=None, interBin="Center", variation=0.0,
               tag="", zTitle="", func=lambda xsLimit, xs: 0.0):
     assert interBin in ["Center", "LowEdge"], interBin
     cutFunc = None
@@ -140,6 +214,10 @@ def exclHisto(h, xsFactor=None, model=None, interBin="", variation=0.0,
                          variation=variation, factor=xsFactor)
             if not xs:
                 continue
+            #@@
+            #if tag == "_excludedHistoSimple" and "_UpperLimit" in h.GetName() and abs(x-100.) < 1.e-2 and abs(y-30.) < 1.e-2 :
+            if tag == "_excludedHistoSimple" and "_ExpectedUpperLimit_p1" in h.GetName() and abs(x-125.) < 1.e-2 and abs(y-(125.-70.)) < 10.1 :
+                print h.GetName(),variation,x,y,iBinX,iBinY,"xs",xsLimit,"th",xs,"excl",xsLimit<xs,func(xsLimit,xs)
             out.SetBinContent(iBinX, iBinY, func(xsLimit, xs))
     return out
 

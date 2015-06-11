@@ -118,7 +118,7 @@ def exclusionHistos(expectedLimitFile="", observedLimitFile = "", model=None, sh
     efile = r.TFile(expectedLimitFile, 'READ')
     ofile = r.TFile(observedLimitFile, 'READ')
     for limitHistoName, opts in limitHistoDict.iteritems():
-        if limitHistoName == "T2cc_UpperLimit":
+        if "_UpperLimit" in limitHistoName :
             opts['hist'] = hp.modifiedHisto(h3=ofile.Get(limitHistoName),
                                             model=model,
                                             shiftX=False,#True,
@@ -390,30 +390,40 @@ def transitions(input):
     output = {}
     try : ref = input["refHisto"]
     except: return output
-    for histo in input.keys():
-        if "refHisto" in histo : continue
-        fit = r.TF1("","expo(0)+expo(2)")
-        his = input[histo]
-        his.Fit(fit,"Q0")
-        nbins = ref.GetXaxis().GetNbins()
-        (fstart,fend) = (-1.,-1.)
-        (hstart,hend) = (-1.,-1.)
-        for bin in range(1000):#nbins) :
-            msusy = bin*1.#ref.GetBinCenter(bin+1)
-            if msusy < his.GetBinCenter(1) : continue
-            #theory = ref.GetBinContent(bin+1)
-            theory = ref.Interpolate(msusy)
-            fxs = fit.Eval(msusy)
-            hxs = his.Interpolate(msusy)
-            #theory = ref.Interpolate(ref.GetBinCenter(msusy))
-            #fxs = fit.Eval(ref.GetBinCenter(msusy))
-            #hxs = his.Interpolate(ref.GetBinCenter(msusy))
-            #print bin,msusy,theory,fxs,hxs
-            if fxs < theory and fstart < 0. : fstart = msusy
-            if fend < 0. and fxs > theory and fstart > 0. : fend = msusy
-            if hxs < theory and hstart < 0. : hstart = msusy
-            if hend < 0. and hxs > theory and hstart > 0. : hend = msusy
-        output[histo] = (fstart,fend),(hstart,hend)
+    refu = ref.Clone("_up")
+    refd = ref.Clone("_down")
+    for bin in range(ref.GetNbinsX()) : refu.SetBinContent( bin+1, ref.GetBinContent(bin+1)+ref.GetBinError(bin+1) )
+    for bin in range(ref.GetNbinsX()) : refd.SetBinContent( bin+1, ref.GetBinContent(bin+1)-ref.GetBinError(bin+1) )
+    for histo in input.keys():# [x for x in input.keys() if "_ExpectedUpperLimit_+1" in x ]:
+        for hist in [histo] if "_UpperLimit" not in histo else [histo+x for x in ["","_+1_Sigma","_-1_Sigma"]] : 
+            if "refHisto" in histo : continue
+            fit = r.TF1("","expo(0)+expo(2)")
+            his = input[histo]
+            his.Fit(fit,"Q0")
+            nbins = ref.GetXaxis().GetNbins()
+            (fstart,fend) = (-1.,-1.)
+            (hstart,hend) = (-1.,-1.)
+            for bin in range(350):#nbins) :
+                msusy = bin*1.#ref.GetBinCenter(bin+1)
+                if msusy < his.GetBinCenter(1) : continue
+                #theory = ref.GetBinContent(bin+1)
+                theory = ref.Interpolate(msusy) 
+                if "_UpperLimit" in hist and "_+1_Sigma" in hist : theory = refu.Interpolate(msusy) 
+                elif "_UpperLimit" in hist and "_-1_Sigma" in hist : theory = refd.Interpolate(msusy) 
+                fxs = fit.Eval(msusy)
+                hxs = his.Interpolate(msusy)
+                #theory = ref.Interpolate(ref.GetBinCenter(msusy))
+                #fxs = fit.Eval(ref.GetBinCenter(msusy))
+                #hxs = his.Interpolate(ref.GetBinCenter(msusy))
+                #print bin,msusy,theory,fxs,hxs
+                if fxs < theory and fstart < 0. : fstart = msusy
+                #if fend < 0. and fxs > theory and fstart > 0. : fend = msusy
+                if fxs < theory and fstart > 0. : fend = msusy
+                if hxs < theory and hstart < 0. : hstart = msusy
+                #if hend < 0. and hxs > theory and hstart > 0. : hend = msusy
+                if hxs < theory and hstart > 0. : hend = msusy
+                #print msusy,theory,hxs,hxs<theory,hstart,hend
+            output[hist] = (fstart,fend),(hstart,hend)
     return output
 
 def points():

@@ -23,11 +23,11 @@ for model in configuration.signal.models():
                              debug=False,
                              info=False,
                              )
-    pg.makeEfficiencyPlots(model=model,
-                           key="effHad",
-                           interBinOut=interBinOut,
-                           separateCategories=False,
-                           includeNonUsedCategories=True,
-                           debug=False,
-                           info=False,
-                           )
+#    pg.makeEfficiencyPlots(model=model,
+#                           key="effHad",
+#                           interBinOut=interBinOut,
+#                           separateCategories=True,
+#                           includeNonUsedCategories=True,
+#                           debug=False,
+#                           info=False,
+#                           )

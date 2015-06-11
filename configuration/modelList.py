@@ -48,6 +48,7 @@ def dev():
            "binaryExclusion": False,
            "flatEffUncRel": False,
            "exampleKargs": exampleArgs(),
+           "interBin":"Center",
            "com": 8,
            "llk": "2012dev",
            "interBin": "Center",
