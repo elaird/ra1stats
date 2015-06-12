@@ -213,41 +213,69 @@ def drawRatio(hd1, hd2, canvas, padNum=2, title='observed / reference xs',
     return ratio, line
 
 
-def oneD(h=None, yValue=None, dM=None):
-    yBin = h.GetYaxis().FindBin(yValue)
-    proj = h.ProjectionX(h.GetName()+"_", yBin, yBin)
-    #print h,yValue,dM,proj
-    if dM:
+#def oneD(h=None, yValue=None, dM=None):
+#    yBin = h.GetYaxis().FindBin(yValue)
+#    proj = h.ProjectionX(h.GetName()+"_", yBin, yBin)
+#    #print h,yValue,dM,proj
+#    if dM:
+#        cntr = 0
+#        dMhisto = r.TH1D(h.GetName()+"_%i" % dM,"", 11, 87.5, 362.5)
+#        #proj.Reset()
+#        xBin = h.GetXaxis().FindBin(yValue + dM)
+#        for ixBin in range(xBin, h.GetXaxis().GetNbins()):
+#            yVal = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin)-dM))
+#            yBin = h.GetYaxis().FindBin(yVal)
+#            xVal = h.GetXaxis().GetBinCenter(ixBin)
+#            val = h.GetBinContent(ixBin,yBin)
+#            err = h.GetBinError(ixBin,yBin)
+#            #print xBin,yBin,xVal,yVal,val,err
+#            if val > 0. : cntr += 1
+#            if val == 0.0 :
+#                #print "HACK! SO that curve doesnt connect empty bin, don't publish like this"
+#                yBin = h.GetYaxis().FindBin(yVal)
+#                yValHigh = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin-1)-dM))
+#                yBinHigh = h.GetYaxis().FindBin(yValHigh)
+#                yValLow = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin+1)-dM))
+#                yBinLow = h.GetYaxis().FindBin(yValLow)
+#                val = (h.GetBinContent(ixBin-1,yBinHigh)+h.GetBinContent(ixBin+1,yBinLow))/2.
+#            dMhisto.SetBinContent(dMhisto.FindBin(h.GetBinCenter(ixBin)),val)
+#            dMhisto.SetBinError(dMhisto.FindBin(h.GetBinCenter(ixBin)),err)
+#        #print "HERE",cntr
+#        return dMhisto if cntr > 0 else None
+#    return proj
+
+def oneD(h=None,xValue=None,yValue=None,xRange=None):
+    if xValue is None :
+        yBin = h.GetYaxis().FindBin(yValue)
+        proj = h.ProjectionX(h.GetName()+"_", yBin, yBin)
+        return proj
+    else :
         cntr = 0
-        dMhisto = r.TH1D(h.GetName()+"_%i" % dM,"", 11, 87.5, 362.5)
-        #proj.Reset()
-        xBin = h.GetXaxis().FindBin(yValue + dM)
-        for ixBin in range(xBin, h.GetXaxis().GetNbins()):
-            yVal = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin)-dM))
+        dM = xValue - yValue
+        dMhisto = r.TH1D(h.GetName()+"_%i" % dM,"", 
+                         1+int(xRange[1]-xRange[0])/xRange[2], 
+                         xRange[0]-xRange[2]/2., 
+                         xRange[1]+xRange[2]/2.)
+        for xBin in range( h.GetXaxis().FindBin(xValue), h.GetXaxis().FindBin(xRange[1]) ) :
+            xVal = h.GetXaxis().GetBinCenter(xBin)
+            yVal = h.GetYaxis().GetBinCenter( h.GetYaxis().FindBin( xVal-dM ) )
             yBin = h.GetYaxis().FindBin(yVal)
-            xVal = h.GetXaxis().GetBinCenter(ixBin)
-            val = h.GetBinContent(ixBin,yBin)
-            err = h.GetBinError(ixBin,yBin)
+            val = h.GetBinContent(xBin,yBin)
+            err = h.GetBinError(xBin,yBin)
             #print xBin,yBin,xVal,yVal,val,err
-            if val > 0. : cntr += 1
-            if val == 0.0 :
-                #print "HACK! SO that curve doesnt connect empty bin, don't publish like this"
-                yBin = h.GetYaxis().FindBin(yVal)
-                yValHigh = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin-1)-dM))
-                yBinHigh = h.GetYaxis().FindBin(yValHigh)
-                yValLow = h.GetYaxis().GetBinCenter(h.GetYaxis().FindBin(h.GetBinCenter(ixBin+1)-dM))
-                yBinLow = h.GetYaxis().FindBin(yValLow)
-                val = (h.GetBinContent(ixBin-1,yBinHigh)+h.GetBinContent(ixBin+1,yBinLow))/2.
-            dMhisto.SetBinContent(dMhisto.FindBin(h.GetBinCenter(ixBin)),val)
-            dMhisto.SetBinError(dMhisto.FindBin(h.GetBinCenter(ixBin)),err)
-        #print "HERE",cntr
+            if val > 0. : 
+                cntr += 1
+                dMhisto.SetBinContent( dMhisto.GetXaxis().FindBin(h.GetBinCenter(xBin)), val )
+                dMhisto.SetBinError( dMhisto.GetXaxis().FindBin(h.GetBinCenter(xBin)), err )
         return dMhisto if cntr > 0 else None
     return proj
 
 def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
-              nSmooth=0, xMin=300, xMax=350, yMin=1e-1, yMax=1e+3,
+              nSmooth=0, xRange=None, yMin=1e-3, yMax=2e+2,
               showRatio=False, dumpRatio=False, preliminary=None,
-              lumiStamp="", processStamp="", dM=None):
+              lumiStamp="", processStamp="", xValue=None):
+
+    dM = xValue - yValue if xValue is not None else None
 
     canvas = r.TCanvas('c1', 'c1', 700, 600)
     utils.divideCanvas(canvas)
@@ -272,33 +300,20 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
               model.name+'_UpperLimit']
     for iHisto, hname in enumerate(histos):
         props = histoSpecs[hname]
-        #print hname,props
         if hname == model.name+'_UpperLimit': 
             his = props["hist"]
-#            if dM == 80 :
-#                r.gROOT.SetBatch(False)
-#                r.SetOwnership(his,False)
-#                c1 = r.TCanvas()
-#                his.Draw()
-#                raw_input("")
         if hname != 'refHisto':
-            #print "TEST1",props["hist"].Print()
-            props["hist"] = oneD(props["hist"], yValue, dM)
-            #print "TEST1",props["hist"].Print()
+            props["hist"] = oneD(props["hist"],xValue=xValue,yValue=yValue,xRange=xRange)
             gopts = 'hist'
         else:
             gopts = 'e3'
         h = props['hist']
-        if h is None :
-            #print "No histogram!"
-            continue
+        if h is None : continue
         processed_histos[hname] = h
         h.SetStats(False)
-        h.GetXaxis().SetRangeUser(xMin, xMax)
+        h.GetXaxis().SetRangeUser(xRange[0],xRange[1])
         h.SetMinimum(yMin)
         h.SetMaximum(yMax)
-#        if nSmooth and (hname != 'refHisto'):
-#            h.Smooth(nSmooth, 'R')
         h.Draw("%s%s" % (gopts, "same" if iHisto else ""))
         for attr in ['LineColor', 'LineStyle', 'LineWidth']:
             setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
@@ -307,11 +322,8 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
             if attr in props:
                 setAttr = getattr(h, 'Set{attr}'.format(attr=attr))
                 setAttr(props.get(attr, 1))
-        # if "UpperLimit_-" not in hname:
         if hname in legs.keys() : 
             legs[hname] = (h,props['label'],"lf")
-#        else :
-#            print "TEST",hname,legs.keys()
         h.GetXaxis().SetTitle(xLabel)
         h.GetYaxis().SetTitle(yLabel)
         if hname == 'refHisto':
@@ -332,12 +344,10 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
             for h2 in [hCentral, hUpper, hLower][:1]:
                 h2.Draw('lsame')
 
-    #print len(legs.keys()),legs
     leg = r.TLegend(0.6, 0.6, 0.85, 0.85)
     leg.SetFillStyle(0)
     leg.SetBorderSize(0)
     for key,val in legs.items() : 
-#        print "TEST",key,val
         if val is not None : leg.AddEntry(val[0],val[1],val[2])
     leg.Draw()
 
@@ -357,11 +367,11 @@ def compareXs(histoSpecs={}, model=None, xLabel="", yLabel="", yValue=None,
         #printRatio(obs, ref, errSign='-')
 
     if showRatio:
-        ratio, line = drawRatio(ref, obs, canvas, 2, xMin=xMin, xMax=xMax)
+        ratio, line = drawRatio(ref, obs, canvas, 2, xMin=xRange[0], xMax=xRange[1])
 
     strName = [model.name,
+               "xmin%d" % int(xValue),#Min),
                "mlsp%d" % int(yValue),
-               "xmin%d" % int(xMin),
                "smooth%d" % nSmooth,
                ]
 
@@ -386,7 +396,8 @@ def setup():
     r.gErrorIgnoreLevel = 2000
     r.gStyle.SetHatchesSpacing(1.4*r.gStyle.GetHatchesSpacing())
 
-def transitions(input):
+def transitions(input,xRange=None):
+
     output = {}
     try : ref = input["refHisto"]
     except: return output
@@ -394,7 +405,8 @@ def transitions(input):
     refd = ref.Clone("_down")
     for bin in range(ref.GetNbinsX()) : refu.SetBinContent( bin+1, ref.GetBinContent(bin+1)+ref.GetBinError(bin+1) )
     for bin in range(ref.GetNbinsX()) : refd.SetBinContent( bin+1, ref.GetBinContent(bin+1)-ref.GetBinError(bin+1) )
-    for histo in input.keys():# [x for x in input.keys() if "_ExpectedUpperLimit_+1" in x ]:
+
+    for histo in input.keys(): # [x for x in input.keys() if "_ExpectedUpperLimit_+1" in x ]:
         for hist in [histo] if "_UpperLimit" not in histo else [histo+x for x in ["","_+1_Sigma","_-1_Sigma"]] : 
             if "refHisto" in histo : continue
             fit = r.TF1("","expo(0)+expo(2)")
@@ -403,26 +415,29 @@ def transitions(input):
             nbins = ref.GetXaxis().GetNbins()
             (fstart,fend) = (-1.,-1.)
             (hstart,hend) = (-1.,-1.)
-            for bin in range(350):#nbins) :
-                msusy = bin*1.#ref.GetBinCenter(bin+1)
-                if msusy < his.GetBinCenter(1) : continue
-                #theory = ref.GetBinContent(bin+1)
-                theory = ref.Interpolate(msusy) 
+            for bin in range(xRange[1]):
+
+                msusy = bin*1. # ref.GetBinCenter(bin+1)
                 if "_UpperLimit" in hist and "_+1_Sigma" in hist : theory = refu.Interpolate(msusy) 
                 elif "_UpperLimit" in hist and "_-1_Sigma" in hist : theory = refd.Interpolate(msusy) 
+
+                xbin = his.GetXaxis().FindBin(msusy)
+                content = his.GetBinContent(xbin) > 0.
+                start = msusy >= his.GetBinCenter(xbin)
+
                 fxs = fit.Eval(msusy)
-                hxs = his.Interpolate(msusy)
-                #theory = ref.Interpolate(ref.GetBinCenter(msusy))
-                #fxs = fit.Eval(ref.GetBinCenter(msusy))
-                #hxs = his.Interpolate(ref.GetBinCenter(msusy))
-                #print bin,msusy,theory,fxs,hxs
-                if fxs < theory and fstart < 0. : fstart = msusy
+                hxs = his.Interpolate(msusy) if content and not start else his.GetBinContent(xbin-1)
+
+                if content and start and fxs < theory and fstart < 0. : fstart = msusy
                 #if fend < 0. and fxs > theory and fstart > 0. : fend = msusy
-                if fxs < theory and fstart > 0. : fend = msusy
-                if hxs < theory and hstart < 0. : hstart = msusy
+                if content and fxs < theory and fstart > 0. : fend = msusy
+                
+                if content and start and hxs < theory and hstart < 0. : hstart = msusy
                 #if hend < 0. and hxs > theory and hstart > 0. : hend = msusy
-                if hxs < theory and hstart > 0. : hend = msusy
+                if content and hxs < theory and hstart > 0. : hend = msusy
+
                 #print msusy,theory,hxs,hxs<theory,hstart,hend
+
             output[hist] = (fstart,fend),(hstart,hend)
     return output
 
@@ -436,13 +451,13 @@ def points():
             out.append({"yValue": mlsp,
                         "nSmooth": nSmooth,
                         "xMin": xMin,
-                        "dM" : xMin-mlsp})
+                        "dM" : xMin-mlsp}) #@@ BROKEN!
     return out
 
 def onePoint(model,
              expFileNameSuffix=None,
              obsFileNameSuffix=None,
-             yValue=None, nSmooth=None, xMin=None, dM=None):
+             xValue=None, yValue=None, nSmooth=None, xRange=None ):
 
     (expFileName,obsFileName) = configuration.limit.mergedFiles(model=model,
                                                                 expFileNameSuffix=expFileNameSuffix,
@@ -469,15 +484,15 @@ def onePoint(model,
         'lumiStamp': 'L = 18.5 fb^{-1}, #sqrt{s} = 8 TeV',
         'preliminary': True,
         'processStamp': configuration.signal.processStamp(model.name)['text'],
-        'dM': dM,
+        'xValue': xValue,
         }
 
     #for key,val in options.items() : print key,val
     
-    processed_histos = compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xMin=xMin, **options)
+    processed_histos = compareXs(model=model, yValue=yValue, nSmooth=nSmooth, xRange=xRange, **options)
 
     # Calculate where UL crossed XS
-    return transitions(processed_histos)
+    return transitions(processed_histos,xRange=xRange)
 
 def main():
     setup()

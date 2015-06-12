@@ -404,57 +404,52 @@ def exclusionContours(model,
     xrange = ranges["xBinning"]
     yrange = ranges["yBinning"]
     xMin = xrange[0]
+    xMax = xrange[1]
+    mlsp = 0.
 
     points = []
-
-    #@@
-    #print "TEST",yrange[0],yrange[1],yrange[2]
-    for mlsp in range(yrange[0],yrange[1],yrange[2]):
-        if xMin <= mlsp : break
-        dm = xMin-mlsp
-        #print xMin,mlsp,dm
+    for msusy in range(xrange[0],xrange[1],xrange[2]):
         result = cxs.onePoint(model,
                               expFileNameSuffix=expFileNameSuffix,
                               obsFileNameSuffix=obsFileNameSuffix,
-                              xMin=xMin,
+                              xRange=xrange,
+                              xValue=msusy,
                               yValue=mlsp,
-                              dM=dm,
                               nSmooth=0)
-        points.append((mlsp,result))
-        #print "TESTTEST",dm
-        #for key,val in result.items() : print key.ljust(32),val
-        
-    index = 1 #@@ was 1
-    graphs = {}
-    for ipoint,point in enumerate(points) :
-        dm = xMin - point[0]
-        print "ipoint,mlsp,dm:",ipoint,point[0],dm
-        for key,val in point[1].items() :
-            if key not in graphs.keys() : graphs[key] = {}
-            #graphs[key][-1*point[0]] = (val[1][0],point[0]*1.)
-            #graphs[key][+1*point[0]] = (val[1][1],val[1][1]-dm*1.)
-            temp0 = val[index][0] if val[index][0] > 0. else val[1][0]
-            temp1 = val[index][1] if abs(val[index][1]-val[1][1]) < 50. and val[index][1] > 0. else val[1][1]
-            point0 = (temp0,temp0-dm*1.)
-            point1 = (temp1,temp1-dm*1.)
-            if point0[0] > 0. and point0[1] > 0. and point1[0] > 0. and point1[1] > 0. :
-                graphs[key][-1*point[0]] = point0
-                graphs[key][+1*point[0]] = point1
-                #print key.ljust(40),val," "*3,(graphs[key][-1*point[0]],graphs[key][+1*point[0]])
-    for name,dct in graphs.items() :
-        graphs[name] = [ dct[key] for key in sorted(dct.keys()) ] + [ dct[sorted(dct.keys())[0]] ]
-        #graphs[name] += graphs[name][0]
+        points.append((msusy,dict(result)))
+        for key,val in result.items() : print key.ljust(32),val
 
+    index = 1 # 0=fit, 1=interpolate
+    exclusions = {}
+    for msusy,transitions in points :
+        dm = msusy - mlsp
+        #print msusy,mlsp,dm,transitions
+        for name,excl in transitions.items() :
+            if name not in exclusions.keys() : exclusions[name] = {}
+            xlower = excl[index][0] if excl[index][0] > 0. else excl[1][0] # default to fit if empty
+            xupper = excl[index][1] if excl[index][1] > 0. and abs(excl[index][1]-excl[1][1]) < 50. else excl[1][1]
+            lower = (xlower,xlower-dm)
+            upper = (xupper,xupper-dm)
+            if upper[1] - lower[1] < xrange[2]/1.5 : continue 
+            exclusions[name][-1*msusy] = lower
+            exclusions[name][+1*msusy] = upper
+            print name.ljust(40),(exclusions[name][-1*msusy],exclusions[name][+1*msusy])
+
+    print 
+    for name,dct in exclusions.items() :
+        if len(dct.keys()) > 0 : 
+            exclusions[name] = [ dct[key] for key in sorted(dct.keys()) ] + [ dct[sorted(dct.keys())[0]] ]
+        else :
+            exclusions[name] = []
+        print name.ljust(32),exclusions[name]
+        
     output = {}
-    for key,val in graphs.items() :
-        #print key,val
+    for key,val in exclusions.items() :
         out = r.TGraph()
-        name = key.replace("+","p").replace("-","m").strip(model._dataset+"_")
-        #out.SetName("{:s}_graph".format(name))
+        name = key.replace("+","p").replace("-","m").replace(model._dataset+"_","")
         out.SetName(name)
         for ipoint,point in enumerate(val):
             out.SetPoint(ipoint,*point)
-        # smooth?
         output[name] = out
 
     return output
