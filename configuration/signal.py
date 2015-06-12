@@ -165,10 +165,12 @@ def ranges(model):
     xBinning = {
         "T2cc":(100,350,25),
         "T2_4body":(100,350,25),
+        "T2tt":(100,700,25),
         } # (min,max,width)
     yBinning = {
         "T2cc":(20,340,10),
         "T2_4body":(20,340,10),
+        "T2tt":(0,300,25),
         }
 
     x = {"T1":   (287.5, 1400),  # (min, max)
